@@ -27,6 +27,7 @@ MonoBehaviour:
     description: Heals 3 HP every 2s
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}
     buffs:
     - {fileID: 11400000, guid: bce32aa0a6073a144bb08126da3159cc, type: 2}
     onHitEffects: []

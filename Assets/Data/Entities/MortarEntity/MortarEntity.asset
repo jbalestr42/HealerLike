@@ -94,8 +94,8 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 873531700701352353, guid: 28d0a30d6aed6fc4c8ca473413f70c24, type: 3}
-  title: "Mortar"
-  description: "Slow lobbed shots that explode in an area, aimed at your farthest unit"
+  title: Mortar
+  description: Slow lobbed shots that explode in an area, aimed at your farthest unit
   attributes:
   - key: 0
     value: 100
@@ -107,6 +107,8 @@ MonoBehaviour:
     value: 100
   targetBehaviourType: 5
   targetValidators: []
+  tags:
+  - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
   items:
   - {fileID: 11400000, guid: b02188428f630c24db8e1d0b9054371e, type: 2}
   skillFactories:

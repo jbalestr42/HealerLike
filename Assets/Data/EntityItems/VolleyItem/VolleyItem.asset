@@ -27,6 +27,7 @@ MonoBehaviour:
     description: Shoots one more projectile per attack
     tags:
     - {fileID: 11400000, guid: 70e1d7434c8b934438c8f00ac71691d8, type: 2}
+    - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
     buffs:
     - {fileID: 11400000, guid: 39d884c5ddb8d3f40aa54658d4aa39ea, type: 2}
     onHitEffects: []

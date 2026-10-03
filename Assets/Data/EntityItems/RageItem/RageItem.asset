@@ -27,6 +27,7 @@ MonoBehaviour:
     description: 'The more wounded, the harder it hits: x2 damage at half health, x3 near death'
     tags:
     - {fileID: 11400000, guid: 70e1d7434c8b934438c8f00ac71691d8, type: 2}
+    - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
     buffs:
     - {fileID: 11400000, guid: ee85b5d2c9c88a3478fa668842945a07, type: 2}
     onHitEffects: []

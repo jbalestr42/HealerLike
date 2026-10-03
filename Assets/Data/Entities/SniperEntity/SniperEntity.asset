@@ -95,7 +95,7 @@ MonoBehaviour:
       Data: 
   model: {fileID: 3198502390492704377, guid: 0ba0f6eee23032e4e83d421e739dc905, type: 3}
   title: Sniper
-  description: "Slow but heavy shots, always aimed at your most wounded unit"
+  description: Slow but heavy shots, always aimed at your most wounded unit
   attributes:
   - key: 0
     value: 80
@@ -107,6 +107,8 @@ MonoBehaviour:
     value: 100
   targetBehaviourType: 3
   targetValidators: []
+  tags:
+  - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
   items: []
   skillFactories:
   - {fileID: 11400000, guid: 157df6c305f22474b858cfadec3e599b, type: 2}

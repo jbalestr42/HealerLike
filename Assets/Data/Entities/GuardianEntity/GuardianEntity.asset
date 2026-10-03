@@ -121,6 +121,8 @@ MonoBehaviour:
     value: 50
   targetBehaviourType: 1
   targetValidators: []
+  tags:
+  - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
   items: []
   skillFactories:
   - {fileID: 11400000, guid: 4ad99e391b4d35e42b9010e644abbfac, type: 2}

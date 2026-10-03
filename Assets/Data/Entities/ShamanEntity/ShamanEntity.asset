@@ -106,8 +106,8 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 6173172085731050060, guid: fa12db7f8a3f0714799c08ee4da865d6, type: 3}
-  title: "Shaman"
-  description: "Doesn't attack. Heals its most wounded ally every 3s"
+  title: Shaman
+  description: Doesn't attack. Heals its most wounded ally every 3s
   attributes:
   - key: 0
     value: 70
@@ -121,6 +121,8 @@ MonoBehaviour:
     value: 50
   targetBehaviourType: 1
   targetValidators: []
+  tags:
+  - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
   items: []
   skillFactories:
   - {fileID: 11400000, guid: 0e64889f86c966e4e984b20593a39d6b, type: 2}

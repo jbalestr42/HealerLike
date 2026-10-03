@@ -30,6 +30,7 @@ MonoBehaviour:
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     - {fileID: 11400000, guid: 641f92e7979b3dc49a2338af0549bcf7, type: 2}
+    - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
     growthBuffHandlerFactory: {fileID: 11400000, guid: 9f9e7c9fb5b36f14583b095504908b8e, type: 2}
     maxGrowth: 10
     killGrowthBuffHandlerFactory: {fileID: 11400000, guid: ebd83c6b401f228418cc398413eef3ce, type: 2}

@@ -27,6 +27,7 @@ MonoBehaviour:
     description: +50% damage while above 70% health
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
     buffs:
     - {fileID: 11400000, guid: a11404323f4572246b0c03717a0c4462, type: 2}
     onHitEffects: []

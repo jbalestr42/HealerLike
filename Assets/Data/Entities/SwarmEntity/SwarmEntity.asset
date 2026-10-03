@@ -107,7 +107,8 @@ MonoBehaviour:
     value: 1000
   targetBehaviourType: 4
   targetValidators: []
-  tags: []
+  tags:
+  - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
   items: []
   skillFactories:
   - {fileID: 11400000, guid: 9d719a7c1884f9e4da5971200a61b619, type: 2}

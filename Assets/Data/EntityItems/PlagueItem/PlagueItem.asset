@@ -27,6 +27,7 @@ MonoBehaviour:
     description: Hits halve the heals the target receives for 4s
     tags:
     - {fileID: 11400000, guid: 70e1d7434c8b934438c8f00ac71691d8, type: 2}
+    - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
     buffs: []
     onHitEffects:
     - {fileID: 11400000, guid: 504f1934b0a7d71458b120e629975581, type: 2}

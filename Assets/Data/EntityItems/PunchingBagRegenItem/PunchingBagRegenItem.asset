@@ -27,6 +27,7 @@ MonoBehaviour:
     description: Heals 10% of max HP every second
     tags:
     - {fileID: 11400000, guid: 70e1d7434c8b934438c8f00ac71691d8, type: 2}
+    - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}
     buffs:
     - {fileID: 11400000, guid: 7ffbc480aed10cf4b9f4eb1e940d4a9e, type: 2}
     onHitEffects: []

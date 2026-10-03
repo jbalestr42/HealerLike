@@ -11,12 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8940981ac4386e4395c5404eb3a86d1, type: 3}
   m_Name: PhylacteryItem
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
-    SerializedBytes:
+    SerializedBytes: 
     ReferencedUnityObjects: []
-    SerializedBytesString:
+    SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
@@ -24,9 +24,10 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 7494ba15848983f46b96fc61c28d5674, type: 3}
     name: Phylactery
-    description: "The first time it dies in a fight, comes back with 30% health"
+    description: The first time it dies in a fight, comes back with 30% health
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}
     buffs:
     - {fileID: 11400000, guid: 4116e0c5d999411bb5ddb0fd9f706275, type: 2}
     onHitEffects: []

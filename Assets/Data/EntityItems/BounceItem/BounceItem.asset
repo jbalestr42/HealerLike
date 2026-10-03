@@ -24,9 +24,10 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 9392f93915a0c67489f7288cf69dd701, type: 3}
     name: Bounce
-    description: "Projectiles bounce to one more nearby target, dealing 50% damage"
+    description: Projectiles bounce to one more nearby target, dealing 50% damage
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
     buffs: []
     onHitEffects: []
     onHitConsumers: []

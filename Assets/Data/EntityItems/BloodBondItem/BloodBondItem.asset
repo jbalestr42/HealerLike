@@ -27,6 +27,7 @@ MonoBehaviour:
     description: Hits heal the most wounded ally for 50% of the damage dealt
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
     buffs:
     - {fileID: 11400000, guid: b8d35bbfe08524d40b1302cec09f9a92, type: 2}
     onHitEffects: []

@@ -11,12 +11,12 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8940981ac4386e4395c5404eb3a86d1, type: 3}
   m_Name: WhetstoneItem
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
-    SerializedBytes:
+    SerializedBytes: 
     ReferencedUnityObjects: []
-    SerializedBytesString:
+    SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
@@ -24,9 +24,10 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 14a2710916f32c9479082b1bc6a5cb5b, type: 3}
     name: Whetstone
-    description: "+5 damage"
+    description: +5 damage
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
     buffs:
     - {fileID: 11400000, guid: d28131e646c14adfb8e80665cda08823, type: 2}
     onHitEffects: []
