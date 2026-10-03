@@ -180,6 +180,75 @@ public class AscensionGameTypeTests
             Object.DestroyImmediate(summonTag);
         }
     }
+
+    // A character holding only its mana
+    ResourceAttribute CreateMana(GameObject go, float max, float value)
+    {
+        ResourceAttribute mana = TestHelpers.CreateResourceAttribute(go, AttributeType.ManaMax, max);
+        mana.SetValue(value);
+        TestHelpers.InvokePrivate(mana, "Update");
+        return mana;
+    }
+
+    [Test]
+    public void RefillManaForCombat_ManaSpentInThePreviousFight_StartsFull()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 15f);
+
+            AscensionGameType.RefillManaForCombat(mana);
+
+            Assert.AreEqual(100f, mana.Value, 0.001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
+
+    [Test]
+    public void RefillManaForCombat_MaxRaisedByAnItem_FillsUpToTheNewMax()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 15f);
+            Attribute manaMax = characterGo.GetComponent<AttributeManager>().Get(AttributeType.ManaMax);
+            manaMax.AddModifier(AttributeModifierType.Add, characterGo, new FakeModifier(50f));
+            manaMax.Update();
+
+            AscensionGameType.RefillManaForCombat(mana);
+
+            Assert.AreEqual(150f, mana.Value, 0.001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
+
+    [Test]
+    public void RefillManaForCombat_UnitsKeepTheirMissingHealth()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 15f);
+            _health.SetValue(40f);
+            TestHelpers.InvokePrivate(_health, "Update");
+
+            AscensionGameType.RefillManaForCombat(mana);
+            TestHelpers.InvokePrivate(_health, "Update");
+
+            Assert.AreEqual(40f, _health.Value, 0.001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
 }
 
 }

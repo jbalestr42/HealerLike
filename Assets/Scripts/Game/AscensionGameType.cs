@@ -35,9 +35,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
     [SerializeField] int _seed = 0;
     // Applied to every ally when healing in a rest room
     [SerializeField] AConsumerFactory _restHealConsumer;
-    // Applied to the character in every rest room, whatever the choice
-    [SerializeField] AConsumerFactory _restManaConsumer;
-    [SerializeField, TextArea] string _restDescription = "You recover 30% of your max mana.";
+    [SerializeField, TextArea] string _restDescription = "Take a moment to recover before moving on.";
     [SerializeField, TextArea] string _restHealDescription = "Every unit recovers 30% of its max health.";
     [SerializeField, Min(1)] int _rewardChoiceCount = 3;
     [SerializeField, Min(1)] int _eliteRewardChoiceCount = 4;
@@ -151,6 +149,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 _gameView.characterSkillInventory.Show(true);
                 _gameView.entityInventory.Show(true);
 
+                RefillManaForCombat(PlayerBehaviour.instance.character.mana);
                 LoadEnemies(_currentWave);
                 EnableAllEntities(false);
                 SetState(State.WaitForRoundToStart);
@@ -324,6 +323,13 @@ public class AscensionGameType : AGameType, IEventRoomHost
         return closingChoices;
     }
 
+    // Every fight starts with the full mana (current max, items included), while the units keep the health
+    // they had at the end of the previous fight
+    public static void RefillManaForCombat(ResourceAttribute characterMana)
+    {
+        characterMana.Refill();
+    }
+
     // Beating the boss wins the run, the other fights lead to a reward
     public static bool IsRunWon(MapNodeType roomType)
     {
@@ -424,24 +430,11 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     #region Rest
 
-    // Mana back whatever the choice, then heal every unit or resurrect a dead one
+    // Heal every unit or resurrect a dead one (the mana is refilled before every fight anyway)
     void EnterRestRoom()
     {
-        RestoreMana();
         SetState(State.Rest);
         ShowRestChoices();
-    }
-
-    void RestoreMana()
-    {
-        if (_restManaConsumer == null)
-        {
-            Debug.LogError("[AscensionGameType] No rest mana consumer set");
-            return;
-        }
-
-        Character character = PlayerBehaviour.instance.character;
-        ApplyConsumer(character.mana, character.gameObject, _restManaConsumer);
     }
 
     void ShowRestChoices()
