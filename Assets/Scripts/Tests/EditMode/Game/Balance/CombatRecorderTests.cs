@@ -22,6 +22,7 @@ public class CombatRecorderTests
     }
 
     readonly List<GameObject> _created = new List<GameObject>();
+    readonly List<Object> _createdData = new List<Object>();
     GameObject _characterGo;
     ResourceAttribute _mana;
     GameObject _enemyGo;
@@ -45,6 +46,11 @@ public class CombatRecorderTests
             Object.DestroyImmediate(go);
         }
         _created.Clear();
+        foreach (Object data in _createdData)
+        {
+            Object.DestroyImmediate(data);
+        }
+        _createdData.Clear();
     }
 
     GameObject Create()
@@ -227,6 +233,76 @@ public class CombatRecorderTests
 
         Assert.AreEqual(0f, stats.allyDamageTaken, 0.001f);
         Assert.AreEqual(0f, stats.manaSpent, 0.001f);
+    }
+
+    // A unit of the side, holding the health, with or without its data
+    Entity CreateEntity(Entity.EntityType side, ResourceAttribute health, string title = null)
+    {
+        GameObject go = Create();
+        go.name = "Unit (Entity)";
+        Entity entity = null;
+        TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
+        TestHelpers.SetPrivateField(entity, "_health", health);
+        entity.entityType = side;
+        if (title != null)
+        {
+            EntityData data = ScriptableObject.CreateInstance<EntityData>();
+            data.title = title;
+            _createdData.Add(data);
+            entity.data = data;
+        }
+        return entity;
+    }
+
+    [Test]
+    public void AddUnit_ByItsSide()
+    {
+        CombatRecorder recorder = CreateRecorder();
+        ResourceAttribute knightHealth = CreateHealth(100f);
+        ResourceAttribute skeletonHealth = CreateHealth(80f);
+
+        recorder.AddUnit(CreateEntity(Entity.EntityType.Player, knightHealth, "Knight"));
+        recorder.AddUnit(CreateEntity(Entity.EntityType.Computer, skeletonHealth, "Skeleton"));
+        Apply(knightHealth, _enemyGo, -10f);
+        Apply(skeletonHealth, _characterGo, -20f);
+        CombatStats stats = recorder.Stop(true);
+
+        CollectionAssert.AreEqual(new[] { "Knight" }, stats.allies);
+        Assert.AreEqual(10f, stats.allyDamageTaken, 0.001f);
+        Assert.AreEqual(80f, stats.enemyHealthMax, 0.001f);
+        Assert.AreEqual(20f, stats.enemyDamageTaken, 0.001f);
+    }
+
+    [Test]
+    public void AddUnit_NoUnitOrNoHealth_Ignored()
+    {
+        CombatRecorder recorder = CreateRecorder();
+
+        recorder.AddUnit(null);
+        recorder.AddUnit(CreateEntity(Entity.EntityType.Player, null, "Ghost"));
+        CombatStats stats = recorder.Stop(true);
+
+        Assert.IsEmpty(stats.allies);
+    }
+
+    [Test]
+    public void RecordDeath_OnlyTheAllies()
+    {
+        CombatRecorder recorder = CreateRecorder();
+
+        recorder.RecordDeath(CreateEntity(Entity.EntityType.Player, CreateHealth(100f), "Knight"));
+        recorder.RecordDeath(CreateEntity(Entity.EntityType.Computer, CreateHealth(100f), "Skeleton"));
+        recorder.RecordDeath(null);
+        CombatStats stats = recorder.Stop(false);
+
+        CollectionAssert.AreEqual(new[] { "Knight" }, stats.deadAllies);
+    }
+
+    [Test]
+    public void GetUnitName_TheTitleOfItsData_OrItsName()
+    {
+        Assert.AreEqual("Knight", CombatRecorder.GetUnitName(CreateEntity(Entity.EntityType.Player, null, "Knight")));
+        Assert.AreEqual("Unit (Entity)", CombatRecorder.GetUnitName(CreateEntity(Entity.EntityType.Player, null)));
     }
 }
 

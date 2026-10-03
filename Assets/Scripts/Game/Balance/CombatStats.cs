@@ -26,6 +26,8 @@ public class CombatStats
 
     // Result
     public bool won;
+    // Stopped before either side died (simulation only), counted as lost
+    public bool timedOut;
     public float duration;
 
     // Mana of the character
@@ -163,7 +165,7 @@ public class CombatStats
 
     public string ToSummary()
     {
-        return $"{(won ? "Won" : "Lost")} {roomType} '{wave}' floor {floor} in {duration:0.0}s"
+        return $"{(won ? "Won" : timedOut ? "Timed out" : "Lost")} {roomType} '{wave}' floor {floor} in {duration:0.0}s"
             + $" | mana spent {manaSpent:0} ({manaSpentShare:P0} of max), end {manaEnd:0} ({manaEndShare:P0})"
             + $" | allies took {allyDamageTaken:0} (peak {allyPeakDamage:0} in {PeakWindow:0}s), lost {allyHealthLostShare:P0} of their health, {deadAllies.Count} dead, {allyHealthOtherChange:+0;-0;0} health from other sources"
             + $" | healed {characterHeal:0} (+{characterOverheal:0} overheal), units healed {otherHeal:0}";

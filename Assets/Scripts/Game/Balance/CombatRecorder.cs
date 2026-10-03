@@ -49,6 +49,38 @@ public class CombatRecorder
         Listen(health, (_, __, result) => _stats.RecordEnemyHealth(result.value));
     }
 
+    // An ally or an enemy, by its side; a unit without health is ignored
+    public void AddUnit(Entity entity)
+    {
+        if (entity == null || entity.health == null)
+        {
+            return;
+        }
+
+        if (entity.entityType == Entity.EntityType.Player)
+        {
+            AddAlly(GetUnitName(entity), entity.health);
+        }
+        else if (entity.entityType == Entity.EntityType.Computer)
+        {
+            AddEnemy(entity.health);
+        }
+    }
+
+    // Only the allies count as deaths in the stats
+    public void RecordDeath(Entity entity)
+    {
+        if (entity != null && entity.entityType == Entity.EntityType.Player)
+        {
+            RecordAllyDeath(GetUnitName(entity));
+        }
+    }
+
+    public static string GetUnitName(Entity entity)
+    {
+        return entity.data != null ? entity.data.title : entity.name;
+    }
+
     public void RecordAllyDeath(string allyName)
     {
         _stats.RecordAllyDeath(allyName);

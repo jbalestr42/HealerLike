@@ -101,10 +101,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
     // A dead ally is lost for the run: its items go back to the player, and it can be resurrected later
     void OnEntityKilled(Entity entity)
     {
-        if (_combatRecorder != null && entity != null && entity.entityType == Entity.EntityType.Player)
-        {
-            _combatRecorder.RecordAllyDeath(GetUnitName(entity));
-        }
+        _combatRecorder?.RecordDeath(entity);
 
         if (_run == null || !IsLostForTheRun(entity, DataManager.instance.GetTagWithName(TagNames.Summon)))
         {
@@ -465,30 +462,13 @@ public class AscensionGameType : AGameType, IEventRoomHost
             character = PlayerBehaviour.instance.character.data.title,
         };
         _combatRecorder = new CombatRecorder(stats, () => Time.time, PlayerBehaviour.instance.character.mana);
-        _entities.GetEntities(Entity.EntityType.Player).ForEach(x => AddToCombatLog(x.GetComponent<Entity>()));
-        _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => AddToCombatLog(x.GetComponent<Entity>()));
+        _entities.GetEntities(Entity.EntityType.Player).ForEach(x => _combatRecorder.AddUnit(x.GetComponent<Entity>()));
+        _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => _combatRecorder.AddUnit(x.GetComponent<Entity>()));
     }
 
     void OnEntitySummoned(Entity summon)
     {
-        AddToCombatLog(summon);
-    }
-
-    void AddToCombatLog(Entity entity)
-    {
-        if (_combatRecorder == null || entity == null || entity.health == null)
-        {
-            return;
-        }
-
-        if (entity.entityType == Entity.EntityType.Player)
-        {
-            _combatRecorder.AddAlly(GetUnitName(entity), entity.health);
-        }
-        else if (entity.entityType == Entity.EntityType.Computer)
-        {
-            _combatRecorder.AddEnemy(entity.health);
-        }
+        _combatRecorder?.AddUnit(summon);
     }
 
     void FinishCombatLog(bool won)
@@ -509,11 +489,6 @@ public class AscensionGameType : AGameType, IEventRoomHost
         {
             Debug.LogWarning($"[CombatLog] Could not write the combat log: {e.Message}");
         }
-    }
-
-    static string GetUnitName(Entity entity)
-    {
-        return entity.data != null ? entity.data.title : entity.name;
     }
 
     #endregion

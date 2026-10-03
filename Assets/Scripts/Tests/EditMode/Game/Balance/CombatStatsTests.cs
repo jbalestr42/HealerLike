@@ -220,6 +220,14 @@ public class CombatStatsTests
     }
 
     [Test]
+    public void ToSummary_TimedOut_ShownAsSuch()
+    {
+        CombatStats stats = new CombatStats { roomType = "Elite", wave = "Wave_Bastion", timedOut = true };
+
+        StringAssert.StartsWith("Timed out Elite 'Wave_Bastion'", stats.ToSummary());
+    }
+
+    [Test]
     public void ToSummary_ShowsTheResultAndTheMana()
     {
         CombatStats stats = new CombatStats { roomType = "Combat", wave = "Wave_Crypt", floor = 2 };
