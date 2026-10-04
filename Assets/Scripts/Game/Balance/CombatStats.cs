@@ -9,6 +9,13 @@ public class CombatStats
     public const float PeakWindow = 3f;
 
     [Serializable]
+    public struct SkillCasts
+    {
+        public string skill;
+        public int count;
+    }
+
+    [Serializable]
     public struct DamageEvent
     {
         public float time;
@@ -23,6 +30,8 @@ public class CombatStats
     public string wave;
     public string character;
     public List<string> allies = new List<string>();
+    // Healer bot profile playing the character in a simulation, empty in a real run
+    public string bot;
 
     // Result
     public bool won;
@@ -55,6 +64,9 @@ public class CombatStats
     // Change of health neither from a heal nor from damage, e.g. Balance Life setting it, a max health buff,
     // or the damage of a killing blow above the health left
     public float allyHealthOtherChange;
+
+    // Skills cast by the healer bot
+    public List<SkillCasts> casts = new List<SkillCasts>();
 
     // Enemies, summons included
     public float enemyHealthMax;

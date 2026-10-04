@@ -27,7 +27,13 @@ public class EntityGridInteraction : AInteraction
 
     public override void OnMouseClick(RaycastHit hit)
     {
-        GameObject entity = EntityManager.instance.SpawnEntity(_data, PlayerBehaviour.instance.grid.GetNearestWalkablePosition(hit.point), _entityType);
+        SpawnAt(hit.point);
+    }
+
+    // Same as clicking the position, e.g. for a cell chosen by code: the entity goes on the nearest free cell
+    public void SpawnAt(Vector3 position)
+    {
+        GameObject entity = EntityManager.instance.SpawnEntity(_data, PlayerBehaviour.instance.grid.GetNearestWalkablePosition(position), _entityType);
         if (entity != null && _onEntitySpawned != null)
         {
             _onEntitySpawned(entity.GetComponent<Entity>());

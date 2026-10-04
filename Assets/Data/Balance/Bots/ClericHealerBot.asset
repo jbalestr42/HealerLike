@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c2f93c6e390a6343adb5d51bbd05d28, type: 3}
+  m_Name: ClericHealerBot
+  m_EditorClassIdentifier: HealerLike.Runtime::HealerBotProfile
+  character: {fileID: 11400000, guid: 246613bc00a2adc4faacf8f72aa81ddd, type: 2}
+  decisionInterval: 0.25
+  rules:
+  - skill: {fileID: 11400000, guid: 6b7b4b7d8cbcb1a448681bc0f2caa246, type: 2}
+    conditions:
+    - type: 0
+      value: 0.3
+      count: 2
+    target: 0
+    skipTargetsWithItsBuff: 0
+  - skill: {fileID: 11400000, guid: 3001a223ad5ed954f89da100bd2bf009, type: 2}
+    conditions:
+    - type: 1
+      value: 0.7
+      count: 1
+    target: 0
+    skipTargetsWithItsBuff: 0
+  - skill: {fileID: 11400000, guid: 1ebca72647271b94ca5968b1b500f88d, type: 2}
+    conditions:
+    - type: 0
+      value: 0.6
+      count: 1
+    target: 1
+    skipTargetsWithItsBuff: 0
+  - skill: {fileID: 11400000, guid: 84b32c25f41dcd04cb657bb983143827, type: 2}
+    conditions:
+    - type: 0
+      value: 0.6
+      count: 0
+    target: 1
+    skipTargetsWithItsBuff: 1

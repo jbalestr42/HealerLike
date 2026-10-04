@@ -11,6 +11,7 @@ public class SimulationPlanTests
     const string GameDataPath = "Assets/Data/TestData.asset";
 
     SimulationPlan _plan;
+    HealerBotProfile _bot;
     GameData _data;
 
     [SetUp]
@@ -20,13 +21,16 @@ public class SimulationPlanTests
         Assert.IsNotNull(_data, GameDataPath);
         _plan = ScriptableObject.CreateInstance<SimulationPlan>();
         _plan.mapSettings = AssetDatabase.LoadAssetAtPath<MapGenerationSettings>("Assets/Data/Run/MapGenerationSettings.asset");
-        _plan.characters = new List<CharacterData> { AssetDatabase.LoadAssetAtPath<CharacterData>("Assets/Data/Characters/DruidCharacter/DruidCharacter.asset") };
+        _bot = ScriptableObject.CreateInstance<HealerBotProfile>();
+        _bot.character = AssetDatabase.LoadAssetAtPath<CharacterData>("Assets/Data/Characters/DruidCharacter/DruidCharacter.asset");
+        _plan.healerBots = new List<HealerBotProfile> { _bot };
     }
 
     [TearDown]
     public void TearDown()
     {
         Object.DestroyImmediate(_plan);
+        Object.DestroyImmediate(_bot);
     }
 
     [Test]
@@ -60,9 +64,9 @@ public class SimulationPlanTests
 
         List<SimulationJob> jobs = _plan.BuildJobs(_data);
 
-        // 1 character x 3 seeds x 2 floors x 2 waves
+        // 1 bot x 3 seeds x 2 floors x 2 waves
         Assert.AreEqual(12, jobs.Count);
-        Assert.IsTrue(jobs.TrueForAll(job => job.team != null && job.team.units.Count >= _plan.characters[0].entities.Count));
+        Assert.IsTrue(jobs.TrueForAll(job => job.bot == _bot && job.team != null && job.team.units.Count >= _bot.character.entities.Count));
         CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, new HashSet<int>(jobs.ConvertAll(job => job.seed)));
     }
 

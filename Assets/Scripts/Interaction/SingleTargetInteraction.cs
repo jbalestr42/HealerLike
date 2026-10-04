@@ -27,7 +27,13 @@ public class SingleTargetInteraction : AInteraction
 
     public override void OnMouseClick(RaycastHit hit)
     {
-        _onTargetSelected(hit.transform.gameObject);
+        SelectTarget(hit.transform.gameObject);
+    }
+
+    // Same as clicking the target, e.g. for a target chosen by code
+    public void SelectTarget(GameObject target)
+    {
+        _onTargetSelected(target);
         InteractionManager.instance.EndInteraction();
     }
 

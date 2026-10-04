@@ -6,7 +6,8 @@ using UnityEngine;
 public class SimulationPlan : ScriptableObject
 {
     [Header("Fights")]
-    public List<CharacterData> characters = new List<CharacterData>();
+    // Each one plays its character in every fight of the plan (a bot without rule casts nothing)
+    public List<HealerBotProfile> healerBots = new List<HealerBotProfile>();
     // Every wave of the wave pools when empty
     public List<WavePatternData> waves = new List<WavePatternData>();
     public List<int> floors = new List<int> { 0, 3, 6, 9 };
@@ -33,7 +34,7 @@ public class SimulationPlan : ScriptableObject
 
     public List<SimulationJob> BuildJobs(GameData data)
     {
-        return SimulationJobBuilder.Build(characters, GetWaves(data), floors, seedCount,
+        return SimulationJobBuilder.Build(healerBots, GetWaves(data), floors, seedCount,
             (character, seed) => ReferenceTeamGenerator.GenerateRun(mapSettings, character.entities, RewardPools.Create(data, character), seed));
     }
 }

@@ -206,6 +206,9 @@ public class CombatStatsTests
         stats.RecordAllyDeath("Knight");
         stats.RecordMana(-20f, 0f);
 
+        stats.bot = "DruidBot";
+        stats.casts.Add(new CombatStats.SkillCasts { skill = "Rejuvenation", count = 4 });
+
         CombatStats read = JsonUtility.FromJson<CombatStats>(JsonUtility.ToJson(stats));
 
         Assert.AreEqual("run", read.runId);
@@ -217,6 +220,10 @@ public class CombatStatsTests
         CollectionAssert.AreEqual(new[] { "Knight" }, read.allies);
         CollectionAssert.AreEqual(new[] { "Knight" }, read.deadAllies);
         Assert.AreEqual(20f, read.manaSpent, 0.001f);
+        Assert.AreEqual("DruidBot", read.bot);
+        Assert.AreEqual(1, read.casts.Count);
+        Assert.AreEqual("Rejuvenation", read.casts[0].skill);
+        Assert.AreEqual(4, read.casts[0].count);
     }
 
     [Test]

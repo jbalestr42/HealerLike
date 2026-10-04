@@ -3,16 +3,22 @@ using System.Collections.Generic;
 
 public static class SimulationJobBuilder
 {
-    // Every wave on every floor, for every character and seed. generateRun gives the reference teams of a run
-    // (one per room of its path) for a character and a seed
-    public static List<SimulationJob> Build(IReadOnlyList<CharacterData> characters, IReadOnlyList<SimulatedWave> waves, IReadOnlyList<int> floors, int seedCount, Func<CharacterData, int, List<ReferenceTeam>> generateRun)
+    // Every wave on every floor, for every bot (its character played its way) and seed. generateRun gives the
+    // reference teams of a run (one per room of its path) for a character and a seed. A bot without character
+    // is skipped
+    public static List<SimulationJob> Build(IReadOnlyList<HealerBotProfile> bots, IReadOnlyList<SimulatedWave> waves, IReadOnlyList<int> floors, int seedCount, Func<CharacterData, int, List<ReferenceTeam>> generateRun)
     {
         List<SimulationJob> jobs = new List<SimulationJob>();
-        foreach (CharacterData character in characters)
+        foreach (HealerBotProfile bot in bots)
         {
+            if (bot == null || bot.character == null)
+            {
+                continue;
+            }
+
             for (int seed = 1; seed <= seedCount; seed++)
             {
-                List<ReferenceTeam> teams = generateRun(character, seed);
+                List<ReferenceTeam> teams = generateRun(bot.character, seed);
                 foreach (int floor in floors)
                 {
                     ReferenceTeam team = GetTeamOnFloor(teams, floor);
@@ -23,7 +29,7 @@ public static class SimulationJobBuilder
 
                     foreach (SimulatedWave wave in waves)
                     {
-                        jobs.Add(new SimulationJob { character = character, team = team, wave = wave.wave, roomType = wave.roomType, floor = floor, seed = seed });
+                        jobs.Add(new SimulationJob { bot = bot, team = team, wave = wave.wave, roomType = wave.roomType, floor = floor, seed = seed });
                     }
                 }
             }

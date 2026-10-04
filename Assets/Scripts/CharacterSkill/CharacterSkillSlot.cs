@@ -45,7 +45,8 @@ public class CharacterSkillSlot : MonoBehaviour
         _skillButton.Enable(CanUseSkill());
     }
 
-    bool CanUseSkill()
+    // Every validator allows it (cost, cooldown, ...)
+    public bool CanUseSkill()
     {
         foreach (ACharacterSkillValidator validator in _validators)
         {

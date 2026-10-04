@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c2f93c6e390a6343adb5d51bbd05d28, type: 3}
+  m_Name: WarlockHealerBot
+  m_EditorClassIdentifier: HealerLike.Runtime::HealerBotProfile
+  character: {fileID: 11400000, guid: 137cb5a7a59624041aba09d3f103f0e3, type: 2}
+  decisionInterval: 0.25
+  rules:
+  - skill: {fileID: 11400000, guid: fecd39d5edd8a3545b80b61542167a42, type: 2}
+    conditions:
+    - type: 4
+      value: 0.3
+      count: 1
+    - type: 2
+      value: 0.7
+      count: 1
+    target: 0
+    skipTargetsWithItsBuff: 0
+  - skill: {fileID: 11400000, guid: 00a255aac080439ea7292e169fb1517b, type: 2}
+    conditions:
+    - type: 0
+      value: 0.4
+      count: 1
+    target: 1
+    skipTargetsWithItsBuff: 1
+  - skill: {fileID: 11400000, guid: 67f433739f2aede41aedeeeee5d7575d, type: 2}
+    conditions:
+    - type: 0
+      value: 0.7
+      count: 1
+    target: 3
+    skipTargetsWithItsBuff: 0
+  - skill: {fileID: 11400000, guid: ca029eff829bfd14a86276e24a1bd8a1, type: 2}
+    conditions: []
+    target: 4
+    skipTargetsWithItsBuff: 1
+  - skill: {fileID: 11400000, guid: bc21290c7d8e85c48b00aa1a0fa6c199, type: 2}
+    conditions: []
+    target: 5
+    skipTargetsWithItsBuff: 0

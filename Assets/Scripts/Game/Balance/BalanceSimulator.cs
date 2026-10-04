@@ -21,6 +21,7 @@ public class BalanceSimulator : AGameType
     int _waitedFrames;
     EntityManager _entities;
     CombatRecorder _recorder;
+    HealerBot _bot;
     float _startTime;
 
     void Start()
@@ -114,6 +115,10 @@ public class BalanceSimulator : AGameType
             character = job.character.title,
         };
 
+        GridManager grid = PlayerBehaviour.instance.grid;
+        _bot = new HealerBot(job.bot, character, _entities, grid.GetCellCenterFromCoord(new Vector2Int(_plan.frontColumn + 1, grid.height / 2)));
+        stats.bot = job.bot.name;
+
         Time.timeScale = _plan.timeScale;
         AscensionGameType.OnRoundStart.Invoke();
         EnableAllEntities(true);
@@ -149,6 +154,8 @@ public class BalanceSimulator : AGameType
 
     void UpdateFight()
     {
+        _bot?.Update(Time.time);
+
         bool won = _entities.AreAllEntityDead(Entity.EntityType.Computer);
         bool lost = _entities.AreAllEntityDead(Entity.EntityType.Player);
         bool timedOut = Time.time - _startTime >= _plan.maxDuration;
@@ -159,6 +166,13 @@ public class BalanceSimulator : AGameType
 
         CombatStats stats = _recorder.Stop(won);
         stats.timedOut = !won && !lost;
+        if (_bot != null)
+        {
+            foreach (KeyValuePair<string, int> cast in _bot.casts)
+            {
+                stats.casts.Add(new CombatStats.SkillCasts { skill = cast.Key, count = cast.Value });
+            }
+        }
         _recorder = null;
         CombatLogFile.Append(SimulationQueue.outputPath, stats);
         Debug.Log($"[BalanceSimulator] {SimulationQueue.index + 1}/{SimulationQueue.count} {stats.character}: {stats.ToSummary()}");
@@ -231,7 +245,7 @@ public class BalanceSimulator : AGameType
         string text = _state == State.Done
             ? $"Simulation done: {SimulationQueue.count} fights\n{SimulationQueue.outputPath}"
             : $"Fight {SimulationQueue.index + 1}/{SimulationQueue.count}"
-                + (SimulationQueue.current != null ? $"\n{SimulationQueue.current.character.title}, floor {SimulationQueue.current.floor}, {SimulationQueue.current.wave.name}, seed {SimulationQueue.current.seed}" : "")
+                + (SimulationQueue.current != null ? $"\n{SimulationQueue.current.bot.name} ({SimulationQueue.current.character.title}), floor {SimulationQueue.current.floor}, {SimulationQueue.current.wave.name}, seed {SimulationQueue.current.seed}" : "")
                 + $"\n{Time.time - _startTime:0}s / {_plan.maxDuration:0}s (x{_plan.timeScale:0.#})";
         GUI.Label(new Rect(10f, 10f, 600f, 60f), text);
     }
