@@ -19,6 +19,10 @@ public class WavePatternData : SerializedScriptableObject
 
     public EntitySlot[,] slots;
 
+    // Written by the balance tools only
+    [ReadOnly]
+    public WaveScore score = new WaveScore();
+
     // World position of a slot when the pattern is centered on center
     public Vector3 GetSlotPosition(Vector3 center, int x, int y)
     {
