@@ -16,10 +16,15 @@ public class HomingProjectileBehaviour : AProjectileBehaviour<HomingProjectileBe
 
     void OnUpdate()
     {
+        Advance(Time.deltaTime);
+    }
+
+    // Never goes past the target: a long frame (low frame rate, sped up game) lands on it instead of jumping over it
+    public void Advance(float deltaTime)
+    {
 		if (projectile.target)
         {
-            Vector3 direction = projectile.targetPoint.transform.position - transform.position;
-            transform.position += direction.normalized * data.speed * Time.deltaTime;
+            transform.position = Vector3.MoveTowards(transform.position, projectile.targetPoint.transform.position, data.speed * deltaTime);
             transform.LookAt(projectile.targetPoint.transform);
         }
 	}

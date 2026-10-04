@@ -240,6 +240,39 @@ public class MarkedStrikeSkillTests
     }
 
     [Test]
+    public void LongUpdate_TheTimeBeyondTheIntervalCountsForTheDelay()
+    {
+        _skill.Tick(Interval + 1f);
+
+        Assert.IsTrue(_skill.isMarking);
+        Assert.AreEqual(Delay - 1f, _skill.remainingDelay, 0.0001f);
+    }
+
+    [Test]
+    public void LongUpdate_TheTimeBeyondTheDelayCountsForTheNextInterval()
+    {
+        _skill.Tick(Interval);
+        _skill.Tick(Delay + 2f);
+
+        Assert.AreEqual(1, _struck.Count);
+        Assert.AreEqual(Interval - 2f, _skill.remainingInterval, 0.0001f);
+    }
+
+    [Test]
+    public void NobodyToMarkForAWhile_TheDelayStartsAtTheMark()
+    {
+        _skill.nextTarget = null;
+        _skill.Tick(Interval);
+        _skill.Tick(5f);
+
+        _skill.nextTarget = _target.gameObject;
+        _skill.Tick(0.1f);
+
+        // At most the time of the update that marked is counted, not the time spent waiting
+        Assert.AreEqual(Delay - 0.1f, _skill.remainingDelay, 0.0001f);
+    }
+
+    [Test]
     public void Reset_ClearsTheMarkAndRestartsTheInterval()
     {
         _skill.Tick(Interval);

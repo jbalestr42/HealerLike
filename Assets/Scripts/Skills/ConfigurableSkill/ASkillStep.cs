@@ -28,7 +28,8 @@ public abstract class ASkillStep
     public GameObject source;
 
     public abstract void Init();
-    public abstract bool Update(ASkill skill, float deltaTime);
+    // True once the step is done. Spends what it needs of deltaTime, the rest goes to the next step
+    public abstract bool Update(ASkill skill, ref float deltaTime);
     public abstract void Reset();
 
     // Seconds the step lasts, 0 for an instant one (e.g. a shot)

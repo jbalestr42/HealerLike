@@ -32,10 +32,15 @@ public class RepeatSkillStep : ASkillStep<RepeatSkillStepData>
         }
     }
 
-    public override bool Update(ASkill skill, float deltaRepeat)
+    // The time left by a step goes on in the next ones during the same update, at most every repeat in one update
+    public override bool Update(ASkill skill, ref float deltaRepeat)
     {
-        if (_skillSteps[_currentStep].Update(skill, deltaRepeat))
+        for (int played = 0; played < _skillSteps.Count * Mathf.Max(1, data.count); played++)
         {
+            if (!_skillSteps[_currentStep].Update(skill, ref deltaRepeat))
+            {
+                return false;
+            }
             _currentStep++;
 
             if (_currentStep >= _skillSteps.Count)

@@ -6,23 +6,28 @@ public abstract class ACooldownSkill<SkillData> : ASkill<SkillData>, ICooldownSk
 
     public override void UpdateBehaviour(GameObject source)
     {
-        // TODO how to get source and target here ? regardless of isSelfTarget
-        if (_cooldown <= 0f)
+        Tick(source, Time.deltaTime);
+    }
+
+    // The cooldown runs during the whole update, even the one where it ends, and what goes beyond it counts
+    // for the next one: a skill is used as often whatever the frame rate
+    public void Tick(GameObject source, float deltaTime)
+    {
+        if (_cooldown > 0f)
         {
-            // Return true if skill has been used
-            if (Execute(source))
-            {
-                foreach (AOnSkillTriggerFactory factory in data.onSkillTriggerFactory)
-                {
-                    AOnSkillTrigger onSkillTrigger = factory.GetSkillTrigger();
-                    onSkillTrigger.Execute(source); // source and target
-                }
-                _cooldown += cooldownDuration;
-            }
+            _cooldown -= deltaTime;
         }
-        else
+
+        // TODO how to get source and target here ? regardless of isSelfTarget
+        // Return true if skill has been used
+        if (_cooldown <= 0f && Execute(source))
         {
-            _cooldown -= Time.deltaTime;
+            foreach (AOnSkillTriggerFactory factory in data.onSkillTriggerFactory)
+            {
+                AOnSkillTrigger onSkillTrigger = factory.GetSkillTrigger();
+                onSkillTrigger.Execute(source); // source and target
+            }
+            _cooldown += cooldownDuration;
         }
     }
 

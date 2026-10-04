@@ -64,6 +64,8 @@ public abstract class ABuffHandler
     public abstract void Stop(GameObject source, GameObject target);
     public abstract void Refresh(GameObject source, GameObject target);
     public abstract void ResetPeriodDuration();
+    // A period has been applied: its time is removed, what went beyond it counts for the next one
+    public abstract void ConsumePeriod();
     public abstract DurationType durationType { get; }
     public abstract float duration { get; }
     // Time left before the handler stops, 0 when it has no limited duration

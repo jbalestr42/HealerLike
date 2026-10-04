@@ -30,10 +30,17 @@ public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill
         Tick(source, Time.deltaTime);
     }
 
+    // The time left by a step goes on in the next ones during the same update, at most one pass over the steps:
+    // a cycle lasts as long whatever the frame rate
     public void Tick(GameObject source, float deltaTime)
     {
-        if (_skillSteps[_currentStep].Update(this, deltaTime))
+        for (int played = 0; played < _skillSteps.Count; played++)
         {
+            if (!_skillSteps[_currentStep].Update(this, ref deltaTime))
+            {
+                return;
+            }
+
             foreach (AOnSkillTriggerFactory factory in data.onSkillTriggerFactory)
             {
                 AOnSkillTrigger onSkillTrigger = factory.GetSkillTrigger();

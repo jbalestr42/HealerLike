@@ -57,6 +57,21 @@ public class TargetProviderTests
 
         Assert.AreSame(validators, GetTargetBehaviour().targetValidators);
     }
+
+    [Test]
+    public void GetTargets_LeavesOutTheUnitsDestroyedSinceTheyWerePicked()
+    {
+        GameObject alive = new GameObject("Alive");
+        GameObject killed = new GameObject("Killed");
+        TestHelpers.SetPrivateField(_targetProvider, "_targets", new List<GameObject> { killed, alive });
+        Object.DestroyImmediate(killed);
+
+        List<GameObject> targets = _targetProvider.GetTargets();
+
+        Assert.AreEqual(1, targets.Count);
+        Assert.AreSame(alive, targets[0]);
+        Object.DestroyImmediate(alive);
+    }
 }
 
 }

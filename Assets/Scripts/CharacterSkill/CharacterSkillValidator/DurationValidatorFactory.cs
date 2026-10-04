@@ -12,6 +12,7 @@ public class DurationValidatorData
 
 public class DurationValidator : ACharacterSkillValidator<DurationValidatorData>
 {
+    // In game time, like the fight: the cooldown follows the game speed and stops during a pause
     float _startTimer = 0f;
     // Cooldown of the last use, the SkillCooldownMultiplier of the owner applied to the data duration
     float _duration = 0f;
@@ -19,23 +20,23 @@ public class DurationValidator : ACharacterSkillValidator<DurationValidatorData>
     public override void Init(UseCharacterSkillButton skillButton, GameObject owner)
     {
         _duration = GetDuration(owner);
-        _startTimer = Time.realtimeSinceStartup - _duration;
+        _startTimer = Time.time - _duration;
         skillButton.hasCooldown = true;
     }
 
     public override void Update(UseCharacterSkillButton skillButton)
     {
-        skillButton.SetCooldown(Mathf.Max(_duration - (Time.realtimeSinceStartup - _startTimer), 0f), _duration);
+        skillButton.SetCooldown(Mathf.Max(_duration - (Time.time - _startTimer), 0f), _duration);
     }
 
     public override bool IsValid(GameObject owner)
     {
-        return Time.realtimeSinceStartup >= (_startTimer + _duration);
+        return Time.time >= (_startTimer + _duration);
     }
 
     public override void OnSkillUsed(GameObject owner)
     {
-        _startTimer = Time.realtimeSinceStartup;
+        _startTimer = Time.time;
         _duration = GetDuration(owner);
     }
 

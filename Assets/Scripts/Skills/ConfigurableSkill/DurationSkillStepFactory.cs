@@ -21,15 +21,14 @@ public class DurationSkillStep : ASkillStep<DurationSkillStepData>
         // Debug.LogWarning($"Init Duration {data.duration.GetValue(source)}");
     }
 
-    public override bool Update(ASkill skill, float deltaTime)
+    public override bool Update(ASkill skill, ref float deltaTime)
     {
-        _timer += deltaTime;
-        if (_timer >= data.duration.GetValue(source))
-        {
-            // Debug.LogWarning($"Duration done {data.duration.GetValue(source)}");
-            return true;
-        }
-        return false;
+        float duration = data.duration.GetValue(source);
+        float spent = Mathf.Clamp(duration - _timer, 0f, deltaTime);
+        _timer += spent;
+        deltaTime -= spent;
+        // Debug.LogWarning($"Duration done {data.duration.GetValue(source)}");
+        return _timer >= duration;
     }
 
     public override float GetDuration()

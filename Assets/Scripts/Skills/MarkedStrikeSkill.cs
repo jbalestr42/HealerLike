@@ -107,16 +107,22 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>, ICooldownSkill
             _timer = 0f;
         }
 
+        // The time beyond the interval or the delay counts for the next one, whatever the frame rate. When nobody
+        // could be marked for a while, at most the time of this update is kept
         _timer += deltaTime;
         if (!isMarking)
         {
-            if (_timer >= interval)
+            GameObject target = _timer >= interval ? FindTarget() : null;
+            // Nobody to mark: tries again on the next frame
+            if (target != null)
             {
-                Mark(FindTarget());
+                _timer = Mathf.Min(_timer - interval, deltaTime);
+                Mark(target);
             }
         }
         else if (_timer >= data.delay)
         {
+            _timer -= data.delay;
             Strike();
         }
     }
@@ -136,15 +142,8 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>, ICooldownSkill
 
     void Mark(GameObject target)
     {
-        // Nobody to mark: tries again on the next frame
-        if (target == null)
-        {
-            return;
-        }
-
         _markedTarget = target;
         _isMarking = true;
-        _timer = 0f;
         if (data.markBuffHandler != null)
         {
             BuffManager buffManager = target.GetComponent<BuffManager>();
@@ -160,7 +159,6 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>, ICooldownSkill
     {
         GameObject target = _markedTarget;
         ClearMark();
-        _timer = 0f;
 
         Entity entity = target != null ? target.GetComponent<Entity>() : null;
         if (entity == null || entity.health == null || entity.health.Value <= 0f || data.strikeConsumer == null)

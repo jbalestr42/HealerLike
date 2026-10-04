@@ -66,7 +66,8 @@ public class Projectile : MonoBehaviour, IBuffable
     public void SetTarget(GameObject newTarget)
     {
         _target = newTarget;
-        _targetPoint = newTarget?.GetComponent<Entity>().targetPoint;
+        // Not ?.: a destroyed unit (killed, still in a target list) only compares equal to null for Unity
+        _targetPoint = newTarget != null ? newTarget.GetComponent<Entity>().targetPoint : null;
     }
 
     public virtual bool ShouldDestroyProjectile()

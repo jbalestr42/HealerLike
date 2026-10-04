@@ -203,6 +203,7 @@ public class BuffManager : SerializedMonoBehaviour
 
                         if (buffHandlerData.buffHandler.isPeriodic && buffHandlerData.buffHandler.isPeriodDone)
                         {
+                            bool applied = false;
                             foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
                             {
                                 BuffData buffData = GetBuffData(buffFactory, source);
@@ -211,8 +212,12 @@ public class BuffManager : SerializedMonoBehaviour
                                 {
                                     Debug.Log($"[BuffManager:{gameObject.name}] Instant periodic buff " + buffFactory.name);
                                     buff.Instant(source, buffHandlerData.target);
-                                    buffHandlerData.buffHandler.ResetPeriodDuration();
+                                    applied = true;
                                 }
+                            }
+                            if (applied)
+                            {
+                                buffHandlerData.buffHandler.ConsumePeriod();
                             }
                         }
 
