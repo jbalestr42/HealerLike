@@ -20,6 +20,25 @@ public class ReferenceTeam
     public List<UnitItem> unitItems = new List<UnitItem>();
     public List<AItemFactory> playerItems = new List<AItemFactory>();
 
+    // The units of a wave as a team without reward
+    public static ReferenceTeam FromWave(WavePatternData wave)
+    {
+        ReferenceTeam team = new ReferenceTeam();
+        if (wave == null || wave.slots == null)
+        {
+            return team;
+        }
+
+        foreach (EntitySlot slot in wave.slots)
+        {
+            if (slot.entity != null)
+            {
+                team.units.Add(slot.entity);
+            }
+        }
+        return team;
+    }
+
     public ReferenceTeam Copy(int newFloor)
     {
         return new ReferenceTeam

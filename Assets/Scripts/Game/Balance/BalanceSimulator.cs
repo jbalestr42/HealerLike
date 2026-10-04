@@ -26,6 +26,7 @@ public class BalanceSimulator : AGameType
     CombatRecorder _recorder;
     HealerBot _bot;
     float _startTime;
+    float _maxDuration;
 
     void Start()
     {
@@ -69,6 +70,11 @@ public class BalanceSimulator : AGameType
                 {
                     StartSimulation();
                 }
+                // The scene reloaded from the disk may point to another plan: the simulation keeps its own
+                else if (SimulationQueue.plan != null)
+                {
+                    _plan = SimulationQueue.plan;
+                }
 
                 if (SimulationQueue.isRunning)
                 {
@@ -92,7 +98,7 @@ public class BalanceSimulator : AGameType
         List<SimulationJob> jobs = _plan.BuildJobs(DataManager.instance.data);
         string runId = System.DateTime.Now.ToString("yyyyMMdd-HHmmss");
         string path = Path.Combine(Path.GetDirectoryName(CombatLogFile.defaultPath), $"sim-{_plan.name}-{runId}.jsonl");
-        SimulationQueue.Start(jobs, path, runId);
+        SimulationQueue.Start(_plan, jobs, path, runId);
         Debug.Log($"[BalanceSimulator] {_plan.name}: {jobs.Count} fights to simulate, written to {path}");
     }
 
@@ -122,9 +128,13 @@ public class BalanceSimulator : AGameType
             character = job.character.title,
         };
 
-        GridManager grid = PlayerBehaviour.instance.grid;
-        _bot = new HealerBot(job.bot, character, _entities, grid.GetCellCenterFromCoord(new Vector2Int(_plan.frontColumn + 1, grid.height / 2)));
-        stats.bot = job.bot.name;
+        // Without bot (a fixed team), the character casts nothing
+        if (job.bot != null)
+        {
+            GridManager grid = PlayerBehaviour.instance.grid;
+            _bot = new HealerBot(job.bot, character, _entities, grid.GetCellCenterFromCoord(new Vector2Int(_plan.frontColumn + 1, grid.height / 2)));
+            stats.bot = job.bot.name;
+        }
 
         Time.timeScale = _plan.timeScale;
         // A slow frame (scene load) must not jump the fight forward by seconds once sped up: one frame never
@@ -137,6 +147,7 @@ public class BalanceSimulator : AGameType
         _recorder = new CombatRecorder(stats, () => Time.time, character.mana);
         ForEachEntity(_recorder.AddUnit);
         _startTime = Time.time;
+        _maxDuration = _plan.GetMaxDuration(job.roomType);
     }
 
     // The tanks closest to the enemies, then the supports, then the damage dealers, each with its items
@@ -150,6 +161,10 @@ public class BalanceSimulator : AGameType
             if (unit != null)
             {
                 placed[cell.Key] = unit.GetComponent<Entity>();
+                if (_plan.fixedTeam != null && _plan.fixedTeamNeverDies)
+                {
+                    placed[cell.Key].AddDeathPrevention(KeepAlive);
+                }
             }
         }
 
@@ -162,13 +177,20 @@ public class BalanceSimulator : AGameType
         }
     }
 
+    // Back to full health instead of dying: the hit is still counted whole in the damage taken
+    public static bool KeepAlive(Entity dying)
+    {
+        dying.health.SetValue(dying.health.Max);
+        return true;
+    }
+
     void UpdateFight()
     {
         _bot?.Update(Time.time);
 
         bool won = _entities.AreAllEntityDead(Entity.EntityType.Computer);
         bool lost = _entities.AreAllEntityDead(Entity.EntityType.Player);
-        bool timedOut = Time.time - _startTime >= _plan.maxDuration;
+        bool timedOut = Time.time - _startTime >= _maxDuration;
         if (!won && !lost && !timedOut)
         {
             return;
@@ -256,8 +278,8 @@ public class BalanceSimulator : AGameType
         string text = _state == State.Done
             ? $"Simulation done: {SimulationQueue.count} fights\n{SimulationQueue.outputPath}"
             : $"Fight {SimulationQueue.index + 1}/{SimulationQueue.count}"
-                + (SimulationQueue.current != null ? $"\n{SimulationQueue.current.bot.name} ({SimulationQueue.current.character.title}), floor {SimulationQueue.current.floor}, {SimulationQueue.current.wave.name}, seed {SimulationQueue.current.seed}" : "")
-                + $"\n{Time.time - _startTime:0}s / {_plan.maxDuration:0}s (x{_plan.timeScale:0.#})";
+                + (SimulationQueue.current != null ? $"\n{(SimulationQueue.current.bot != null ? SimulationQueue.current.bot.name : "No bot")} ({SimulationQueue.current.character.title}), floor {SimulationQueue.current.floor}, {SimulationQueue.current.wave.name}, seed {SimulationQueue.current.seed}" : "")
+                + $"\n{Time.time - _startTime:0}s / {_maxDuration:0}s (x{_plan.timeScale:0.#})";
         GUI.Label(new Rect(10f, 10f, 600f, 60f), text);
     }
 

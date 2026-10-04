@@ -68,6 +68,39 @@ public class ReferenceTeamTests
 
         Assert.AreEqual("Floor 3, 2 rewards: Knight [Iron Shield], Archer | Player items: Tome", team.Describe());
     }
+
+    WavePatternData CreateWave(params EntityData[] units)
+    {
+        WavePatternData wave = ScriptableObject.CreateInstance<WavePatternData>();
+        wave.slots = new EntitySlot[2, 3];
+        for (int i = 0; i < units.Length; i++)
+        {
+            wave.slots[i % 2, i / 2].entity = units[i];
+        }
+        _created.Add(wave);
+        return wave;
+    }
+
+    [Test]
+    public void FromWave_EveryUnitOfTheWave_WithoutReward()
+    {
+        EntityData bag = CreateUnit("Punching Bag");
+        EntityData knight = CreateUnit("Knight");
+
+        ReferenceTeam team = ReferenceTeam.FromWave(CreateWave(bag, null, knight, bag));
+
+        CollectionAssert.AreEquivalent(new[] { bag, knight, bag }, team.units);
+        Assert.AreEqual(0, team.floor);
+        Assert.AreEqual(0, team.rewardCount);
+        Assert.IsEmpty(team.unitItems);
+        Assert.IsEmpty(team.playerItems);
+    }
+
+    [Test]
+    public void FromWave_NoWave_EmptyTeam()
+    {
+        Assert.IsEmpty(ReferenceTeam.FromWave(null).units);
+    }
 }
 
 }

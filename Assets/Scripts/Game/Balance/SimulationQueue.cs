@@ -7,6 +7,8 @@ public static class SimulationQueue
     static List<SimulationJob> _jobs = new List<SimulationJob>();
     static int _next;
 
+    // The plan the fights were built from, kept for the scenes reloaded between two fights
+    public static SimulationPlan plan { get; private set; }
     public static string outputPath { get; private set; }
     public static string runId { get; private set; }
     public static bool isRunning => _next < _jobs.Count;
@@ -15,8 +17,9 @@ public static class SimulationQueue
     public static int index => _next;
     public static SimulationJob current => isRunning ? _jobs[_next] : null;
 
-    public static void Start(List<SimulationJob> jobs, string path, string id)
+    public static void Start(SimulationPlan simulationPlan, List<SimulationJob> jobs, string path, string id)
     {
+        plan = simulationPlan;
         _jobs = new List<SimulationJob>(jobs);
         _next = 0;
         outputPath = path;
@@ -35,6 +38,7 @@ public static class SimulationQueue
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     public static void Clear()
     {
+        plan = null;
         _jobs.Clear();
         _next = 0;
     }

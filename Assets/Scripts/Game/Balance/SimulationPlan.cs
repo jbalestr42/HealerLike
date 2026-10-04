@@ -15,10 +15,23 @@ public class SimulationPlan : ScriptableObject
     // Map the reference teams are built on (rewards along a path)
     public MapGenerationSettings mapSettings;
 
+    [Header("Fixed team")]
+    // When set, the bots, the floors and the reference teams aren't used: every wave fights the units of this
+    // wave placed like a team, next to fixedTeamCharacter casting nothing (e.g. punching bags to measure the
+    // damage of the waves)
+    public WavePatternData fixedTeam;
+    // Without item nor skill, so it changes nothing in the fight
+    public CharacterData fixedTeamCharacter;
+    // Its units come back to full health instead of dying, so the fight lasts the whole max duration (the
+    // damage of the waves) or until the wave dies (their robustness)
+    public bool fixedTeamNeverDies = true;
+
     [Header("Fight")]
     [Min(0.1f)] public float timeScale = 10f;
     // Game time after which a fight is stopped and counted as lost
     [Min(1f)] public float maxDuration = 180f;
+    // The same for an elite or a boss
+    [Min(1f)] public float eliteMaxDuration = 180f;
 
     [Header("Formation")]
     // Grid column of the units closest to the enemies (the tanks), the next columns going left
@@ -32,8 +45,18 @@ public class SimulationPlan : ScriptableObject
         return waves.Count > 0 ? all.FindAll(simulated => waves.Contains(simulated.wave)) : all;
     }
 
+    public float GetMaxDuration(MapNodeType roomType)
+    {
+        return roomType == MapNodeType.Elite || roomType == MapNodeType.Boss ? eliteMaxDuration : maxDuration;
+    }
+
     public List<SimulationJob> BuildJobs(GameData data)
     {
+        if (fixedTeam != null)
+        {
+            return SimulationJobBuilder.BuildForFixedTeam(fixedTeamCharacter, ReferenceTeam.FromWave(fixedTeam), GetWaves(data), seedCount);
+        }
+
         return SimulationJobBuilder.Build(healerBots, GetWaves(data), floors, seedCount,
             (character, seed) => ReferenceTeamGenerator.GenerateRun(mapSettings, character.entities, RewardPools.Create(data, character), seed));
     }

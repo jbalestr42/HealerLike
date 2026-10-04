@@ -29,9 +29,28 @@ public static class SimulationJobBuilder
 
                     foreach (SimulatedWave wave in waves)
                     {
-                        jobs.Add(new SimulationJob { bot = bot, team = team, wave = wave.wave, roomType = wave.roomType, floor = floor, seed = seed });
+                        jobs.Add(new SimulationJob { bot = bot, character = bot.character, team = team, wave = wave.wave, roomType = wave.roomType, floor = floor, seed = seed });
                     }
                 }
+            }
+        }
+        return jobs;
+    }
+
+    // Every wave against the same team, for every seed, next to a character without bot
+    public static List<SimulationJob> BuildForFixedTeam(CharacterData character, ReferenceTeam team, IReadOnlyList<SimulatedWave> waves, int seedCount)
+    {
+        List<SimulationJob> jobs = new List<SimulationJob>();
+        if (character == null || team == null)
+        {
+            return jobs;
+        }
+
+        for (int seed = 1; seed <= seedCount; seed++)
+        {
+            foreach (SimulatedWave wave in waves)
+            {
+                jobs.Add(new SimulationJob { character = character, team = team, wave = wave.wave, roomType = wave.roomType, floor = team.floor, seed = seed });
             }
         }
         return jobs;

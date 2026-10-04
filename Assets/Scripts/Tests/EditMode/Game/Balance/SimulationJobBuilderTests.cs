@@ -164,6 +164,35 @@ public class SimulationJobBuilderTests
         Assert.IsTrue(waves.Exists(wave => wave.roomType == MapNodeType.Elite));
         Assert.IsTrue(waves.Exists(wave => wave.roomType == MapNodeType.Boss));
     }
+
+    [Test]
+    public void BuildForFixedTeam_EveryWaveForEverySeed_WithoutBot()
+    {
+        CharacterData character = Create<CharacterData>("Balance");
+        ReferenceTeam team = new ReferenceTeam();
+        WavePatternData crypt = Create<WavePatternData>("Wave_Crypt");
+        WavePatternData bastion = Create<WavePatternData>("Wave_Elite_Bastion");
+        List<SimulatedWave> waves = new List<SimulatedWave>
+        {
+            new SimulatedWave { wave = crypt, roomType = MapNodeType.Combat },
+            new SimulatedWave { wave = bastion, roomType = MapNodeType.Elite },
+        };
+
+        List<SimulationJob> jobs = SimulationJobBuilder.BuildForFixedTeam(character, team, waves, 3);
+
+        // 3 seeds x 2 waves
+        Assert.AreEqual(6, jobs.Count);
+        Assert.IsTrue(jobs.TrueForAll(job => job.bot == null && job.character == character && job.team == team));
+        Assert.IsNotNull(jobs.Find(job => job.wave == bastion && job.roomType == MapNodeType.Elite && job.seed == 3));
+    }
+
+    [Test]
+    public void BuildForFixedTeam_NoCharacter_None()
+    {
+        List<SimulatedWave> waves = new List<SimulatedWave> { new SimulatedWave { wave = Create<WavePatternData>("Wave") } };
+
+        Assert.IsEmpty(SimulationJobBuilder.BuildForFixedTeam(null, new ReferenceTeam(), waves, 1));
+    }
 }
 
 }

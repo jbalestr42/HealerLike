@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Game.Balance
 {
@@ -17,7 +18,7 @@ public class SimulationQueueTests
     {
         SimulationJob first = new SimulationJob { floor = 1 };
 
-        SimulationQueue.Start(new List<SimulationJob> { first, new SimulationJob { floor = 2 } }, "path", "run");
+        SimulationQueue.Start(null, new List<SimulationJob> { first, new SimulationJob { floor = 2 } }, "path", "run");
 
         Assert.IsTrue(SimulationQueue.isRunning);
         Assert.AreSame(first, SimulationQueue.current);
@@ -31,7 +32,7 @@ public class SimulationQueueTests
     public void Advance_PastTheLastFight_NotRunningAnymoreButKeepsTheCount()
     {
         SimulationJob second = new SimulationJob { floor = 2 };
-        SimulationQueue.Start(new List<SimulationJob> { new SimulationJob(), second }, "path", "run");
+        SimulationQueue.Start(null, new List<SimulationJob> { new SimulationJob(), second }, "path", "run");
 
         SimulationQueue.Advance();
         Assert.AreSame(second, SimulationQueue.current);
@@ -49,16 +50,29 @@ public class SimulationQueueTests
     {
         List<SimulationJob> jobs = new List<SimulationJob> { new SimulationJob() };
 
-        SimulationQueue.Start(jobs, "path", "run");
+        SimulationQueue.Start(null, jobs, "path", "run");
         jobs.Add(new SimulationJob());
 
         Assert.AreEqual(1, SimulationQueue.count);
     }
 
     [Test]
+    public void Start_KeepsThePlanUntilCleared()
+    {
+        SimulationPlan plan = ScriptableObject.CreateInstance<SimulationPlan>();
+
+        SimulationQueue.Start(plan, new List<SimulationJob> { new SimulationJob() }, "path", "run");
+        Assert.AreSame(plan, SimulationQueue.plan);
+        SimulationQueue.Clear();
+
+        Assert.IsNull(SimulationQueue.plan);
+        Object.DestroyImmediate(plan);
+    }
+
+    [Test]
     public void Clear_NothingLeft()
     {
-        SimulationQueue.Start(new List<SimulationJob> { new SimulationJob() }, "path", "run");
+        SimulationQueue.Start(null, new List<SimulationJob> { new SimulationJob() }, "path", "run");
 
         SimulationQueue.Clear();
 

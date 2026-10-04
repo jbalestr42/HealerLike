@@ -79,6 +79,9 @@ public class CombatStats
     public float manaSpentShare => manaMax > 0f ? manaSpent / manaMax : 0f;
     public float manaEndShare => manaMax > 0f ? manaEnd / manaMax : 0f;
     public float allyHealthLostShare => allyHealthMax > 0f ? (allyHealthStart - allyHealthEnd) / allyHealthMax : 0f;
+    // Damage per second dealt by the enemies to the allies, on the whole fight and at its peak
+    public float enemyDps => duration > 0f ? allyDamageTaken / duration : 0f;
+    public float enemyPeakDps => allyPeakDamage / PeakWindow;
 
     public void Start(float time, float mana, float maxMana)
     {

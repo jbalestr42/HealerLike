@@ -81,6 +81,40 @@ public class SimulationPlanTests
         Assert.AreEqual(0, jobs.Find(job => job.floor == 0).team.rewardCount);
         Assert.Greater(jobs.Find(job => job.floor == 6).team.rewardCount, 0);
     }
+
+    [Test]
+    public void BuildJobs_FixedTeam_EveryWaveAgainstItsUnits_InsteadOfTheBots()
+    {
+        EntityData bag = ScriptableObject.CreateInstance<EntityData>();
+        WavePatternData bags = ScriptableObject.CreateInstance<WavePatternData>();
+        bags.slots = new EntitySlot[1, 2];
+        bags.slots[0, 0].entity = bag;
+        bags.slots[0, 1].entity = bag;
+        CharacterData character = ScriptableObject.CreateInstance<CharacterData>();
+        _plan.fixedTeam = bags;
+        _plan.fixedTeamCharacter = character;
+        _plan.seedCount = 2;
+
+        List<SimulationJob> jobs = _plan.BuildJobs(_data);
+
+        // 2 seeds x every wave, whatever the floors
+        Assert.AreEqual(2 * SimulationJobBuilder.GetWaves(_data).Count, jobs.Count);
+        Assert.IsTrue(jobs.TrueForAll(job => job.bot == null && job.character == character && job.team.units.Count == 2));
+        Object.DestroyImmediate(bag);
+        Object.DestroyImmediate(bags);
+        Object.DestroyImmediate(character);
+    }
+
+    [Test]
+    public void GetMaxDuration_LongerForAnEliteOrABoss()
+    {
+        _plan.maxDuration = 30f;
+        _plan.eliteMaxDuration = 60f;
+
+        Assert.AreEqual(30f, _plan.GetMaxDuration(MapNodeType.Combat));
+        Assert.AreEqual(60f, _plan.GetMaxDuration(MapNodeType.Elite));
+        Assert.AreEqual(60f, _plan.GetMaxDuration(MapNodeType.Boss));
+    }
 }
 
 }

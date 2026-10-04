@@ -150,6 +150,21 @@ public class CombatStatsTests
     }
 
     [Test]
+    public void EnemyDps_IsTheDamageTakenByTheAlliesPerSecondOfTheFight()
+    {
+        CombatStats stats = new CombatStats { allyDamageTaken = 600f, duration = 30f, allyPeakDamage = 90f };
+
+        Assert.AreEqual(20f, stats.enemyDps, 0.001f);
+        Assert.AreEqual(90f / CombatStats.PeakWindow, stats.enemyPeakDps, 0.001f);
+    }
+
+    [Test]
+    public void EnemyDps_NoDuration_IsZero()
+    {
+        Assert.AreEqual(0f, new CombatStats { allyDamageTaken = 600f }.enemyDps);
+    }
+
+    [Test]
     public void GetPeakDamage_NoDamage_IsZero()
     {
         Assert.AreEqual(0f, CombatStats.GetPeakDamage(new List<CombatStats.DamageEvent>(), 3f));
