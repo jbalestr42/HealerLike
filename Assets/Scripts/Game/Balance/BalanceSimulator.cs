@@ -15,6 +15,9 @@ public class BalanceSimulator : AGameType
         Done,
     }
 
+    // Unity's default for Time.maximumDeltaTime
+    const float DefaultMaximumDeltaTime = 0.3333333f;
+
     [SerializeField] SimulationPlan _plan;
 
     State _state = State.WaitForManagers;
@@ -95,6 +98,10 @@ public class BalanceSimulator : AGameType
 
     void StartFight(SimulationJob job)
     {
+        // The chance (critical hits, projectile angles) drawn from the seed of the fight: a fight played again
+        // gives the same result
+        Random.InitState(job.seed);
+
         PlayerBehaviour.instance.Init(job.character);
         Character character = PlayerBehaviour.instance.character;
         foreach (AItemFactory item in job.team.playerItems)
@@ -120,6 +127,9 @@ public class BalanceSimulator : AGameType
         stats.bot = job.bot.name;
 
         Time.timeScale = _plan.timeScale;
+        // A slow frame (scene load) must not jump the fight forward by seconds once sped up: one frame never
+        // lasts more than at normal speed
+        Time.maximumDeltaTime = DefaultMaximumDeltaTime / _plan.timeScale;
         AscensionGameType.OnRoundStart.Invoke();
         EnableAllEntities(true);
         AscensionGameType.OnBattleStart.Invoke();
@@ -202,6 +212,7 @@ public class BalanceSimulator : AGameType
     void EndSimulation()
     {
         Time.timeScale = 1f;
+        Time.maximumDeltaTime = DefaultMaximumDeltaTime;
         if (_state != State.Done)
         {
             Debug.Log($"[BalanceSimulator] Done: {SimulationQueue.count} fights written to {SimulationQueue.outputPath}");

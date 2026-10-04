@@ -154,6 +154,37 @@ public class HealerBotBrainTests
         Assert.AreEqual(-1, HealerBotBrain.PickTarget(HealerBotTarget.None, new List<BotUnit> { Unit(10f) }, dead));
         Assert.AreEqual(-1, HealerBotBrain.PickTarget(HealerBotTarget.FrontCell, new List<BotUnit> { Unit(10f) }, dead));
     }
+
+    // Decisions taken over 10s with a 0.25s interval, the bot being updated every deltaTime
+    static int CountDecisions(float deltaTime)
+    {
+        int decisions = 0;
+        float next = 0f;
+        for (float time = 0f; time < 10f - 0.0001f; time += deltaTime)
+        {
+            if (time >= next)
+            {
+                decisions++;
+                next = HealerBotBrain.GetNextDecisionTime(next, time, 0.25f);
+            }
+        }
+        return decisions;
+    }
+
+    [Test]
+    public void Decisions_AsManyWithLongUpdatesAsWithShortOnes()
+    {
+        Assert.AreEqual(40, CountDecisions(0.03125f));
+        Assert.AreEqual(40, CountDecisions(0.125f));
+        Assert.AreEqual(40, CountDecisions(0.15625f));
+    }
+
+    [Test]
+    public void NextDecision_FarBehind_DoesNotPileUpTheMissedOnes()
+    {
+        Assert.AreEqual(5f, HealerBotBrain.GetNextDecisionTime(1f, 5f, 0.25f));
+        Assert.AreEqual(1.25f, HealerBotBrain.GetNextDecisionTime(1f, 1.1f, 0.25f));
+    }
 }
 
 }

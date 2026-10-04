@@ -55,7 +55,7 @@ public class HealerBot
         {
             return;
         }
-        _nextDecisionTime = time + _profile.decisionInterval;
+        _nextDecisionTime = HealerBotBrain.GetNextDecisionTime(_nextDecisionTime, time, _profile.decisionInterval);
 
         List<Entity> allies = GetLiving(Entity.EntityType.Player);
         List<Entity> enemies = GetLiving(Entity.EntityType.Computer);

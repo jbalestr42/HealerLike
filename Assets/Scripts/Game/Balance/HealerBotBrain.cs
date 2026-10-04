@@ -16,6 +16,13 @@ public struct BotUnit
 // The decisions of the healer bot, without any scene object: the units are given by index
 public static class HealerBotBrain
 {
+    // Decisions keep their rhythm whatever the frame length (an update of 0.17s at x10 must not turn a 0.25s
+    // interval into 0.33s), without piling up the ones missed when the bot is far behind
+    public static float GetNextDecisionTime(float previous, float time, float interval)
+    {
+        return Mathf.Max(previous + interval, time);
+    }
+
     public static bool AreMet(IReadOnlyList<HealerBotCondition> conditions, IReadOnlyList<BotUnit> allies, float manaPercent)
     {
         foreach (HealerBotCondition condition in conditions)
