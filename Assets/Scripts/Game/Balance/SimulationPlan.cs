@@ -17,14 +17,11 @@ public class SimulationPlan : ScriptableObject
 
     [Header("Fixed team")]
     // When set, the bots, the floors and the reference teams aren't used: every wave fights the units of this
-    // wave placed like a team, next to fixedTeamCharacter casting nothing (e.g. punching bags to measure the
-    // damage of the waves)
+    // wave placed like a team, next to fixedTeamCharacter casting nothing (e.g. dummies to measure the damage
+    // of the waves). Units tagged Simulation never die
     public WavePatternData fixedTeam;
     // Without item nor skill, so it changes nothing in the fight
     public CharacterData fixedTeamCharacter;
-    // Its units come back to full health instead of dying, so the fight lasts the whole max duration (the
-    // damage of the waves) or until the wave dies (their robustness)
-    public bool fixedTeamNeverDies = true;
 
     [Header("Fight")]
     [Min(0.1f)] public float timeScale = 10f;
@@ -38,11 +35,26 @@ public class SimulationPlan : ScriptableObject
     public int frontColumn = 6;
     [Min(1)] public int rowsPerColumn = 5;
 
-    // The waves of the plan, each in the room type of its wave pool
+    // The waves of the plan, each in the room type of its wave pool. A listed wave in no pool (e.g. the dummies
+    // measuring a team) is played as a combat
     public List<SimulatedWave> GetWaves(GameData data)
     {
         List<SimulatedWave> all = SimulationJobBuilder.GetWaves(data);
-        return waves.Count > 0 ? all.FindAll(simulated => waves.Contains(simulated.wave)) : all;
+        if (waves.Count == 0)
+        {
+            return all;
+        }
+
+        List<SimulatedWave> listed = new List<SimulatedWave>();
+        foreach (WavePatternData wave in waves)
+        {
+            if (wave != null)
+            {
+                int pooled = all.FindIndex(simulated => simulated.wave == wave);
+                listed.Add(pooled >= 0 ? all[pooled] : new SimulatedWave { wave = wave, roomType = MapNodeType.Combat });
+            }
+        }
+        return listed;
     }
 
     public float GetMaxDuration(MapNodeType roomType)

@@ -159,6 +159,15 @@ public class CombatStatsTests
     }
 
     [Test]
+    public void AllyDps_IsTheDamageDealtToTheEnemiesPerSecondOfTheFight()
+    {
+        CombatStats stats = new CombatStats { enemyDamageTaken = 900f, duration = 30f };
+
+        Assert.AreEqual(30f, stats.allyDps, 0.001f);
+        Assert.AreEqual(0f, new CombatStats { enemyDamageTaken = 900f }.allyDps);
+    }
+
+    [Test]
     public void EnemyDps_NoDuration_IsZero()
     {
         Assert.AreEqual(0f, new CombatStats { allyDamageTaken = 600f }.enemyDps);

@@ -82,6 +82,8 @@ public class CombatStats
     // Damage per second dealt by the enemies to the allies, on the whole fight and at its peak
     public float enemyDps => duration > 0f ? allyDamageTaken / duration : 0f;
     public float enemyPeakDps => allyPeakDamage / PeakWindow;
+    // Damage per second dealt by the allies to the enemies, the part above the health left included
+    public float allyDps => duration > 0f ? enemyDamageTaken / duration : 0f;
 
     public void Start(float time, float mana, float maxMana)
     {

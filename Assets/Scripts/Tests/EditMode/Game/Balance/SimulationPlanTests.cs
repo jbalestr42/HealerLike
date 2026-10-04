@@ -106,6 +106,19 @@ public class SimulationPlanTests
     }
 
     [Test]
+    public void GetWaves_AListedWaveInNoPool_PlayedAsACombat()
+    {
+        WavePatternData dummies = ScriptableObject.CreateInstance<WavePatternData>();
+        _plan.waves = new List<WavePatternData> { dummies };
+
+        List<SimulatedWave> waves = _plan.GetWaves(_data);
+
+        Object.DestroyImmediate(dummies);
+        Assert.AreEqual(1, waves.Count);
+        Assert.AreEqual(MapNodeType.Combat, waves[0].roomType);
+    }
+
+    [Test]
     public void GetMaxDuration_LongerForAnEliteOrABoss()
     {
         _plan.maxDuration = 30f;

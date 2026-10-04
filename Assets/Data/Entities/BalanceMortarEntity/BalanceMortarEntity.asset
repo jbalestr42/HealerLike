@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 200499978037cc34d93ebc9c76414b0c, type: 3}
-  m_Name: BalanceDummyEntity
+  m_Name: BalanceMortarEntity
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -38,7 +38,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 5
+      Data: 4
     - Name: 
       Entry: 7
       Data: 
@@ -59,7 +59,7 @@ MonoBehaviour:
       Data: 1
     - Name: $v
       Entry: 4
-      Data: 2
+      Data: 3
     - Name: 
       Entry: 8
       Data: 
@@ -71,7 +71,7 @@ MonoBehaviour:
       Data: 2
     - Name: $v
       Entry: 4
-      Data: 4
+      Data: 12
     - Name: 
       Entry: 8
       Data: 
@@ -88,41 +88,29 @@ MonoBehaviour:
       Entry: 8
       Data: 
     - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 4
-    - Name: $v
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
       Entry: 13
       Data: 
     - Name: 
       Entry: 8
       Data: 
   model: {fileID: 873531700701352353, guid: 28d0a30d6aed6fc4c8ca473413f70c24, type: 3}
-  title: Balance Dummy
-  description: 'Balance tools only: doesn''t attack, has the health of a regular unit and no armor, and comes back to full health instead of dying in the fights measuring the waves'
+  title: Balance Mortar
+  description: 'Balance tools only, never dies: slow lobbed shots exploding in an area, at the farthest enemy'
   attributes:
   - key: 0
     value: 100
   - key: 1
-    value: 2
+    value: 3
   - key: 2
-    value: 4
+    value: 12
   - key: 3
     value: 100
-  - key: 4
-    value: 0
-  targetBehaviourType: 1
+  targetBehaviourType: 5
   targetValidators: []
   tags:
-  - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}
   - {fileID: 11400000, guid: be9c6084f0f587e418806bd83d4ab2fd, type: 2}
-  items: []
-  skillFactories: []
+  - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
+  items:
+  - {fileID: 11400000, guid: 822b3e08c0ef48a1b9bf204ea247fbde, type: 2}
+  skillFactories:
+  - {fileID: 11400000, guid: 6ad287f4967b4799870cc11657c15a2b, type: 2}

@@ -123,6 +123,7 @@ MonoBehaviour:
   targetValidators: []
   tags:
   - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}
+  - {fileID: 11400000, guid: be9c6084f0f587e418806bd83d4ab2fd, type: 2}
   items:
   - {fileID: 11400000, guid: a3b1a56dd8ff5cb49b368adee65f3afb, type: 2}
   skillFactories: []

@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Game.Balance
 {
@@ -21,6 +22,23 @@ public class BalanceSimulatorTests
 
         Assert.IsTrue(dying.TryPreventDeath());
         Assert.AreEqual(100f, dying.health.Value);
+    }
+
+    [Test]
+    public void KeepAliveIfSimulation_OnlyTheUnitsTaggedSimulation()
+    {
+        GameplayTag simulation = ScriptableObject.CreateInstance<GameplayTag>();
+        simulation.name = TagNames.Simulation;
+        Entity dummy = _units.Create(0f, 100f, "Dummy");
+        dummy.AddTag(simulation);
+        Entity unit = _units.Create(0f, 100f, "Unit");
+
+        BalanceSimulator.KeepAliveIfSimulation(dummy);
+        BalanceSimulator.KeepAliveIfSimulation(unit);
+
+        Assert.IsTrue(dummy.TryPreventDeath());
+        Assert.IsFalse(unit.TryPreventDeath());
+        Object.DestroyImmediate(simulation);
     }
 
     [Test]

@@ -25,4 +25,7 @@ public static class TagNames
     public const string Damage = "Damage";
     // Units and items healing or strengthening the allies
     public const string Support = "Support";
+    // Units and items only made for the balance simulations (dummies, the team measuring the waves), never met
+    // in a run
+    public const string Simulation = "Simulation";
 }

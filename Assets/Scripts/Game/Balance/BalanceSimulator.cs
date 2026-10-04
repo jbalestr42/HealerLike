@@ -117,6 +117,7 @@ public class BalanceSimulator : AGameType
 
         PlaceTeam(job.team);
         _entities.SpawnWave(job.wave, transform.position, Entity.EntityType.Computer);
+        ForEachEntity(KeepAliveIfSimulation);
 
         CombatStats stats = new CombatStats
         {
@@ -161,10 +162,6 @@ public class BalanceSimulator : AGameType
             if (unit != null)
             {
                 placed[cell.Key] = unit.GetComponent<Entity>();
-                if (_plan.fixedTeam != null && _plan.fixedTeamNeverDies)
-                {
-                    placed[cell.Key].AddDeathPrevention(KeepAlive);
-                }
             }
         }
 
@@ -174,6 +171,15 @@ public class BalanceSimulator : AGameType
             {
                 holder.inventoryHandler.AddItem(unitItem.item.GetItem(), holder.inventoryHandler.GetFirstFreeIndex());
             }
+        }
+    }
+
+    // The units made for the simulations (dummies, the team measuring the waves) never die, on either side
+    public static void KeepAliveIfSimulation(Entity entity)
+    {
+        if (entity.HasTag(TagNames.Simulation))
+        {
+            entity.AddDeathPrevention(KeepAlive);
         }
     }
 
