@@ -32,7 +32,7 @@ public class BalanceReportWindow : EditorWindow
     // Floors of the wave pools each wave is in, e.g. "Combat 0-2"
     Dictionary<string, string> _poolFloors = new Dictionary<string, string>();
     Tab _tab;
-    // 0 for every bot
+    // 0 for the average of all the characters
     int _botIndex;
     Vector2 _scroll;
     GUIStyle _cellStyle;
@@ -171,7 +171,7 @@ public class BalanceReportWindow : EditorWindow
         if (_tab == Tab.Waves && _report != null)
         {
             GUILayout.Space(10f);
-            string[] bots = new[] { "Every bot" }.Concat(_report.bots).ToArray();
+            string[] bots = new[] { "All characters (average)" }.Concat(_report.bots).ToArray();
             _botIndex = EditorGUILayout.Popup(_botIndex, bots, EditorStyles.toolbarPopup, GUILayout.Width(180f));
         }
         GUILayout.FlexibleSpace();
