@@ -18,6 +18,10 @@ public class BalanceSimulator : AGameType
     // Unity's default for Time.maximumDeltaTime
     const float DefaultMaximumDeltaTime = 0.3333333f;
 
+    // Folder of the next simulation, each plan written to <plan>.jsonl in it (e.g. the folder of a wave score
+    // measure). Null for a balance simulation: Logs/Balance/sim-<plan>-<run>.jsonl
+    public static string outputFolder;
+
     [SerializeField] SimulationPlan _plan;
 
     State _state = State.WaitForManagers;
@@ -97,9 +101,18 @@ public class BalanceSimulator : AGameType
     {
         List<SimulationJob> jobs = _plan.BuildJobs(DataManager.instance.data);
         string runId = System.DateTime.Now.ToString("yyyyMMdd-HHmmss");
-        string path = Path.Combine(Path.GetDirectoryName(CombatLogFile.defaultPath), $"sim-{_plan.name}-{runId}.jsonl");
+        string path = GetOutputPath(_plan.name, runId, outputFolder);
         SimulationQueue.Start(_plan, jobs, path, runId);
         Debug.Log($"[BalanceSimulator] {_plan.name}: {jobs.Count} fights to simulate, written to {path}");
+    }
+
+    public static string GetOutputPath(string planName, string runId, string folder)
+    {
+        if (string.IsNullOrEmpty(folder))
+        {
+            return Path.Combine(Path.GetDirectoryName(CombatLogFile.defaultPath), $"sim-{planName}-{runId}.jsonl");
+        }
+        return Path.Combine(folder, $"{planName}.jsonl");
     }
 
     void StartFight(SimulationJob job)

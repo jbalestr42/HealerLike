@@ -6,7 +6,7 @@ using UnityEngine;
 
 // Reads a simulation (Logs/Balance/sim-*.jsonl) and shows, for every wave on every floor, the mana spent against
 // the target of its room type and the defeats, the floors where it fits next to the floors of its wave pools,
-// and how each character copes per floor
+// and how each character copes per floor. The score measures of the waves and characters are apart (ScoreWindow)
 public class BalanceReportWindow : EditorWindow
 {
     enum Tab
@@ -71,33 +71,63 @@ public class BalanceReportWindow : EditorWindow
     }
 
     // From the game data of the managers, the one the game plays with
-    static Dictionary<string, string> LoadPoolFloors()
+    public static Dictionary<string, string> LoadPoolFloors()
     {
         Dictionary<string, string> poolFloors = new Dictionary<string, string>();
-        GameObject managers = AssetDatabase.LoadAssetAtPath<GameObject>(ManagersPrefabPath);
-        DataManager dataManager = managers != null ? managers.GetComponentInChildren<DataManager>() : null;
-        if (dataManager == null || dataManager.data == null)
+        foreach (KeyValuePair<string, List<GameData.WavePool>> wave in LoadWavePools())
         {
-            return poolFloors;
-        }
-
-        foreach (GameData.WavePool pool in dataManager.data.wavePools)
-        {
-            string floors = $"{pool.roomType} {(pool.minFloor == pool.maxFloor ? pool.minFloor.ToString() : $"{pool.minFloor}-{pool.maxFloor}")}";
-            foreach (WavePatternData wave in pool.wavePatterns)
-            {
-                if (wave != null)
-                {
-                    poolFloors[wave.name] = poolFloors.TryGetValue(wave.name, out string other) ? $"{other}, {floors}" : floors;
-                }
-            }
+            poolFloors[wave.Key] = string.Join(", ", wave.Value.ConvertAll(pool => $"{pool.roomType} {FormatPoolFloors(pool)}"));
         }
         return poolFloors;
     }
 
+    // The pools each wave is in, by wave name, from the game data of the managers
+    public static Dictionary<string, List<GameData.WavePool>> LoadWavePools()
+    {
+        Dictionary<string, List<GameData.WavePool>> wavePools = new Dictionary<string, List<GameData.WavePool>>();
+        GameObject managers = AssetDatabase.LoadAssetAtPath<GameObject>(ManagersPrefabPath);
+        DataManager dataManager = managers != null ? managers.GetComponentInChildren<DataManager>() : null;
+        if (dataManager == null || dataManager.data == null)
+        {
+            return wavePools;
+        }
+
+        foreach (GameData.WavePool pool in dataManager.data.wavePools)
+        {
+            foreach (WavePatternData wave in pool.wavePatterns)
+            {
+                if (wave == null)
+                {
+                    continue;
+                }
+                if (!wavePools.TryGetValue(wave.name, out List<GameData.WavePool> pools))
+                {
+                    pools = new List<GameData.WavePool>();
+                    wavePools[wave.name] = pools;
+                }
+                pools.Add(pool);
+            }
+        }
+        return wavePools;
+    }
+
+    // "3" or "2-5"
+    public static string FormatPoolFloors(GameData.WavePool pool)
+    {
+        return pool.minFloor == pool.maxFloor ? pool.minFloor.ToString() : $"{pool.minFloor}-{pool.maxFloor}";
+    }
+
     void OnGUI()
     {
-        _cellStyle ??= new GUIStyle(EditorStyles.miniLabel) { alignment = TextAnchor.MiddleCenter, normal = { textColor = Color.black } };
+        // Black on the colored cells in every state: the hover one of the skin turns it white
+        _cellStyle ??= new GUIStyle(EditorStyles.miniLabel)
+        {
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = Color.black },
+            hover = { textColor = Color.black },
+            active = { textColor = Color.black },
+            focused = { textColor = Color.black },
+        };
 
         DrawToolbar();
         if (_report == null)
@@ -129,7 +159,8 @@ public class BalanceReportWindow : EditorWindow
             fileIndex = _fileIndex;
             _report = null;
         }
-        if (fileIndex != _fileIndex || _report == null)
+        // Without any simulation, nothing to load again on every repaint
+        if (fileIndex != _fileIndex || (_report == null && _fileIndex < _files.Count))
         {
             _fileIndex = fileIndex;
             Load();

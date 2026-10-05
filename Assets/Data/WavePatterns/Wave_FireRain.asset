@@ -25,7 +25,7 @@ MonoBehaviour:
     SerializationNodes:
     - Name: slots
       Entry: 7
-      Data: 0|EntitySlot[,], Assembly-CSharp
+      Data: 0|EntitySlot[,], HealerLike.Runtime
     - Name: 
       Entry: 12
       Data: 6
@@ -34,7 +34,7 @@ MonoBehaviour:
       Data: 2|3
     - Name: 
       Entry: 7
-      Data: EntitySlot, Assembly-CSharp
+      Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 10
       Data: 0
@@ -43,7 +43,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 7
-      Data: EntitySlot, Assembly-CSharp
+      Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 10
       Data: 1
@@ -52,7 +52,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 7
-      Data: EntitySlot, Assembly-CSharp
+      Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 10
       Data: 0
@@ -61,7 +61,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 7
-      Data: EntitySlot, Assembly-CSharp
+      Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 6
       Data: 
@@ -70,7 +70,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 7
-      Data: EntitySlot, Assembly-CSharp
+      Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 10
       Data: 0
@@ -79,7 +79,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 7
-      Data: EntitySlot, Assembly-CSharp
+      Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 6
       Data: 
@@ -94,3 +94,11 @@ MonoBehaviour:
       Data: 
   width: 2
   height: 3
+  score:
+    dps: 15.089267
+    peakDps: 20
+    survivalTime: 14.37294
+    effectiveHealth: 576.9084
+    threat: 216.87712
+    timedOut: 0
+    fingerprint: dab8336da8ef337537a3674e242b04b0

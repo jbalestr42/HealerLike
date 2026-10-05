@@ -15,6 +15,16 @@ public class BalanceSimulatorTests
     }
 
     [Test]
+    public void OutputPath_BalanceSimulationInTheBalanceLogs_MeasureInItsOwnFolder()
+    {
+        string balance = BalanceSimulator.GetOutputPath("QuickTest", "20261005-100000", null);
+        Assert.AreEqual(System.IO.Path.GetDirectoryName(CombatLogFile.defaultPath), System.IO.Path.GetDirectoryName(balance));
+        Assert.AreEqual("sim-QuickTest-20261005-100000.jsonl", System.IO.Path.GetFileName(balance));
+
+        Assert.AreEqual(System.IO.Path.Combine("Measures", "20261005", "WaveDps.jsonl"), BalanceSimulator.GetOutputPath("WaveDps", "20261005-100000", System.IO.Path.Combine("Measures", "20261005")));
+    }
+
+    [Test]
     public void KeepAlive_PreventsTheDeath_AndRefillsTheHealth()
     {
         Entity dying = _units.Create(0f, 100f, "Dummy");

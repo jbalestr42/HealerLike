@@ -23,6 +23,13 @@ public class SimulationPlan : ScriptableObject
     // Without item nor skill, so it changes nothing in the fight
     public CharacterData fixedTeamCharacter;
 
+    [Header("Initial teams")]
+    // When set (and no fixed team), the floors and the reference teams aren't used: every wave fights the starting
+    // units of the character of each bot, as a run starts (e.g. to score the characters)
+    public bool initialTeams;
+    // Whether the bots cast their skills in the fights of the initial teams
+    public bool castSpells = true;
+
     [Header("Fight")]
     [Min(0.1f)] public float timeScale = 10f;
     // Game time after which a fight is stopped and counted as lost
@@ -67,6 +74,10 @@ public class SimulationPlan : ScriptableObject
         if (fixedTeam != null)
         {
             return SimulationJobBuilder.BuildForFixedTeam(fixedTeamCharacter, ReferenceTeam.FromWave(fixedTeam), GetWaves(data), seedCount);
+        }
+        if (initialTeams)
+        {
+            return SimulationJobBuilder.BuildForInitialTeams(healerBots, GetWaves(data), seedCount, castSpells);
         }
 
         return SimulationJobBuilder.Build(healerBots, GetWaves(data), floors, seedCount,

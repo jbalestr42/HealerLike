@@ -83,6 +83,23 @@ public class SimulationPlanTests
     }
 
     [Test]
+    public void BuildJobs_InitialTeams_TheStartingUnitsOfTheBots_InsteadOfTheFloors()
+    {
+        WavePatternData attackers = AssetDatabase.LoadAssetAtPath<WavePatternData>("Assets/Data/Balance/Wave_Balance_Attackers.asset");
+        _plan.waves = new List<WavePatternData> { attackers };
+        _plan.initialTeams = true;
+        _plan.castSpells = false;
+        _plan.seedCount = 2;
+
+        List<SimulationJob> jobs = _plan.BuildJobs(_data);
+
+        // 1 bot x 2 seeds x 1 wave, whatever the floors
+        Assert.AreEqual(2, jobs.Count);
+        Assert.IsTrue(jobs.TrueForAll(job => job.bot == null && job.character == _bot.character && job.wave == attackers && job.floor == 0));
+        CollectionAssert.AreEqual(_bot.character.entities, jobs[0].team.units);
+    }
+
+    [Test]
     public void BuildJobs_FixedTeam_EveryWaveAgainstItsUnits_InsteadOfTheBots()
     {
         EntityData bag = ScriptableObject.CreateInstance<EntityData>();

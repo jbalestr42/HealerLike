@@ -37,6 +37,31 @@ public static class SimulationJobBuilder
         return jobs;
     }
 
+    // Every wave against the starting units of the character of every bot (its state when a run starts: no reward,
+    // its own items and skills), for every seed. Without castSpells the character casts nothing. A bot without
+    // character is skipped
+    public static List<SimulationJob> BuildForInitialTeams(IReadOnlyList<HealerBotProfile> bots, IReadOnlyList<SimulatedWave> waves, int seedCount, bool castSpells)
+    {
+        List<SimulationJob> jobs = new List<SimulationJob>();
+        foreach (HealerBotProfile bot in bots)
+        {
+            if (bot == null || bot.character == null)
+            {
+                continue;
+            }
+
+            ReferenceTeam team = new ReferenceTeam { units = bot.character.entities.FindAll(unit => unit != null) };
+            for (int seed = 1; seed <= seedCount; seed++)
+            {
+                foreach (SimulatedWave wave in waves)
+                {
+                    jobs.Add(new SimulationJob { bot = castSpells ? bot : null, character = bot.character, team = team, wave = wave.wave, roomType = wave.roomType, floor = 0, seed = seed });
+                }
+            }
+        }
+        return jobs;
+    }
+
     // Every wave against the same team, for every seed, next to a character without bot
     public static List<SimulationJob> BuildForFixedTeam(CharacterData character, ReferenceTeam team, IReadOnlyList<SimulatedWave> waves, int seedCount)
     {

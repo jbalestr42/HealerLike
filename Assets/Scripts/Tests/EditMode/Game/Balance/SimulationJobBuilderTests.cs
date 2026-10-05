@@ -64,6 +64,47 @@ public class SimulationJobBuilderTests
     }
 
     [Test]
+    public void BuildForInitialTeams_EveryWaveAgainstTheStartingUnitsOfEveryCharacter_ForEverySeed()
+    {
+        EntityData knight = Create<EntityData>("Knight");
+        EntityData archer = Create<EntityData>("Archer");
+        CharacterData cleric = Create<CharacterData>("Cleric");
+        cleric.entities = new List<EntityData> { knight, archer };
+        CharacterData druid = Create<CharacterData>("Druid");
+        druid.entities = new List<EntityData> { archer };
+        HealerBotProfile clericBot = CreateBot(cleric);
+        HealerBotProfile druidBot = CreateBot(druid);
+        List<SimulatedWave> waves = new List<SimulatedWave> { new SimulatedWave { wave = Create<WavePatternData>("Wave_Balance_Attackers"), roomType = MapNodeType.Combat } };
+
+        List<SimulationJob> jobs = SimulationJobBuilder.BuildForInitialTeams(new[] { clericBot, druidBot, CreateBot(null) }, waves, 2, true);
+
+        // 2 characters x 2 seeds x 1 wave, the bot without character skipped
+        Assert.AreEqual(4, jobs.Count);
+        List<SimulationJob> clericJobs = jobs.FindAll(job => job.character == cleric);
+        Assert.AreEqual(2, clericJobs.Count);
+        Assert.IsTrue(clericJobs.TrueForAll(job => job.bot == clericBot && job.floor == 0));
+        // As a run starts: the starting units, no reward
+        CollectionAssert.AreEqual(new[] { knight, archer }, clericJobs[0].team.units);
+        Assert.AreEqual(0, clericJobs[0].team.unitItems.Count);
+        Assert.AreEqual(0, clericJobs[0].team.playerItems.Count);
+        CollectionAssert.AreEqual(new[] { 1, 2 }, clericJobs.ConvertAll(job => job.seed));
+    }
+
+    [Test]
+    public void BuildForInitialTeams_WithoutSpells_TheCharacterCastsNothing()
+    {
+        CharacterData cleric = Create<CharacterData>("Cleric");
+        HealerBotProfile clericBot = CreateBot(cleric);
+        List<SimulatedWave> waves = new List<SimulatedWave> { new SimulatedWave { wave = Create<WavePatternData>("Wave_Balance_Dummies"), roomType = MapNodeType.Combat } };
+
+        List<SimulationJob> jobs = SimulationJobBuilder.BuildForInitialTeams(new[] { clericBot }, waves, 1, false);
+
+        Assert.AreEqual(1, jobs.Count);
+        Assert.IsNull(jobs[0].bot);
+        Assert.AreSame(cleric, jobs[0].character);
+    }
+
+    [Test]
     public void Build_EveryWaveOnEveryFloorForEveryBotAndSeed()
     {
         CharacterData cleric = Create<CharacterData>("Cleric");

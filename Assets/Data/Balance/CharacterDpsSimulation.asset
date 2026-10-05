@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3ee650f006871b42890f50bbe26e55e, type: 3}
+  m_Name: CharacterDpsSimulation
+  m_EditorClassIdentifier: HealerLike.Runtime::SimulationPlan
+  healerBots:
+  - {fileID: 11400000, guid: c014fb82df860c248badfe392f136e61, type: 2}
+  - {fileID: 11400000, guid: 3f94d2d3385ff86438ba9cb2c9030642, type: 2}
+  - {fileID: 11400000, guid: 7c648fa01a2e4344b82d476a756c644e, type: 2}
+  waves:
+  - {fileID: 11400000, guid: 1a85ff87415019e49b11104e944139a1, type: 2}
+  floors: 
+  seedCount: 3
+  mapSettings: {fileID: 0}
+  fixedTeam: {fileID: 0}
+  fixedTeamCharacter: {fileID: 0}
+  initialTeams: 1
+  castSpells: 0
+  timeScale: 20
+  maxDuration: 30
+  eliteMaxDuration: 30
+  frontColumn: 6
+  rowsPerColumn: 5
