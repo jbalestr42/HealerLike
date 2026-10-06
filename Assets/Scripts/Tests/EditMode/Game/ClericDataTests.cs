@@ -161,6 +161,24 @@ public class ClericDataTests
     }
 
     [Test]
+    public void Cleric_StartsWithFastShotBuffHitArmorBufferAndZealot()
+    {
+        List<string> titles = _cleric.entities.ConvertAll(entity => entity.title);
+
+        CollectionAssert.AreEqual(new[] { "Fast Shot", "Buff", "Hit Armor Buffer", "Zealot" }, titles);
+    }
+
+    // Normal left the Cleric: it is no longer among its rewards
+    [Test]
+    public void Normal_HasNoClericTag()
+    {
+        EntityData normal = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/NormalEntity/NormalEntity.asset");
+
+        Assert.IsNotNull(normal);
+        Assert.IsFalse(normal.HasTag(_cleric.classTag));
+    }
+
+    [Test]
     public void Cleric_RecruitsTheZealot()
     {
         Assert.IsTrue(_cleric.entities.Exists(entity => entity != null && entity.title == "Zealot"));

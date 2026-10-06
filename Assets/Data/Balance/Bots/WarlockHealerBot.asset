@@ -43,7 +43,3 @@ MonoBehaviour:
     conditions: []
     target: 4
     skipTargetsWithItsBuff: 1
-  - skill: {fileID: 11400000, guid: bc21290c7d8e85c48b00aa1a0fa6c199, type: 2}
-    conditions: []
-    target: 5
-    skipTargetsWithItsBuff: 0

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using Entities;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -6,7 +8,8 @@ using UnityEngine;
 namespace Game
 {
 
-// Checks the Warlock data: Drain Life, Raise Dead, Curse, Dark Pact and Soul Link, and the Blood Cultist unit
+// Checks the Warlock data: Drain Life, Curse, Dark Pact and Soul Link, its starting units, and the Blood
+// Cultist, Pact Bearer and Hex Weaver units
 public class WarlockDataTests
 {
     CharacterData _warlock;
@@ -46,11 +49,11 @@ public class WarlockDataTests
     }
 
     [Test]
-    public void Warlock_HasDrainLifeRaiseDeadCurseDarkPactAndSoulLink()
+    public void Warlock_HasDrainLifeCurseDarkPactAndSoulLink()
     {
         List<string> names = _warlock.skills.ConvertAll(skill => skill.Create().GetData().name);
 
-        CollectionAssert.AreEqual(new[] { "Drain Life", "Raise Dead", "Curse", "Dark Pact", "Soul Link" }, names);
+        CollectionAssert.AreEqual(new[] { "Drain Life", "Curse", "Dark Pact", "Soul Link" }, names);
     }
 
     // The anticipation spell of the Warlock: cast on the unit about to take a big hit
@@ -111,19 +114,6 @@ public class WarlockDataTests
     }
 
     [Test]
-    public void RaiseDead_SummonsARisenSkeleton_TwoAtMost()
-    {
-        RaiseDeadCharacterSkillFactory raise = GetSkill<RaiseDeadCharacterSkillFactory>("Raise Dead");
-
-        Assert.IsNotNull(raise.data.entity);
-        Assert.AreEqual("Risen Skeleton", raise.data.entity.title);
-        Assert.AreEqual(2, raise.data.maxAlive);
-        Assert.AreEqual(3f, raise.data.healthPerHealPower, 0.0001f);
-        Assert.AreEqual(0.1f, raise.data.damagePerHealPower, 0.0001f);
-        Assert.IsTrue(raise.data.validators.Exists(v => v is ResourceValidatorFactory));
-    }
-
-    [Test]
     public void Curse_PoisonsAnEnemyIgnoringItsArmor()
     {
         BuffCharacterSkillFactory curse = GetSkill<BuffCharacterSkillFactory>("Curse");
@@ -154,7 +144,6 @@ public class WarlockDataTests
 
     // The descriptions read their values from the data and the Heal Power of the character
     [TestCase("Drain Life", "<color=\"red\">15</color> <color=#008080ff>(100% HealPower)</color>")]
-    [TestCase("Raise Dead", "<color=\"green\">+45</color> health and <color=\"red\">+1.5</color> damage")]
     [TestCase("Curse", "<color=\"red\">4.5</color> <color=#008080ff>(30% HealPower)</color>")]
     [TestCase("Dark Pact", "<color=\"red\">15%</color> of its max health")]
     public void Description_ShowsTheValuesOfTheData(string name, string expected)
@@ -175,6 +164,133 @@ public class WarlockDataTests
         LifeStealBuffFactory lifeSteal = handler.data.buffFactoryList[0] as LifeStealBuffFactory;
         Assert.IsNotNull(lifeSteal);
         Assert.AreEqual(0.5f, lifeSteal.data.ratio, 0.0001f);
+    }
+
+    EntityData GetUnit(string title)
+    {
+        EntityData unit = _warlock.entities.Find(entity => entity != null && entity.title == title);
+        Assert.IsNotNull(unit, "The Warlock doesn't start with the " + title);
+        return unit;
+    }
+
+    [Test]
+    public void Warlock_StartsWithTripleShotBloodCultistPactBearerAndHexWeaver()
+    {
+        List<string> titles = _warlock.entities.ConvertAll(entity => entity.title);
+
+        CollectionAssert.AreEqual(new[] { "Triple Shot", "Blood Cultist", "Pact Bearer", "Hex Weaver" }, titles);
+    }
+
+    // Normal, Fast Shot, Chain Lightning and Random Shot left the Warlock: they are no longer among its rewards
+    [TestCase("Assets/Data/Entities/NormalEntity/NormalEntity.asset")]
+    [TestCase("Assets/Data/Entities/FastShootEntity/FastShootEntity.asset")]
+    [TestCase("Assets/Data/Entities/ChainLightningEntity/ChainLightningEntity.asset")]
+    [TestCase("Assets/Data/Entities/RandomShootEntity/RandomShootEntity.asset")]
+    public void FormerWarlockUnit_HasNoWarlockTag(string path)
+    {
+        EntityData unit = AssetDatabase.LoadAssetAtPath<EntityData>(path);
+
+        Assert.IsNotNull(unit, path);
+        Assert.IsFalse(unit.HasTag(_warlock.classTag), unit.title);
+    }
+
+    [Test]
+    public void PactBearer_IsAWarlockRewardTankWith300Health()
+    {
+        EntityData bearer = GetUnit("Pact Bearer");
+
+        Assert.IsTrue(bearer.HasTag(_warlock.classTag));
+        Assert.IsTrue(bearer.HasTag(TagNames.Reward));
+        Assert.IsTrue(bearer.HasTag(TagNames.Tank));
+        Assert.AreEqual(300f, bearer.attributes[AttributeType.HealthMax], 0.0001f);
+    }
+
+    // The Pact item: a permanent buff of two modifiers growing as the health of the holder goes down
+    HPBasedModifierData GetPactModifier(AttributeType type)
+    {
+        ItemFactory pact = GetUnit("Pact Bearer").items[0] as ItemFactory;
+        Assert.IsNotNull(pact);
+        BuffHandlerFactory handler = (BuffHandlerFactory)pact.data.buffs[0];
+        Assert.AreEqual(DurationType.Infinite, handler.data.durationType);
+        HPBasedModifierFactory modifier = handler.data.buffFactoryList.OfType<HPBasedModifierFactory>().FirstOrDefault(factory => factory.data.type == type);
+        Assert.IsNotNull(modifier, "The Pact gives no " + type);
+        // Added to the attribute: nothing at full health
+        Assert.AreEqual(AttributeModifierType.Add, modifier.data.modifierType);
+        return modifier.data;
+    }
+
+    // The bonus of the modifier on a holder with that much health out of 300
+    static float GetPactBonus(HPBasedModifierData data, float health)
+    {
+        TestUnits units = new TestUnits();
+        try
+        {
+            Entity holder = units.Create(health, 300f, "Pact Bearer");
+            HPBasedModifier modifier = new HPBasedModifier { data = data };
+            modifier.Init(holder.gameObject, holder.gameObject);
+            return modifier.ApplyModifier();
+        }
+        finally
+        {
+            units.DestroyAll();
+        }
+    }
+
+    // Armor % is a part of the damage blocked: none at full health, 70% at 0, growing linearly in between
+    [TestCase(300f, 0f)]
+    [TestCase(150f, 0.35f)]
+    [TestCase(75f, 0.525f)]
+    [TestCase(0f, 0.7f)]
+    public void PactBearer_ItsArmorGrowsAsItsHealthGoesDown(float health, float expectedArmor)
+    {
+        HPBasedModifierData armor = GetPactModifier(AttributeType.PercentArmor);
+
+        Assert.AreEqual(expectedArmor, GetPactBonus(armor, health), 0.0001f);
+    }
+
+    [TestCase(300f, 0f)]
+    [TestCase(150f, 5f)]
+    [TestCase(0f, 10f)]
+    public void PactBearer_ItsDamageGrowsAsItsHealthGoesDown(float health, float expectedDamage)
+    {
+        HPBasedModifierData damage = GetPactModifier(AttributeType.Damage);
+
+        Assert.AreEqual(expectedDamage, GetPactBonus(damage, health), 0.0001f);
+    }
+
+    [Test]
+    public void HexWeaver_IsAWarlockRewardSupportShootingVolleysOf3()
+    {
+        EntityData weaver = GetUnit("Hex Weaver");
+
+        Assert.IsTrue(weaver.HasTag(_warlock.classTag));
+        Assert.IsTrue(weaver.HasTag(TagNames.Reward));
+        Assert.IsTrue(weaver.HasTag(TagNames.Support));
+        ShootProjectileSkillFactory shoot = weaver.skillFactories[0] as ShootProjectileSkillFactory;
+        Assert.IsNotNull(shoot);
+        Assert.AreEqual(3, shoot.data.projectiles[0].numberOfProjectileToShootPerTarget);
+    }
+
+    // Each hit gives the target a permanent vulnerability of 1%, stacking without limit
+    [Test]
+    public void HexWeaver_EachHitAddsAPermanent1PercentVulnerabilityToTheTarget()
+    {
+        ItemFactory hex = GetUnit("Hex Weaver").items[0] as ItemFactory;
+        Assert.IsNotNull(hex);
+        BuffHandlerFactory handler = (BuffHandlerFactory)hex.data.onHitEffects[0];
+        Assert.AreEqual(DurationType.Infinite, handler.data.durationType);
+        Assert.AreEqual(0, handler.data.maxStacks, "The vulnerability stops stacking");
+        FlatModifierFactory vulnerability = handler.data.buffFactoryList[0] as FlatModifierFactory;
+        Assert.IsNotNull(vulnerability);
+        Assert.AreEqual(AttributeType.Vulnerability, vulnerability.data.type);
+        Assert.AreEqual(AttributeModifierType.Add, vulnerability.data.modifierType);
+
+        FlatModifier modifier = new FlatModifier { data = vulnerability.data };
+        modifier.Init(null, null);
+        Assert.AreEqual(0.01f, modifier.ApplyModifier(), 0.0001f);
+        modifier.Stack(null, null);
+        modifier.Stack(null, null);
+        Assert.AreEqual(0.03f, modifier.ApplyModifier(), 0.0001f);
     }
 }
 
