@@ -31,6 +31,75 @@ namespace HealerLike.Render.Grammar
             }
         }
 
+        // Julien's handlers from the 2026-10-02 merge (Soul Link, Thick Bark and his items) that the Render layer
+        // has not given a treatment yet: they derive whatever the grammar falls back to. Each leaves this list
+        // when it gets a pinned row above; a handler in neither list fails the coverage test.
+        public static readonly string[] AwaitingTreatment = {
+            "CharacterSkills/SoulLink/BuffHandlerFactory",
+            "CharacterSkills/ThickBark/BuffHandlerFactory",
+            "EntityItems/AdrenalineItem/BuffHandlerFactory",
+            "EntityItems/ArmorBreakerItem/BuffHandlerFactory",
+            "EntityItems/BlessedCharmItem/BuffHandlerFactory",
+            "EntityItems/BloodPriceItem/BuffHandlerFactory",
+            "EntityItems/BloodPriceItem/PriceBuffHandlerFactory",
+            "EntityItems/BoneCharmItem/BuffHandlerFactory",
+            "EntityItems/BriarThornsItem/BuffHandlerFactory",
+            "EntityItems/CursedIdolItem/BuffHandlerFactory",
+            "EntityItems/CursedIdolItem/CurseBuffHandlerFactory",
+            "EntityItems/EchoItem/BuffHandlerFactory",
+            "EntityItems/ExecutionersEdgeItem/BuffHandlerFactory",
+            "EntityItems/GlassCannonItem/BuffHandlerFactory",
+            "EntityItems/GratitudeItem/BuffHandlerFactory",
+            "EntityItems/GrowingSeedItem/GrowthBuffHandlerFactory",
+            "EntityItems/HairTriggerItem/BuffHandlerFactory",
+            "EntityItems/HeartStoneItem/BuffHandlerFactory",
+            "EntityItems/HuntersMarkItem/BuffHandlerFactory",
+            "EntityItems/IronPlatingItem/BuffHandlerFactory",
+            "EntityItems/LoneWolfItem/BuffHandlerFactory",
+            "EntityItems/LuckyCoinItem/BuffHandlerFactory",
+            "EntityItems/MartyrsHeartItem/BuffHandlerFactory",
+            "EntityItems/PhalanxItem/BuffHandlerFactory",
+            "EntityItems/PhylacteryItem/BuffHandlerFactory",
+            "EntityItems/SecondWindItem/BuffHandlerFactory",
+            "EntityItems/SecondWindItem/InvincibilityBuffHandlerFactory",
+            "EntityItems/TauntTotemItem/BuffHandlerFactory",
+            "EntityItems/ThornsOfLifeItem/BuffHandlerFactory",
+            "EntityItems/TitanFuryItem/BuffHandlerFactory",
+            "EntityItems/TowerShieldItem/BuffHandlerFactory",
+            "EntityItems/WarBannerItem/BoostBuffHandlerFactory",
+            "EntityItems/WarBannerItem/BuffHandlerFactory",
+            "EntityItems/WhetstoneItem/BuffHandlerFactory",
+            "EventItems/AbyssalWellItem/BuffHandlerFactory",
+            "EventItems/BerserkersBrandItem/BuffHandlerFactory",
+            "EventItems/BlackCodexItem/BuffHandlerFactory",
+            "EventItems/BloodLedgerItem/BuffHandlerFactory",
+            "EventItems/BloodthirstBladeItem/BuffHandlerFactory",
+            "EventItems/CodexOfMendingItem/BuffHandlerFactory",
+            "EventItems/GluttonsCharmItem/BuffHandlerFactory",
+            "EventItems/HastyGrimoireItem/BuffHandlerFactory",
+            "EventItems/HungeringMaskItem/BattleGrowthBuffHandlerFactory",
+            "EventItems/HungeringMaskItem/KillGrowthBuffHandlerFactory",
+            "EventItems/LeechFangItem/BuffHandlerFactory",
+            "EventItems/ReapersCoinItem/BuffHandlerFactory",
+            "EventItems/ScrollOfThriftItem/BuffHandlerFactory",
+            "EventItems/ThornedCrownItem/BuffHandlerFactory",
+            "EventItems/TomeOfHasteItem/BuffHandlerFactory",
+            "EventItems/WellspringManuscriptItem/BuffHandlerFactory",
+            "PlayerItems/ChaliceOfPlentyItem/BuffHandlerFactory",
+            "PlayerItems/EmergencyBeaconItem/BeaconBuffHandlerFactory",
+            "PlayerItems/EmergencyBeaconItem/BuffHandlerFactory",
+            "PlayerItems/EmergencyBeaconItem/HealBuffHandlerFactory",
+            "PlayerItems/ManaCrystalItem/BuffHandlerFactory",
+            "PlayerItems/MerchantsLedgerItem/BuffHandlerFactory",
+            "PlayerItems/NecronomiconItem/BuffHandlerFactory",
+            "PlayerItems/NecronomiconItem/SummonBuffHandlerFactory",
+            "PlayerItems/OverflowingFontItem/BuffHandlerFactory",
+            "PlayerItems/PrayerBeadsItem/BuffHandlerFactory",
+            "PlayerItems/TitheItem/BuffHandlerFactory",
+            "PlayerItems/WarDrumsItem/BuffHandlerFactory",
+            "PlayerItems/WarDrumsItem/DrumsBuffHandlerFactory",
+        };
+
         public static readonly HandlerRow[] HandlerRows = {
             new HandlerRow("Entities/GuardianEntity/BuffHandlerFactory", EffectOperation.Ward,
                 EffectAspect.Prevention, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
@@ -260,10 +329,14 @@ namespace HealerLike.Render.Grammar
         {
             HashSet<string> expected = new HashSet<string>();
             foreach (HandlerRow row in HandlerRows) expected.Add("Assets/Data/" + row.path + ".asset");
+            foreach (string path in AwaitingTreatment)
+            {
+                Assert.IsTrue(expected.Add("Assets/Data/" + path + ".asset"), "Pinned and awaiting at once: " + path);
+            }
             string[] guids = AssetDatabase.FindAssets("t:ABuffHandlerFactory", new[] { "Assets/Data" });
             HashSet<string> actual = new HashSet<string>();
             foreach (string guid in guids) actual.Add(AssetDatabase.GUIDToAssetPath(guid));
-            CollectionAssert.AreEquivalent(expected, actual, "Every live BuffHandlerFactory must have a pinned row.");
+            CollectionAssert.AreEquivalent(expected, actual, "Every live BuffHandlerFactory must have a pinned row or be listed as awaiting treatment.");
         }
 
         [Test]

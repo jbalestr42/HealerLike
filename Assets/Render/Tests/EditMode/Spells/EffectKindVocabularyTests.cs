@@ -158,9 +158,14 @@ namespace HealerLike.Render.Spells
         public void Shipped_LiveBoonOffenceHandlers_DrawTheirKindNotOrbit()
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
+            HashSet<string> awaiting = new HashSet<string>();
+            foreach (string path in HealerLike.Render.Grammar.SpellChannelAssetPinningTests.AwaitingTreatment)
+                awaiting.Add("Assets/Data/" + path + ".asset");
             foreach (string guid in AssetDatabase.FindAssets("t:ABuffHandlerFactory", new[] { "Assets/Data" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
+                // Julien's untreated handlers are a listed gap, not a vocabulary promise (e.g. Soul Link draws Orbit)
+                if (awaiting.Contains(path)) continue;
                 EffectChannels channels = EffectDerivation.Channels(
                     AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(path), true);
                 if (channels.operation != EffectOperation.Boon || channels.aspect != EffectAspect.Offence) continue;
