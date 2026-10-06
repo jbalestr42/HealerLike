@@ -233,31 +233,30 @@ namespace HealerLike.Render.Spells.Editor
         public static LookPart[] Spark()
         {
             var parts = new List<LookPart>();
-            Vector3 coil = new Vector3(-1.2f, .55f, -.75f);
-            parts.Add(Part("Spark coil", Primitive.Torus, ShapeProfile.Ring(.12f), coil, new Vector3(.9f, .16f, .9f),
+            Vector3 coil = new Vector3(-1.35f, .5f, -.8f);
+            parts.Add(Part("Spark coil", Primitive.Torus, ShapeProfile.Ring(.16f), coil, new Vector3(1.3f, .2f, 1.3f),
                 new Vector3(70, 0, 0)));
-            parts.Add(Part("Spark bead", Primitive.Sphere, ShapeProfile.Bulb(), coil, Vector3.one * .3f,
-                colour: ColourRole.MushroomCapPale));
+            parts.Add(Part("Spark bead", Primitive.Sphere, ShapeProfile.Bulb(), coil, Vector3.one * .45f));
             for (int i = 0; i < 3; i++)
             {
-                float turn = -40f + 40f * i;
+                float turn = -45f + 45f * i;
                 Vector3 direction = Quaternion.Euler(0, 0, turn) * Vector3.up;
-                parts.Add(Part("Spark thorn " + i, Primitive.Cone, Seed(), coil + direction * .75f,
-                    new Vector3(.22f, .55f, .22f), new Vector3(0, 0, turn)));
+                parts.Add(Part("Spark thorn " + i, Primitive.Cone, Seed(), coil + direction * 1.05f,
+                    new Vector3(.34f, .8f, .34f), new Vector3(0, 0, turn)));
             }
             return parts.ToArray();
         }
 
-        // Echo: one leaf blade struck and two fainter copies of it trailing behind, each smaller and further back
+        // Echo: one leaf blade struck and two copies of it trailing behind, each smaller and further back
         public static LookPart[] Echo()
         {
             var parts = new LookPart[3];
             for (int i = 0; i < parts.Length; i++)
             {
-                float shrink = 1f - .22f * i;
-                parts[i] = Part("Echo blade " + i, Primitive.Leaf, ShapeProfile.Leaf(.06f, .55f),
-                    new Vector3(1.25f + .38f * i, .35f, -.75f + .3f * i), new Vector3(.55f, 1.9f, .14f) * shrink,
-                    new Vector3(0, 0, -28f), i == 0 ? ColourRole.Accent : ColourRole.MushroomCapPale);
+                float shrink = 1f - .18f * i;
+                parts[i] = Part("Echo blade " + i, Primitive.Leaf, ShapeProfile.Leaf(.06f, .7f),
+                    new Vector3(1.2f + .6f * i, .35f + .15f * i, -.8f + .25f * i), new Vector3(.75f, 2.2f, .16f) * shrink,
+                    new Vector3(0, 0, -28f));
             }
             return parts;
         }
@@ -277,19 +276,19 @@ namespace HealerLike.Render.Spells.Editor
             };
         }
 
-        // Summon: a seedling breaking out of a mound of earth in front of the feet, two seed leaves on a short stem
+        // Summon: a seedling breaking out of a mound of earth beside the body, two seed leaves on a short stem
         public static LookPart[] Sprout()
         {
-            Vector3 at = new Vector3(1.2f, 0, -.9f);
+            Vector3 at = new Vector3(1.35f, -.7f, -.85f);
             return new[] {
-                Part("Sprout mound", Primitive.Sphere, ShapeProfile.Bulb(), at + Vector3.up * .1f,
-                    new Vector3(.9f, .35f, .9f), colour: ColourRole.MushroomCapPale),
-                Part("Sprout stem", Primitive.CylinderSegment, ShapeProfile.Segment(.16f, .78f), at + Vector3.up * .55f,
-                    new Vector3(.14f, .8f, .14f)),
-                Part("Sprout leaf 0", Primitive.Leaf, ShapeProfile.Leaf(.3f, .8f, .3f), at + new Vector3(-.3f, 1f, 0),
-                    new Vector3(.45f, .8f, .12f), new Vector3(0, 0, 55)),
-                Part("Sprout leaf 1", Primitive.Leaf, ShapeProfile.Leaf(.3f, .8f, .3f), at + new Vector3(.3f, 1f, 0),
-                    new Vector3(.45f, .8f, .12f), new Vector3(0, 0, -55))
+                Part("Sprout mound", Primitive.Sphere, ShapeProfile.Bulb(), at + Vector3.up * .15f,
+                    new Vector3(1.2f, .5f, 1.2f)),
+                Part("Sprout stem", Primitive.CylinderSegment, ShapeProfile.Segment(.16f, .78f), at + Vector3.up * .8f,
+                    new Vector3(.22f, 1.2f, .22f)),
+                Part("Sprout leaf 0", Primitive.Leaf, ShapeProfile.Leaf(.3f, .8f, .3f), at + new Vector3(-.5f, 1.5f, 0),
+                    new Vector3(.75f, 1.25f, .14f), new Vector3(0, 0, 55)),
+                Part("Sprout leaf 1", Primitive.Leaf, ShapeProfile.Leaf(.3f, .8f, .3f), at + new Vector3(.5f, 1.5f, 0),
+                    new Vector3(.75f, 1.25f, .14f), new Vector3(0, 0, -55))
             };
         }
 
@@ -298,17 +297,17 @@ namespace HealerLike.Render.Spells.Editor
         public static LookPart[] Stem()
         {
             var parts = new List<LookPart>();
-            Vector3 foot = new Vector3(-1.3f, -.6f, -.7f);
+            Vector3 foot = new Vector3(-1.85f, -.15f, -1f);
             for (int i = 0; i < 4; i++)
             {
-                Vector3 from = foot + new Vector3(.08f * (i % 2 == 0 ? 1 : -1), .55f * i, 0);
+                Vector3 from = foot + new Vector3(.1f * (i % 2 == 0 ? 1 : -1), .7f * i, 0);
                 parts.Add(Part("Growth segment " + i, Primitive.CylinderSegment, ShapeProfile.Segment(.16f, .78f),
-                    from + Vector3.up * .275f, new Vector3(.28f, .55f, .28f)));
-                parts.Add(Part("Growth joint " + i, Primitive.Sphere, ShapeProfile.Bulb(), from + Vector3.up * .55f,
-                    Vector3.one * .28f * .72f));
+                    from + Vector3.up * .35f, new Vector3(.5f, .7f, .5f)));
+                parts.Add(Part("Growth joint " + i, Primitive.Sphere, ShapeProfile.Bulb(), from + Vector3.up * .7f,
+                    Vector3.one * .5f * .72f));
             }
-            parts.Add(Part("Growth bud", Primitive.Sphere, ShapeProfile.Bulb(.9f, .25f), foot + Vector3.up * 2.45f,
-                new Vector3(.36f, .5f, .36f), colour: ColourRole.MushroomCapPale));
+            parts.Add(Part("Growth bud", Primitive.Sphere, ShapeProfile.Bulb(.9f, .25f), foot + Vector3.up * 3.05f,
+                new Vector3(.6f, .8f, .6f)));
             return parts.ToArray();
         }
 

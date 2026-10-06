@@ -133,8 +133,8 @@ namespace HealerLike.Render.Spells.Editor
             Kind(vocabulary, EffectKind.Link, Kind(orbit, "Soul tether", Tether(), EffectMotionKind.Orbit,
                 EffectSocket.AboveHead, 2.2f));
             Kind(vocabulary, EffectKind.Summon, Kind(orbit, "Summon sprout", Sprout(), EffectMotionKind.Rise,
-                EffectSocket.Feet, 1.6f));
-            ElementEntry stem = Kind(orbit, "Growth stem", Stem(), EffectMotionKind.Grow, EffectSocket.Feet, 2f);
+                EffectSocket.Body, 1.6f));
+            ElementEntry stem = Kind(orbit, "Growth stem", Stem(), EffectMotionKind.Grow, EffectSocket.Body, 2f);
             stem.count = EffectCount.Stacks;
             stem.minCount = 3;
             Kind(vocabulary, EffectKind.Growth, stem);
