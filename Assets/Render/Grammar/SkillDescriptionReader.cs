@@ -78,6 +78,12 @@ namespace HealerLike.Render.Grammar
                     ReadPeriodic(periodic.data.periodicBuff, description);
                 }
             }
+            else if (skill is MarkedStrikeSkillFactory strike)
+            {
+                // Julien's MarkedStrikeView draws the mark, the arc and the impact; the creature reads only
+                // its clock, one strike per interval plus the delay between mark and strike
+                if (strike.data != null) description.cadence = strike.data.interval + strike.data.delay;
+            }
             else if (skill != null)
             {
                 Debug.LogError($"[SkillDescriptionReader] No reading for {skill.GetType().Name}");

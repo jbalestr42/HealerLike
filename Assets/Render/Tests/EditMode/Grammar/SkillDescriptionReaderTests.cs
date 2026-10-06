@@ -34,6 +34,7 @@ public class SkillDescriptionReaderTests
     [TestCase(typeof(ConfigurableSkillFactory), HeadKind.Bud)]
     [TestCase(typeof(ApplyBuffOnTargetSkillFactory), HeadKind.Bud)]
     [TestCase(typeof(ApplyBuffPeriodicallySkillFactory), HeadKind.Bud)]
+    [TestCase(typeof(MarkedStrikeSkillFactory), HeadKind.Bud)]
     public void Read_UnassignedFactoryData_KeepsTheKnownHeadWithoutThrowing(System.Type type, HeadKind expected)
     {
         ASkillFactory skill = (ASkillFactory)ScriptableObject.CreateInstance(type);
@@ -45,6 +46,17 @@ public class SkillDescriptionReaderTests
         Assert.IsEmpty(description.shots);
         Assert.AreEqual(expected, HeadDerivation.Head(skill));
         Assert.IsEmpty(SkillWalker.Shots(skill));
+    }
+
+    [Test]
+    public void Read_MarkedStrike_OneStrikePerIntervalPlusDelay_WithoutShots()
+    {
+        MarkedStrikeSkillFactory skill = Create<MarkedStrikeSkillFactory>();
+        skill.data = new MarkedStrikeSkillData { interval = 8f, delay = 3f };
+        SkillDescription description = SkillDescriptionReader.Read(skill, null);
+        Assert.AreEqual(11f, description.cadence);
+        Assert.AreEqual(1, description.hits);
+        Assert.IsEmpty(description.shots);
     }
 
     [Test]
