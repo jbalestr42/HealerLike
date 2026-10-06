@@ -27,6 +27,7 @@ namespace HealerLike.Render.Stage
             public List<string> choiceHits = new List<string>();
             public List<string> hudHits = new List<string>();
             public List<string> clicks = new List<string>();
+            public List<string> cardEffects = new List<string>();
             public float manaBeforeRest;
             public float manaInRest;
             public float manaMax;

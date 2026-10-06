@@ -140,6 +140,79 @@ namespace HealerLike.Render.Stage
                 && !StageInterfaceOutput.IsVisible(root.Q("map-panel")),
                 room + ": a touch on the disabled HUD map button leaves Julien's screen, its choices and the run "
                 + "state as they were");
+            yield return CheckLiveCards(room, before, state);
+        }
+
+        // The spell and roster cards stay enabled under his screen: a tap on a spell and a drag of a unit onto
+        // the field must still do nothing while a choice is open
+        IEnumerator CheckLiveCards(string room, List<UiButton> before, AscensionGameType.State state)
+        {
+            AscensionGameType ascension = Object.FindAnyObjectByType<AscensionGameType>();
+            RenderManager manager = _session.manager;
+            float mana = manager.player.character.mana.Value;
+            int allies = manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
+            ISelectable selected = StageMapReadout.Selected(_session.interaction);
+            UnityEngine.UIElements.Button spell = _session.actions.Cards("spell-list")[0];
+            Vector2 spellPoint = StageInterfaceActions.ScreenPoint(spell);
+            _manifest.hudHits.Add(room + " spell card at " + spellPoint + ": " + Describe(Hits(spellPoint)));
+            yield return _session.actions.TouchGesture(spellPoint);
+            yield return AStageRun.Wait(0.3f);
+            bool spellIdle = manager.player.character.mana.Value == mana && _session.interaction.GetInteraction() == null
+                && StageMapReadout.Selected(_session.interaction) == selected;
+            _manifest.cardEffects.Add(room + " spell tap: mana " + mana + " -> " + manager.player.character.mana.Value
+                + ", interaction " + (_session.interaction.GetInteraction() != null ? "started" : "none"));
+            _manifest.cardEffects.Add(room + " after the spell tap: " + ScreenState());
+            _session.output.Check(spellIdle, room + ": a tap on a spell card under Julien's screen spends no mana "
+                + "and starts no targeting");
+
+            UnityEngine.UIElements.Button unit = _session.actions.Cards("party-list")[0];
+            yield return _session.actions.BringIntoView(unit);
+            Vector2 start = StageInterfaceActions.ScreenPoint(unit);
+            Vector3 cell = manager.player.grid.GetNearestWalkablePosition(Vector3.left * 2);
+            Vector2 drop = new StageCompactGestures(_session).DropPoint(cell);
+            _manifest.hudHits.Add(room + " unit drop at " + drop + ": " + Describe(Hits(drop)));
+            using (StagePresentationTouch touch = new StagePresentationTouch(_session.actions))
+            {
+                yield return touch.Frame(TouchPhase.Began, start);
+                yield return touch.Frame(TouchPhase.Moved, start + Vector2.up * 48);
+                yield return touch.Frame(TouchPhase.Moved, drop);
+                yield return StageCompactGestures.Still(touch, drop, 0.25f);
+                // One release only: StandaloneInputModule forgets the finger on Ended, so a second Ended frame
+                // is a new finger pressed and released on the spot, a tap on whatever lies under the drop
+                yield return touch.Frame(TouchPhase.Ended, drop);
+                _session.actions.captureInput.samples = System.Array.Empty<Touch>();
+                _session.actions.touch.captureTouches = System.Array.Empty<Touch>();
+                yield return null;
+            }
+
+            yield return AStageRun.Wait(0.25f);
+            int alliesAfter = manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
+            _manifest.cardEffects.Add(room + " unit drag to the field: allies " + allies + " -> " + alliesAfter);
+            _manifest.cardEffects.Add(room + " after the unit drag: " + ScreenState());
+            _session.output.Check(alliesAfter == allies && _session.interaction.GetInteraction() == null,
+                room + ": dragging a unit card onto the field under Julien's screen places nobody");
+            _session.output.Check(view.isActiveAndEnabled && SameButtons(before, view.choiceButtons)
+                && LegacyUiReader.AscensionState(ascension) == state,
+                room + ": the spell tap and the unit drag leave Julien's screen and the run state as they were");
+        }
+
+        string ScreenState()
+        {
+            EventView eventView = view;
+            if (eventView == null || !eventView.isActiveAndEnabled)
+            {
+                return "Julien's screen closed, state " + LegacyUiReader.AscensionState(
+                    Object.FindAnyObjectByType<AscensionGameType>());
+            }
+
+            List<string> names = new List<string>();
+            foreach (UiButton button in eventView.choiceButtons)
+            {
+                names.Add(button != null ? button.name : "destroyed");
+            }
+
+            return string.Join(", ", names) + ", state " + LegacyUiReader.AscensionState(
+                Object.FindAnyObjectByType<AscensionGameType>());
         }
 
         static bool SameButtons(List<UiButton> before, IReadOnlyList<UiButton> after)
