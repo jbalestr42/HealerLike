@@ -7,7 +7,6 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
 {
     [SerializeField] List<InputActionReference> _skillInputs = new List<InputActionReference>();
 
-    public UnityEvent<int> OnGoldChanged = new UnityEvent<int>();
     public UnityEvent<Character> OnCharacterInit = new UnityEvent<Character>();
 
     [SerializeField] Character _character;
@@ -19,17 +18,6 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
     [SerializeField] GridGenerator _gridGenerator;
     public GridGenerator gridGenerator { get { return _gridGenerator; } set { _gridGenerator = value; } }
 
-    int _gold;
-    public int gold
-    {
-        get { return _gold; } 
-        set
-        {
-            _gold = value;
-            OnGoldChanged.Invoke(_gold);
-        }
-    }
-
     void Start()
     {
         _grid.Generate();
@@ -38,8 +26,6 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
 
     public void Init(CharacterData characterData)
     {
-        gold = DataManager.instance.data.gold;
-
         _character.data = characterData;
         _character.Init();
 
@@ -57,10 +43,5 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
         }
 
         OnCharacterInit.Invoke(_character);
-    }
-
-    public bool HasEnoughGold(int value)
-    {
-        return _gold >= value;
     }
 }

@@ -18,11 +18,13 @@ public class ResourceConsumerResolver
         _vulnerability = attributeManager.GetOrAdd(AttributeType.Vulnerability);
         _criticalChanceResist = attributeManager.GetOrAdd(AttributeType.CriticalChanceResist);
         // A multiplier: heals are untouched by default, unlike the other attributes starting at 0
-        _healingReceived = attributeManager.GetOrAdd(AttributeType.HealingReceived, 1f);
+        _healingReceived = attributeManager.GetOrAdd(AttributeType.HealingReceived);
     }
 
     public (float value, bool isCritical) ComputeValue(ResourceAttribute resourceAttribute, ResourceModifier resourceModifier)
     {
+        // A single consumer already final (e.g. damage passed on from another unit) makes the whole value so
+        bool canBeCritical = resourceModifier.consumers.TrueForAll(consumer => consumer.canBeCritical);
         float value = 0f;
         foreach (AConsumer consumer in resourceModifier.consumers)
         {
@@ -34,13 +36,27 @@ public class ResourceConsumerResolver
         resourceModifier.consumers.Clear();
 
         bool isCritical = false;
-        AttributeManager sourceAttributeManager = resourceModifier.source.GetComponent<AttributeManager>();
-        if (sourceAttributeManager.Has(AttributeType.CriticalChance))
+        // The source may be gone since it sent the value (e.g. killed in between): no critical then
+        AttributeManager sourceAttributeManager = resourceModifier.source != null ? resourceModifier.source.GetComponent<AttributeManager>() : null;
+        canBeCritical = canBeCritical && sourceAttributeManager != null;
+        bool hasCriticalChance = canBeCritical && sourceAttributeManager.Has(AttributeType.CriticalChance);
+        // Heals (positive) add their own critical chance to the regular one
+        bool hasHealCriticalChance = canBeCritical && value > 0f && sourceAttributeManager.Has(AttributeType.HealCriticalChance);
+        if (hasCriticalChance || hasHealCriticalChance)
         {
-            Attribute criticalChance = sourceAttributeManager.Get(AttributeType.CriticalChance);
-            Attribute criticalMultiplier = sourceAttributeManager.Get(AttributeType.CriticalMultiplier);
+            float criticalChance = 0f;
+            if (hasCriticalChance)
+            {
+                criticalChance += sourceAttributeManager.Get(AttributeType.CriticalChance).Value;
+            }
+            if (hasHealCriticalChance)
+            {
+                criticalChance += sourceAttributeManager.Get(AttributeType.HealCriticalChance).Value;
+            }
+            // A critical chance from an item alone uses the default multiplier
+            Attribute criticalMultiplier = sourceAttributeManager.GetOrAdd(AttributeType.CriticalMultiplier);
 
-            isCritical = Random.Range(0f, 100f) < (criticalChance.Value - _criticalChanceResist.Value);
+            isCritical = Random.Range(0f, 100f) < (criticalChance - _criticalChanceResist.Value);
             if (isCritical)
             {
                 value *= criticalMultiplier.Value;

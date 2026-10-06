@@ -11,6 +11,7 @@ public enum ViewType
     Upgrade = 2,
     GameOver = 4,
     Map = 5,
+    Event = 6,
 }
 
 public class UIManager : Singleton<UIManager>

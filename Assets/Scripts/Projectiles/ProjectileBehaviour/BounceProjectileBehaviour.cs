@@ -66,6 +66,8 @@ public class BounceProjectileBehaviour : AProjectileBehaviour<BounceProjectileBe
         return null;
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _stacks++;
@@ -75,4 +77,6 @@ public class BounceProjectileBehaviour : AProjectileBehaviour<BounceProjectileBe
     {
         _stacks--;
     }
+
+    #endregion
 }

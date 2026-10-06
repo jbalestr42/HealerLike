@@ -14,12 +14,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::MapGenerationSettings
   floorCount: 10
   columnCount: 3
-  pathCount: 4
-  treasureFloor: 5
-  restBeforeBoss: 1
-  firstEliteFloor: 3
-  firstRestFloor: 3
-  combatWeight: 0.6
-  eliteWeight: 0.16
-  restWeight: 0.12
-  treasureWeight: 0.05
+  pathCount: 6
+  startRoomCount: 3
+  maxRoomsPerFloor: 3
+  roomTypes:
+  - type: 0
+    fixedFloors: 00000000i
+    firstFloor: 0
+    weight: 1.25
+    canFollowItself: 1
+  - type: 1
+    fixedFloors: 
+    firstFloor: 4
+    weight: 0.16
+    canFollowItself: 1
+  - type: 3
+    fixedFloors: 09000000i
+    firstFloor: 5
+    weight: 0.12
+    canFollowItself: 0
+  - type: 2
+    fixedFloors: 04000000i
+    firstFloor: 3
+    weight: 0.05
+    canFollowItself: 0
+  - type: 5
+    fixedFloors: 
+    firstFloor: 0
+    weight: 0.25
+    canFollowItself: 0
+  eventRooms:
+  - eventRoom: {fileID: 11400000, guid: 8fce84b80355b6c4faaa6d770cd834f1, type: 2}
+    weight: 1
+  - eventRoom: {fileID: 11400000, guid: abf00e670cfc34b4c9615070a1e85c70, type: 2}
+    weight: 1
+  - eventRoom: {fileID: 11400000, guid: edcf2298d47b2654598e9706cd03240a, type: 2}
+    weight: 1
+  - eventRoom: {fileID: 11400000, guid: 5100bab1a7069f24fba1d158f0e66214, type: 2}
+    weight: 1

@@ -329,6 +329,24 @@ public class EntityInfoFormatterTests
     }
 
     [Test]
+    public void FormatItemDetails_ShowsTheTitleAndTheDescription()
+    {
+        ItemFactory itemFactory = CreateTracked<ItemFactory>();
+        itemFactory.data = new ItemData { name = "Venom", description = "Poisons the target" };
+
+        Assert.AreEqual("<b>Venom</b> — Poisons the target", EntityInfoFormatter.FormatItemDetails(itemFactory.GetItem()));
+    }
+
+    [Test]
+    public void FormatItemDetails_WithoutDescription_ShowsTheTitle()
+    {
+        ItemFactory itemFactory = CreateTracked<ItemFactory>();
+        itemFactory.data = new ItemData { name = "Venom" };
+
+        Assert.AreEqual("<b>Venom</b>", EntityInfoFormatter.FormatItemDetails(itemFactory.GetItem()));
+    }
+
+    [Test]
     public void FormatItem_WithoutDescription_HasNoDash()
     {
         ItemFactory itemFactory = CreateTracked<ItemFactory>();

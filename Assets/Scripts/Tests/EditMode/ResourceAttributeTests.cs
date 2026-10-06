@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -445,16 +446,49 @@ public class ResourceAttributeTests
     }
 
     [Test]
+    public void OnBeforeValueApplied_GetsTheValueReducedByTheArmor()
+    {
+        SetAttribute(AttributeType.PercentArmor, 0.5f);
+        float receivedValue = 0f;
+        ResourceModifier receivedModifier = null;
+        _health.OnBeforeValueApplied.AddListener(pending =>
+        {
+            receivedValue = pending.value;
+            receivedModifier = pending.resourceModifier;
+        });
+
+        ResourceModifier modifier = AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(-5f, receivedValue);
+        Assert.AreSame(modifier, receivedModifier);
+    }
+
+    [Test]
+    public void OnBeforeValueApplied_ListenerCanChangeTheAppliedValue()
+    {
+        float processedValue = 0f;
+        _health.OnBeforeValueApplied.AddListener(pending => pending.value /= 4f);
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) => processedValue = result.value);
+
+        AddModifier(new FakeConsumer(-20f));
+        Drain();
+
+        Assert.AreEqual(95f, _health.Value);
+        Assert.AreEqual(-5f, processedValue);
+    }
+
+    [Test]
     public void OnAllConsumerProcessed_InvokedWithComputedValue()
     {
         GameObject receivedGameObject = null;
         float receivedValue = 0f;
         bool receivedIsCritical = true;
-        _health.OnAllConsumerProcessed.AddListener((go, modifier, value, isCritical) =>
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) =>
         {
             receivedGameObject = go;
-            receivedValue = value;
-            receivedIsCritical = isCritical;
+            receivedValue = result.value;
+            receivedIsCritical = result.isCritical;
         });
 
         AddModifier(new FakeConsumer(-10f));
@@ -479,6 +513,62 @@ public class ResourceAttributeTests
     }
 
     [Test]
+    public void CriticalHit_DoesNotMultiplyAConsumerThatCanNotBeCritical()
+    {
+        AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();
+        sourceAttributeManager.Add(AttributeType.CriticalChance, new Attribute(100f));
+        sourceAttributeManager.Add(AttributeType.CriticalMultiplier, new Attribute(2f));
+
+        AddModifier(new RuntimeConsumer(-10f, ignoreDamageReduction: false, ignoreConsumerPrevention: false, canBeCritical: false));
+        Drain();
+
+        Assert.AreEqual(90f, _health.Value);
+    }
+
+    [Test]
+    public void CriticalHit_NeverHappens_WhenOneConsumerCanNotBeCritical()
+    {
+        AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();
+        sourceAttributeManager.Add(AttributeType.CriticalChance, new Attribute(100f));
+        sourceAttributeManager.Add(AttributeType.CriticalMultiplier, new Attribute(2f));
+
+        AddModifier(new FakeConsumer(-10f), new RuntimeConsumer(-5f, ignoreDamageReduction: false, ignoreConsumerPrevention: false, canBeCritical: false));
+        Drain();
+
+        Assert.AreEqual(85f, _health.Value); // 10 + 5, no critical
+    }
+
+    // E.g. a unit killed between sending a hit and the hit being processed
+    [Test]
+    public void SourceDestroyedBeforeTheValueIsProcessed_AppliesItWithoutCritical()
+    {
+        GameObject source = new GameObject("Destroyed Source");
+        AttributeManager sourceAttributeManager = TestHelpers.CreateAttributeManager(source);
+        sourceAttributeManager.Add(AttributeType.CriticalChance, new Attribute(100f));
+        sourceAttributeManager.Add(AttributeType.CriticalMultiplier, new Attribute(2f));
+        ResourceModifier modifier = new ResourceModifier { source = source };
+        modifier.consumers.Add(new FakeConsumer(-10f));
+        _health.AddResourceModifier(modifier);
+        Object.DestroyImmediate(source);
+
+        Drain();
+
+        Assert.AreEqual(90f, _health.Value);
+    }
+
+    [Test]
+    public void CriticalHit_WithoutCriticalMultiplier_Deals1Point5TimesTheDamage()
+    {
+        // e.g. a Lucky Coin on a unit that never had a critical multiplier
+        _sourceGo.GetComponent<AttributeManager>().Add(AttributeType.CriticalChance, new Attribute(100f));
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(85f, _health.Value);
+    }
+
+    [Test]
     public void CriticalHit_NeverHappens_WhenChanceIsZeroOrBelowResist()
     {
         AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();
@@ -489,6 +579,189 @@ public class ResourceAttributeTests
         Drain();
 
         Assert.AreEqual(90f, _health.Value); // no crit applied
+    }
+
+    // Wounds the target by 50 so a heal can be seen
+    void Wound()
+    {
+        AddModifier(new FakeConsumer(-50f));
+        Drain();
+    }
+
+    [Test]
+    public void HealCritical_Alone_MakesHealsCriticalWithTheDefaultMultiplier()
+    {
+        // e.g. the Chalice of Plenty on a character without any critical attribute
+        Wound();
+        _sourceGo.GetComponent<AttributeManager>().Add(AttributeType.HealCriticalChance, new Attribute(100f));
+        bool isCritical = false;
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) => isCritical = result.isCritical);
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(65f, _health.Value); // healed 15 (10 * 1.5)
+        Assert.IsTrue(isCritical);
+    }
+
+    [Test]
+    public void HealCritical_UsesTheCriticalMultiplier()
+    {
+        Wound();
+        AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();
+        sourceAttributeManager.Add(AttributeType.HealCriticalChance, new Attribute(100f));
+        sourceAttributeManager.Add(AttributeType.CriticalMultiplier, new Attribute(3f));
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(80f, _health.Value); // healed 30 (10 * 3)
+    }
+
+    [Test]
+    public void HealCritical_IsAddedToTheCriticalChanceForHeals()
+    {
+        // 60 + 40: a single roll that always succeeds, where two rolls in a row could both fail
+        Wound();
+        AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();
+        sourceAttributeManager.Add(AttributeType.CriticalChance, new Attribute(60f));
+        sourceAttributeManager.Add(AttributeType.HealCriticalChance, new Attribute(40f));
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(65f, _health.Value);
+    }
+
+    [Test]
+    public void HealCritical_BothChances_AreASingleCritical()
+    {
+        Wound();
+        AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();
+        sourceAttributeManager.Add(AttributeType.CriticalChance, new Attribute(100f));
+        sourceAttributeManager.Add(AttributeType.HealCriticalChance, new Attribute(100f));
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(65f, _health.Value); // healed 15 (10 * 1.5), not 22.5 (10 * 1.5 * 1.5)
+    }
+
+    [Test]
+    public void HealCritical_NeverHappens_WhenChanceIsZero()
+    {
+        Wound();
+        _sourceGo.GetComponent<AttributeManager>().Add(AttributeType.HealCriticalChance, new Attribute(0f));
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value);
+    }
+
+    [Test]
+    public void HealCritical_NeverAppliesToDamage()
+    {
+        _sourceGo.GetComponent<AttributeManager>().Add(AttributeType.HealCriticalChance, new Attribute(100f));
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(90f, _health.Value);
+    }
+
+    [Test]
+    public void HealCritical_IsReducedByTheCriticalResistOfTheTarget()
+    {
+        Wound();
+        _sourceGo.GetComponent<AttributeManager>().Add(AttributeType.HealCriticalChance, new Attribute(100f));
+        SetAttribute(AttributeType.CriticalChanceResist, 100f);
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true));
+        Drain();
+
+        Assert.AreEqual(60f, _health.Value);
+    }
+
+    // The overflows reported for the modifiers of the next drain
+    List<float> Overflows()
+    {
+        List<float> overflows = new List<float>();
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) => overflows.Add(result.overflow));
+        return overflows;
+    }
+
+    [Test]
+    public void Overflow_HealAboveTheMax_ReportsThePartAboveIt()
+    {
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+        List<float> overflows = Overflows();
+
+        AddModifier(new FakeConsumer(25f, ignoreDamageReduction: true));
+        Drain();
+
+        CollectionAssert.AreEqual(new[] { 15f }, overflows);
+        Assert.AreEqual(100f, _health.Value);
+    }
+
+    [Test]
+    public void Overflow_HealWithinTheMax_IsZero()
+    {
+        AddModifier(new FakeConsumer(-30f));
+        Drain();
+        List<float> overflows = Overflows();
+
+        AddModifier(new FakeConsumer(20f, ignoreDamageReduction: true));
+        Drain();
+
+        CollectionAssert.AreEqual(new[] { 0f }, overflows);
+    }
+
+    [Test]
+    public void Overflow_HealAtFullHealth_IsEntirelyReported()
+    {
+        List<float> overflows = Overflows();
+
+        AddModifier(new FakeConsumer(20f, ignoreDamageReduction: true));
+        Drain();
+
+        CollectionAssert.AreEqual(new[] { 20f }, overflows);
+    }
+
+    [Test]
+    public void Overflow_Damage_IsZero()
+    {
+        List<float> overflows = Overflows();
+
+        AddModifier(new FakeConsumer(-20f));
+        Drain();
+
+        CollectionAssert.AreEqual(new[] { 0f }, overflows);
+    }
+
+    [Test]
+    public void Overflow_SeveralHealsInAFrame_EachReportsItsOwnPart()
+    {
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+        List<float> overflows = Overflows();
+
+        AddModifier(new FakeConsumer(15f, ignoreDamageReduction: true));
+        AddModifier(new FakeConsumer(20f, ignoreDamageReduction: true));
+        Drain();
+
+        // 5 above the max for the first one, then the whole second one
+        CollectionAssert.AreEqual(new[] { 5f, 20f }, overflows);
+    }
+
+    [Test]
+    public void GetOverflow_ComputesThePartAboveTheMax()
+    {
+        Assert.AreEqual(0f, ResourceAttribute.GetOverflow(50f, 20f, 100f));
+        Assert.AreEqual(10f, ResourceAttribute.GetOverflow(90f, 20f, 100f));
+        Assert.AreEqual(20f, ResourceAttribute.GetOverflow(110f, 20f, 100f));
+        Assert.AreEqual(0f, ResourceAttribute.GetOverflow(110f, -20f, 100f));
     }
 
     [Test]
@@ -571,6 +844,20 @@ public class ResourceAttributeTests
         Drain();
 
         Assert.AreEqual(1, callCount);
+    }
+
+    [Test]
+    public void MaxDecreased_WithoutChangingTheValue_StillNotifiesTheNewMax()
+    {
+        AddModifier(new FakeConsumer(-60f));
+        Drain(); // 40 / 100
+        SetMax(150f); // 90 / 150
+        float notifiedMax = 0f;
+        _health.OnValueChanged.AddListener(health => notifiedMax = health.Max);
+
+        SetMax(100f); // 90 / 100: same value, the views must show the new max
+
+        Assert.AreEqual(100f, notifiedMax);
     }
 }
 

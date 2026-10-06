@@ -29,6 +29,8 @@ public class ProjectileBehaviourBuff : ABuff<ProjectileBehaviourBuffData>, IStac
 
     public override bool isStackable => _projectileBehaviourInstance is IStackableBuff;
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         // If the projectile behaviour isn't stackable, it has no effect
@@ -41,4 +43,6 @@ public class ProjectileBehaviourBuff : ABuff<ProjectileBehaviourBuffData>, IStac
         IStackableBuff stackableBehaviour = _projectileBehaviourInstance as IStackableBuff;
         stackableBehaviour.Unstack(source, target);
     }
+
+    #endregion
 }

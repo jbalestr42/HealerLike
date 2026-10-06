@@ -31,6 +31,18 @@ public abstract class ASkillStep
     public abstract void Init();
     public abstract bool Update(ASkill skill, float deltaTime);
     public abstract void Reset();
+
+    // Seconds the step lasts, 0 for an instant one (e.g. a shot)
+    public virtual float GetDuration()
+    {
+        return 0f;
+    }
+
+    // Seconds spent in the step since it started, up to its duration
+    public virtual float GetElapsed()
+    {
+        return 0f;
+    }
 }
 
 [Serializable]

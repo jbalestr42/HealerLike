@@ -20,8 +20,6 @@ public class AscensionGameTypeTests
         // Adding Entity triggers Entity.Reset() (an editor-only message), which NREs without a
         // full Entity.Init() - not needed here, we only use it as a holder for .health.
         TestHelpers.WithLoggingDisabled(() => _entity = _entityGo.AddComponent<Entity>());
-        // The entity is the source of the heal, the resolver reads its critical chance
-        TestHelpers.InvokePrivate(_entityGo.GetComponent<AttributeManager>(), "Awake");
 
         _healthGo = new GameObject();
         _health = TestHelpers.CreateResourceAttribute(_healthGo, AttributeType.HealthMax, 100f);
@@ -84,11 +82,11 @@ public class AscensionGameTypeTests
         GameObject processedTarget = null;
         ResourceModifier processedModifier = null;
         float processedValue = 0f;
-        _health.OnAllConsumerProcessed.AddListener((target, modifier, value, isCritical) =>
+        _health.OnAllConsumerProcessed.AddListener((target, modifier, result) =>
         {
             processedTarget = target;
             processedModifier = modifier;
-            processedValue = value;
+            processedValue = result.value;
         });
         int changedCount = 0;
         _health.OnValueChanged.AddListener(_ => changedCount++);
@@ -112,6 +110,75 @@ public class AscensionGameTypeTests
         Drain();
 
         Assert.AreEqual(70f, _health.Value, 0.001f);
+    }
+
+    // A character holding only an attribute manager, with the given RewardChoices (none when null)
+    static GameObject CreateCharacter(float? rewardChoices)
+    {
+        GameObject character = new GameObject("Character");
+        AttributeManager attributes = TestHelpers.CreateAttributeManager(character);
+        if (rewardChoices.HasValue)
+        {
+            attributes.Add(AttributeType.RewardChoices, new Attribute(rewardChoices.Value));
+        }
+        return character;
+    }
+
+    [Test]
+    public void GetRewardChoiceCount_WithoutRewardChoices_IsTheRoomCount()
+    {
+        GameObject character = CreateCharacter(null);
+
+        Assert.AreEqual(3, AscensionGameType.GetRewardChoiceCount(3, character));
+        Assert.AreEqual(3, AscensionGameType.GetRewardChoiceCount(3, null));
+        Object.DestroyImmediate(character);
+    }
+
+    [Test]
+    public void GetRewardChoiceCount_WithRewardChoices_AddsThem()
+    {
+        // e.g. two Merchant's Ledgers in an elite room
+        GameObject character = CreateCharacter(2f);
+
+        Assert.AreEqual(6, AscensionGameType.GetRewardChoiceCount(4, character));
+        Object.DestroyImmediate(character);
+    }
+
+    [Test]
+    public void IsLostForTheRun_OnlyTheAlliesThatAreNotSummons()
+    {
+        GameObject allyGo = new GameObject();
+        GameObject summonGo = new GameObject();
+        GameObject enemyGo = new GameObject();
+        GameplayTag summonTag = ScriptableObject.CreateInstance<GameplayTag>();
+        try
+        {
+            Entity ally = null;
+            Entity summon = null;
+            Entity enemy = null;
+            TestHelpers.WithLoggingDisabled(() =>
+            {
+                ally = allyGo.AddComponent<Entity>();
+                summon = summonGo.AddComponent<Entity>();
+                enemy = enemyGo.AddComponent<Entity>();
+            });
+            ally.entityType = Entity.EntityType.Player;
+            summon.entityType = Entity.EntityType.Player;
+            summon.AddTag(summonTag);
+            enemy.entityType = Entity.EntityType.Computer;
+
+            Assert.IsTrue(AscensionGameType.IsLostForTheRun(ally, summonTag));
+            Assert.IsFalse(AscensionGameType.IsLostForTheRun(summon, summonTag));
+            Assert.IsFalse(AscensionGameType.IsLostForTheRun(enemy, summonTag));
+            Assert.IsFalse(AscensionGameType.IsLostForTheRun(null, summonTag));
+        }
+        finally
+        {
+            Object.DestroyImmediate(allyGo);
+            Object.DestroyImmediate(summonGo);
+            Object.DestroyImmediate(enemyGo);
+            Object.DestroyImmediate(summonTag);
+        }
     }
 }
 

@@ -411,6 +411,59 @@ public class BuffManagerTests
         CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
     }
 
+    GameplayTag CreateChildTag(GameplayTag parent)
+    {
+        GameplayTag child = CreateTracked<GameplayTag>();
+        TestHelpers.SetPrivateField(child, "_parent", parent);
+        return child;
+    }
+
+    [Test]
+    public void RemoveBuffWithTag_AlsoRemovesTheHandlersTaggedWithAChild()
+    {
+        GameplayTag parent = CreateTracked<GameplayTag>();
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Infinite, tags: new List<GameplayTag> { CreateChildTag(parent) });
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Add
+
+        _buffManager.RemoveBuffWithTag(parent);
+
+        CollectionAssert.AreEqual(new[] { "Add", "Remove" }, _data.log);
+    }
+
+    [Test]
+    public void RemoveBuffWithoutTag_KeepsTheHandlersTaggedWithAChild()
+    {
+        // e.g. an item buff tagged FromItem, a child of Permanent, outlasts the battle
+        GameplayTag permanent = CreateTracked<GameplayTag>();
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Infinite, tags: new List<GameplayTag> { CreateChildTag(permanent) });
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Add
+
+        _buffManager.RemoveBuffWithoutTag(permanent);
+
+        CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
+    }
+
+    [Test]
+    public void RemoveBuffWithoutTag_RemovesTheHandlersWithoutIt()
+    {
+        GameplayTag permanent = CreateTracked<GameplayTag>();
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Infinite, tags: new List<GameplayTag> { CreateTracked<GameplayTag>() });
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate(); // Add
+
+        _buffManager.RemoveBuffWithoutTag(permanent);
+
+        CollectionAssert.AreEqual(new[] { "Add", "Remove" }, _data.log);
+    }
+
     [Test]
     public void HasHandler_WithoutAnyHandler_IsFalse()
     {

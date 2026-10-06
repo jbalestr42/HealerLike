@@ -34,7 +34,7 @@ public class RepeatSkillStep : ASkillStep<RepeatSkillStepData>
 
     public override bool Update(ASkill skill, float deltaRepeat)
     {
-        if (_skillSteps[_currentStep].Update(skill, Time.deltaTime))
+        if (_skillSteps[_currentStep].Update(skill, deltaRepeat))
         {
             _currentStep++;
 
@@ -54,6 +54,37 @@ public class RepeatSkillStep : ASkillStep<RepeatSkillStepData>
             _skillSteps[_currentStep].Reset();
         }
         return false;
+    }
+
+    // The steps repeated once
+    float GetCycleDuration()
+    {
+        float duration = 0f;
+        foreach (ASkillStep skillStep in _skillSteps)
+        {
+            duration += skillStep.GetDuration();
+        }
+        return duration;
+    }
+
+    public override float GetDuration()
+    {
+        return data.count * GetCycleDuration();
+    }
+
+    public override float GetElapsed()
+    {
+        if (_skillSteps.Count == 0)
+        {
+            return 0f;
+        }
+
+        float elapsed = _currentCount * GetCycleDuration();
+        for (int i = 0; i < _currentStep; i++)
+        {
+            elapsed += _skillSteps[i].GetDuration();
+        }
+        return Mathf.Min(elapsed + _skillSteps[_currentStep].GetElapsed(), GetDuration());
     }
 
     public override void Reset()

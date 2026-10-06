@@ -49,7 +49,8 @@ public class RaiseDeadCharacterSkill : ACharacterSkill<RaiseDeadCharacterSkillDa
             AttributeManager attributes = character.attributeManager;
             float healPower = attributes.Has(AttributeType.HealPower) ? attributes.Get(AttributeType.HealPower).Value : 0f;
             // The character is only enabled during a battle
-            Raise(summon, healPower, data, character.buffManager.isEnabled, DataManager.instance.GetTagWithName(EntityManager.summonTagName));
+            Raise(summon, healPower, data, character.buffManager.isEnabled);
+            EntityManager.instance.AddSummon(summon);
             AddSummon(summon.gameObject);
             onSkillComplete(true);
         }));
@@ -60,9 +61,8 @@ public class RaiseDeadCharacterSkill : ACharacterSkill<RaiseDeadCharacterSkillDa
         _summons.Add(summon);
     }
 
-    public static void Raise(Entity summon, float healPower, RaiseDeadCharacterSkillData data, bool isBattleRunning, GameplayTag summonTag)
+    public static void Raise(Entity summon, float healPower, RaiseDeadCharacterSkillData data, bool isBattleRunning)
     {
-        summon.AddTag(summonTag);
         Empower(summon.attributeManager, healPower, data);
         // Entities are disabled at spawn until the battle starts, a summon joins the running battle
         summon.Enable(isBattleRunning);

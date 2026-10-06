@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
@@ -9,6 +10,8 @@ public abstract class ABaseDataEditor
 {
     public abstract ScriptableObject data { get; }
     public abstract void AddTree(OdinMenuTree tree);
+    // Lists only the data matching the tags, when the data has tags (e.g. items, units); nothing otherwise
+    public virtual void SetTagFilter(List<GameplayTag> includedTags, List<GameplayTag> excludedTags) {}
 }
 
 public class BaseDataEditor<DataType> : ABaseDataEditor where DataType : ScriptableObject
@@ -37,6 +40,25 @@ public class BaseDataEditor<DataType> : ABaseDataEditor where DataType : Scripta
 
     GetDataName _getDataName = (DataType data) => typeof(DataType).GetNiceName();
     public GetDataName getDataName { get { return _getDataName; } set { _getDataName = value; } }
+
+    // Only the data it accepts are listed in the menu (e.g. the items having some tags), all of them when null
+    System.Func<DataType, bool> _filter;
+    public System.Func<DataType, bool> filter { get { return _filter; } set { _filter = value; } }
+
+    // Fills each new data before it's edited (e.g. the tags every data of the section has)
+    System.Action<DataType> _initData;
+    public System.Action<DataType> initData
+    {
+        get { return _initData; }
+        set
+        {
+            _initData = value;
+            if (_data != null && _initData != null)
+            {
+                _initData(_data);
+            }
+        }
+    }
 
     public BaseDataEditor(string menuName, string dataPath)
     {
@@ -71,6 +93,15 @@ public class BaseDataEditor<DataType> : ABaseDataEditor where DataType : Scripta
         {
             _data = ScriptableObject.CreateInstance<DataType>();
             _data.name = AssetDatabase.GenerateUniqueAssetPath(typeof(DataType).GetNiceName());
+            _initData?.Invoke(_data);
+        }
+    }
+
+    public override void SetTagFilter(List<GameplayTag> includedTags, List<GameplayTag> excludedTags)
+    {
+        if (typeof(ITaggable).IsAssignableFrom(typeof(DataType)))
+        {
+            _filter = data => TagFilter.Matches(data as ITaggable, includedTags, excludedTags);
         }
     }
 
@@ -80,6 +111,28 @@ public class BaseDataEditor<DataType> : ABaseDataEditor where DataType : Scripta
         {
             tree.Add(_menuName, this);
         }
-        tree.AddAllAssetsAtPath(_menuName, _path, typeof(DataType), _isRecursive, true);
+        if (_filter == null)
+        {
+            tree.AddAllAssetsAtPath(_menuName, _path, typeof(DataType), _isRecursive, true);
+            return;
+        }
+
+        // Same listing as AddAllAssetsAtPath (flattened, by file name), the data the filter refuses left out
+        string folder = _path.TrimEnd('/');
+        foreach (string guid in AssetDatabase.FindAssets($"t:{typeof(DataType).Name}", new[] { folder }))
+        {
+            string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+            if (!_isRecursive && Path.GetDirectoryName(assetPath).Replace('\\', '/') != folder)
+            {
+                continue;
+            }
+
+            DataType asset = AssetDatabase.LoadAssetAtPath<DataType>(assetPath);
+            if (asset != null && _filter(asset))
+            {
+                string name = Path.GetFileNameWithoutExtension(assetPath);
+                tree.Add(string.IsNullOrEmpty(_menuName) ? name : $"{_menuName}/{name}", asset);
+            }
+        }
     }
 }

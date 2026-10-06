@@ -34,25 +34,8 @@ public class Character : MonoBehaviour, IBuffable
 
     public void Init()
     {
-        _buffManager = GetComponent<BuffManager>();
-
-        // Init attributes from data
-        _attributeManager = GetComponent<AttributeManager>();
-        foreach (var attribute in _data.attributes)
-        {
-            _attributeManager.Add(attribute.Key, new Attribute(attribute.Value));
-        }
-
-        _mana = gameObject.AddComponent<ResourceAttribute>();
-        _mana.Init(AttributeType.ManaMax);
-
-        // Init items (passives, ...) from data
-        foreach (AItemFactory itemFactory in _data.items)
-        {
-            AItem item = itemFactory.GetItem();
-            item.Equip(gameObject);
-            _items.Add(item);
-        }
+        InitAttributes();
+        InitItems();
 
         // Init skills
         foreach (ACharacterSkillFactory skillFactory in _data.skills)
@@ -75,6 +58,41 @@ public class Character : MonoBehaviour, IBuffable
         Enable(false);
     }
 
+    // The attributes and the mana of the character, from its data. With InitItems, enough on their own to read
+    // its real stats outside a run (e.g. on the character select screen), without its skill buttons and inventory
+    public void InitAttributes()
+    {
+        _attributeManager = GetComponent<AttributeManager>();
+        foreach (var attribute in _data.attributes)
+        {
+            _attributeManager.Add(attribute.Key, new Attribute(attribute.Value));
+        }
+
+        _mana = gameObject.AddComponent<ResourceAttribute>();
+        _mana.Init(AttributeType.ManaMax);
+    }
+
+    // The items the character starts with (passives, ...), from its data: they buff its attributes, so after
+    // InitAttributes
+    public void InitItems()
+    {
+        _buffManager = GetComponent<BuffManager>();
+        foreach (AItemFactory itemFactory in _data.items)
+        {
+            AItem item = itemFactory.GetItem();
+            item.Equip(gameObject);
+            _items.Add(item);
+        }
+    }
+
+    // Applies the buffs added (e.g. by the starting items) to the attributes right away, instead of over
+    // the next frames
+    public void ApplyBuffs()
+    {
+        _buffManager.ForceUpdate();
+        _attributeManager.ForceUpdate();
+    }
+
     public void Enable(bool isEnabled)
     {
         _buffManager.isEnabled = isEnabled;
@@ -82,7 +100,11 @@ public class Character : MonoBehaviour, IBuffable
 
     public void Reset()
     {
-        _buffManager.Reset();
+        // Also called by the editor when the component is added, before any Init()
+        if (_buffManager != null)
+        {
+            _buffManager.Reset();
+        }
     }
 
     #region Inventory

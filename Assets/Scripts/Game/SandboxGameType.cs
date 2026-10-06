@@ -57,6 +57,8 @@ public class SandboxGameType : AGameType
 
         PlayerBehaviour.instance.character.hasUnrestrictedSkills = true;
         PlayerBehaviour.instance.Init(_data.CreateCharacterData(playedCharacter));
+        // Shows the mana gained from the items, even if the skills don't cost any here
+        UIManager.instance.GetView<GameView>(ViewType.Game).gameHUD.ShowManaBar(true);
 
         _panel.Init(this, _data, PlayerBehaviour.instance.character);
     }
@@ -116,7 +118,7 @@ public class SandboxGameType : AGameType
     public void GiveItem(AItemFactory itemFactory)
     {
         AItem item = itemFactory.GetItem();
-        if (item.tags.Exists(tag => tag == DataManager.instance.GetTagWithName("Player")))
+        if (item.tags.Exists(tag => tag == DataManager.instance.GetTagWithName(TagNames.Player)))
         {
             PlayerBehaviour.instance.character.inventoryHandler.AddItem(item, -1);
         }

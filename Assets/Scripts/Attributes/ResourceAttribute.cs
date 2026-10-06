@@ -3,10 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+// Value of a modifier about to be applied, once reduced by the armor: the listeners may change it
+public class PendingValue
+{
+    public ResourceModifier resourceModifier;
+    public float value;
+}
+
 public class ResourceAttribute : MonoBehaviour
 {
     public UnityEvent<ResourceAttribute> OnValueChanged = new UnityEvent<ResourceAttribute>();
-    public UnityEvent<GameObject, ResourceModifier, float, bool> OnAllConsumerProcessed = new UnityEvent<GameObject, ResourceModifier, float, bool>();
+    public UnityEvent<PendingValue> OnBeforeValueApplied = new UnityEvent<PendingValue>();
+    public UnityEvent<GameObject, ResourceModifier, ConsumerResult> OnAllConsumerProcessed = new UnityEvent<GameObject, ResourceModifier, ConsumerResult>();
 
     float _prevValue;
     float _value;
@@ -25,6 +33,8 @@ public class ResourceAttribute : MonoBehaviour
     public bool preventConsumers { get { return _preventConsumersCount > 0; } set { _preventConsumersCount += value ? 1 : -1; } }
 
     List<ResourceModifier> _resourceModifiers = new List<ResourceModifier>();
+    // Reused for every modifier, so sending OnBeforeValueApplied allocates nothing
+    readonly PendingValue _pendingValue = new PendingValue();
 
     // TODO: move in SO
     ResourceConsumerResolver _resourceConsumerResolver = new ResourceConsumerResolver();
@@ -49,8 +59,14 @@ public class ResourceAttribute : MonoBehaviour
                 if (resourceModifier.consumers.Count > 0)
                 {
                     (float value, bool isCritical) = _resourceConsumerResolver.ComputeValue(this, resourceModifier);
+                    _pendingValue.resourceModifier = resourceModifier;
+                    _pendingValue.value = value;
+                    OnBeforeValueApplied.Invoke(_pendingValue);
+                    value = _pendingValue.value;
+                    _pendingValue.resourceModifier = null;
+                    float overflow = GetOverflow(_value, value, _max.Value);
                     _value += value;
-                    OnAllConsumerProcessed.Invoke(gameObject, resourceModifier, value, isCritical);
+                    OnAllConsumerProcessed.Invoke(gameObject, resourceModifier, new ConsumerResult(value, isCritical, overflow));
                 }
             }
             _resourceModifiers.Clear();
@@ -62,6 +78,17 @@ public class ResourceAttribute : MonoBehaviour
             OnValueChanged.Invoke(this);
             _prevValue = _value;
         }
+    }
+
+    // Part of a heal going above the max, from a value that may already be above it (the value is only
+    // clamped once every modifier of the frame is processed)
+    public static float GetOverflow(float before, float value, float max)
+    {
+        if (value <= 0f)
+        {
+            return 0f;
+        }
+        return Mathf.Max(0f, before + value - Mathf.Max(before, max));
     }
 
     public void Refill()
@@ -92,10 +119,8 @@ public class ResourceAttribute : MonoBehaviour
         }
         _value = Mathf.Clamp(_value, 0f, max.Value);
 
-        if (_prevValue != _value)
-        {
-            OnValueChanged.Invoke(this);
-            _prevValue = _value;
-        }
+        // Always notified, even when only the max changed: the views show it (90 / 150 becomes 90 / 100)
+        _prevValue = _value;
+        OnValueChanged.Invoke(this);
     }
 }

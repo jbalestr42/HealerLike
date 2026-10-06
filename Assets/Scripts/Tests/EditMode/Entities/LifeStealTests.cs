@@ -17,8 +17,6 @@ public class TestUnits
         Entity entity = null;
         // Adding Entity triggers Entity.Reset() (NREs without a full Init()), only its health is used
         TestHelpers.WithLoggingDisabled(() => entity = go.AddComponent<Entity>());
-        // The AttributeManager required by Entity misses its Awake() in edit mode: a heal it sends reads it
-        TestHelpers.InvokePrivate(go.GetComponent<AttributeManager>(), "Awake");
         // Entity already requires an AttributeManager: the health lives on its own object
         GameObject healthGo = new GameObject(name + " Health");
         _objects.Add(healthGo);

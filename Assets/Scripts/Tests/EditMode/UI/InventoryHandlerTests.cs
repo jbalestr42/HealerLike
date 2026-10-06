@@ -56,6 +56,63 @@ public class InventoryHandlerTests
 
         Assert.AreEqual(0, inventoryHandler.GetFirstFreeIndex());
     }
+
+    [Test]
+    public void TakeAllItems_MovesEveryItemAndEmptiesTheOtherInventory()
+    {
+        // e.g. the items of a dead unit going back to the player
+        InventoryHandler unit = new InventoryHandler();
+        InventoryHandler player = new InventoryHandler();
+        StubItem first = new StubItem();
+        StubItem second = new StubItem();
+        StubItem alreadyThere = new StubItem();
+        unit.AddItem(first, 0);
+        unit.AddItem(second, 1);
+        player.AddItem(alreadyThere, 0);
+
+        player.TakeAllItems(unit);
+
+        CollectionAssert.IsEmpty(unit.items);
+        CollectionAssert.AreEquivalent(new[] { alreadyThere, first, second }, player.items.ConvertAll(itemData => itemData.item));
+    }
+
+    [Test]
+    public void TakeAllItems_UnequipsFromTheOtherInventoryAndAddsAsNewItemsWithoutSlot()
+    {
+        InventoryHandler unit = new InventoryHandler();
+        InventoryHandler player = new InventoryHandler();
+        StubItem item = new StubItem();
+        unit.AddItem(item, 3);
+        List<AItem> removed = new List<AItem>();
+        List<InventoryItemData> added = new List<InventoryItemData>();
+        List<bool> addedAsNew = new List<bool>();
+        unit.OnItemRemoved.AddListener(itemData => removed.Add(itemData.item));
+        player.OnItemAdded.AddListener((itemData, isNewItem) =>
+        {
+            added.Add(itemData);
+            addedAsNew.Add(isNewItem);
+        });
+
+        player.TakeAllItems(unit);
+
+        // The unit's OnItemRemoved unequips it, the player's inventory picks its own slot
+        CollectionAssert.AreEqual(new[] { item }, removed);
+        Assert.AreEqual(1, added.Count);
+        Assert.AreSame(item, added[0].item);
+        Assert.AreEqual(-1, added[0].inventoryIndex);
+        Assert.IsTrue(addedAsNew[0]);
+    }
+
+    [Test]
+    public void TakeAllItems_EmptyInventory_AddsNothing()
+    {
+        InventoryHandler player = new InventoryHandler();
+        player.AddItem(new StubItem(), 0);
+
+        player.TakeAllItems(new InventoryHandler());
+
+        Assert.AreEqual(1, player.items.Count);
+    }
 }
 
 }

@@ -23,12 +23,10 @@ MonoBehaviour:
     SerializationNodes:
     - Name: attributes
       Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, Assembly-CSharp],[System.Single,
-        mscorlib]], mscorlib
+      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, HealerLike.Runtime],[System.Single, mscorlib]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, Assembly-CSharp]],
-        mscorlib
+      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, HealerLike.Runtime]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -98,9 +96,21 @@ MonoBehaviour:
   model: {fileID: 6058514216512742586, guid: 3254ba096c79f224babbda9e67cdf806, type: 3}
   title: Normal
   description: The most basic entity, well balanced
-  price: 0
+  attributes:
+  - key: 0
+    value: 100
+  - key: 1
+    value: 1
+  - key: 2
+    value: 4
+  - key: 3
+    value: 100
+  targetBehaviourType: 1
+  targetValidators: []
+  tags:
+  - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
+  - {fileID: 11400000, guid: 057ac9b64013d5b4a8e7cad3956503b8, type: 2}
+  - {fileID: 11400000, guid: 3614776454183994283ae65b8f13ca38, type: 2}
   items: []
-  onHitConsumer:
-  - {fileID: 11400000, guid: a5c875660032e494eb87dec1e14511c7, type: 2}
   skillFactories:
   - {fileID: 11400000, guid: 9f34690dc26f94540b44a6e6d9134128, type: 2}

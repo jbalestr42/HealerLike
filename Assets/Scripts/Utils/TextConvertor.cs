@@ -77,9 +77,34 @@ public class TextConvertor
 
                 var value = GetPropertyValue(data, tokens[1]);
                 return value != null ? value.ToString() : GetError($"Unkown Variable Name '{tokens[1]}'", defaultValue);
+
+            case "cooldown":
+                return GetCooldown(character, data, defaultValue);
             default:
                 return GetError($"Unkown Variable Type -> {tokens[0]}", defaultValue);
         }
+    }
+
+    /// <summary>
+    /// {cooldown}: duration of the DurationValidator of a skill, with the SkillCooldownMultiplier of the
+    /// character applied (e.g. Prayer Beads), the base duration without a character
+    /// </summary>
+    static string GetCooldown(Character character, object data, string defaultValue)
+    {
+        if (data is not CharacterSkillData skillData || skillData.validators == null)
+        {
+            return data == null ? defaultValue : GetError("{cooldown} needs the data of a character skill", defaultValue);
+        }
+
+        foreach (ACharacterSkillValidatorFactory validator in skillData.validators)
+        {
+            if (validator is DurationValidatorFactory durationValidator)
+            {
+                float duration = DurationValidator.GetDuration(durationValidator.data.duration, character != null ? character.gameObject : null);
+                return duration.ToString("0.##", CultureInfo.InvariantCulture);
+            }
+        }
+        return GetError("{cooldown} needs a DurationValidator in the skill validators", defaultValue);
     }
 
     public static object GetPropertyValue(object obj, string propertyName)

@@ -24,6 +24,7 @@ MonoBehaviour:
   data:
     ignoreDamageReduction: 1
     ignoreConsumerPrevention: 1
+    canBeCritical: 0
     value:
       rid: 4866441223440957629
   references:

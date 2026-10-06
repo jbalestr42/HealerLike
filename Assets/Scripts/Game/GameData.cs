@@ -27,11 +27,12 @@ public class GameData : SerializedScriptableObject
 
     [HorizontalGroup("Split")]
     [BoxGroup("Split/Player Data")]
-    public int gold = 100;
-
-    [HorizontalGroup("Split")]
-    [BoxGroup("Split/Player Data")]
     public float playerItemChance = 0.2f;
+
+    // Chance for each reward choice to be a unit, the other choices being items
+    [BoxGroup("Split/Player Data")]
+    [Range(0f, 1f)]
+    public float unitRewardChance = 0.25f;
 
     [BoxGroup("Split/Upgrade Data")]
     [SerializeField]
@@ -46,6 +47,10 @@ public class GameData : SerializedScriptableObject
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<AItemFactory>, AItemFactory>(items, this)")]
     public List<AItemFactory> items = new List<AItemFactory>();
+
+    // Units found by their tags (e.g. the ones a class can recruit)
+    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<EntityData>, EntityData>(entities, this)")]
+    public List<EntityData> entities = new List<EntityData>();
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<GameplayTag>, GameplayTag>(tags, this)")]
     public List<GameplayTag> tags = new List<GameplayTag>();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -29,6 +30,10 @@ public static class EntityInfoFormatter
         { AttributeType.CriticalMultiplier, "Critical Multiplier" },
         { AttributeType.CriticalChanceResist, "Critical Resist" },
         { AttributeType.HealingReceived, "Healing Received" },
+        { AttributeType.SkillCooldownMultiplier, "Skill Cooldown Multiplier" },
+        { AttributeType.SkillCostMultiplier, "Skill Cost Multiplier" },
+        { AttributeType.HealCriticalChance, "Heal Critical Chance" },
+        { AttributeType.RewardChoices, "Reward Choices" },
     };
 
     static readonly AttributeModifierType[] ModifierTypes = { AttributeModifierType.Add, AttributeModifierType.Multiply, AttributeModifierType.Override };
@@ -95,6 +100,24 @@ public static class EntityInfoFormatter
             }
         }
         return distinct.ConvertAll(line => counts[line] > 1 ? $"{line} ×{counts[line]}" : line);
+    }
+
+    // A colored header followed by its lines, "none" when there is nothing to show
+    public static void AppendSection(StringBuilder builder, string title, List<string> lines)
+    {
+        if (builder.Length > 0)
+        {
+            builder.Append("<size=6>\n</size>");
+        }
+        builder.Append($"<color={HeaderColor}><b>{title}</b></color>\n");
+        if (lines.Count == 0)
+        {
+            builder.Append($"<color={MutedColor}>none</color>\n");
+        }
+        foreach (string line in lines)
+        {
+            builder.Append(line).Append('\n');
+        }
     }
 
     // The entity title when the source is an entity, its name otherwise
@@ -263,6 +286,10 @@ public static class EntityInfoFormatter
     public static string FormatSkill(ASkill skill)
     {
         string line = $"<b>{Prettify(skill.GetType().Name, "Skill")}</b>";
+        if (skill is MarkedStrikeSkill markedStrike)
+        {
+            return line + $" <color={MutedColor}>· {FormatMarkedStrike(markedStrike)}</color>";
+        }
         if (skill is ICooldownSkill cooldownSkill)
         {
             float remaining = Mathf.Max(0f, cooldownSkill.cooldownProgress * cooldownSkill.cooldownDuration);
@@ -272,15 +299,31 @@ public static class EntityInfoFormatter
         return line;
     }
 
+    // "every 8.0s, strikes 3.0s after the mark · next mark in 4.2s", or "... · striking Knight in 1.8s"
+    public static string FormatMarkedStrike(MarkedStrikeSkill skill)
+    {
+        string line = $"every {FormatDuration(skill.interval)}, strikes {FormatDuration(skill.data.delay)} after the mark";
+        if (skill.isMarking && skill.markedTarget != null)
+        {
+            return line + $" · striking {GetSourceName(skill.markedTarget, skill.gameObject)} in {FormatDuration(skill.remainingDelay)}";
+        }
+        return line + $" · next mark in {FormatDuration(skill.remainingInterval)}";
+    }
+
     // "Venom — Poisons the target (innate)"
     public static string FormatItem(AItem item, bool isInnate)
+    {
+        return FormatItemDetails(item) + $" <color={MutedColor}>({(isInnate ? "innate" : "added")})</color>";
+    }
+
+    // "Venom — Poisons the target"
+    public static string FormatItemDetails(AItem item)
     {
         string line = $"<b>{item.title}</b>";
         if (!string.IsNullOrEmpty(item.description))
         {
             line += $" — {item.description}";
         }
-        line += $" <color={MutedColor}>({(isInnate ? "innate" : "added")})</color>";
         return line;
     }
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEngine;
 
 namespace Game
 {
@@ -63,6 +64,35 @@ public class CharactersDataTests
         foreach (CharacterData character in _gameData.characters)
         {
             Assert.IsFalse(character.entities.Exists(entity => entity.name == "TestEntity"), character.name);
+        }
+    }
+
+    // Each character recruits the units tagged with its class and Reward: its starting units at least
+    [TestCase("Assets/Data/GameData.asset")]
+    [TestCase("Assets/Data/TestData.asset")]
+    public void EveryCharacter_CanRecruitItsStartingUnits(string gameDataPath)
+    {
+        GameData data = AssetDatabase.LoadAssetAtPath<GameData>(gameDataPath);
+        GameObject go = new GameObject("DataManager");
+        try
+        {
+            DataManager dataManager = go.AddComponent<DataManager>();
+            dataManager.data = data;
+            foreach (CharacterData character in data.characters)
+            {
+                Assert.IsNotNull(character.classTag, character.title);
+                Assert.AreEqual(character.title, character.classTag.name);
+
+                List<EntityData> recruitable = dataManager.GetRewardEntities(character);
+                foreach (EntityData unit in character.entities)
+                {
+                    CollectionAssert.Contains(recruitable, unit, $"{character.title}: {unit.title}");
+                }
+            }
+        }
+        finally
+        {
+            Object.DestroyImmediate(go);
         }
     }
 }

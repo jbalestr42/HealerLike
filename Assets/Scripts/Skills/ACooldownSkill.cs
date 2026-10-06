@@ -3,9 +3,6 @@ using UnityEngine;
 public abstract class ACooldownSkill<SkillData> : ASkill<SkillData>, ICooldownSkill where SkillData : SkillDataBase
 {
     float _cooldown = 0f;
-    public float cooldownProgress => _cooldown / cooldownDuration;
-
-    public abstract float cooldownDuration { get; }
 
     public override void UpdateBehaviour(GameObject source)
     {
@@ -35,4 +32,12 @@ public abstract class ACooldownSkill<SkillData> : ASkill<SkillData>, ICooldownSk
     }
 
     public abstract bool Execute(GameObject source);
+
+    #region ICooldownSkill
+
+    public float cooldownProgress => _cooldown / cooldownDuration;
+
+    public abstract float cooldownDuration { get; }
+
+    #endregion
 }

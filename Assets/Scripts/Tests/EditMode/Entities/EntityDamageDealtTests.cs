@@ -42,6 +42,18 @@ public class EntityDamageDealtTests
     }
 
     [Test]
+    public void NotifyAttacker_DamageToItself_IsNotReported()
+    {
+        Entity unit = _units.Create(100f, 100f, "Unit");
+        bool isReported = false;
+        unit.OnDamageDealt.AddListener((hit, damage) => isReported = true);
+
+        Entity.NotifyAttacker(unit.gameObject, unit.gameObject, -2f);
+
+        Assert.IsFalse(isReported);
+    }
+
+    [Test]
     public void NotifyAttacker_FromANonEntityOrNoSource_DoesNothing()
     {
         GameObject character = new GameObject("Character");

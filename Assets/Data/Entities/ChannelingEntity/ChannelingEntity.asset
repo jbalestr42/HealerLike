@@ -23,12 +23,10 @@ MonoBehaviour:
     SerializationNodes:
     - Name: attributes
       Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, Assembly-CSharp],[System.Single,
-        mscorlib]], mscorlib
+      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, HealerLike.Runtime],[System.Single, mscorlib]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, Assembly-CSharp]],
-        mscorlib
+      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, HealerLike.Runtime]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -97,9 +95,19 @@ MonoBehaviour:
       Data: 
   model: {fileID: 1631280189745936, guid: 68539cebf28b3e74d85b42728ea06f38, type: 3}
   title: Channeling
-  description: "Channels its attack on the same target"
-  targetBehaviourType: 0
+  description: Channels its attack on the same target
+  attributes:
+  - key: 0
+    value: 100
+  - key: 1
+    value: 1
+  - key: 2
+    value: 5
+  - key: 3
+    value: 100
+  targetBehaviourType: 1
   targetValidators: []
+  tags: []
   items: []
   skillFactories:
   - {fileID: 11400000, guid: 74138de38d4bc1840a327912fa81228e, type: 2}

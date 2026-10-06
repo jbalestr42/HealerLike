@@ -3,6 +3,7 @@
 public class SelectItemUpgradeButton : MonoBehaviour
 {
     [SerializeField] TMPro.TMP_Text _title;
+    [SerializeField] TMPro.TMP_Text _description;
     AItem _item;
 
     public AItem item { get { return _item; } }
@@ -11,6 +12,7 @@ public class SelectItemUpgradeButton : MonoBehaviour
     {
         _item = item;
         _title.text = _item.title;
+        _description.text = _item.description;
     }
 
     public void SelectUpgrade()

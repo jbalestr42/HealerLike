@@ -24,11 +24,11 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 338cc04877ed9b642abc819503c5f721, type: 3}
     name: Balance Life
-    description: 'Share the health of the team: every ally ends up at the same health percent, the total health being kept. Ignores armor, invincibility, buffs and debuffs
+    description: 'Share the health of the team: every ally ends up at the average health percent of the team. Ignores armor, invincibility, buffs and debuffs
 
       Cost: <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color> mana
 
-      Cooldown: <color="yellow">{data:validators|0.data.duration}s</color>'
+      Cooldown: <color="yellow">{cooldown}s</color>'
     validators:
     - {fileID: 11400000, guid: b71ba0e09dc7ace49b3bd0c3243513f8, type: 2}
     - {fileID: 11400000, guid: e36cf6074fea67045912b3b85d9b2fb5, type: 2}

@@ -24,6 +24,8 @@ public class ApplyConsumerOnTime : ACooldownSkill<ApplyConsumerOnTimeData>, ISta
 
     public override float cooldownDuration => data.rate;
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _stacks++;
@@ -33,4 +35,6 @@ public class ApplyConsumerOnTime : ACooldownSkill<ApplyConsumerOnTimeData>, ISta
     {
         _stacks--;
     }
+
+    #endregion
 }

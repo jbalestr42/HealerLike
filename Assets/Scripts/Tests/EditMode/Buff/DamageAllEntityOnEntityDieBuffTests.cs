@@ -82,8 +82,6 @@ public class DamageAllEntityOnEntityDieBuffTests
         {
             entity = go.AddComponent<Entity>();
         });
-        // Initialized like in game, where every entity has its attributes
-        TestHelpers.InvokePrivate(go.GetComponent<AttributeManager>(), "Awake");
         // On its own child, with its own AttributeManager holding the max health
         GameObject healthGo = new GameObject("Health");
         healthGo.transform.SetParent(go.transform);
@@ -143,7 +141,7 @@ public class DamageAllEntityOnEntityDieBuffTests
         GameObject victim = CreateVictim();
         _buff.Add(_owner, _owner);
         ResourceModifier processed = null;
-        victim.GetComponent<Entity>().health.OnAllConsumerProcessed.AddListener((target, modifier, value, isCritical) => processed = modifier);
+        victim.GetComponent<Entity>().health.OnAllConsumerProcessed.AddListener((target, modifier, result) => processed = modifier);
 
         Kill(_dead);
         Drain(victim);
@@ -234,7 +232,7 @@ public class DamageAllEntityOnEntityDieBuffTests
         _buff.data.trigger = DeathTrigger.Owner;
         _buff.Add(kamikaze, kamikaze);
         ResourceModifier processed = null;
-        victim.GetComponent<Entity>().health.OnAllConsumerProcessed.AddListener((target, modifier, value, isCritical) => processed = modifier);
+        victim.GetComponent<Entity>().health.OnAllConsumerProcessed.AddListener((target, modifier, result) => processed = modifier);
 
         Kill(kamikaze);
         Drain(victim);

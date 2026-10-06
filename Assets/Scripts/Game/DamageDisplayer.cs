@@ -26,12 +26,12 @@ public class DamageDisplayer : MonoBehaviour
         entity.health.OnAllConsumerProcessed.RemoveListener(DisplayDamage);
     }
 
-    void DisplayDamage(GameObject owner, ResourceModifier resourceModifier, float value, bool isCritical)
+    void DisplayDamage(GameObject owner, ResourceModifier resourceModifier, ConsumerResult result)
     {
-        GameObject damagePopupPrefab = isCritical ? _criticalDamagePopup : _damagePopup;
+        GameObject damagePopupPrefab = result.isCritical ? _criticalDamagePopup : _damagePopup;
         GameObject damagePopupGO = Instantiate(damagePopupPrefab, owner.GetComponent<Entity>().targetPoint.transform.position, Quaternion.identity);
         DamagePopup damagePopup = damagePopupGO.GetComponent<DamagePopup>();
         damagePopupGO.transform.SetParent(_parent.transform);
-        damagePopup.Init(resourceModifier.source, value);
+        damagePopup.Init(resourceModifier.source, result.value);
     }
 }

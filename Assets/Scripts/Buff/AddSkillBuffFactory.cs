@@ -29,6 +29,8 @@ public class AddSkillBuff : ABuff<AddSkillBuffData>, IStackableBuff
 
     public override bool isStackable => _skillInstance is IStackableBuff;
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         IStackableBuff stackableSkill = _skillInstance as IStackableBuff;
@@ -40,4 +42,6 @@ public class AddSkillBuff : ABuff<AddSkillBuffData>, IStackableBuff
         IStackableBuff stackableSkill = _skillInstance as IStackableBuff;
         stackableSkill.Unstack(source, target);
     }
+
+    #endregion
 }

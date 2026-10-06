@@ -8,21 +8,37 @@ public static class CharacterCardText
         return string.IsNullOrEmpty(character.text) ? "" : character.text;
     }
 
-    // One skill per line
-    public static string GetSkills(CharacterData character)
+    // "<b>Shield</b>" then the description of the skill with its values computed from the stats of the
+    // character (e.g. a heal from its Heal Power, starting items included), its cost and its cooldown
+    public static string GetSkillTooltip(ACharacterSkillFactory skill, Character character)
     {
-        List<string> names = new List<string>();
-        if (character.skills != null)
+        CharacterSkillData data = skill.Create().GetData();
+        string description = TextConvertor.Convert(data.description, character, data);
+        return string.IsNullOrEmpty(description) ? $"<b>{data.name}</b>" : $"<b>{data.name}</b>\n{description}";
+    }
+
+    // The stats of the character, starting items included, as a list ("- Heal Power: 35")
+    public static string GetStats(Character character)
+    {
+        List<string> lines = new List<string>();
+        foreach (AttributeType type in System.Enum.GetValues(typeof(AttributeType)))
         {
-            foreach (ACharacterSkillFactory skill in character.skills)
+            if (character.attributeManager.Has(type))
             {
-                if (skill != null)
-                {
-                    names.Add("- " + skill.Create().GetData().name);
-                }
+                AddStat(lines, type, character.attributeManager.Get(type).Value);
             }
         }
-        return string.Join("\n", names);
+        return string.Join("\n", lines);
+    }
+
+    // "- Max HP: 100", nothing for a stat at its default value: it says nothing (e.g. the damage of a unit
+    // that doesn't attack)
+    static void AddStat(List<string> lines, AttributeType type, float value)
+    {
+        if (!UnityEngine.Mathf.Approximately(value, AttributeManager.GetDefaultValue(type)))
+        {
+            lines.Add($"- {EntityInfoFormatter.GetAttributeName(type)}: {EntityInfoFormatter.FormatNumber(value)}");
+        }
     }
 
     // The items the character starts with, one per line with its effect
@@ -43,20 +59,60 @@ public static class CharacterCardText
         return string.Join("\n", lines);
     }
 
-    // The units the character can recruit, on a single line
-    public static string GetUnits(CharacterData character)
+    // "<b>Zealot</b>" with its description right under it, then its details
+    public static string GetUnitTooltip(EntityData entity)
     {
-        List<string> titles = new List<string>();
-        if (character.entities != null)
+        string title = $"<b>{entity.title}</b>";
+        string details = GetUnitDetails(entity);
+        if (string.IsNullOrEmpty(details))
         {
-            foreach (EntityData entity in character.entities)
+            return title;
+        }
+        // The description sticks to the name, the other sections are apart from it
+        return title + (string.IsNullOrEmpty(entity.description) ? "\n\n" : "\n") + details;
+    }
+
+    // Sections apart from each other: the description, the stats as a list ("- Max HP: 100"), then the innate
+    // items under "Passives"
+    public static string GetUnitDetails(EntityData entity)
+    {
+        List<string> sections = new List<string>();
+        if (!string.IsNullOrEmpty(entity.description))
+        {
+            sections.Add(entity.description);
+        }
+
+        if (entity.attributes != null)
+        {
+            List<AttributeType> types = new List<AttributeType>(entity.attributes.Keys);
+            types.Sort();
+            List<string> stats = new List<string>();
+            foreach (AttributeType type in types)
             {
-                if (entity != null)
+                AddStat(stats, type, entity.attributes[type]);
+            }
+            if (stats.Count > 0)
+            {
+                sections.Add(string.Join("\n", stats));
+            }
+        }
+
+        List<string> passives = new List<string>();
+        if (entity.items != null)
+        {
+            foreach (AItemFactory itemFactory in entity.items)
+            {
+                if (itemFactory != null)
                 {
-                    titles.Add(entity.title);
+                    string description = itemFactory.GetItem().description;
+                    passives.Add($"<b>{itemFactory.title}</b>" + (string.IsNullOrEmpty(description) ? "" : ": " + description));
                 }
             }
         }
-        return string.Join(", ", titles);
+        if (passives.Count > 0)
+        {
+            sections.Add("Passives\n" + string.Join("\n", passives));
+        }
+        return string.Join("\n\n", sections);
     }
 }

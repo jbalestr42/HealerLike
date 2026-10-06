@@ -4,13 +4,10 @@ using UnityEngine;
 
 public class AttributeManager : MonoBehaviour
 {
-    Dictionary<AttributeType, Attribute> _attributes;
+    // Ready as soon as the component is added, even outside the player loop (e.g. a character built on the
+    // character select screen, or in edit mode)
+    Dictionary<AttributeType, Attribute> _attributes = new Dictionary<AttributeType, Attribute>();
 
-	void Awake()
-    {
-        _attributes = new Dictionary<AttributeType, Attribute>();
-    }
-	
 	void Update()
     {
         foreach (var attribute in _attributes)
@@ -18,6 +15,12 @@ public class AttributeManager : MonoBehaviour
             attribute.Value.Update();
         }
 	}
+
+    // Computes the attributes right away with their modifiers, instead of on the next frame
+    public void ForceUpdate()
+    {
+        Update();
+    }
 
     public Attribute Add(AttributeType type, Attribute attribute)
     {
@@ -43,7 +46,30 @@ public class AttributeManager : MonoBehaviour
         return _attributes[type];
     }
 
-    public Attribute GetOrAdd(AttributeType type, float defaultValue = 0f)
+    // Value an attribute starts from when it's added without one: the multipliers leave the value
+    // untouched (heals received, skill cooldowns and costs) or increase it by half (critical hits), the other
+    // attributes start at 0
+    public static float GetDefaultValue(AttributeType type)
+    {
+        switch (type)
+        {
+            case AttributeType.HealingReceived:
+            case AttributeType.SkillCooldownMultiplier:
+            case AttributeType.SkillCostMultiplier:
+                return 1f;
+            case AttributeType.CriticalMultiplier:
+                return 1.5f;
+            default:
+                return 0f;
+        }
+    }
+
+    public Attribute GetOrAdd(AttributeType type)
+    {
+        return GetOrAdd(type, GetDefaultValue(type));
+    }
+
+    public Attribute GetOrAdd(AttributeType type, float defaultValue)
     {
         if (!_attributes.ContainsKey(type))
         {

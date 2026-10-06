@@ -23,12 +23,10 @@ MonoBehaviour:
     SerializationNodes:
     - Name: attributes
       Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, Assembly-CSharp],[System.Single,
-        mscorlib]], mscorlib
+      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, HealerLike.Runtime],[System.Single, mscorlib]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, Assembly-CSharp]],
-        mscorlib
+      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, HealerLike.Runtime]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -108,10 +106,24 @@ MonoBehaviour:
       Entry: 8
       Data: 
   model: {fileID: 6891580169314388076, guid: 66ae442726d1cf4428dacb34edd61ac4, type: 3}
-  title: "Hit Armor Buffer"
-  description: "Doesn't attack. Every 5s, gives +2 hit armor to its most wounded ally"
+  title: Hit Armor Buffer
+  description: Doesn't attack. Every 5s, gives +2 hit armor to its most wounded ally
+  attributes:
+  - key: 0
+    value: 100
+  - key: 3
+    value: 1000
+  - key: 2
+    value: 0
+  - key: 1
+    value: 0
+  - key: 13
+    value: 50
   targetBehaviourType: 1
   targetValidators: []
+  tags:
+  - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
+  - {fileID: 11400000, guid: 057ac9b64013d5b4a8e7cad3956503b8, type: 2}
   items: []
   skillFactories:
   - {fileID: 11400000, guid: c833b73cafde2dd4bb983bda29aa4b41, type: 2}

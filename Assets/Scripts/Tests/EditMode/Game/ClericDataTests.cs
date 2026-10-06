@@ -67,8 +67,9 @@ public class ClericDataTests
         }
     }
 
+    // The anticipation spell of the Cleric: cast on the unit about to take a big hit
     [Test]
-    public void Shield_GivesHalfDamageReductionToASingleAllyFor5s()
+    public void Shield_Gives70PercentArmorAndFlatArmorToASingleAllyFor5s()
     {
         BuffCharacterSkillFactory shield = GetSkill<BuffCharacterSkillFactory>("Shield");
 
@@ -78,12 +79,29 @@ public class ClericDataTests
         ABuffHandlerFactory handler = shield.data.buffHandlerFactory[0];
         Assert.AreEqual(DurationType.Duration, handler.durationType);
         Assert.AreEqual(5f, handler.duration, 0.0001f);
+        Assert.AreEqual(2, handler.buffFactoryList.Count);
 
-        FlatModifierFactory modifier = handler.buffFactoryList[0] as FlatModifierFactory;
-        Assert.IsNotNull(modifier);
-        Assert.AreEqual(AttributeType.PercentArmor, modifier.data.type);
-        Assert.AreEqual(AttributeModifierType.Add, modifier.data.modifierType);
-        Assert.AreEqual(0.5f, modifier.data.value, 0.0001f);
+        FlatModifierFactory percentArmor = handler.buffFactoryList[0] as FlatModifierFactory;
+        Assert.IsNotNull(percentArmor);
+        Assert.AreEqual(AttributeType.PercentArmor, percentArmor.data.type);
+        Assert.AreEqual(AttributeModifierType.Add, percentArmor.data.modifierType);
+        Assert.AreEqual(0.7f, percentArmor.data.value, 0.0001f);
+
+        FlatModifierFactory flatArmor = handler.buffFactoryList[1] as FlatModifierFactory;
+        Assert.IsNotNull(flatArmor);
+        Assert.AreEqual(AttributeType.FlatArmor, flatArmor.data.type);
+        Assert.AreEqual(AttributeModifierType.Add, flatArmor.data.modifierType);
+        Assert.AreEqual(5f, flatArmor.data.value, 0.0001f);
+    }
+
+    [Test]
+    public void Shield_TheDescriptionShowsBothArmors()
+    {
+        CharacterSkillData data = GetSkill<BuffCharacterSkillFactory>("Shield").data;
+
+        StringAssert.Contains("buffFactoryList|0.data.value", data.description);
+        StringAssert.Contains("buffFactoryList|1.data.value", data.description);
+        StringAssert.Contains("flat armor", data.description);
     }
 
     [Test]

@@ -127,12 +127,55 @@ public class MapViewTests
     }
 
     [Test]
+    public void GetRoomColor_TypeMissingFromTheSavedColors_KeepsItsOwnColor()
+    {
+        // e.g. the Event rooms, added after the MapView prefab saved its colors
+        GameObject go = new GameObject();
+        MapView view = null;
+        TestHelpers.WithLoggingDisabled(() => view = go.AddComponent<MapView>());
+        TestHelpers.SetPrivateField(view, "_roomColors", new System.Collections.Generic.Dictionary<MapNodeType, Color>
+        {
+            { MapNodeType.Combat, Color.blue },
+        });
+
+        Color eventColor = view.GetRoomColor(MapNodeType.Event);
+
+        Assert.AreNotEqual(Color.gray, eventColor);
+        Assert.AreNotEqual(Color.blue, eventColor);
+        Assert.AreEqual(Color.blue, view.GetRoomColor(MapNodeType.Combat));
+        UnityEngine.Object.DestroyImmediate(go);
+    }
+
+    [Test]
     public void GetNodeLabel_EveryTypeHasALabel()
     {
         foreach (MapNodeType type in Enum.GetValues(typeof(MapNodeType)))
         {
             Assert.IsNotEmpty(MapView.GetNodeLabel(type));
         }
+    }
+
+    [Test]
+    public void GetNodeSize_EnoughRoom_KeepsTheMaxSize()
+    {
+        RunMap map = MapGenerator.GenerateLayout(10, 3, 4, new System.Random(0));
+
+        Vector2 size = MapView.GetNodeSize(new Vector2(170f, 50f), new Vector2(1600f, 900f), map);
+
+        Assert.AreEqual(170f, size.x, 0.001f);
+        Assert.AreEqual(50f, size.y, 0.001f);
+    }
+
+    [Test]
+    public void GetNodeSize_TooManyFloorsAndColumns_ShrinksToLeaveAGap()
+    {
+        // 16 rows (15 floors + the boss) of 56.25, 7 columns of 100
+        RunMap map = MapGenerator.GenerateLayout(15, 7, 6, new System.Random(0));
+
+        Vector2 size = MapView.GetNodeSize(new Vector2(170f, 50f), new Vector2(700f, 900f), map);
+
+        Assert.AreEqual(90f, size.x, 0.001f);
+        Assert.AreEqual(45f, size.y, 0.001f);
     }
 }
 

@@ -61,6 +61,33 @@ public static class RelativeCellPattern
         return offsets;
     }
 
+    // The living entities of the list, other than the center, on a cell of the pattern around it
+    public static List<Entity> FindEntities(Entity center, List<GameObject> entities, RelativeCellPatternType patternType, int range, float cellSize)
+    {
+        List<Vector2Int> offsets = GetOffsets(patternType, range);
+        List<Entity> found = new List<Entity>();
+        foreach (GameObject go in entities)
+        {
+            Entity entity = go != null ? go.GetComponent<Entity>() : null;
+            if (entity == null || entity == center || entity.health == null || entity.health.Value <= 0f)
+            {
+                continue;
+            }
+            if (offsets.Contains(GetCellOffset(center.transform.position, go.transform.position, cellSize)))
+            {
+                found.Add(entity);
+            }
+        }
+        return found;
+    }
+
+    // Offset in cells from one position to another on the ground plane
+    public static Vector2Int GetCellOffset(Vector3 from, Vector3 to, float cellSize)
+    {
+        Vector3 delta = (to - from) / cellSize;
+        return new Vector2Int(Mathf.RoundToInt(delta.x), Mathf.RoundToInt(delta.z));
+    }
+
     static void AddAlongDirections(List<Vector2Int> offsets, Vector2Int[] directions, int range)
     {
         foreach (Vector2Int direction in directions)

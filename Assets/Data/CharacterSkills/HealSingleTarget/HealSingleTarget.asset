@@ -28,7 +28,7 @@ MonoBehaviour:
 
       Cost: <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color> mana
 
-      Cooldown: <color="yellow">{data:validators|0.data.duration}s</color>'
+      Cooldown: <color="yellow">{cooldown}s</color>'
     validators:
     - {fileID: 11400000, guid: 80dffdeee988ccc41a0e7ab0ae1e307c, type: 2}
     - {fileID: 11400000, guid: 17016692f1a03ab4ca4807ba22f03f4b, type: 2}

@@ -35,9 +35,12 @@ public class DamagePopup : MonoBehaviour
         _text.text = value.ToString("F0");
         _text.fontSharedMaterial = value > 0f ? _positiveMaterial : _negativeMaterial;
         _color = _text.color;
-        _direction = -Vector3.Normalize(source.transform.position - transform.position);
+        // The source may be gone (e.g. killed since it sent the value): the popup stays in place, as for
+        // a unit hurting itself
+        Vector3 sourcePosition = source != null ? source.transform.position : transform.position;
+        _direction = -Vector3.Normalize(sourcePosition - transform.position);
         _direction += AddNoiseOnAngle(0f, 30f);
-        _speed = Math.RemapClamped(Vector3.Distance(source.transform.position, transform.position), 0f, 10f, 0f, _maxSpeed);
+        _speed = Math.RemapClamped(Vector3.Distance(sourcePosition, transform.position), 0f, 10f, 0f, _maxSpeed);
     }
  
     Vector3 AddNoiseOnAngle(float min, float max)

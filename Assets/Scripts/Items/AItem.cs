@@ -3,11 +3,18 @@ using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-public abstract class AItemFactory : SerializedScriptableObject
+public abstract class AItemFactory : SerializedScriptableObject, ITaggable
 {
     public abstract AItem GetItem();
     public abstract string title { get; }
     public abstract List<GameplayTag> tags { get; }
+
+    #region ITaggable
+
+    public bool HasTag(GameplayTag tag) => TagFilter.HasTag(tags, tag);
+    public bool HasTag(string tagName) => TagFilter.HasTag(tags, tagName);
+
+    #endregion
 }
 
 public class ItemFactory<ItemType, DataType> : AItemFactory, IGameDataSource
@@ -50,7 +57,7 @@ public class BaseItemData
     public List<GameplayTag> tags = new List<GameplayTag>();
 }
 
-public abstract class AItem
+public abstract class AItem : ITaggable
 {
     public abstract void Equip(GameObject target);
     public abstract void Unequip(GameObject target);
@@ -58,6 +65,13 @@ public abstract class AItem
     public abstract string description { get; }
     public abstract Sprite icon { get; }
     public abstract List<GameplayTag> tags { get; }
+
+    #region ITaggable
+
+    public bool HasTag(GameplayTag tag) => TagFilter.HasTag(tags, tag);
+    public bool HasTag(string tagName) => TagFilter.HasTag(tags, tagName);
+
+    #endregion
 }
 
 public abstract class AItem<DataType> : AItem, IGameDataSource where DataType : BaseItemData

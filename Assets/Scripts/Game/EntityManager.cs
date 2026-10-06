@@ -8,8 +8,12 @@ using UnityEngine.UIElements;
 
 public class EntityManager : Singleton<EntityManager>
 {
+    // Tag given to the entities summoned during a battle
+
     [HideInInspector] public UnityEvent<Entity> OnEntitySpawned = new UnityEvent<Entity>();
     [HideInInspector] public UnityEvent<Entity> OnEntityKilled = new UnityEvent<Entity>();
+    // An entity summoned during a battle, once it's tagged as a summon
+    [HideInInspector] public UnityEvent<Entity> OnEntitySummoned = new UnityEvent<Entity>();
     [HideInInspector] public UnityEvent<GameObject> OnProjectileSpawned = new UnityEvent<GameObject>();
 
     [SerializeField]
@@ -102,13 +106,17 @@ public class EntityManager : Singleton<EntityManager>
         }
     }
 
-    // Tag given to the entities summoned during a battle
-    public const string summonTagName = "Summon";
+    // Tags the entity as a summon, removed at the end of the battle
+    public void AddSummon(Entity summon)
+    {
+        summon.AddTag(DataManager.instance.GetTagWithName(TagNames.Summon));
+        OnEntitySummoned.Invoke(summon);
+    }
 
     // Summons only last for the battle they were summoned in: removed without being killed
     public void RemoveSummons()
     {
-        GameplayTag summonTag = DataManager.instance.GetTagWithName(summonTagName);
+        GameplayTag summonTag = DataManager.instance.GetTagWithName(TagNames.Summon);
         foreach (Entity.EntityType entityType in Enum.GetValues(typeof(Entity.EntityType)))
         {
             foreach (GameObject summon in FindSummons(GetEntities(entityType), summonTag))

@@ -11,19 +11,19 @@ public class ItemData : BaseItemData
 {
     [Space]
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(buffs)")]
-    public List<ABuffHandlerFactory> buffs;
+    public List<ABuffHandlerFactory> buffs = new List<ABuffHandlerFactory>();
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(onHitEffects)")]
-    public List<ABuffHandlerFactory> onHitEffects;
+    public List<ABuffHandlerFactory> onHitEffects = new List<ABuffHandlerFactory>();
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AConsumerFactory>, AConsumerFactory>(onHitConsumers)")]
-    public List<AConsumerFactory> onHitConsumers;
+    public List<AConsumerFactory> onHitConsumers = new List<AConsumerFactory>();
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(projectileBehaviours)")]
-    public List<ABuffHandlerFactory> projectileBehaviours;
+    public List<ABuffHandlerFactory> projectileBehaviours = new List<ABuffHandlerFactory>();
 
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillFactory>, ASkillFactory>(skills)")]
-    public List<ASkillFactory> skills;
+    public List<ASkillFactory> skills = new List<ASkillFactory>();
 }
 
 public class Item : AItem<ItemData>

@@ -138,6 +138,54 @@ public class RunStateTests
         Assert.IsFalse(_run.TravelTo(null));
         Assert.IsNull(_run.currentNode);
     }
+
+    [Test]
+    public void DeadAllies_NoneAtTheStart()
+    {
+        CollectionAssert.IsEmpty(_run.deadAllies);
+    }
+
+    [Test]
+    public void AddDeadAlly_KeepsEveryCopyOfTheUnit()
+    {
+        EntityData knight = UnityEngine.ScriptableObject.CreateInstance<EntityData>();
+        EntityData archer = UnityEngine.ScriptableObject.CreateInstance<EntityData>();
+        try
+        {
+            _run.AddDeadAlly(knight);
+            _run.AddDeadAlly(archer);
+            _run.AddDeadAlly(knight);
+            _run.AddDeadAlly(null);
+
+            CollectionAssert.AreEqual(new[] { knight, archer, knight }, _run.deadAllies);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(knight);
+            UnityEngine.Object.DestroyImmediate(archer);
+        }
+    }
+
+    [Test]
+    public void RemoveDeadAlly_RemovesOneCopyOnly()
+    {
+        EntityData knight = UnityEngine.ScriptableObject.CreateInstance<EntityData>();
+        EntityData archer = UnityEngine.ScriptableObject.CreateInstance<EntityData>();
+        try
+        {
+            _run.AddDeadAlly(knight);
+            _run.AddDeadAlly(knight);
+
+            Assert.IsTrue(_run.RemoveDeadAlly(knight));
+            Assert.IsFalse(_run.RemoveDeadAlly(archer));
+            CollectionAssert.AreEqual(new[] { knight }, _run.deadAllies);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(knight);
+            UnityEngine.Object.DestroyImmediate(archer);
+        }
+    }
 }
 
 }

@@ -221,7 +221,7 @@ public class MapGeneratorTests
     {
         RunMap map = MapGenerator.Generate(_settings, 7);
 
-        Assert.IsTrue(map.floors[_settings.treasureFloor].All(node => node.type == MapNodeType.Treasure));
+        Assert.IsTrue(map.floors[_settings.GetRoomType(MapNodeType.Treasure).fixedFloors[0]].All(node => node.type == MapNodeType.Treasure));
         Assert.IsTrue(map.floors[map.floorCount - 1].All(node => node.type == MapNodeType.Rest));
         Assert.AreEqual(MapNodeType.Boss, map.boss.type);
     }
@@ -244,6 +244,80 @@ public class MapGeneratorTests
     static List<string> Describe(RunMap map)
     {
         return map.GetAllNodes().Select(node => $"{node} -> {string.Join(",", node.next.Select(next => next.column))}").ToList();
+    }
+
+    [Test]
+    public void GenerateLayout_WithAStartRoomCount_HasExactlyThatManyStartRooms([ValueSource(nameof(Seeds))] int seed, [Values(1, 2, 3)] int startRoomCount)
+    {
+        RunMap map = MapGenerator.GenerateLayout(15, 7, 6, new System.Random(seed), startRoomCount);
+
+        Assert.AreEqual(startRoomCount, map.startNodes.Count);
+    }
+
+    [Test]
+    public void GenerateLayout_StartRoomCountAboveThePathsOrColumns_IsCappedByThem()
+    {
+        Assert.AreEqual(2, MapGenerator.GenerateLayout(15, 7, 2, new System.Random(0), 5).startNodes.Count);
+        Assert.AreEqual(3, MapGenerator.GenerateLayout(15, 3, 6, new System.Random(0), 5).startNodes.Count);
+    }
+
+    [Test]
+    public void Generate_UsesTheStartRoomCountOfTheSettings([ValueSource(nameof(Seeds))] int seed)
+    {
+        MapGenerationSettings settings = UnityEngine.ScriptableObject.CreateInstance<MapGenerationSettings>();
+        settings.startRoomCount = 2;
+
+        RunMap map = MapGenerator.Generate(settings, seed);
+
+        Assert.AreEqual(2, map.startNodes.Count);
+        UnityEngine.Object.DestroyImmediate(settings);
+    }
+
+    [Test]
+    public void GenerateLayout_WithAMaxRoomsPerFloor_NeverHasMoreRoomsOnAFloor([ValueSource(nameof(Seeds))] int seed, [Values(1, 2, 3)] int maxRoomsPerFloor)
+    {
+        RunMap map = MapGenerator.GenerateLayout(15, 5, 6, new System.Random(seed), 0, maxRoomsPerFloor);
+
+        foreach (List<MapNode> floor in map.floors)
+        {
+            Assert.LessOrEqual(floor.Count, maxRoomsPerFloor);
+        }
+    }
+
+    [Test]
+    public void GenerateLayout_WithAMaxRoomsPerFloor_KeepsThePathRules([ValueSource(nameof(Seeds))] int seed)
+    {
+        RunMap map = MapGenerator.GenerateLayout(15, 5, 6, new System.Random(seed), 3, 3);
+
+        foreach (MapNode node in map.GetAllNodes().Where(node => node != map.boss))
+        {
+            Assert.IsNotEmpty(node.next, $"{node} leads nowhere");
+            foreach (MapNode next in node.next.Where(next => next != map.boss))
+            {
+                Assert.LessOrEqual(System.Math.Abs(next.column - node.column), 1, $"{node} -> {next} skips a column");
+            }
+        }
+    }
+
+    [Test]
+    public void GenerateLayout_MaxRoomsPerFloorBelowTheStartRooms_CapsTheStartRooms()
+    {
+        RunMap map = MapGenerator.GenerateLayout(15, 7, 6, new System.Random(0), 3, 2);
+
+        Assert.AreEqual(2, map.startNodes.Count);
+    }
+
+    [Test]
+    public void Generate_UsesTheMaxRoomsPerFloorOfTheSettings([ValueSource(nameof(Seeds))] int seed)
+    {
+        MapGenerationSettings settings = UnityEngine.ScriptableObject.CreateInstance<MapGenerationSettings>();
+        settings.columnCount = 5;
+        settings.maxRoomsPerFloor = 3;
+
+        RunMap map = MapGenerator.Generate(settings, seed);
+
+        Assert.IsTrue(map.floors.All(floor => floor.Count <= 3));
+        UnityEngine.Object.DestroyImmediate(settings);
     }
 }
 

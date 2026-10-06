@@ -26,21 +26,72 @@ public class DataManager : Singleton<DataManager>
         return GetRandomCharacter();
     }
 
-    // Items having the tag, or one of its descendants
-    public List<AItemFactory> GetItemsWithTag(GameplayTag tag)
+    // Items having every included tag and none of the excluded ones, a tag also matching its descendants
+    // (e.g. the player items that aren't cursed). No item when an included tag isn't registered in the game
+    // data, an unknown excluded tag excludes nothing
+    public List<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null)
     {
-        return _data.items.FindAll(item => item != null && item.tags.Exists(itemTag => itemTag == tag || itemTag.IsDescendantOf(tag)));
+        if (!ResolveTags(includedTags, excludedTags, out List<GameplayTag> included, out List<GameplayTag> excluded))
+        {
+            return new List<AItemFactory>();
+        }
+        return _data.items.FindAll(item => TagFilter.Matches(item, included, excluded));
     }
 
-    public List<AItemFactory> GetItemsWithTag(string tagName)
+    // Same as the items, for the units of the game data
+    public List<EntityData> GetEntities(List<string> includedTags, List<string> excludedTags = null)
     {
-        return GetItemsWithTag(GetTagWithName(tagName));
+        if (!ResolveTags(includedTags, excludedTags, out List<GameplayTag> included, out List<GameplayTag> excluded))
+        {
+            return new List<EntityData>();
+        }
+        return _data.entities.FindAll(entity => TagFilter.Matches(entity, included, excluded));
     }
 
-    public AItem GetRandomItemWithTag(string tagName)
+    // The units the character can recruit (rewards, recruitment event): the ones tagged with its class and Reward
+    public List<EntityData> GetRewardEntities(CharacterData character)
     {
-        List<AItemFactory> items = GetItemsWithTag(tagName);
-        return items[Random.Range(0, items.Count)].GetItem();
+        if (character == null || character.classTag == null)
+        {
+            return new List<EntityData>();
+        }
+        return GetEntities(new List<string> { character.classTag.name, TagNames.Reward });
+    }
+
+    // False when an included tag isn't registered in the game data: nothing can match it
+    bool ResolveTags(List<string> includedTags, List<string> excludedTags, out List<GameplayTag> included, out List<GameplayTag> excluded)
+    {
+        included = new List<GameplayTag>();
+        excluded = new List<GameplayTag>();
+        foreach (string tagName in includedTags)
+        {
+            GameplayTag tag = GetTagWithName(tagName);
+            if (tag == null)
+            {
+                return false;
+            }
+            included.Add(tag);
+        }
+
+        if (excludedTags != null)
+        {
+            foreach (string tagName in excludedTags)
+            {
+                GameplayTag tag = GetTagWithName(tagName);
+                if (tag != null)
+                {
+                    excluded.Add(tag);
+                }
+            }
+        }
+        return true;
+    }
+
+    // One of those items, null when there is none
+    public AItem GetRandomItem(List<string> includedTags, List<string> excludedTags = null)
+    {
+        List<AItemFactory> items = GetItems(includedTags, excludedTags);
+        return items.Count > 0 ? items[Random.Range(0, items.Count)].GetItem() : null;
     }
 
     // Waves of every pool matching the room type and floor

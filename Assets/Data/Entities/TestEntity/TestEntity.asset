@@ -23,12 +23,10 @@ MonoBehaviour:
     SerializationNodes:
     - Name: attributes
       Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, Assembly-CSharp],[System.Single,
-        mscorlib]], mscorlib
+      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, HealerLike.Runtime],[System.Single, mscorlib]], mscorlib
     - Name: comparer
       Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, Assembly-CSharp]],
-        mscorlib
+      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, HealerLike.Runtime]], mscorlib
     - Name: 
       Entry: 12
       Data: 0
@@ -97,9 +95,19 @@ MonoBehaviour:
       Data: 
   model: {fileID: 6058514216512742586, guid: 3254ba096c79f224babbda9e67cdf806, type: 3}
   title: Test
-  description: "Test entity for configurable skills"
-  targetBehaviourType: 0
+  description: Test entity for configurable skills
+  attributes:
+  - key: 0
+    value: 100
+  - key: 1
+    value: 2
+  - key: 2
+    value: 10
+  - key: 3
+    value: 1000
+  targetBehaviourType: 1
   targetValidators: []
+  tags: []
   items: []
   skillFactories:
   - {fileID: 11400000, guid: 5f3bfd10c02e1fd43b5e18206313b11e, type: 2}

@@ -53,11 +53,109 @@ public class DruidDataTests
     }
 
     [Test]
-    public void Druid_HasRejuvenationWildGrowthAndBalanceLife()
+    public void Druid_RecruitsOnlyUnitsFittingARegenerationTeam()
+    {
+        // The burst shooters (Multi Shot, Swarm) left the pool: nothing to do with a regeneration gameplay,
+        // the Strangler Vine took the place of the Channeling, and the Briar Beast the one of the Normal
+        List<string> titles = _druid.entities.ConvertAll(entity => entity.title);
+
+        CollectionAssert.AreEquivalent(new[] { "Briar Beast", "Strangler Vine", "Treant", "Grove Keeper" }, titles);
+    }
+
+    // The heals of the Druid become damage: each heal it receives hurts the nearest enemy for half of it
+    [Test]
+    public void BriarBeast_TurnsHalfOfEachHealItReceivesIntoDamageOnTheNearestEnemy()
+    {
+        EntityData beast = GetUnit("Briar Beast");
+
+        Assert.AreEqual(TargetBehaviourType.Nearest, beast.targetBehaviourType);
+        Assert.IsFalse(string.IsNullOrEmpty(beast.description));
+        Assert.AreEqual(1, beast.items.Count);
+        ItemFactory thorns = beast.items[0] as ItemFactory;
+        Assert.IsNotNull(thorns);
+        Assert.AreEqual("Briar Thorns", thorns.title);
+        Assert.IsFalse(string.IsNullOrEmpty(thorns.data.description));
+        ABuffHandlerFactory handler = thorns.data.buffs[0];
+        Assert.AreEqual(DurationType.Infinite, handler.durationType);
+
+        DamageEnemyOnHealBuffFactory buff = handler.buffFactoryList[0] as DamageEnemyOnHealBuffFactory;
+        Assert.IsNotNull(buff);
+        Assert.AreEqual(0.5f, buff.data.ratio, 0.0001f);
+        Assert.AreEqual(TargetBehaviourType.Nearest, buff.data.targetType);
+    }
+
+    [Test]
+    public void StranglerVine_AimsAtTheEnemyWithTheMostHealth_AndDealsDamageFromItsCurrentHealth()
+    {
+        EntityData vine = GetUnit("Strangler Vine");
+
+        Assert.AreEqual(TargetBehaviourType.HighestHealth, vine.targetBehaviourType);
+        Assert.IsFalse(string.IsNullOrEmpty(vine.description));
+        AItemFactory strangle = vine.items.Find(item => item != null && item.title == "Strangle");
+        Assert.IsNotNull(strangle, "The Strangler Vine has no Strangle item");
+        ItemFactory strangleItem = (ItemFactory)strangle;
+        Assert.AreEqual(1, strangleItem.data.onHitConsumers.Count);
+        ConsumerFactory consumer = (ConsumerFactory)strangleItem.data.onHitConsumers[0];
+        Assert.AreEqual(ConsumerValueOwner.Target, consumer.data.valueOwner);
+        Assert.IsInstanceOf<CurrentHealthValue>(consumer.data.value);
+    }
+
+    [Test]
+    public void Druid_HasRejuvenationWildGrowthBalanceLifeAndThickBark()
     {
         List<string> names = _druid.skills.ConvertAll(skill => skill.Create().GetData().name);
 
-        CollectionAssert.AreEqual(new[] { "Rejuvenation", "Wild Growth", "Balance Life" }, names);
+        CollectionAssert.AreEqual(new[] { "Rejuvenation", "Wild Growth", "Balance Life", "Thick Bark" }, names);
+    }
+
+    // The anticipation spell of the Druid: cast on the unit about to take a big hit
+    [Test]
+    public void ThickBark_GivesTwoHitArmorToASingleAlly()
+    {
+        BuffCharacterSkillFactory bark = GetSkill<BuffCharacterSkillFactory>("Thick Bark");
+
+        Assert.IsTrue(bark.data.isSingle);
+        Assert.AreEqual(Entity.EntityType.Player, bark.data.entityType);
+        Assert.AreEqual(1, bark.data.buffHandlerFactory.Count);
+        ABuffHandlerFactory handler = bark.data.buffHandlerFactory[0];
+        // Hit armor is spent one hit at a time: it's added to the base value, not as a timed modifier
+        Assert.AreEqual(DurationType.Instant, handler.durationType);
+        Assert.AreEqual(1, handler.buffFactoryList.Count);
+
+        FlatModifierFactory modifier = handler.buffFactoryList[0] as FlatModifierFactory;
+        Assert.IsNotNull(modifier);
+        Assert.AreEqual(AttributeType.HitArmor, modifier.data.type);
+        Assert.AreEqual(AttributeModifierType.Add, modifier.data.modifierType);
+        Assert.AreEqual(2f, modifier.data.value, 0.0001f);
+    }
+
+    [Test]
+    public void ThickBark_AddsToTheHitArmorTheUnitAlreadyHas()
+    {
+        ABuffFactory factory = GetSkill<BuffCharacterSkillFactory>("Thick Bark").data.buffHandlerFactory[0].buffFactoryList[0];
+        GameObject unit = new GameObject("Unit");
+        try
+        {
+            AttributeManager attributeManager = TestHelpers.CreateAttributeManager(unit, AttributeType.HitArmor, 1f);
+
+            factory.GetBuff(null).Instant(_healer, unit);
+
+            Assert.AreEqual(3f, attributeManager.Get(AttributeType.HitArmor).BaseValue, 0.0001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(unit);
+        }
+    }
+
+    [Test]
+    public void ThickBark_TheDescriptionShowsTheHitArmor()
+    {
+        CharacterSkillData data = GetSkill<BuffCharacterSkillFactory>("Thick Bark").data;
+
+        string description = TextConvertor.Convert(data.description, null, data);
+
+        StringAssert.Contains("+2</color> hit armor", description);
     }
 
     [Test]
@@ -117,11 +215,12 @@ public class DruidDataTests
     }
 
     [Test]
-    public void BalanceLife_BalancesTheAllies()
+    public void BalanceLife_BalancesTheAllies_OnTheAverageOfTheirHealthPercents()
     {
         BalanceLifeCharacterSkillFactory balance = GetSkill<BalanceLifeCharacterSkillFactory>("Balance Life");
 
         Assert.AreEqual(Entity.EntityType.Player, balance.data.entityType);
+        Assert.AreEqual(BalanceLifeMode.Relative, balance.data.mode);
     }
 
     [Test]

@@ -37,6 +37,8 @@ public class IncreaseDamageOnDistanceProjectileBehaviour : AProjectileBehaviour<
         onHitData.resourceModifier.multiplier *= Math.RemapClamped(_distance, data.minDistance, data.maxDistance, data.minMultiplier, data.maxMultiplier) * _stacks;
     }
 
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _stacks++;
@@ -46,4 +48,6 @@ public class IncreaseDamageOnDistanceProjectileBehaviour : AProjectileBehaviour<
     {
         _stacks--;
     }
+
+    #endregion
 }

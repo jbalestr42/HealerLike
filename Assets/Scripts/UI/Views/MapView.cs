@@ -28,6 +28,9 @@ public class MapView : AView
     // Rounded sprite of the rooms, sliced; plain rectangles when not set
     [SerializeField] Sprite _nodeSprite;
 
+    // Every room drawn in its own color, as if it could be picked (e.g. the map generation test scene)
+    [SerializeField] bool _revealAll = false;
+
     [SerializeField] Vector2 _nodeSize = new Vector2(170f, 50f);
     [SerializeField] float _fontSize = 24f;
     [SerializeField] float _lineWidth = 4f;
@@ -38,13 +41,17 @@ public class MapView : AView
     [SerializeField] float _pulseAmplitude = 0.08f;
     [SerializeField] float _pulseSpeed = 5f;
 
-    [SerializeField] Dictionary<MapNodeType, Color> _roomColors = new Dictionary<MapNodeType, Color>
+    [SerializeField] Dictionary<MapNodeType, Color> _roomColors = new Dictionary<MapNodeType, Color>(DefaultRoomColors);
+
+    // Also used for the types missing from the serialized colors (e.g. a type added after the prefab was saved)
+    static readonly Dictionary<MapNodeType, Color> DefaultRoomColors = new Dictionary<MapNodeType, Color>
     {
         { MapNodeType.Combat, new Color(0.25f, 0.55f, 0.95f) },
         { MapNodeType.Elite, new Color(0.95f, 0.25f, 0.25f) },
         { MapNodeType.Treasure, new Color(1f, 0.78f, 0.15f) },
         { MapNodeType.Rest, new Color(0.25f, 0.85f, 0.45f) },
         { MapNodeType.Boss, new Color(0.75f, 0.25f, 0.95f) },
+        { MapNodeType.Event, new Color(0.2f, 0.85f, 0.9f) },
     };
 
     static readonly Color CurrentOutlineColor = new Color(1f, 0.8f, 0.2f, 1f);
@@ -52,10 +59,33 @@ public class MapView : AView
 
     RunState _run;
     bool _canSelect;
-    List<GameObject> _elements = new List<GameObject>();
     List<RectTransform> _pulsingNodes = new List<RectTransform>();
 
+    // Kept from a drawing to the next, the ones a map doesn't need hidden: creating a TextMeshPro button costs
+    // about 5 ms, and a map has dozens of rooms
+    List<Image> _lines = new List<Image>();
+    List<Button> _rooms = new List<Button>();
+    int _usedLineCount = 0;
+    int _usedRoomCount = 0;
+    // The lines under the rooms, whatever order they were created in
+    RectTransform _lineLayer;
+    RectTransform _roomLayer;
+
+    // The buttons of the rooms of the map drawn
+    public IReadOnlyList<Button> roomButtons => _rooms.GetRange(0, _usedRoomCount);
+
     RectTransform container => _container != null ? _container : (RectTransform)transform;
+    // Area where the map is drawn, to make room for something else next to it (e.g. a settings panel)
+    public RectTransform mapArea => container;
+
+    public Color GetRoomColor(MapNodeType type)
+    {
+        if (_roomColors.TryGetValue(type, out Color color) || DefaultRoomColors.TryGetValue(type, out color))
+        {
+            return color;
+        }
+        return Color.gray;
+    }
 
     void Awake()
     {
@@ -159,24 +189,82 @@ public class MapView : AView
                 return "Rest";
             case MapNodeType.Boss:
                 return "Boss";
+            case MapNodeType.Event:
+                return "Event";
             default:
                 return type.ToString();
         }
     }
 
+    // Hides the elements of the previous drawing, to be used again
     void Clear()
     {
-        foreach (GameObject element in _elements)
+        foreach (Image line in _lines)
         {
-            Destroy(element);
+            line.gameObject.SetActive(false);
         }
-        _elements.Clear();
+        foreach (Button room in _rooms)
+        {
+            room.gameObject.SetActive(false);
+        }
+        _usedLineCount = 0;
+        _usedRoomCount = 0;
         _pulsingNodes.Clear();
+    }
+
+    // A full size child of the container, so the elements in it are placed as if they were in the container
+    RectTransform GetLayer(ref RectTransform layer, string name)
+    {
+        if (layer == null)
+        {
+            layer = (RectTransform)new GameObject(name, typeof(RectTransform)).transform;
+            layer.SetParent(container, false);
+            layer.anchorMin = Vector2.zero;
+            layer.anchorMax = Vector2.one;
+            layer.offsetMin = Vector2.zero;
+            layer.offsetMax = Vector2.zero;
+        }
+        return layer;
+    }
+
+    Image TakeLine()
+    {
+        if (_usedLineCount == _lines.Count)
+        {
+            GameObject line = new GameObject("Line", typeof(RectTransform), typeof(Image));
+            line.transform.SetParent(GetLayer(ref _lineLayer, "Lines"), false);
+            Image image = line.GetComponent<Image>();
+            image.raycastTarget = false;
+            _lines.Add(image);
+        }
+
+        Image taken = _lines[_usedLineCount++];
+        taken.gameObject.SetActive(true);
+        return taken;
+    }
+
+    Button TakeRoom()
+    {
+        if (_usedRoomCount == _rooms.Count)
+        {
+            GameObject room = TMP_DefaultControls.CreateButton(new TMP_DefaultControls.Resources());
+            room.transform.SetParent(GetLayer(ref _roomLayer, "Rooms"), false);
+            _rooms.Add(room.GetComponent<Button>());
+        }
+
+        Button taken = _rooms[_usedRoomCount++];
+        taken.gameObject.SetActive(true);
+        taken.onClick.RemoveAllListeners();
+        taken.transform.localScale = Vector3.one;
+        return taken;
     }
 
     void Build()
     {
         Vector2 areaSize = container.rect.size;
+        // Created first, so the rooms are drawn over the lines
+        GetLayer(ref _lineLayer, "Lines");
+        GetLayer(ref _roomLayer, "Rooms");
 
         // Lines first so the rooms are drawn over them
         foreach (MapNode node in _run.map.GetAllNodes())
@@ -187,10 +275,21 @@ public class MapView : AView
             }
         }
 
+        Vector2 nodeSize = GetNodeSize(_nodeSize, areaSize, _run.map);
         foreach (MapNode node in _run.map.GetAllNodes())
         {
-            CreateNode(node, GetNodeAnchor(node, _run.map));
+            CreateNode(node, GetNodeAnchor(node, _run.map), nodeSize);
         }
+    }
+
+    // The room size, shrunk to leave a gap with its neighbours when the map has too many floors or columns
+    // for the area (e.g. the 15 floors of 7 columns of a Slay the Spire map)
+    public static Vector2 GetNodeSize(Vector2 maxSize, Vector2 areaSize, RunMap map)
+    {
+        float cellWidth = areaSize.x / map.columnCount;
+        // The floors and the boss on top
+        float cellHeight = areaSize.y / (map.floorCount + 1);
+        return new Vector2(Mathf.Min(maxSize.x, cellWidth * 0.9f), Mathf.Min(maxSize.y, cellHeight * 0.8f));
     }
 
     // Elements are anchored on their normalized position, so the map follows the container size
@@ -209,36 +308,30 @@ public class MapView : AView
         Color color = isVisitedPath ? _visitedLineColor : (isNextPath ? _nextLineColor : _lineColor);
         float width = isVisitedPath || isNextPath ? _highlightedLineWidth : _lineWidth;
 
-        GameObject line = new GameObject("Line", typeof(RectTransform), typeof(Image));
-        line.transform.SetParent(container, false);
-        _elements.Add(line);
-
-        Image image = line.GetComponent<Image>();
+        Image image = TakeLine();
         image.color = color;
-        image.raycastTarget = false;
 
         Vector2 fromAnchor = GetNodeAnchor(node, _run.map);
         Vector2 direction = Vector2.Scale(GetNodeAnchor(next, _run.map) - fromAnchor, areaSize);
-        RectTransform rectTransform = (RectTransform)line.transform;
+        RectTransform rectTransform = (RectTransform)image.transform;
         PlaceAt(rectTransform, fromAnchor);
         rectTransform.pivot = new Vector2(0f, 0.5f);
         rectTransform.sizeDelta = new Vector2(direction.magnitude, width);
         rectTransform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg);
     }
 
-    void CreateNode(MapNode node, Vector2 anchor)
+    void CreateNode(MapNode node, Vector2 anchor, Vector2 nodeSize)
     {
-        GameObject button = TMP_DefaultControls.CreateButton(new TMP_DefaultControls.Resources());
+        Button buttonComponent = TakeRoom();
+        GameObject button = buttonComponent.gameObject;
         button.name = $"Room {node}";
-        button.transform.SetParent(container, false);
-        _elements.Add(button);
 
         RectTransform rectTransform = (RectTransform)button.transform;
         PlaceAt(rectTransform, anchor);
-        rectTransform.sizeDelta = _nodeSize;
+        rectTransform.sizeDelta = nodeSize;
 
-        MapNodeState state = _run.GetNodeState(node);
-        Color roomColor = _roomColors.TryGetValue(node.type, out Color typeColor) ? typeColor : Color.gray;
+        MapNodeState state = _revealAll ? MapNodeState.Available : _run.GetNodeState(node);
+        Color roomColor = GetRoomColor(node.type);
         NodeStyle style = GetNodeStyle(state, roomColor, _canSelect);
 
         Image image = button.GetComponent<Image>();
@@ -248,10 +341,15 @@ public class MapView : AView
             image.sprite = _nodeSprite;
             image.type = Image.Type.Sliced;
         }
-        if (style.hasOutline)
+        // Not QuickOutline's 3D Outline; kept on a reused room, only shown when the style has one
+        UnityEngine.UI.Outline outline = button.GetComponent<UnityEngine.UI.Outline>();
+        if (style.hasOutline && outline == null)
         {
-            // Not QuickOutline's 3D Outline
-            UnityEngine.UI.Outline outline = button.AddComponent<UnityEngine.UI.Outline>();
+            outline = button.AddComponent<UnityEngine.UI.Outline>();
+        }
+        if (outline != null)
+        {
+            outline.enabled = style.hasOutline;
             outline.effectColor = style.outline;
             outline.effectDistance = new Vector2(3f, -3f);
         }
@@ -263,7 +361,6 @@ public class MapView : AView
         text.color = style.text;
 
         // The style already shows what can be clicked, the button must not dim it further
-        Button buttonComponent = button.GetComponent<Button>();
         ColorBlock colors = buttonComponent.colors;
         colors.normalColor = Color.white;
         colors.selectedColor = Color.white;

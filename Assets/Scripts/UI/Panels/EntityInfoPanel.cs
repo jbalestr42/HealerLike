@@ -1,12 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Top right panel of the sandbox: everything known about the selected entity (health, stats and
-// their modifiers, targeting, skills, items, active effects, on hit effects), refreshed live.
-// The UI is built in code, the scene only needs this component on a RectTransform of a canvas.
+// Everything known about the selected entity (health, stats and their modifiers, targeting, skills,
+// passives, items, active effects, on hit effects), refreshed live. Shown by the sandbox, and by the
+// entity panel of the game. The UI is built in code, anchored on the top right corner of its parent.
 public class EntityInfoPanel : APanel
 {
     [SerializeField] SandboxButton _buttonPrefab;
@@ -18,11 +18,15 @@ public class EntityInfoPanel : APanel
     [SerializeField] float _buttonHeight = 28f;
     [SerializeField] float _refreshPeriod = 0.1f;
     [SerializeField] Color _backgroundColor = new Color(0.05f, 0.06f, 0.08f, 0.85f);
+    // Off in the game: the targeting of the unit is shown, but only the sandbox can change it
+    [SerializeField] bool _canChangeTargeting = true;
 
     RectTransform _rect;
     TMP_Text _title;
     SandboxButton _targetButton;
     SandboxButton _closeButton;
+
+    public SandboxButton targetButton => _targetButton;
     RectTransform _viewport;
     ScrollRect _scrollRect;
     TMP_Text _body;
@@ -93,6 +97,7 @@ public class EntityInfoPanel : APanel
 
         float buttonWidth = (_width - 2f * _padding - 8f) / 2f;
         _targetButton = CreateButton(_padding, buttonWidth, CycleTargetBehaviour);
+        _targetButton.SetInteractable(_canChangeTargeting);
         _closeButton = CreateButton(_padding + buttonWidth + 8f, buttonWidth, Close);
         _closeButton.SetLabel("Close");
 
@@ -158,7 +163,7 @@ public class EntityInfoPanel : APanel
 
     void CycleTargetBehaviour()
     {
-        if (_entity == null)
+        if (_entity == null || !_canChangeTargeting)
         {
             return;
         }
@@ -222,31 +227,15 @@ public class EntityInfoPanel : APanel
         StringBuilder builder = new StringBuilder();
         GameObject owner = _entity.gameObject;
 
-        AppendSection(builder, "Health", GetHealthLines());
-        AppendSection(builder, "Targeting", GetTargetingLines());
-        AppendSection(builder, "Stats", EntityInfoFormatter.GetAttributeLines(_entity.attributeManager, owner));
-        AppendSection(builder, "Skills", GetSkillLines());
-        AppendSection(builder, "Items", GetItemLines());
-        AppendSection(builder, "Active effects", EntityInfoFormatter.GetBuffLines(_entity.buffManager, owner));
-        AppendSection(builder, "On hit", GetOnHitLines());
+        EntityInfoFormatter.AppendSection(builder, "Health", GetHealthLines());
+        EntityInfoFormatter.AppendSection(builder, "Targeting", GetTargetingLines());
+        EntityInfoFormatter.AppendSection(builder, "Stats", EntityInfoFormatter.GetAttributeLines(_entity.attributeManager, owner));
+        EntityInfoFormatter.AppendSection(builder, "Skills", GetSkillLines());
+        EntityInfoFormatter.AppendSection(builder, "Passives", GetPassiveLines(_entity));
+        EntityInfoFormatter.AppendSection(builder, "Items", GetEquippedItemLines(_entity));
+        EntityInfoFormatter.AppendSection(builder, "Active effects", EntityInfoFormatter.GetBuffLines(_entity.buffManager, owner));
+        EntityInfoFormatter.AppendSection(builder, "On hit", GetOnHitLines());
         return builder.ToString().TrimEnd();
-    }
-
-    static void AppendSection(StringBuilder builder, string title, List<string> lines)
-    {
-        if (builder.Length > 0)
-        {
-            builder.Append("<size=6>\n</size>");
-        }
-        builder.Append($"<color={EntityInfoFormatter.HeaderColor}><b>{title}</b></color>\n");
-        if (lines.Count == 0)
-        {
-            builder.Append($"<color={EntityInfoFormatter.MutedColor}>none</color>\n");
-        }
-        foreach (string line in lines)
-        {
-            builder.Append(line).Append('\n');
-        }
     }
 
     List<string> GetHealthLines()
@@ -314,16 +303,24 @@ public class EntityInfoPanel : APanel
         return lines;
     }
 
-    List<string> GetItemLines()
+    // The items the entity is born with
+    public static List<string> GetPassiveLines(Entity entity)
     {
         List<string> lines = new List<string>();
-        foreach (AItem item in _entity.items)
+        foreach (AItem item in entity.items)
         {
-            lines.Add(EntityInfoFormatter.FormatItem(item, true));
+            lines.Add(EntityInfoFormatter.FormatItemDetails(item));
         }
-        foreach (InventoryItemData itemData in _entity.inventoryHandler.items)
+        return lines;
+    }
+
+    // The items the player put in the inventory of the entity
+    public static List<string> GetEquippedItemLines(Entity entity)
+    {
+        List<string> lines = new List<string>();
+        foreach (InventoryItemData itemData in entity.inventoryHandler.items)
         {
-            lines.Add(EntityInfoFormatter.FormatItem(itemData.item, false));
+            lines.Add(EntityInfoFormatter.FormatItemDetails(itemData.item));
         }
         return lines;
     }

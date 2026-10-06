@@ -79,7 +79,7 @@ public class DrainCharacterManaBuffTests
     public void Instant_TheAttackerIsTheSource()
     {
         ResourceModifier processed = null;
-        _mana.OnAllConsumerProcessed.AddListener((target, modifier, value, isCritical) => processed = modifier);
+        _mana.OnAllConsumerProcessed.AddListener((target, modifier, result) => processed = modifier);
 
         _buff.Instant(_source, _target);
         Drain(_mana);

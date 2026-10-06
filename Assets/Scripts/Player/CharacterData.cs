@@ -32,6 +32,9 @@ public class CharacterData : SerializedScriptableObject
     [Space]
     public List<EntityData> entities = new List<EntityData>();
 
+    // The units tagged with it and Reward can be recruited by the character (rewards, recruitment event)
+    public GameplayTag classTag;
+
     [Space]
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ACharacterSkillFactory>, ACharacterSkillFactory>(skills)")]
     public List<ACharacterSkillFactory> skills = new List<ACharacterSkillFactory>();

@@ -4,11 +4,17 @@ using UnityEngine.Events;
 using UnityEngine.Assertions;
 
 [RequireComponent(typeof(BuffManager), typeof(AttributeManager))]
-public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkable
+public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkable, ITaggable
 {
     public UnityEvent<bool> OnMarkChanged = new UnityEvent<bool>();
     // Damage this entity dealt to a target, after its armor (e.g. for a life steal)
     public UnityEvent<GameObject, float> OnDamageDealt = new UnityEvent<GameObject, float>();
+    // Each attack this entity makes (e.g. to repeat it)
+    public UnityEvent<ProjectileAttack> OnAttack = new UnityEvent<ProjectileAttack>();
+    // Each entity this entity killed, as the last one to damage it, once it's removed (e.g. to raise it)
+    public UnityEvent<Entity> OnKill = new UnityEvent<Entity>();
+    // Each heal this entity receives (e.g. to empower its next attack)
+    public UnityEvent<GameObject, ConsumerResult> OnHealReceived = new UnityEvent<GameObject, ConsumerResult>();
 
     public enum EntityType
     {
@@ -61,6 +67,14 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     // Tags given at runtime (e.g. Summon), on top of the tags of the data
     List<GameplayTag> _runtimeTags = new List<GameplayTag>();
     public List<GameplayTag> runtimeTags { get { return _runtimeTags; } }
+
+    // Asked in turn when the entity should die, the first one returning true keeps it alive (e.g. a revive)
+    public delegate bool DeathPrevention(Entity dying);
+    List<DeathPrevention> _deathPreventions = new List<DeathPrevention>();
+
+    // Last entity that damaged this one, credited with the kill
+    Entity _lastAttacker;
+    public Entity lastAttacker { get { return _lastAttacker; } private set { _lastAttacker = value; } }
 
     public void Init()
     {
@@ -116,21 +130,25 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
 
     void OnHealthChanged(ResourceAttribute health)
     {
-        if (health.Value <= 0f)
+        if (health.Value <= 0f && !TryPreventDeath())
         {
             EntityManager.instance.DestroyEntity(gameObject, entityType);
+            // Once its cell is free
+            NotifyKiller();
         }
     }
 
-    void OnConsumerProcessed(GameObject target, ResourceModifier resourceModifier, float value, bool isCritical)
+    void OnConsumerProcessed(GameObject target, ResourceModifier resourceModifier, ConsumerResult result)
     {
-        NotifyAttacker(resourceModifier.source, target, value);
+        NotifyAttacker(resourceModifier.source, target, result.value);
+        NotifyHealed(resourceModifier.source, target, result);
     }
 
     // Damage is a negative value, reported as a positive amount to the entity that dealt it
     public static void NotifyAttacker(GameObject source, GameObject target, float value)
     {
-        if (value >= 0f || source == null)
+        // Damage an entity deals to itself (e.g. the Cursed Idol) isn't dealt to anyone
+        if (value >= 0f || source == null || source == target)
         {
             return;
         }
@@ -138,7 +156,36 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         Entity attacker = source.GetComponent<Entity>();
         if (attacker != null)
         {
+            Entity victim = target != null ? target.GetComponent<Entity>() : null;
+            if (victim != null)
+            {
+                victim.lastAttacker = attacker;
+            }
             attacker.OnDamageDealt.Invoke(target, -value);
+        }
+    }
+
+    // The last entity to damage this one killed it
+    public void NotifyKiller()
+    {
+        if (_lastAttacker != null && _lastAttacker != this)
+        {
+            _lastAttacker.OnKill.Invoke(this);
+        }
+    }
+
+    // A heal is a positive value, reported to the entity that received it
+    public static void NotifyHealed(GameObject source, GameObject target, ConsumerResult result)
+    {
+        if (result.value <= 0f || target == null)
+        {
+            return;
+        }
+
+        Entity healed = target.GetComponent<Entity>();
+        if (healed != null)
+        {
+            healed.OnHealReceived.Invoke(source, result);
         }
     }
 
@@ -156,21 +203,33 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         }
     }
 
+    public void AddDeathPrevention(DeathPrevention deathPrevention)
+    {
+        _deathPreventions.Add(deathPrevention);
+    }
+
+    public void RemoveDeathPrevention(DeathPrevention deathPrevention)
+    {
+        _deathPreventions.Remove(deathPrevention);
+    }
+
+    // True when one of the death preventions keeps the entity alive, the last added one asked first
+    public bool TryPreventDeath()
+    {
+        // Backwards, so a prevention can remove itself while being asked
+        for (int i = _deathPreventions.Count - 1; i >= 0; i--)
+        {
+            if (_deathPreventions[i](this))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void RemoveTag(GameplayTag tag)
     {
         _runtimeTags.Remove(tag);
-    }
-
-    // Has the tag, or one of its descendants, from the data or given at runtime
-    public bool HasTag(GameplayTag tag)
-    {
-        if (tag == null)
-        {
-            return false;
-        }
-
-        System.Predicate<GameplayTag> matches = entityTag => entityTag != null && (entityTag == tag || entityTag.IsDescendantOf(tag));
-        return _runtimeTags.Exists(matches) || (_data != null && _data.tags.Exists(matches));
     }
 
     public void Enable(bool isEnabled)
@@ -190,8 +249,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         _targetProvider.Reset();
         _buffManager.Reset();
 
-        GameplayTag permanentTag = DataManager.instance.GetTagWithName("Permanent");
-        _buffManager.RemoveBuff(buffHandlerData => !buffHandlerData.buffHandlerFactory.tags.Exists(tag => tag.IsDescendantOf(permanentTag)));
+        // Only the permanent buffs outlast the battle (Permanent or a child of it, e.g. FromItem)
+        _buffManager.RemoveBuffWithoutTag(DataManager.instance.GetTagWithName(TagNames.Permanent));
 
         foreach (ASkill skill in _skills)
         {
@@ -310,6 +369,14 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     {
         OnMarkChanged.Invoke(false);
     }
+
+    #endregion
+
+    #region ITaggable
+
+    // Has the tag, or one of its descendants, from the data or given at runtime
+    public bool HasTag(GameplayTag tag) => TagFilter.HasTag(_runtimeTags, tag) || (_data != null && _data.HasTag(tag));
+    public bool HasTag(string tagName) => TagFilter.HasTag(_runtimeTags, tagName) || (_data != null && _data.HasTag(tagName));
 
     #endregion
 }

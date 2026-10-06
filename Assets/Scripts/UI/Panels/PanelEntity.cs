@@ -1,37 +1,16 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
-using System;
+﻿using UnityEngine;
 
+// Panel of the game shown on the selected entity: everything about it (health, stats, targeting, skills,
+// passives, items, effects) in the detailed info panel, and its inventory to equip items on it
 public class PanelEntity : APanel
 {
-    [SerializeField] TMP_Dropdown _targetBehaviourDropdown;
     [SerializeField] SlotInventory _inventory;
-
-    [Serializable]
-    class AttributeUI
-    {
-        public string name;
-        public AttributeType attributeType;
-        public TMP_Text text;
-    }
-
-    [SerializeField] List<AttributeUI> _attributeUI = new List<AttributeUI>();
+    [SerializeField] EntityInfoPanel _info;
 
     public override void OnShowUI(GameObject selectedObject)
     {
-        _targetBehaviourDropdown.ClearOptions();
-        List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
-        foreach (string behaviourType in Enum.GetNames(typeof(TargetBehaviourType)))
-        {
-            options.Add(new TMP_Dropdown.OptionData(behaviourType));
-        }
-        _targetBehaviourDropdown.AddOptions(options);
-
         Entity entity = selectedObject.GetComponent<Entity>();
-        _targetBehaviourDropdown.SetValueWithoutNotify((int)entity.GetComponent<ITargetProvider>().targetBehaviourType);
-        _targetBehaviourDropdown.onValueChanged.AddListener((int index) => entity.GetComponent<ITargetProvider>().targetBehaviourType = (TargetBehaviourType)index);
+        _info.OnShowUI(selectedObject);
         _inventory.inventoryHandler = entity.inventoryHandler;
         _inventory.RefreshInventory();
     }
@@ -40,29 +19,12 @@ public class PanelEntity : APanel
     {
         if (selectedObject != null)
         {
-            Entity entity = selectedObject.GetComponent<Entity>();
-            AttributeManager attributeManager = entity.GetComponent<AttributeManager>();
-            
-            foreach (var attributeUI in _attributeUI)
-            {
-                if (attributeManager.Has(attributeUI.attributeType))
-                {
-                    attributeUI.text.text = $"{attributeUI.name}: {attributeManager.Get(attributeUI.attributeType).Value.ToString("F2")}";
-                }
-                else
-                {
-                    attributeUI.text.text = "";
-                }
-            }
+            _info.UpdateUI(selectedObject);
         }
     }
-    
+
     public override void OnHideUI(GameObject selectedObject)
     {
-        if (selectedObject != null)
-        {
-            Entity entity = selectedObject.GetComponent<Entity>();
-            _targetBehaviourDropdown.onValueChanged.RemoveAllListeners();
-        }
+        _info.OnHideUI(selectedObject);
     }
 }

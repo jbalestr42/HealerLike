@@ -26,6 +26,7 @@ MonoBehaviour:
     ignoreConsumerPrevention: 0
     value:
       rid: 5275139311471951895
+    valueOwner: 1
   references:
     version: 2
     RefIds:

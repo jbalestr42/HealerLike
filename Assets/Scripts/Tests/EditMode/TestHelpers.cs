@@ -55,17 +55,16 @@ public static class TestHelpers
     }
 
     /// <summary>
-    /// Creates a GameObject with a working, empty AttributeManager (Awake forced).
+    /// Adds an empty AttributeManager to the GameObject.
     /// </summary>
     public static AttributeManager CreateAttributeManager(GameObject go)
     {
         AttributeManager attributeManager = go.AddComponent<AttributeManager>();
-        InvokePrivate(attributeManager, "Awake");
         return attributeManager;
     }
 
     /// <summary>
-    /// Creates a GameObject with a working AttributeManager (Awake forced) and one attribute.
+    /// Adds an AttributeManager holding one attribute to the GameObject.
     /// </summary>
     public static AttributeManager CreateAttributeManager(GameObject go, AttributeType type, float value)
     {

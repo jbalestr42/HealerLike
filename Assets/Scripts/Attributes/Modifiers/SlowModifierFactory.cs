@@ -42,6 +42,14 @@ public class SlowModifier : AttributeModifier<SlowModifierData>, IStackableBuff
         return Mathf.Clamp01((Time.time - _start) / _duration);
     }
 
+    // 1 for a single stack, then grows with diminishing returns (~1.35 at 2 stacks, ~1.55 at 3)
+    static float GetStackFactor(float stacks)
+    {
+        return Mathf.Log(stacks) / 2f + 1f;
+    }
+
+    #region IStackableBuff
+
     public void Stack(GameObject source, GameObject target)
     {
         _stacks++;
@@ -55,9 +63,5 @@ public class SlowModifier : AttributeModifier<SlowModifierData>, IStackableBuff
         _stackFactor = GetStackFactor(_stacks);
     }
 
-    // 1 for a single stack, then grows with diminishing returns (~1.35 at 2 stacks, ~1.55 at 3)
-    static float GetStackFactor(float stacks)
-    {
-        return Mathf.Log(stacks) / 2f + 1f;
-    }
+    #endregion
 }

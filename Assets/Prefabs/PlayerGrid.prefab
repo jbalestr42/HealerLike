@@ -87,9 +87,6 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  OnGoldChanged:
-    m_PersistentCalls:
-      m_Calls: []
   OnLifeChanged:
     m_PersistentCalls:
       m_Calls: []
