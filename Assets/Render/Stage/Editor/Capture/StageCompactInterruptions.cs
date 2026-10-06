@@ -18,7 +18,6 @@ namespace HealerLike.Render.Stage
                 yield return _s.actions.BringIntoView(card);
                 int before = _s.manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
                 float mana = _s.manager.player.character.mana.Value;
-                int gold = _s.manager.player.gold;
                 Vector2 point = StageInterfaceActions.ScreenPoint(card);
                 using (var touch = new StagePresentationTouch(_s.actions))
                 {
@@ -42,9 +41,9 @@ namespace HealerLike.Render.Stage
                     yield return Wait(.25f);
                     _s.output.ObserveGameplay(interruption, _s.manager, _s.actions.touch);
                     _s.output.Check(_s.manager.entityManager.GetEntities(Entity.EntityType.Player).Count == before
-                        && _s.manager.player.gold == gold && _s.manager.player.character.mana.Value == mana
+                        && _s.manager.player.character.mana.Value == mana
                         && _s.interaction.GetInteraction() == null && _s.manager.placement.preview == null,
-                        "Interruption clears actual preview, creates no creature and spends no resources: " + interruption);
+                        "Interruption clears actual preview, creates no creature and spends no mana: " + interruption);
                     if (interruption == "pause") _s.actions.Submit("resume-button");
                     if (interruption == "ui-teardown") _s.actions.ui.enabled = true;
                     yield return Wait(.25f);

@@ -87,7 +87,6 @@ public class ToolkitDesignPreview : EditorWindow
         _view.OnInspectRequested.AddListener(OnInspectRequested);
         _preview.Q("hud-root").RegisterCallback<CustomStyleResolvedEvent>(OnStyleResolved);
         ApplyViewport();
-        _view.SetText("currency-label", "125 gold");
         _view.SetText("wave-label", "Room 3 · Combat");
         _view.SetText("phase-label", "PREPARATION");
         _view.SetResource("mana-bar", 72f, 100f);

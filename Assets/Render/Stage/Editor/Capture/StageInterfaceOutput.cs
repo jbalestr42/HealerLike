@@ -56,7 +56,7 @@ namespace HealerLike.Render.Stage
         public class Observation
         {
             public string scenario;
-            public int frame, entities, gold;
+            public int frame, entities;
             public float mana;
             public bool placementActive, previewVisible;
         }
@@ -64,7 +64,7 @@ namespace HealerLike.Render.Stage
         {
             manifest.observations.Add(new Observation { scenario = scenario, frame = Time.frameCount,
                 entities = manager.entityManager.GetEntities(Entity.EntityType.Player).Count,
-                gold = manager.player.gold, mana = manager.player.character.mana.Value,
+                mana = manager.player.character.mana.Value,
                 placementActive = input.roster != null && input.roster.active,
                 previewVisible = manager.placement.preview != null });
         }

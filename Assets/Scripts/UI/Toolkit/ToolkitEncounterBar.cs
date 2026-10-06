@@ -49,7 +49,7 @@ public class ToolkitEncounterBar
         _view.Show("wave-button", !isStart && isPreparing && !_context.hasInteraction);
         _view.Show("party-panel", !isStart);
         _view.SetButton("start-button", "Start expedition", isAvailable && hud.startGameButton.interactable);
-        _view.SetText("currency-label", $"● {_context.player.gold}");
+        _view.Show("currency-label", false);
         _view.SetText("wave-label", GetRoomText());
         _view.SetText("phase-label", GetPhaseText(isStart, isPreparing));
         _view.SetText("status-label", GetStatusText(isStart, isPreparing));

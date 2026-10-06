@@ -48,7 +48,6 @@ namespace HealerLike.Render.Stage
                 yield return new StageCompactLayout(_session).Check();
                 int initial = Count;
                 Observe("initial");
-                float gold = _manager.player.gold;
                 float mana = _manager.player.character.mana.Value;
                 yield return _gestures.Scroll(Available);
                 _output.Check(root.Q<ScrollView>("party-list").scrollOffset.x > 0,
@@ -77,8 +76,8 @@ namespace HealerLike.Render.Stage
                 Observe("return-to-roster");
                 _output.Check(Count == initial && _session.interaction.GetInteraction() == null,
                     "Returning an owned drag onto the roster creates no creature");
-                _output.Check(gold == _manager.player.gold && mana == _manager.player.character.mana.Value,
-                    "Scroll, hold, invalid drop and cancellation spend no resources");
+                _output.Check(mana == _manager.player.character.mana.Value,
+                    "Scroll, hold, invalid drop and cancellation spend no mana");
                 yield return new StageCompactInterruptions(_session).Run(Available, drop);
                 Button entry = Available;
                 string key = ((ToolkitCardModel)entry.userData).key;

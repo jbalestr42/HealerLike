@@ -52,7 +52,7 @@ namespace HealerLike.Render.Stage
             _s.output.Check(ReferenceEquals(targeting, _s.interaction.GetInteraction()) && character.mana.Value == before,
                 "Held world-creature release consumes press without casting targeted spell");
             yield return new StageCompactReview(_s).OutsideDismiss("11b-world-outside-dismissal");
-            Vector2 unrelated = StageInterfaceActions.ScreenPoint(_s.actions.root.Q("currency-label"));
+            Vector2 unrelated = StageInterfaceActions.ScreenPoint(_s.actions.root.Q("wave-label"));
             using (var touch = new StagePresentationTouch(_s.actions))
             {
                 yield return touch.Frame(TouchPhase.Began, unrelated);
