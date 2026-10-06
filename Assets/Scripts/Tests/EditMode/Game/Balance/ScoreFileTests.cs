@@ -46,7 +46,7 @@ public class ScoreFileTests
     public void Write_ThenRead_GivesTheSameCharacterScores()
     {
         ScoreFile.Measure measure = new ScoreFile.Measure { teamDps = 50f };
-        measure.characters.Add(new ScoreFile.CharacterEntry { character = "Cleric", score = new CharacterScore { dps = 12f, survivalTime = 8f, healedSurvivalTime = 20f, healingPerSecond = 6f, fingerprint = "def" } });
+        measure.characters.Add(new ScoreFile.CharacterEntry { character = "Cleric", score = new CharacterScore { dps = 12f, survivalTime = 8f, spellSurvivalTime = 20f, healingPerSecond = 6f, fingerprint = "def" } });
 
         ScoreFile.Write(_root, measure);
         ScoreFile.Measure read = ScoreFile.Read(_root);
@@ -54,7 +54,7 @@ public class ScoreFileTests
         Assert.AreEqual(1, read.characters.Count);
         Assert.AreEqual("Cleric", read.characters[0].character);
         Assert.AreEqual(12f, read.characters[0].score.dps);
-        Assert.AreEqual(20f, read.characters[0].score.healedSurvivalTime);
+        Assert.AreEqual(20f, read.characters[0].score.spellSurvivalTime);
         Assert.AreEqual(6f, read.characters[0].score.healingPerSecond);
         Assert.AreEqual("def", read.characters[0].score.fingerprint);
     }

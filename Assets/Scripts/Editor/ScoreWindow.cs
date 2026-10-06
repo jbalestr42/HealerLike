@@ -22,16 +22,34 @@ public class ScoreWindow : EditorWindow
         public IComparable[] keys;
     }
 
+    // A title over several columns following each other, drawn above their headers
+    class ColumnGroup
+    {
+        public string title;
+        public int firstColumn;
+        public int columnCount;
+
+        public ColumnGroup(string title, int firstColumn, int columnCount)
+        {
+            this.title = title;
+            this.firstColumn = firstColumn;
+            this.columnCount = columnCount;
+        }
+    }
+
     // A sortable table of rows, its header kept between two repaints
     class Table
     {
         public MultiColumnHeader header;
+        // Empty without any group: no row above the headers
+        public ColumnGroup[] groups;
         public List<Row> rows;
         // Date of the latest finished measure, empty without any
         public string lastMeasure = "";
 
-        public Table(MultiColumnHeaderState.Column[] columns, int sortedColumn)
+        public Table(MultiColumnHeaderState.Column[] columns, int sortedColumn, params ColumnGroup[] groups)
         {
+            this.groups = groups;
             header = new MultiColumnHeader(new MultiColumnHeaderState(columns)) { height = RowHeight + 4f };
             header.SetSorting(sortedColumn, false);
             header.sortingChanged += _ => Sort();
@@ -86,7 +104,7 @@ public class ScoreWindow : EditorWindow
         };
         _numberStyle ??= new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleRight };
         _waves ??= new Table(CreateWaveColumns(), 7);
-        _characters ??= new Table(CreateCharacterColumns(), 8);
+        _characters ??= new Table(CreateCharacterColumns(), 10, new ColumnGroup("Without skills", 1, 4), new ColumnGroup("With skills", 5, 6));
 
         // The scores just written are shown
         if (_wasMeasuring && !ScoreMeasure.isRunning)
@@ -130,7 +148,7 @@ public class ScoreWindow : EditorWindow
             {
                 string tooltip = _tab == ScoreMeasure.Kind.Waves
                     ? $"Plays the three measures in the simulation scene (about 10 minutes at x20), then writes the scores into the waves. Logs and scores in {root}"
-                    : $"Plays the four measures in the simulation scene (a few minutes at x20). Logs and scores in {root}";
+                    : $"Plays the five measures in the simulation scene (a few minutes at x20). Logs and scores in {root}";
                 if (GUILayout.Button(new GUIContent(_tab == ScoreMeasure.Kind.Waves ? "Measure every wave" : "Measure every character", tooltip), EditorStyles.toolbarButton, GUILayout.Width(150f)))
                 {
                     ScoreMeasure.Start(_tab);
@@ -217,16 +235,18 @@ public class ScoreWindow : EditorWindow
                 {
                     bot.character.title,
                     measured ? $"{score.survivalTime:0.0}s" : "-",
-                    measured ? $"{score.healingPerSecond:0.0}" : "-",
-                    measured ? $"{score.manaPerSecond:0.0}" : "-",
                     measured ? $"{score.dps:0.0}" : "-",
                     measured ? $"{score.effectiveHealth:0}" : "-",
-                    measured ? $"{score.healedEffectiveHealth:0}" : "-",
                     measured ? $"{score.threat:0}" : "-",
-                    measured ? $"{score.healedThreat:0}" : "-",
+                    measured ? $"{score.healingPerSecond:0.0}" : "-",
+                    measured ? $"{score.manaPerSecond:0.0}" : "-",
+                    measured ? $"{score.spellSurvivalTime:0.0}s" : "-",
+                    measured ? $"{score.spellDps:0.0}" : "-",
+                    measured ? $"{score.spellEffectiveHealth:0}" : "-",
+                    measured ? $"{score.spellThreat:0}" : "-",
                     StatusNames[status],
                 },
-                keys = new IComparable[] { bot.character.title, score.survivalTime, score.healingPerSecond, score.manaPerSecond, score.dps, score.effectiveHealth, score.healedEffectiveHealth, score.threat, score.healedThreat, status },
+                keys = new IComparable[] { bot.character.title, score.survivalTime, score.dps, score.effectiveHealth, score.threat, score.healingPerSecond, score.manaPerSecond, score.spellSurvivalTime, score.spellDps, score.spellEffectiveHealth, score.spellThreat, status },
             });
         }
         return rows;
@@ -253,14 +273,18 @@ public class ScoreWindow : EditorWindow
         return new[]
         {
             CreateColumn(new GUIContent("Character", "Click to select the character asset"), 120f),
+            // Without skills: the character casts nothing
             CreateColumn(Header<CharacterScore>("Survival", "survivalTime"), 70f),
-            CreateColumn(Header<CharacterScore>("Heal/s", "healingPerSecond"), 65f),
-            CreateColumn(Header<CharacterScore>("Mana/s", "manaPerSecond"), 65f),
             CreateColumn(Header<CharacterScore>("DPS", "dps"), 70f),
             CreateColumn(Header<CharacterScore>("Eff. health", "effectiveHealth"), 80f),
-            CreateColumn(Header<CharacterScore>("Healed eff. HP", "healedEffectiveHealth"), 95f),
             CreateColumn(Header<CharacterScore>("Threat", "threat"), 70f),
-            CreateColumn(Header<CharacterScore>("Healed threat", "healedThreat"), 90f),
+            // With skills: its healer bot casts them
+            CreateColumn(Header<CharacterScore>("Heal/s", "healingPerSecond"), 65f),
+            CreateColumn(Header<CharacterScore>("Mana/s", "manaPerSecond"), 65f),
+            CreateColumn(Header<CharacterScore>("Survival", "spellSurvivalTime"), 70f),
+            CreateColumn(Header<CharacterScore>("DPS", "spellDps"), 70f),
+            CreateColumn(Header<CharacterScore>("Eff. health", "spellEffectiveHealth"), 80f),
+            CreateColumn(Header<CharacterScore>("Threat", "spellThreat"), 70f),
             CreateColumn(new GUIContent("Status", StatusTooltip), 100f),
         };
     }
@@ -287,6 +311,7 @@ public class ScoreWindow : EditorWindow
 
     void DrawTable(Table table)
     {
+        DrawGroups(table);
         Rect headerRect = GUILayoutUtility.GetRect(0f, table.header.height, GUILayout.ExpandWidth(true));
         table.header.OnGUI(headerRect, _scroll.x);
         _scroll = EditorGUILayout.BeginScrollView(_scroll);
@@ -329,5 +354,36 @@ public class ScoreWindow : EditorWindow
             }
         }
         EditorGUILayout.EndScrollView();
+    }
+
+    // The titles of the column groups, above their columns and scrolled with them
+    void DrawGroups(Table table)
+    {
+        if (table.groups.Length == 0)
+        {
+            return;
+        }
+
+        Rect row = GUILayoutUtility.GetRect(0f, RowHeight, GUILayout.ExpandWidth(true));
+        MultiColumnHeaderState.Column[] columns = table.header.state.columns;
+        GUI.BeginClip(row);
+        foreach (ColumnGroup group in table.groups)
+        {
+            float x = -_scroll.x;
+            for (int column = 0; column < group.firstColumn; column++)
+            {
+                x += columns[column].width;
+            }
+            float width = 0f;
+            for (int column = group.firstColumn; column < group.firstColumn + group.columnCount; column++)
+            {
+                width += columns[column].width;
+            }
+
+            Rect rect = new Rect(x + 1f, 1f, width - 2f, RowHeight - 2f);
+            EditorGUI.DrawRect(rect, new Color(0f, 0f, 0f, 0.12f));
+            GUI.Label(rect, group.title, EditorStyles.centeredGreyMiniLabel);
+        }
+        GUI.EndClip();
     }
 }

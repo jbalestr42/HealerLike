@@ -27,16 +27,25 @@ MonoBehaviour:
       Data: 0|EntitySlot[,], HealerLike.Runtime
     - Name: 
       Entry: 12
-      Data: 5
+      Data: 9
     - Name: ranks
       Entry: 1
-      Data: 1|5
+      Data: 3|3
     - Name: 
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 10
       Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 6
+      Data: 
     - Name: 
       Entry: 8
       Data: 
@@ -53,8 +62,8 @@ MonoBehaviour:
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
-      Entry: 10
-      Data: 0
+      Entry: 6
+      Data: 
     - Name: 
       Entry: 8
       Data: 
@@ -64,6 +73,33 @@ MonoBehaviour:
     - Name: entity
       Entry: 10
       Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 6
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 6
+      Data: 
     - Name: 
       Entry: 8
       Data: 
@@ -82,8 +118,8 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  width: 1
-  height: 5
+  width: 3
+  height: 3
   score:
     dps: 0
     peakDps: 0

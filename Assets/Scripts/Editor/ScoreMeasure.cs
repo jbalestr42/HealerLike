@@ -29,9 +29,10 @@ public static class ScoreMeasure
     public const string WaveRobustnessPlanPath = "Assets/Data/Balance/WaveRobustnessSimulation.asset";
     public const string CharacterDpsPlanPath = "Assets/Data/Balance/CharacterDpsSimulation.asset";
     public const string CharacterRobustnessPlanPath = "Assets/Data/Balance/CharacterRobustnessSimulation.asset";
-    public const string CharacterHealedPlanPath = "Assets/Data/Balance/CharacterHealedSimulation.asset";
+    public const string CharacterSpellDpsPlanPath = "Assets/Data/Balance/CharacterSpellDpsSimulation.asset";
+    public const string CharacterSpellRobustnessPlanPath = "Assets/Data/Balance/CharacterSpellRobustnessSimulation.asset";
     static readonly string[] WavePlanPaths = { TeamDpsPlanPath, WaveDpsPlanPath, WaveRobustnessPlanPath };
-    static readonly string[] CharacterPlanPaths = { TeamDpsPlanPath, CharacterDpsPlanPath, CharacterRobustnessPlanPath, CharacterHealedPlanPath };
+    static readonly string[] CharacterPlanPaths = { TeamDpsPlanPath, CharacterDpsPlanPath, CharacterRobustnessPlanPath, CharacterSpellDpsPlanPath, CharacterSpellRobustnessPlanPath };
 
     // -1 when not measuring
     const string StepKey = "HealerLike.ScoreMeasure.Step";
@@ -260,7 +261,7 @@ public static class ScoreMeasure
         }
 
         float teamDps = WaveScoreCalculator.GetTeamDps(fights[0]);
-        Dictionary<string, CharacterScore> scores = CharacterScoreCalculator.Compute(fights[1], fights[2], fights[3], teamDps);
+        Dictionary<string, CharacterScore> scores = CharacterScoreCalculator.Compute(fights[1], fights[2], fights[3], fights[4], teamDps);
         ScoreFile.Measure measure = new ScoreFile.Measure { date = DateTime.Now.ToString("yyyy-MM-dd HH:mm"), teamDps = teamDps };
 
         foreach (HealerBotProfile bot in GetCharacterBots())
@@ -295,7 +296,7 @@ public static class ScoreMeasure
     // The healer bots of the character measure, one per character, the bots without character skipped
     public static List<HealerBotProfile> GetCharacterBots()
     {
-        SimulationPlan plan = AssetDatabase.LoadAssetAtPath<SimulationPlan>(CharacterHealedPlanPath);
+        SimulationPlan plan = AssetDatabase.LoadAssetAtPath<SimulationPlan>(CharacterSpellRobustnessPlanPath);
         return plan != null ? plan.healerBots.Where(bot => bot != null && bot.character != null).Distinct().ToList() : new List<HealerBotProfile>();
     }
 
