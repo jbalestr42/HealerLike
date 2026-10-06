@@ -92,16 +92,16 @@ public class EffectPlacementTests
     }
 
     void AssertOffTheHead(GameObject target, BuffHandlerFactory handler, EffectKey element, EffectAnchors anchors,
-                          string unit)
+                          string unit, GameObject source = null)
     {
         float grown = anchors.headRadius + EffectPlacement.HeadMargin * anchors.bodyRadius;
-        _sink.SetStatus(null, target, handler, 3, 0f, 6f);
+        _sink.SetStatus(source, target, handler, 3, 0f, 6f);
         SpellEffect effect = _sink.GetElement(target, element);
         Assert.IsNotNull(effect, unit);
         Assert.IsTrue(effect.isLasting, unit);
         for (float time = 0f; time < 6f; time += 0.1f)
         {
-            _sink.SetStatus(null, target, handler, 3, time, 6f);
+            _sink.SetStatus(source, target, handler, 3, time, 6f);
             foreach (Renderer part in effect.GetComponentsInChildren<Renderer>())
             {
                 if (part.bounds.size.sqrMagnitude < 0.00000001f)
@@ -166,6 +166,64 @@ public class EffectPlacementTests
             _units.Add(target);
             target.AddComponent<FakeEffectAnchors>().anchors = anchors;
             AssertOffTheHead(target, handler, element, anchors, head.ToString());
+        }
+    }
+
+    // A buff of each of the five event kinds, as Julien's October handlers carry them
+    BuffHandlerFactory EventHandler(EffectKey element)
+    {
+        switch (element)
+        {
+            case EffectKey.Spark:
+                return SpellSinkFixture.Buff(ScriptableObject.CreateInstance<ApplyBuffOnEventBuffFactory>(), _created);
+            case EffectKey.Echo:
+                return SpellSinkFixture.Buff(ScriptableObject.CreateInstance<EchoAttackBuffFactory>(), _created);
+            case EffectKey.Tether:
+                return SpellSinkFixture.Buff(ScriptableObject.CreateInstance<SoulLinkBuffFactory>(), _created);
+            case EffectKey.Sprout:
+                return SpellSinkFixture.Buff(ScriptableObject.CreateInstance<ReviveOnDeathBuffFactory>(), _created);
+            default:
+                // Growth is no buff of its own: a plain upgrade a growing item stacks on its holder
+                return SpellSinkFixture.Upgrade(AttributeType.Damage, 10f, _created);
+        }
+    }
+
+    // A unit of this side, holding a growing item that stacks the handler when there is one
+    GameObject Unit(string name, LookSide side, BuffHandlerFactory growth = null)
+    {
+        GameObject unit = new GameObject(name);
+        _units.Add(unit);
+        Entity entity = null;
+        TestHelpers.WithLoggingDisabled(() => entity = unit.AddComponent<Entity>());
+        entity.entityType = side == LookSide.Stone ? Entity.EntityType.Computer : Entity.EntityType.Player;
+        if (growth)
+        {
+            GrowingItemFactory item = ScriptableObject.CreateInstance<GrowingItemFactory>();
+            item.data = new GrowingItemData { name = "Growing", growthBuffHandlerFactory = growth };
+            _created.Add(item);
+            entity.items.Add(item.GetItem());
+        }
+        return unit;
+    }
+
+    // The five event kinds over every composed head, each drawn in its caster's material: a plant buff on a plant
+    // ally draws the Plant entry and a stone caster's buff on a stone ally its Stone entry. The Tether sits above the
+    // head, so it is the one this guards most
+    [Test]
+    public void SetStatus_EventKindOnEveryComposedHead_NeverReachesTheHead(
+        [Values(EffectKey.Spark, EffectKey.Echo, EffectKey.Tether, EffectKey.Sprout, EffectKey.Stem)] EffectKey element,
+        [Values(LookSide.Plant, LookSide.Stone)] LookSide side)
+    {
+        BuffHandlerFactory handler = EventHandler(element);
+        GameObject source = side == LookSide.Stone ? Unit("Stone caster", LookSide.Stone) : null;
+
+        foreach (HeadKind head in System.Enum.GetValues(typeof(HeadKind)))
+        {
+            EffectAnchors anchors = ComposeAnchors(side, head);
+            GameObject target = Unit(head.ToString(), side, element == EffectKey.Stem ? handler : null);
+            target.AddComponent<FakeEffectAnchors>().anchors = anchors;
+            AssertOffTheHead(target, handler, element, anchors, head.ToString(), source);
+            Assert.AreEqual(side, _sink.GetElement(target, element).recipe.material, head + " draws its caster's material");
         }
     }
 

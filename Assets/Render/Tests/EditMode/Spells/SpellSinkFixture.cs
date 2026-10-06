@@ -54,6 +54,12 @@ public static class SpellSinkFixture
         return Handler(buff, period > 0f, period, created);
     }
 
+    // A handler of one buff that carries no consumer or modifier: its kind is read from the buff's type alone
+    public static BuffHandlerFactory Buff(ABuffFactory buff, List<Object> created)
+    {
+        return Handler(buff, false, 0f, created);
+    }
+
     public static BuffHandlerFactory Invincible(List<Object> created)
     {
         return Handler(ScriptableObject.CreateInstance<InvincibilityBuffFactory>(), false, 0f, created);
