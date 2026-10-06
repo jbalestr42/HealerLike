@@ -68,6 +68,7 @@ namespace HealerLike.Render.Spells.Editor
             SpellPolishGround.Apply(vocabulary);
             ApplyStone(vocabulary);
             ApplyKinds(vocabulary);
+            ApplyEventKinds(vocabulary);
         }
 
         // Only the Plant Boon offence kinds: the saved entries and cells are read, never rewritten
@@ -102,6 +103,42 @@ namespace HealerLike.Render.Spells.Editor
                 EffectSocket.Feet, 2.4f));
             Kind(vocabulary, EffectKind.Flat, Kind(orbit, "Boon canopy", Canopy(), EffectMotionKind.Orbit,
                 EffectSocket.AboveHead, 2.4f));
+        }
+
+        // Only the five kinds of Julien's October content: the saved entries, cells and other kinds are read, never
+        // rewritten
+        [MenuItem("Tools/Render/Author Event Kind Entries")]
+        public static void AuthorEventKinds()
+        {
+            EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(AssetPath);
+            if (vocabulary == null) throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            Undo.RecordObject(vocabulary, "Author event kind entries");
+            ApplyEventKinds(vocabulary);
+            EditorUtility.SetDirty(vocabulary);
+            AssetDatabase.SaveAssetIfDirty(vocabulary);
+            Debug.Log("[SpellPolishVocabulary] Authored Spark, Echo, Tether, Sprout and Stem; Stone draws them in Plant.");
+            if (Application.isBatchMode) EditorApplication.Exit(0);
+        }
+
+        // Reactive, Echo, Link, Summon and Growth in Plant, built like the six Boon kinds from the Orbit entry.
+        // Growth also refines the Bane defence cell: the Hungering Mask's battle growth costs health
+        public static void ApplyEventKinds(EffectVocabulary vocabulary)
+        {
+            if (vocabulary == null) throw new ArgumentNullException(nameof(vocabulary));
+            ElementEntry orbit = vocabulary.entries[EffectKey.Orbit];
+            Kind(vocabulary, EffectKind.Reactive, Kind(orbit, "Reactive spark", Spark(), EffectMotionKind.Burst,
+                EffectSocket.Body, 1.2f));
+            Kind(vocabulary, EffectKind.Echo, Kind(orbit, "Echo blades", Echo(), EffectMotionKind.Press,
+                EffectSocket.Body, .9f));
+            Kind(vocabulary, EffectKind.Link, Kind(orbit, "Soul tether", Tether(), EffectMotionKind.Orbit,
+                EffectSocket.AboveHead, 2.2f));
+            Kind(vocabulary, EffectKind.Summon, Kind(orbit, "Summon sprout", Sprout(), EffectMotionKind.Rise,
+                EffectSocket.Feet, 1.6f));
+            ElementEntry stem = Kind(orbit, "Growth stem", Stem(), EffectMotionKind.Grow, EffectSocket.Feet, 2f);
+            stem.count = EffectCount.Stacks;
+            stem.minCount = 3;
+            Kind(vocabulary, EffectKind.Growth, stem);
+            vocabulary.kinds[new EffectKindCell(EffectOperation.Bane, EffectAspect.Defence, EffectKind.Growth)] = stem;
         }
 
         static void Kind(EffectVocabulary vocabulary, EffectKind kind, ElementEntry entry)

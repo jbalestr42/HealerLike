@@ -15,9 +15,9 @@ namespace HealerLike.Render.Grammar
                 family = Family(handler, isSameSide), group = Group(handler),
                 operation = Operation(handler, isSameSide), aspect = Aspect(handler),
                 tempo = Tempo(handler), periodSeconds = Period(handler), magnitude = Magnitude(handler, context),
-                reach = Reach(handler, context.targetCount), delivery = DeliveryChannel(context.projectilePrefab), trigger = Trigger(handler, context),
+                reach = Reach(handler, context.targetCount), delivery = DeliveryChannel(handler, context), trigger = Trigger(handler, context),
                 side = isSameSide ? EffectSide.Ally : EffectSide.Opposing, origin = context.origin, material = context.material,
-                kind = Kind(handler)
+                kind = Kind(handler, context)
             };
         }
 
@@ -69,6 +69,12 @@ namespace HealerLike.Render.Grammar
         {
             if (targetCount <= 1) return EffectReach.Single;
             return targetCount == int.MaxValue ? EffectReach.All : EffectReach.Group;
+        }
+
+        // A link has no projectile: what it delivers runs between the holder and its allies
+        public static EffectDelivery DeliveryChannel(ABuffHandlerFactory handler, EffectContext context)
+        {
+            return Kind(handler) == EffectKind.Link ? EffectDelivery.Link : DeliveryChannel(context.projectilePrefab);
         }
 
         public static EffectDelivery DeliveryChannel(GameObject projectilePrefab = null)

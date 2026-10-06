@@ -73,6 +73,8 @@ namespace HealerLike.Render.Grammar
         // The owning class's base stats when a player skill or item is sized as its class casts it, else null.
         // Caster-scaled values read these instead of 1, and a damage-reduction fraction is its own share
         public System.Collections.Generic.IReadOnlyDictionary<AttributeType, float> casterBaselines;
+        // The handlers the target's growing items stack on it, else null
+        public System.Collections.Generic.HashSet<ABuffHandlerFactory> growthHandlers;
 
         public static EffectContext Default
         {

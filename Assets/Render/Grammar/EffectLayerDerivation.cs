@@ -17,6 +17,7 @@ namespace HealerLike.Render.Grammar
             IReadOnlyList<ABuffFactory> buffs = Buffs(handler);
             if (buffs.Count == 0) return System.Array.Empty<EffectChannels>();
             var layers = new List<EffectChannels>(buffs.Count);
+            bool isGrowth = IsGrowth(handler, context);
             foreach (ABuffFactory buff in buffs)
             {
                 if (!buff) continue;
@@ -32,11 +33,11 @@ namespace HealerLike.Render.Grammar
                     tempo = Tempo(handler),
                     periodSeconds = Period(handler),
                     reach = Reach(handler, context.targetCount),
-                    delivery = DeliveryChannel(context.projectilePrefab),
+                    delivery = Kind(buff) == EffectKind.Link ? EffectDelivery.Link : DeliveryChannel(context.projectilePrefab),
                     trigger = LayerTrigger(buff, context),
                     side = isSameSide ? EffectSide.Ally : EffectSide.Opposing,
                     origin = context.origin, material = context.material,
-                    kind = Kind(buff)
+                    kind = isGrowth ? EffectKind.Growth : Kind(buff)
                 });
             }
             return layers;

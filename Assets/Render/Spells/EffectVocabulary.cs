@@ -121,7 +121,12 @@ namespace HealerLike.Render.Spells
         Cadence,
         Brackets,
         Footring,
-        Canopy
+        Canopy,
+        Spark,
+        Echo,
+        Tether,
+        Sprout,
+        Stem
     }
 
     // How the parts of an element move, one motion cycle at a time
@@ -302,6 +307,11 @@ namespace HealerLike.Render.Spells
                 case EffectKind.Conditional: return EffectKey.Brackets;
                 case EffectKind.Positional: return EffectKey.Footring;
                 case EffectKind.Flat: return EffectKey.Canopy;
+                case EffectKind.Reactive: return EffectKey.Spark;
+                case EffectKind.Echo: return EffectKey.Echo;
+                case EffectKind.Link: return EffectKey.Tether;
+                case EffectKind.Summon: return EffectKey.Sprout;
+                case EffectKind.Growth: return EffectKey.Stem;
                 default: return default(EffectKey);
             }
         }
@@ -316,6 +326,11 @@ namespace HealerLike.Render.Spells
                 case EffectKey.Brackets: return EffectKind.Conditional;
                 case EffectKey.Footring: return EffectKind.Positional;
                 case EffectKey.Canopy: return EffectKind.Flat;
+                case EffectKey.Spark: return EffectKind.Reactive;
+                case EffectKey.Echo: return EffectKind.Echo;
+                case EffectKey.Tether: return EffectKind.Link;
+                case EffectKey.Sprout: return EffectKind.Summon;
+                case EffectKey.Stem: return EffectKind.Growth;
                 default: return EffectKind.Plain;
             }
         }

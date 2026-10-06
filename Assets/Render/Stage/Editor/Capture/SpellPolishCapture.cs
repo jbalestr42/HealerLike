@@ -32,7 +32,8 @@ namespace HealerLike.Render.Stage
         static readonly EffectKey[] StoneElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Press };
         // The Boon offence kinds, measured in Plant: Stone draws them through the Plant fallback
         static readonly EffectKey[] KindElements = { EffectKey.Dart, EffectKey.Seeds, EffectKey.Cadence,
-            EffectKey.Brackets, EffectKey.Footring, EffectKey.Canopy };
+            EffectKey.Brackets, EffectKey.Footring, EffectKey.Canopy, EffectKey.Spark, EffectKey.Echo,
+            EffectKey.Tether, EffectKey.Sprout, EffectKey.Stem };
         const string GainHandler = "Assets/Data/PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory.asset";
         const string DrainHandler = "Assets/Data/EntityItems/SiphonItem/BuffHandlerFactory.asset";
         readonly bool _isReadability;
@@ -212,6 +213,11 @@ namespace HealerLike.Render.Stage
                 case EffectKey.Brackets:
                 case EffectKey.Footring:
                 case EffectKey.Canopy:
+                case EffectKey.Spark:
+                case EffectKey.Echo:
+                case EffectKey.Tether:
+                case EffectKey.Sprout:
+                case EffectKey.Stem:
                 case EffectKey.Plates:
                 case EffectKey.Bud: return EffectFamily.Boon;
                 case EffectKey.Press:

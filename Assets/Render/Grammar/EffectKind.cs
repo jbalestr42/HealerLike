@@ -11,6 +11,16 @@ namespace HealerLike.Render.Grammar
         Rate,
         Conditional,
         Positional,
-        Flat
+        Flat,
+        // Fires in answer to an event: an attack, a heal received, a kill, an overheal, a battle start
+        Reactive,
+        // A strike repeated
+        Echo,
+        // The kind half of a link: the delivery half is EffectDelivery.Link
+        Link,
+        // A unit arrives or comes back
+        Summon,
+        // Grows each battle or kill; read from the holder's growing item, never from the buff alone
+        Growth
     }
 }

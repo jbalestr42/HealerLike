@@ -161,6 +161,8 @@ namespace HealerLike.Render.Spells.Editor
                 case EffectKey.Orbit: case EffectKey.Plates: case EffectKey.Bud: return EffectFamily.Boon;
                 case EffectKey.Dart: case EffectKey.Seeds: case EffectKey.Cadence: case EffectKey.Brackets:
                 case EffectKey.Footring: case EffectKey.Canopy: return EffectFamily.Boon;
+                case EffectKey.Spark: case EffectKey.Echo: case EffectKey.Tether: case EffectKey.Sprout:
+                case EffectKey.Stem: return EffectFamily.Boon;
                 case EffectKey.Press: case EffectKey.Crack: case EffectKey.Litter: return EffectFamily.Bane;
                 default: return EffectFamily.Damage; }
         }

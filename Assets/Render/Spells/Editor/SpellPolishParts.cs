@@ -228,6 +228,90 @@ namespace HealerLike.Render.Spells.Editor
             };
         }
 
+        // Reactive: a coiled tendril at the shoulder with a bead caught in it and three thorns that snap out of
+        // the coil, in front and to one side so the body never hides it
+        public static LookPart[] Spark()
+        {
+            var parts = new List<LookPart>();
+            Vector3 coil = new Vector3(-1.2f, .55f, -.75f);
+            parts.Add(Part("Spark coil", Primitive.Torus, ShapeProfile.Ring(.12f), coil, new Vector3(.9f, .16f, .9f),
+                new Vector3(70, 0, 0)));
+            parts.Add(Part("Spark bead", Primitive.Sphere, ShapeProfile.Bulb(), coil, Vector3.one * .3f,
+                colour: ColourRole.MushroomCapPale));
+            for (int i = 0; i < 3; i++)
+            {
+                float turn = -40f + 40f * i;
+                Vector3 direction = Quaternion.Euler(0, 0, turn) * Vector3.up;
+                parts.Add(Part("Spark thorn " + i, Primitive.Cone, Seed(), coil + direction * .75f,
+                    new Vector3(.22f, .55f, .22f), new Vector3(0, 0, turn)));
+            }
+            return parts.ToArray();
+        }
+
+        // Echo: one leaf blade struck and two fainter copies of it trailing behind, each smaller and further back
+        public static LookPart[] Echo()
+        {
+            var parts = new LookPart[3];
+            for (int i = 0; i < parts.Length; i++)
+            {
+                float shrink = 1f - .22f * i;
+                parts[i] = Part("Echo blade " + i, Primitive.Leaf, ShapeProfile.Leaf(.06f, .55f),
+                    new Vector3(1.25f + .38f * i, .35f, -.75f + .3f * i), new Vector3(.55f, 1.9f, .14f) * shrink,
+                    new Vector3(0, 0, -28f), i == 0 ? ColourRole.Accent : ColourRole.MushroomCapPale);
+            }
+            return parts;
+        }
+
+        // Link: two vine rings hooked through each other over the head, a bead on each, one life held by two
+        public static LookPart[] Tether()
+        {
+            return new[] {
+                Part("Tether ring 0", Primitive.Torus, ShapeProfile.Ring(.1f), new Vector3(-.42f, .35f, 0),
+                    new Vector3(1.15f, .16f, 1.15f), new Vector3(90, 0, 0)),
+                Part("Tether ring 1", Primitive.Torus, ShapeProfile.Ring(.1f), new Vector3(.42f, .35f, 0),
+                    new Vector3(1.15f, .16f, 1.15f), new Vector3(0, 0, 90)),
+                Part("Tether bead 0", Primitive.Sphere, ShapeProfile.Bulb(), new Vector3(-.98f, .35f, 0),
+                    Vector3.one * .24f, colour: ColourRole.MushroomCapPale),
+                Part("Tether bead 1", Primitive.Sphere, ShapeProfile.Bulb(), new Vector3(.98f, .35f, 0),
+                    Vector3.one * .24f, colour: ColourRole.MushroomCapPale)
+            };
+        }
+
+        // Summon: a seedling breaking out of a mound of earth in front of the feet, two seed leaves on a short stem
+        public static LookPart[] Sprout()
+        {
+            Vector3 at = new Vector3(1.2f, 0, -.9f);
+            return new[] {
+                Part("Sprout mound", Primitive.Sphere, ShapeProfile.Bulb(), at + Vector3.up * .1f,
+                    new Vector3(.9f, .35f, .9f), colour: ColourRole.MushroomCapPale),
+                Part("Sprout stem", Primitive.CylinderSegment, ShapeProfile.Segment(.16f, .78f), at + Vector3.up * .55f,
+                    new Vector3(.14f, .8f, .14f)),
+                Part("Sprout leaf 0", Primitive.Leaf, ShapeProfile.Leaf(.3f, .8f, .3f), at + new Vector3(-.3f, 1f, 0),
+                    new Vector3(.45f, .8f, .12f), new Vector3(0, 0, 55)),
+                Part("Sprout leaf 1", Primitive.Leaf, ShapeProfile.Leaf(.3f, .8f, .3f), at + new Vector3(.3f, 1f, 0),
+                    new Vector3(.45f, .8f, .12f), new Vector3(0, 0, -55))
+            };
+        }
+
+        // Growth: the creature growth language (GrowthStoneParts.Growth and Tip) as a spell, segments with a joint
+        // on each and a bud on top, listed from the ground up so each stack shows one more of them
+        public static LookPart[] Stem()
+        {
+            var parts = new List<LookPart>();
+            Vector3 foot = new Vector3(-1.3f, -.6f, -.7f);
+            for (int i = 0; i < 4; i++)
+            {
+                Vector3 from = foot + new Vector3(.08f * (i % 2 == 0 ? 1 : -1), .55f * i, 0);
+                parts.Add(Part("Growth segment " + i, Primitive.CylinderSegment, ShapeProfile.Segment(.16f, .78f),
+                    from + Vector3.up * .275f, new Vector3(.28f, .55f, .28f)));
+                parts.Add(Part("Growth joint " + i, Primitive.Sphere, ShapeProfile.Bulb(), from + Vector3.up * .55f,
+                    Vector3.one * .28f * .72f));
+            }
+            parts.Add(Part("Growth bud", Primitive.Sphere, ShapeProfile.Bulb(.9f, .25f), foot + Vector3.up * 2.45f,
+                new Vector3(.36f, .5f, .36f), colour: ColourRole.MushroomCapPale));
+            return parts.ToArray();
+        }
+
         // Stone magic is broken and stacked: chipped slabs, blunt wedges, straight shards and flat capstones.
         // Never a sphere, a bead chain or a smooth curve, and never a colour of its own: roles only.
         public static ShapeProfile Slab(float fracture = .45f)

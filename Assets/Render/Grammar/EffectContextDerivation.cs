@@ -20,6 +20,7 @@ namespace HealerLike.Render.Grammar
             context.origin = Origin(source);
             context.material = LookDerivation.CasterSide(source);
             Entity recipient = target ? target.GetComponent<Entity>() : null;
+            context.growthHandlers = GrowthHandlers(recipient);
             // Entity publishes this reference during Init; a preview's required component may not have Awoken.
             AttributeManager attributes = recipient ? recipient.attributeManager : null;
             if (!attributes)
@@ -40,6 +41,16 @@ namespace HealerLike.Render.Grammar
                 context.maximumHealth = attributes.Get(AttributeType.HealthMax).Value;
             }
             return context;
+        }
+
+        static HashSet<ABuffHandlerFactory> GrowthHandlers(Entity holder)
+        {
+            if (!holder || holder.items == null) return null;
+            List<object> data = new List<object>();
+            foreach (AItem item in holder.items)
+                if (item is IGameDataSource source) data.Add(source.sourceData);
+            HashSet<ABuffHandlerFactory> handlers = GrowthHandlers(data);
+            return handlers.Count > 0 ? handlers : null;
         }
 
         // The caster's side against the target's: the healer's Character, which is not an Entity, plays for the

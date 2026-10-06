@@ -13,7 +13,8 @@ namespace HealerLike.Render.Spells
     public class EffectKindVocabularyTests
     {
         static readonly EffectKind[] Authored = { EffectKind.Projectile, EffectKind.Volume, EffectKind.Rate,
-            EffectKind.Conditional, EffectKind.Positional, EffectKind.Flat };
+            EffectKind.Conditional, EffectKind.Positional, EffectKind.Flat, EffectKind.Reactive, EffectKind.Echo,
+            EffectKind.Link, EffectKind.Summon, EffectKind.Growth };
 
         readonly List<Object> _owned = new List<Object>();
 
@@ -99,7 +100,7 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
-        public void Shipped_SixKinds_ResolveInBoonGoldAndPlantForBothMaterials()
+        public void Shipped_AuthoredKinds_ResolveInBoonGoldAndPlantForBothMaterials()
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
             EffectRecipe orbit = EffectComposer.Compose(vocabulary, Boon(EffectKind.Plain, LookSide.Plant), 1, 0);
@@ -117,7 +118,7 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
-        public void Shipped_SixKinds_AreValidPlantKitParts()
+        public void Shipped_AuthoredKinds_AreValidPlantKitParts()
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
             foreach (EffectKind kind in Authored)
@@ -139,7 +140,7 @@ namespace HealerLike.Render.Spells
         // Structurally different, not six variations of one ring: no two kinds share their motion, socket, part
         // count and primitive make-up
         [Test]
-        public void Shipped_SixKinds_HaveDistinctConstructions()
+        public void Shipped_AuthoredKinds_HaveDistinctConstructions()
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
             var signatures = new HashSet<string>();
@@ -164,13 +165,36 @@ namespace HealerLike.Render.Spells
             foreach (string guid in AssetDatabase.FindAssets("t:ABuffHandlerFactory", new[] { "Assets/Data" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                // Julien's untreated handlers are a listed gap, not a vocabulary promise (e.g. Soul Link draws Orbit)
+                // A handler with no look by design is a listed gap, not a vocabulary promise
                 if (awaiting.Contains(path)) continue;
                 EffectChannels channels = EffectDerivation.Channels(
                     AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(path), true);
                 if (channels.operation != EffectOperation.Boon || channels.aspect != EffectAspect.Offence) continue;
                 Assert.AreEqual(EffectVocabulary.KindKey(channels.kind), EffectComposer.Element(vocabulary, channels), path);
             }
+        }
+
+        // The Hungering Mask's battle growth costs health: its growth draws the Stem in the Bane defence cell too
+        [Test]
+        public void Shipped_GrowthOnABaneDefence_DrawsTheStemNotCrack()
+        {
+            EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
+            EffectChannels bane = new EffectChannels { operation = EffectOperation.Bane, aspect = EffectAspect.Defence,
+                family = EffectFamily.Bane, group = AttributeGroup.Defence, tempo = EffectTempo.ForDuration,
+                kind = EffectKind.Growth };
+            Assert.AreEqual(EffectKey.Stem, EffectComposer.Element(vocabulary, bane));
+            bane.kind = EffectKind.Plain;
+            Assert.AreEqual(EffectKey.Crack, EffectComposer.Element(vocabulary, bane));
+        }
+
+        // Each stack the holder's item grows shows one more segment of the stem, up to its bud
+        [Test]
+        public void Shipped_Stem_GrowsWithStacks()
+        {
+            ElementEntry stem = RenderTestAssets.LoadEffectVocabulary().GetEntry(EffectKey.Stem);
+            Assert.AreEqual(EffectCount.Stacks, stem.count);
+            Assert.Less(EffectComposer.Count(stem, 1, 0, 0), EffectComposer.Count(stem, 3, 0, 0));
+            Assert.AreEqual(EffectComposer.Shapes(stem), EffectComposer.Count(stem, 99, 0, 0));
         }
 
         static EffectChannels Boon(EffectKind kind, LookSide material)
