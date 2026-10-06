@@ -91,9 +91,9 @@ public class SkillDescriptionReaderTests
         GameObject prefab = RenderTestAssets.LoadProjectile("StraightLaserBullet");
         skill.data = new ShootProjectileSkillData
         {
-            projectiles = new List<ShootProjectileSkillData.ProjectileData>
+            projectiles = new List<ProjectileData>
             {
-                new ShootProjectileSkillData.ProjectileData
+                new ProjectileData
                 {
                     projectilePrefab = prefab,
                     numberOfProjectileToShootPerTarget = 3,

@@ -103,7 +103,7 @@ namespace HealerLike.Render.Grammar
 
             int bounces = ItemWalker.Bounces(data);
             bool hasAccent = false;
-            foreach (ShootProjectileSkillData.ProjectileData entry in skill.projectiles)
+            foreach (ProjectileData entry in skill.projectiles)
             {
                 if (entry == null)
                 {

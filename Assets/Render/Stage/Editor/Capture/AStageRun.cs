@@ -243,8 +243,10 @@ namespace HealerLike.Render.Stage
             _observed.Clear();
         }
 
-        void OnProcessed(GameObject owner, ResourceModifier modifier, float value, bool isCritical)
+        void OnProcessed(GameObject owner, ResourceModifier modifier, ConsumerResult result)
         {
+            float value = result.value;
+            bool isCritical = result.isCritical;
             _attacks += value < 0f ? 1 : 0;
             _heals += value > 0f ? 1 : 0;
         }

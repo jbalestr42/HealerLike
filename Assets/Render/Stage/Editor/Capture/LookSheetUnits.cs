@@ -265,7 +265,7 @@ namespace HealerLike.Render.Stage
 
             ShootProjectileSkillStepFactory shoot = LookSheetData.Track(
                 ScriptableObject.CreateInstance<ShootProjectileSkillStepFactory>(), created);
-            ShootProjectileSkillStepData.ProjectileData entry = new ShootProjectileSkillStepData.ProjectileData
+            ProjectileData entry = new ProjectileData
             {
                 projectilePrefab = LookSheetData.Prefab("CurveBullet2"),
                 onHitConsumer = new List<AConsumerFactory>
@@ -273,7 +273,7 @@ namespace HealerLike.Render.Stage
                 numberOfProjectileToShootPerTarget = 3
             };
             shoot.data = new ShootProjectileSkillStepData
-                { projectiles = new List<ShootProjectileSkillStepData.ProjectileData> { entry } };
+                { projectiles = new List<ProjectileData> { entry } };
 
             RepeatSkillStepFactory repeat = LookSheetData.Track(
                 ScriptableObject.CreateInstance<RepeatSkillStepFactory>(), created);

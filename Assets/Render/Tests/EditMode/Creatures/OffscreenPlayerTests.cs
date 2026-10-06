@@ -113,7 +113,7 @@ public class OffscreenPlayerTests
         ResourceAttribute health = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100f);
         ResourceOutcomeObserver observer = _target.AddComponent<ResourceOutcomeObserver>();
         observer.Init(health, null, _sink, _manager.registry);
-        health.OnAllConsumerProcessed.Invoke(_target, new ResourceModifier { source = _source }, 8f, false);
+        health.OnAllConsumerProcessed.Invoke(_target, new ResourceModifier { source = _source }, new ConsumerResult(8f, false));
         _sink.Tick();
         Assert.AreEqual(2, _sink.impactCount, "One target impact and one incoming cast link.");
         SpellEffect link = Link();

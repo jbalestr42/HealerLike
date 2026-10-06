@@ -40,8 +40,10 @@ namespace HealerLike.Render.Stage
             _mana.OnAllConsumerProcessed.AddListener(OnMana);
         }
 
-        void OnHealth(GameObject owner, ResourceModifier modifier, float value, bool critical)
+        void OnHealth(GameObject owner, ResourceModifier modifier, ConsumerResult result)
         {
+            float value = result.value;
+            bool critical = result.isCritical;
             // The resolver clears consumers before notifying observers. Source and multiplier
             // identify this cast window; value is the actual resolved health effect.
             if (modifier.source != _source || !Mathf.Approximately(modifier.multiplier, _data.multiplier))
@@ -70,8 +72,10 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        void OnMana(GameObject owner, ResourceModifier modifier, float value, bool critical)
+        void OnMana(GameObject owner, ResourceModifier modifier, ConsumerResult result)
         {
+            float value = result.value;
+            bool critical = result.isCritical;
             if (modifier.source == _source && value < 0f)
             {
                 _evidence.manaConsumed -= value;

@@ -134,9 +134,9 @@ public class ItemWalkerTests
         ShootProjectileSkillFactory primary = CreateTracked<ShootProjectileSkillFactory>();
         primary.data = new ShootProjectileSkillData
         {
-            projectiles = new List<ShootProjectileSkillData.ProjectileData>
+            projectiles = new List<ProjectileData>
             {
-                new ShootProjectileSkillData.ProjectileData
+                new ProjectileData
                 {
                     projectilePrefab = RenderTestAssets.LoadProjectile("StraightLaserBullet"),
                     numberOfProjectileToShootPerTarget = 1

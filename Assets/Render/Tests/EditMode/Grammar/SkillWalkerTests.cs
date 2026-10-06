@@ -37,13 +37,13 @@ public class SkillWalkerTests
     ShootProjectileSkillFactory CreateShoot(GameObject first, int firstCount, GameObject second, int secondCount)
     {
         ShootProjectileSkillFactory shoot = CreateTracked<ShootProjectileSkillFactory>();
-        shoot.data = new ShootProjectileSkillData { projectiles = new List<ShootProjectileSkillData.ProjectileData>() };
-        shoot.data.projectiles.Add(new ShootProjectileSkillData.ProjectileData
+        shoot.data = new ShootProjectileSkillData { projectiles = new List<ProjectileData>() };
+        shoot.data.projectiles.Add(new ProjectileData
         {
             projectilePrefab = first,
             numberOfProjectileToShootPerTarget = firstCount
         });
-        shoot.data.projectiles.Add(new ShootProjectileSkillData.ProjectileData
+        shoot.data.projectiles.Add(new ProjectileData
         {
             projectilePrefab = second,
             numberOfProjectileToShootPerTarget = secondCount
@@ -95,13 +95,13 @@ public class SkillWalkerTests
         ShootProjectileSkillStepFactory shoot = CreateTracked<ShootProjectileSkillStepFactory>();
         shoot.data = new ShootProjectileSkillStepData
         {
-            projectiles = new List<ShootProjectileSkillStepData.ProjectileData>
+            projectiles = new List<ProjectileData>
             {
-                new ShootProjectileSkillStepData.ProjectileData
+                new ProjectileData
                 {
                     projectilePrefab = selected, numberOfProjectileToShootPerTarget = 2
                 },
-                new ShootProjectileSkillStepData.ProjectileData
+                new ProjectileData
                 {
                     projectilePrefab = later, numberOfProjectileToShootPerTarget = 17
                 }

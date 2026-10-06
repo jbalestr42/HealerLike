@@ -137,7 +137,7 @@ public class CreatureBuilderTests
 
         Assert.AreSame(rig, _builder.rig);
         Assert.AreSame(_source.GetComponent<SkillSource>(), _model.GetComponent<EntityModel>().GetSourcePoint());
-        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 20f, true);
+        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, new ConsumerResult(20f, true));
         Assert.AreEqual(1, _healthSink.healCount);
         Assert.AreEqual(1, _spellSink.impactCount);
         Assert.AreEqual(100f, _health.Value);
@@ -161,7 +161,7 @@ public class CreatureBuilderTests
         Assert.AreSame(rig, _builder.rig);
         Assert.AreEqual(count, _model.GetComponentsInChildren<Transform>().Length);
         Assert.AreSame(_source.GetComponent<SkillSource>(), _model.GetComponent<EntityModel>().GetSourcePoint());
-        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 20f, true);
+        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, new ConsumerResult(20f, true));
         Assert.AreEqual(1, _healthSink.healCount);
         Assert.AreEqual(1, _spellSink.impactCount);
         Assert.AreSame(_owner, _spellSink.lastTarget);
@@ -175,34 +175,34 @@ public class CreatureBuilderTests
         _statusObserver.enabled = false;
         TestHelpers.InvokePrivate(_builder, "OnDisable");
         TestHelpers.InvokePrivate(_statusObserver, "OnDisable");
-        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 10f, false);
+        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, new ConsumerResult(10f, false));
         Assert.AreEqual(0, _healthSink.healCount);
         _builder.enabled = true;
         _statusObserver.enabled = true;
         TestHelpers.InvokePrivate(_builder, "OnEnable");
         TestHelpers.InvokePrivate(_statusObserver, "OnEnable");
-        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 10f, false);
+        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, new ConsumerResult(10f, false));
         Assert.AreEqual(1, _healthSink.healCount);
         _builder.Init(null);
-        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 10f, false);
+        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, new ConsumerResult(10f, false));
         Assert.AreEqual(1, _healthSink.healCount);
     }
 
     [Test]
     public void Init_DamageZeroOverhealSourceless_ReportsSignedOutcome()
     {
-        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 0f, false);
+        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, new ConsumerResult(0f, false));
         Assert.AreEqual(0, _spellSink.impactCount);
         Assert.AreEqual(0, _healthSink.healCount);
-        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, -7f, true);
+        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, new ConsumerResult(-7f, true));
         Assert.AreEqual(1, _spellSink.impactCount);
         Assert.AreEqual(0, _healthSink.healCount);
         Assert.AreEqual(-7, _spellSink.lastAmount);
-        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, 200f, false);
+        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier { source = _source }, new ConsumerResult(200f, false));
         Assert.AreEqual(1, _healthSink.healCount);
         Assert.AreEqual(200, _spellSink.lastAmount);
         Assert.AreEqual(100, _health.Value);
-        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier(), 2f, false);
+        _health.OnAllConsumerProcessed.Invoke(_owner, new ResourceModifier(), new ConsumerResult(2f, false));
         Assert.IsNull(_builder.rig.root.Find("HealMote"));
     }
 

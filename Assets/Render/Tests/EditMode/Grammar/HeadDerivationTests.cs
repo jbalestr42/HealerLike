@@ -54,8 +54,8 @@ public class HeadDerivationTests
         _objects.Add(projectileGo);
         projectileGo.AddComponent<BehaviourType>();
         ShootProjectileSkillFactory shoot = CreateTracked<ShootProjectileSkillFactory>();
-        shoot.data = new ShootProjectileSkillData { projectiles = new List<ShootProjectileSkillData.ProjectileData>() };
-        shoot.data.projectiles.Add(new ShootProjectileSkillData.ProjectileData { projectilePrefab = projectileGo });
+        shoot.data = new ShootProjectileSkillData { projectiles = new List<ProjectileData>() };
+        shoot.data.projectiles.Add(new ProjectileData { projectilePrefab = projectileGo });
         EntityData data = CreateTracked<EntityData>();
         data.skillFactories = new List<ASkillFactory> { shoot };
         return data;
@@ -100,8 +100,8 @@ public class HeadDerivationTests
     {
         EntityData data = CreateTracked<EntityData>();
         ShootProjectileSkillFactory shoot = CreateTracked<ShootProjectileSkillFactory>();
-        shoot.data = new ShootProjectileSkillData { projectiles = new List<ShootProjectileSkillData.ProjectileData>() };
-        shoot.data.projectiles.Add(new ShootProjectileSkillData.ProjectileData
+        shoot.data = new ShootProjectileSkillData { projectiles = new List<ProjectileData>() };
+        shoot.data.projectiles.Add(new ProjectileData
             { projectilePrefab = RenderTestAssets.LoadProjectile("BulletSpeed") });
         data.skillFactories = new List<ASkillFactory>
             { shoot, RenderTestAssets.LoadEntity("HitArmorBufferEntityEntity").skillFactories[0] };

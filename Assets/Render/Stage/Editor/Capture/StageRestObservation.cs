@@ -25,8 +25,10 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        void OnConsumer(GameObject owner, ResourceModifier modifier, float value, bool critical)
+        void OnConsumer(GameObject owner, ResourceModifier modifier, ConsumerResult result)
         {
+            float value = result.value;
+            bool critical = result.isCritical;
             if (value > 0f)
             {
                 _session.manifest.restHealingEvents++;

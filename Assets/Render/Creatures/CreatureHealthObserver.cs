@@ -35,8 +35,10 @@ namespace HealerLike.Render.Creatures
             _rig = null;
         }
 
-        void OnHealthProcessed(GameObject owner, ResourceModifier modifier, float value, bool critical)
+        void OnHealthProcessed(GameObject owner, ResourceModifier modifier, ConsumerResult result)
         {
+            float value = result.value;
+            bool critical = result.isCritical;
             if (_rig != null && float.IsFinite(value) && value < 0f)
             {
                 _rig.Hit();

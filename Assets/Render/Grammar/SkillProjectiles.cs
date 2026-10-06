@@ -26,7 +26,7 @@ namespace HealerLike.Render.Grammar
             List<SkillWalker.Shot> shots = new List<SkillWalker.Shot>();
             if (data != null && data.projectiles != null)
             {
-                foreach (ShootProjectileSkillData.ProjectileData entry in data.projectiles)
+                foreach (ProjectileData entry in data.projectiles)
                 {
                     if (entry == null)
                     {
@@ -67,7 +67,7 @@ namespace HealerLike.Render.Grammar
                 {
                     // ConfigurableSkill and RepeatSkillStep reset each selected step before execution.
                     // ShootProjectileSkillStep.Reset selects entry zero, including every repeat.
-                    ShootProjectileSkillStepData.ProjectileData entry = shoot.data.projectiles[0];
+                    ProjectileData entry = shoot.data.projectiles[0];
                     if (entry != null)
                     {
                         AddShot(shots, entry.projectilePrefab, repeats * entry.numberOfProjectileToShootPerTarget);

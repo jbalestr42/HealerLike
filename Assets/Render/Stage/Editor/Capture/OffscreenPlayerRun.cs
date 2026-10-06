@@ -67,7 +67,7 @@ namespace HealerLike.Render.Stage
             bool focusEnabled = false;
             GameObject shotGo = null;
             ResourceAttribute observedHealth = null;
-            UnityAction<GameObject, ResourceModifier, float, bool> onHealth = null;
+            UnityAction<GameObject, ResourceModifier, ConsumerResult> onHealth = null;
             StageGameViewSize size = new StageGameViewSize(1080, 1920);
             try
             {
@@ -118,9 +118,9 @@ namespace HealerLike.Render.Stage
 
                 _manager.spellSink.Clear();
                 observedHealth = target.health;
-                onHealth = (owner, modifier, amount, critical) =>
+                onHealth = (owner, modifier, result) =>
                 {
-                    if (modifier.source == character.gameObject && amount > 0f)
+                    if (modifier.source == character.gameObject && result.value > 0f)
                     {
                         proof.resolvedCharacterHeals++;
                     }

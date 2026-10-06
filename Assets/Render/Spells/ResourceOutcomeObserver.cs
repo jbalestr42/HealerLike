@@ -72,13 +72,17 @@ namespace HealerLike.Render.Spells
             }
         }
 
-        void OnHealthProcessed(GameObject owner, ResourceModifier modifier, float amount, bool isCritical)
+        void OnHealthProcessed(GameObject owner, ResourceModifier modifier, ConsumerResult result)
         {
+            float amount = result.value;
+            bool isCritical = result.isCritical;
             Publish(owner, modifier, ResourceKind.Health, amount, isCritical);
         }
 
-        void OnManaProcessed(GameObject owner, ResourceModifier modifier, float amount, bool isCritical)
+        void OnManaProcessed(GameObject owner, ResourceModifier modifier, ConsumerResult result)
         {
+            float amount = result.value;
+            bool isCritical = result.isCritical;
             Publish(owner, modifier, ResourceKind.Mana, amount, isCritical);
         }
 

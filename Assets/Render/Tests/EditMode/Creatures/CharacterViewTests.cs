@@ -162,14 +162,14 @@ public class CharacterViewTests
         Assert.AreEqual(3, view.budAnchors.Count);
         Assert.NotNull(view.bud0);
         ResourceModifier modifier = new ResourceModifier { source = _characterGo };
-        health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, -5f, false);
+        health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, new ConsumerResult(-5f, false));
         for (int i = 0; i < 2; i++)
         {
-            health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, 5f, false);
+            health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, new ConsumerResult(5f, false));
         }
 
-        health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, 7f, false);
-        mana.OnAllConsumerProcessed.Invoke(_characterGo, modifier, 10f, false);
+        health.OnAllConsumerProcessed.Invoke(_targetGo, modifier, new ConsumerResult(7f, false));
+        mana.OnAllConsumerProcessed.Invoke(_characterGo, modifier, new ConsumerResult(10f, false));
         Assert.AreEqual(0, DrawnArms(view), "Resource outcomes must not create creature-owned spell arms.");
         TestHelpers.SetPrivateField(mana, "_value", 0f);
         TestHelpers.InvokePrivate(view, "LateUpdate");

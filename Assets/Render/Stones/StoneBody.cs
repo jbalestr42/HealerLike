@@ -94,8 +94,10 @@ namespace HealerLike.Render.Stones
             return _impacts.Estimate(query);
         }
 
-        void OnConsumersProcessed(GameObject owner, ResourceModifier modifier, float delta, bool critical)
+        void OnConsumersProcessed(GameObject owner, ResourceModifier modifier, ConsumerResult result)
         {
+            float delta = result.value;
+            bool critical = result.isCritical;
             SyncGeometry();
             _state.RecordProcessedDelta(delta);
             _impacts.Resolve(modifier, delta < 0f && !_isCollapsed, critical);

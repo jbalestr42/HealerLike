@@ -56,7 +56,7 @@ public class ResourceOutcomeObserverTests
             observer.Init(_health, _mana, _spy, _registry);
         }
 
-        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, 7, false);
+        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, new ConsumerResult(7, false));
 
         Assert.AreEqual(1, _spy.impactCount);
     }
@@ -66,7 +66,7 @@ public class ResourceOutcomeObserverTests
     {
         CreateObserver();
 
-        _mana.OnAllConsumerProcessed.Invoke(_manaGo, _modifier, 9, false);
+        _mana.OnAllConsumerProcessed.Invoke(_manaGo, _modifier, new ConsumerResult(9, false));
 
         Assert.AreEqual(1, _spy.impactCount);
         Assert.AreEqual(ResourceKind.Mana, _spy.lastResource);
@@ -78,7 +78,7 @@ public class ResourceOutcomeObserverTests
     {
         CreateObserver();
 
-        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, -2, false);
+        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, new ConsumerResult(-2, false));
 
         Assert.AreEqual(1, _spy.impactCount);
         Assert.AreEqual(1, _healed.calls.Count, "each heal sink filters by sign, the registry passes damage on");
@@ -91,7 +91,7 @@ public class ResourceOutcomeObserverTests
         observer.enabled = false;
 
         TestHelpers.InvokePrivate(observer, "OnDisable");
-        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, 7, false);
+        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, new ConsumerResult(7, false));
 
         Assert.AreEqual(0, _spy.impactCount);
     }
@@ -105,7 +105,7 @@ public class ResourceOutcomeObserverTests
         observer.enabled = true;
 
         TestHelpers.InvokePrivate(observer, "OnEnable");
-        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, 7, false);
+        _health.OnAllConsumerProcessed.Invoke(_owner, _modifier, new ConsumerResult(7, false));
 
         Assert.AreEqual(1, _spy.impactCount);
     }

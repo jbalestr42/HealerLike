@@ -138,7 +138,7 @@ namespace HealerLike.Render.Stage
         {
             ShootProjectileSkillFactory shoot = Track(
                 ScriptableObject.CreateInstance<ShootProjectileSkillFactory>(), created);
-            ShootProjectileSkillData.ProjectileData entry = new ShootProjectileSkillData.ProjectileData
+            ProjectileData entry = new ProjectileData
             {
                 projectilePrefab = prefab,
                 onHitConsumer = new List<AConsumerFactory> { RenderAssets.Load<AConsumerFactory>(DamagePath) },
@@ -147,7 +147,7 @@ namespace HealerLike.Render.Stage
             shoot.data = new ShootProjectileSkillData
             {
                 onSkillTriggerFactory = new List<AOnSkillTriggerFactory>(),
-                projectiles = new List<ShootProjectileSkillData.ProjectileData> { entry }
+                projectiles = new List<ProjectileData> { entry }
             };
             return shoot;
         }

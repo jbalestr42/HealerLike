@@ -27,24 +27,24 @@ public class CreatureHealthObserverTests : CreatureRigFixture
     {
         _observer.Init(_health, _rig);
         _observer.Init(_health, _rig);
-        _health.OnAllConsumerProcessed.Invoke(_parent, new ResourceModifier(), -1f, false);
+        _health.OnAllConsumerProcessed.Invoke(_parent, new ResourceModifier(), new ConsumerResult(-1f, false));
         _rig.Tick(0f, 0.01f, ground);
         Assert.Greater(Mathf.Abs(_rig.armRotation.z), 0.001f);
         _rig.Tick(0f, 1f, ground);
         _observer.Dispose();
         _observer.Dispose();
-        _health.OnAllConsumerProcessed.Invoke(_parent, new ResourceModifier(), -1f, false);
+        _health.OnAllConsumerProcessed.Invoke(_parent, new ResourceModifier(), new ConsumerResult(-1f, false));
         _rig.Tick(0f, 0f, ground);
         Assert.AreEqual(Quaternion.identity, _rig.armRotation);
         _observer.Init(_health, _rig);
         foreach (float value in new[] { 0f, 1f, float.NaN, float.NegativeInfinity })
         {
-            _health.OnAllConsumerProcessed.Invoke(_parent, new ResourceModifier(), value, false);
+            _health.OnAllConsumerProcessed.Invoke(_parent, new ResourceModifier(), new ConsumerResult(value, false));
             _rig.Tick(0f, 0f, ground);
             Assert.AreEqual(Quaternion.identity, _rig.armRotation);
         }
 
-        _health.OnAllConsumerProcessed.Invoke(_parent, new ResourceModifier(), -1f, false);
+        _health.OnAllConsumerProcessed.Invoke(_parent, new ResourceModifier(), new ConsumerResult(-1f, false));
         _rig.Tick(0f, 0.01f, ground);
         Assert.Greater(Mathf.Abs(_rig.armRotation.z), 0.001f);
     }
