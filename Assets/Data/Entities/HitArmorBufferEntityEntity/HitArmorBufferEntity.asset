@@ -47,7 +47,7 @@ MonoBehaviour:
       Data: 0
     - Name: $v
       Entry: 4
-      Data: 100
+      Data: 150
     - Name: 
       Entry: 8
       Data: 
@@ -110,7 +110,7 @@ MonoBehaviour:
   description: Doesn't attack. Every 5s, gives +2 hit armor to its most wounded ally
   attributes:
   - key: 0
-    value: 100
+    value: 150
   - key: 3
     value: 1000
   - key: 2

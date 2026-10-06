@@ -47,7 +47,7 @@ MonoBehaviour:
       Data: 0
     - Name: $v
       Entry: 4
-      Data: 100
+      Data: 150
     - Name: 
       Entry: 8
       Data: 
@@ -62,7 +62,7 @@ MonoBehaviour:
   description: Doesn't attack. Gives +2 damage to its allies standing on the diagonal cells around it
   attributes:
   - key: 0
-    value: 100
+    value: 150
   targetBehaviourType: 1
   targetValidators: []
   tags:

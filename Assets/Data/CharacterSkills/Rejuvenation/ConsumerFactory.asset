@@ -34,4 +34,4 @@ MonoBehaviour:
       data:
         data:
           type: 10
-          multiplier: -0.15
+          multiplier: -0.25
