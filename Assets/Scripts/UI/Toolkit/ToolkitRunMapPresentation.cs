@@ -107,9 +107,11 @@ public static class ToolkitRunMapPresentation
             case MapNodeType.Treasure:
                 return "Choose a reward for the journey ahead.";
             case MapNodeType.Rest:
-                return "Recover your allies' health.";
+                return "Recover mana, then heal your allies or bring a fallen one back.";
             case MapNodeType.Boss:
-                return "Reach the summit to complete this expedition.";
+                return "Defeat the boss to complete this expedition.";
+            case MapNodeType.Event:
+                return "Something waits here: choose how to meet it.";
             default:
                 return string.Empty;
         }

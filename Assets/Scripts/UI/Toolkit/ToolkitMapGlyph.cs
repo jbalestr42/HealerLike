@@ -69,7 +69,19 @@ public class ToolkitMapGlyph : IDisposable
                 p.ClosePath();
                 p.Stroke();
                 break;
-            default:
+            case MapNodeType.Event:
+                p.BeginPath();
+                p.MoveTo(Point(7, 8));
+                p.LineTo(Point(9, 4));
+                p.LineTo(Point(15, 4));
+                p.LineTo(Point(17, 8));
+                p.LineTo(Point(12, 12));
+                p.LineTo(Point(12, 15));
+                p.Stroke();
+                Stroke(p, 12, 19, 12, 20);
+                break;
+            case MapNodeType.Combat:
+            case MapNodeType.Elite:
                 Stroke(p, 4, 4, 20, 20);
                 Stroke(p, 20, 4, 4, 20);
                 Stroke(p, 3, 14, 9, 20);
