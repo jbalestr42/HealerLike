@@ -62,13 +62,14 @@ namespace HealerLike.Render.Stage
         {
             _settings.floorCount = 13;
             _settings.columnCount = 5;
-            _settings.treasureFloor = 6;
+            _settings.GetRoomType(MapNodeType.Treasure).fixedFloors = new System.Collections.Generic.List<int> { 6 };
             string before = JsonUtility.ToJson(_settings);
             StageMapFixture fixture = new StageMapFixture(_ascension, false);
             // Unity's object name and hide flags are intentionally capture-owned; generation values stay equal.
             Assert.That(fixture.settings.floorCount, Is.EqualTo(_settings.floorCount));
             Assert.That(fixture.settings.columnCount, Is.EqualTo(_settings.columnCount));
-            Assert.That(fixture.settings.treasureFloor, Is.EqualTo(_settings.treasureFloor));
+            Assert.That(fixture.settings.GetRoomType(MapNodeType.Treasure).fixedFloors,
+                Is.EqualTo(_settings.GetRoomType(MapNodeType.Treasure).fixedFloors));
             RunMap authored = MapGenerator.Generate(_settings, StageMapFixture.Seed);
             RunMap captured = MapGenerator.Generate(fixture.settings, StageMapFixture.Seed);
             foreach (MapNode node in authored.GetAllNodes())

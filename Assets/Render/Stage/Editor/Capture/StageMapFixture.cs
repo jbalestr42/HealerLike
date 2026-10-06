@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
@@ -41,14 +42,20 @@ namespace HealerLike.Render.Stage
                 settings.floorCount = 5;
                 settings.columnCount = 3;
                 settings.pathCount = 4;
-                settings.treasureFloor = 1;
-                settings.restBeforeBoss = true;
-                settings.firstEliteFloor = 3;
-                settings.firstRestFloor = 4;
-                settings.combatWeight = 0f;
-                settings.eliteWeight = 1f;
-                settings.restWeight = 0f;
-                settings.treasureWeight = 0f;
+                settings.startRoomCount = 3;
+                settings.maxRoomsPerFloor = 0;
+                // Every floor fixed, so the route is combat, treasure, combat, elite, rest whatever the paths.
+                // Floor 2 is no type's fixed floor and no type has weight, so it takes Julien's combat fallback.
+                // No event room: the capture has no event screen to walk through yet
+                settings.roomTypes = new List<RoomTypeSettings>
+                {
+                    new RoomTypeSettings { type = MapNodeType.Combat, fixedFloors = new List<int> { 0 }, canFollowItself = true },
+                    new RoomTypeSettings { type = MapNodeType.Treasure, fixedFloors = new List<int> { 1 } },
+                    new RoomTypeSettings { type = MapNodeType.Elite, fixedFloors = new List<int> { 3 }, firstFloor = 3 },
+                    new RoomTypeSettings { type = MapNodeType.Rest, fixedFloors = new List<int> { 4 }, firstFloor = 4 },
+                    new RoomTypeSettings { type = MapNodeType.Event },
+                };
+                settings.eventRooms.Clear();
             }
 
             settingsField.SetValue(owner, settings);
