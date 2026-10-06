@@ -207,7 +207,12 @@ namespace UI.Toolkit
                 StringAssert.Contains(item.title, text);
             }
 
-            StringAssert.Contains("Units: " + CharacterCardText.GetUnits(druid), text);
+            StringAssert.Contains("Units: ", text);
+            foreach (EntityData unit in druid.entities)
+            {
+                StringAssert.Contains(unit.title, text);
+            }
+
             Assert.Greater(druid.entities.Count, 0);
         }
 
@@ -241,7 +246,11 @@ namespace UI.Toolkit
                 StringAssert.Contains(item.title + " (" + item.GetItem().description + ")", lines[1]);
             }
 
-            Assert.AreEqual("Units: " + CharacterCardText.GetUnits(druid), lines[2]);
+            StringAssert.StartsWith("Units: ", lines[2]);
+            foreach (EntityData unit in druid.entities)
+            {
+                StringAssert.Contains(unit.title, lines[2]);
+            }
             StringAssert.DoesNotContain(druid.text, ToolkitClassSelect.Details(druid), "The role is not repeated.");
         }
 

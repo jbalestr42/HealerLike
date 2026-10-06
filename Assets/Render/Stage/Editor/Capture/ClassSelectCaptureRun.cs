@@ -367,9 +367,9 @@ namespace HealerLike.Render.Stage
             if (played != null)
             {
                 Debug.Log("[ClassSelectCaptureRun] " + played.title + " skills in data: "
-                    + CharacterCardText.GetSkills(played).Replace("\n", " "));
+                    + ToolkitClassSelect.SkillNames(played));
                 Debug.Log("[ClassSelectCaptureRun] " + played.title + " units in data: "
-                    + CharacterCardText.GetUnits(played));
+                    + ToolkitClassSelect.UnitTitles(played));
             }
 
             Debug.Log("[ClassSelectCaptureRun] HUD spell cards: "

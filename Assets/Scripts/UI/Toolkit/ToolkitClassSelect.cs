@@ -82,7 +82,7 @@ public class ToolkitClassSelect
     public static string Details(CharacterData character)
     {
         List<string> lines = new List<string>();
-        string skills = Inline(CharacterCardText.GetSkills(character));
+        string skills = SkillNames(character);
         if (!string.IsNullOrEmpty(skills))
         {
             lines.Add("Skills: " + skills);
@@ -106,7 +106,7 @@ public class ToolkitClassSelect
             lines.Add("Starts with: " + string.Join(", ", items));
         }
 
-        string units = CharacterCardText.GetUnits(character);
+        string units = UnitTitles(character);
         if (!string.IsNullOrEmpty(units))
         {
             lines.Add("Units: " + units);
@@ -146,25 +146,40 @@ public class ToolkitClassSelect
         return string.Join("\n", lines);
     }
 
-    // Julien's one-per-line list ("- A\n- B") on one line
-    static string Inline(string lines)
+    // The names of the class's skills on one line
+    public static string SkillNames(CharacterData character)
     {
-        if (string.IsNullOrEmpty(lines))
-        {
-            return lines;
-        }
-
         List<string> names = new List<string>();
-        foreach (string line in lines.Split('\n'))
+        if (character.skills != null)
         {
-            string name = line.StartsWith("- ", StringComparison.Ordinal) ? line.Substring(2) : line;
-            if (name.Length > 0)
+            foreach (ACharacterSkillFactory skill in character.skills)
             {
-                names.Add(name);
+                if (skill != null)
+                {
+                    names.Add(skill.Create().GetData().name);
+                }
             }
         }
 
         return string.Join(", ", names);
+    }
+
+    // The units the class starts with on one line, the same list Julien's select panel labels
+    public static string UnitTitles(CharacterData character)
+    {
+        List<string> titles = new List<string>();
+        if (character.entities != null)
+        {
+            foreach (EntityData entity in character.entities)
+            {
+                if (entity != null)
+                {
+                    titles.Add(entity.title);
+                }
+            }
+        }
+
+        return string.Join(", ", titles);
     }
 
     public void Init(ToolkitGameView view, Action<CharacterData> chosen)
