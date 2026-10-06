@@ -118,9 +118,13 @@ public class EffectDerivationTests
 
     [TestCase(AttributeType.AttackRate, -1f)]
     [TestCase(AttributeType.Vulnerability, -1f)]
+    [TestCase(AttributeType.SkillCooldownMultiplier, -1f)]
+    [TestCase(AttributeType.SkillCostMultiplier, -1f)]
     [TestCase(AttributeType.Damage, 1f)]
     [TestCase(AttributeType.HitArmor, 1f)]
-    public void Polarity_Attribute_LessIsBetterForIntervalAndVulnerability(AttributeType type, float expected)
+    [TestCase(AttributeType.HealingReceived, 1f)]
+    public void Polarity_Attribute_LessIsBetterForIntervalVulnerabilityAndSkillCooldownAndCost(AttributeType type,
+                                                                                               float expected)
     {
         Assert.AreEqual(expected, EffectDerivation.Polarity(type));
     }

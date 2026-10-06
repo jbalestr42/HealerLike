@@ -26,7 +26,9 @@ namespace HealerLike.Render.Grammar
             foreach (ABuffFactory buff in Buffs(handler))
             {
                 if (buff is InvincibilityBuffFactory) return EffectOperation.Ward;
-                if (buff is ManaOnRoundEndBuffFactory) return EffectOperation.Mana;
+                // Mana restored to the healer: each round, each kill or from an overheal
+                if (buff is ManaOnRoundEndBuffFactory || buff is ManaOnKillBuffFactory
+                    || buff is ManaOnOverhealBuffFactory) return EffectOperation.Mana;
                 if (buff is DrainCharacterManaBuffFactory) return EffectOperation.ManaDrain;
             }
             switch (Family(handler, isSameSide))

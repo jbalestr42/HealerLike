@@ -44,6 +44,11 @@ namespace HealerLike.Render.Grammar
                 data = threshold.data;
                 delta = threshold.data.value;
             }
+            else if (buff is AlliesOnRelativeCellModifierFactory allies && allies.data != null)
+            {
+                data = allies.data;
+                delta = allies.data.value;
+            }
 
             return data;
         }

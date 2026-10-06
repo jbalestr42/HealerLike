@@ -115,7 +115,9 @@ namespace HealerLike.Render.Grammar
         // AttackRate is read as seconds between shots, so less is better
         public static float Polarity(AttributeType type)
         {
-            if (type == AttributeType.AttackRate || type == AttributeType.Vulnerability)
+            // Intervals, damage taken and the skill cooldown and cost multipliers are better lower
+            if (type == AttributeType.AttackRate || type == AttributeType.Vulnerability
+                || type == AttributeType.SkillCooldownMultiplier || type == AttributeType.SkillCostMultiplier)
             {
                 return -1f;
             }
@@ -218,6 +220,11 @@ namespace HealerLike.Render.Grammar
             if (buff is ApplyConsumerOnEntitiesBuffFactory onEntities && onEntities.data != null)
             {
                 return onEntities.data.consumerFactory;
+            }
+            // Applied to its own holder at each attack, e.g. Blood Price's health cost
+            if (buff is ConsumerOnAttackBuffFactory onAttack && onAttack.data != null)
+            {
+                return onAttack.data.consumerFactory;
             }
             return null;
         }

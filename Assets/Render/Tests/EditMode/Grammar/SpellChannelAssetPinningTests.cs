@@ -172,7 +172,8 @@ namespace HealerLike.Render.Grammar
                 EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/BloodPriceItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
-            new HandlerRow("EntityItems/BloodPriceItem/PriceBuffHandlerFactory", EffectOperation.Boon,
+            // Blood Price's cost: 3 health from its own holder at each attack, a harm like the Cursed Idol's curse
+            new HandlerRow("EntityItems/BloodPriceItem/PriceBuffHandlerFactory", EffectOperation.Damage,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/BoneCharmItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
@@ -201,14 +202,16 @@ namespace HealerLike.Render.Grammar
                 EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/IronPlatingItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // +50% damage when alone: a 0.5 multiplier, Heavy like the other +50% items
             new HandlerRow("EntityItems/LoneWolfItem/BuffHandlerFactory", EffectOperation.Boon,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
             new HandlerRow("EntityItems/LuckyCoinItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
             new HandlerRow("EntityItems/MartyrsHeartItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // +2 flat armor per adjacent ally: the modifier is armor, so Defence
             new HandlerRow("EntityItems/PhalanxItem/BuffHandlerFactory", EffectOperation.Boon,
-                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/PhylacteryItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/SecondWindItem/BuffHandlerFactory", EffectOperation.Boon,
@@ -220,7 +223,8 @@ namespace HealerLike.Render.Grammar
                 EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
             new HandlerRow("EntityItems/ThornsOfLifeItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
-            new HandlerRow("EntityItems/TitanFuryItem/BuffHandlerFactory", EffectOperation.Bane,
+            // Shorter skill cooldowns as the holder weakens: Boon
+            new HandlerRow("EntityItems/TitanFuryItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("EntityItems/TowerShieldItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
@@ -236,7 +240,8 @@ namespace HealerLike.Render.Grammar
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
             new HandlerRow("EventItems/BlackCodexItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
-            new HandlerRow("EventItems/BloodLedgerItem/BuffHandlerFactory", EffectOperation.Bane,
+            // -30% skill cost against -15% max mana: one bonus, one curse, so the same-side Boon like the Glass Cannon
+            new HandlerRow("EventItems/BloodLedgerItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
             new HandlerRow("EventItems/BloodthirstBladeItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
@@ -255,11 +260,13 @@ namespace HealerLike.Render.Grammar
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
             new HandlerRow("EventItems/ReapersCoinItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
-            new HandlerRow("EventItems/ScrollOfThriftItem/BuffHandlerFactory", EffectOperation.Bane,
+            // -20% skill mana cost: a lower cost multiplier helps, so Boon
+            new HandlerRow("EventItems/ScrollOfThriftItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
             new HandlerRow("EventItems/ThornedCrownItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
-            new HandlerRow("EventItems/TomeOfHasteItem/BuffHandlerFactory", EffectOperation.Bane,
+            // -20% skill cooldown: a lower cooldown multiplier helps, so Boon
+            new HandlerRow("EventItems/TomeOfHasteItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
             new HandlerRow("EventItems/WellspringManuscriptItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
@@ -279,11 +286,14 @@ namespace HealerLike.Render.Grammar
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("PlayerItems/NecronomiconItem/SummonBuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
-            new HandlerRow("PlayerItems/OverflowingFontItem/BuffHandlerFactory", EffectOperation.Boon,
+            // 10% of an overheal restored as the healer's mana: Mana
+            new HandlerRow("PlayerItems/OverflowingFontItem/BuffHandlerFactory", EffectOperation.Mana,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
-            new HandlerRow("PlayerItems/PrayerBeadsItem/BuffHandlerFactory", EffectOperation.Bane,
+            // -15% skill cooldown: a lower cooldown multiplier helps, so Boon
+            new HandlerRow("PlayerItems/PrayerBeadsItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
-            new HandlerRow("PlayerItems/TitheItem/BuffHandlerFactory", EffectOperation.Boon,
+            // +3 mana to the healer per enemy death: Mana, like the ManaOnRoundEnd item
+            new HandlerRow("PlayerItems/TitheItem/BuffHandlerFactory", EffectOperation.Mana,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
             new HandlerRow("PlayerItems/WarDrumsItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
