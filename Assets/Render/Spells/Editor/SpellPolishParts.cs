@@ -294,24 +294,25 @@ namespace HealerLike.Render.Spells.Editor
 
         // Growth: the creature growth language (GrowthStoneParts.Growth and Tip) as a spell, segments with a joint
         // on each and a bud on top, listed from the ground up so each stack shows one more of them
+        // Clear of the blades and of the arm, leaning away from the camera so the segments climb the screen instead
+        // of stacking into one disc under a camera that looks down
+        static readonly Vector3 StemFoot = new Vector3(-1.95f, .35f, -1.35f);
+        static readonly Vector3 StemLean = new Vector3(0, .7f, .3f);
+        static Vector3 StemTilt { get { return new Vector3(Mathf.Atan2(StemLean.z, StemLean.y) * Mathf.Rad2Deg, 0, 0); } }
+        static Vector3 StemFrom(int i) { return StemFoot + new Vector3(.1f * (i % 2 == 0 ? 1 : -1), 0, 0) + StemLean * i; }
+
         public static LookPart[] Stem()
         {
             var parts = new List<LookPart>();
-            // Clear of the blades and of the arm, leaning away from the camera so the segments climb the screen
-            // instead of stacking into one disc under a camera that looks down
-            Vector3 foot = new Vector3(-1.95f, .35f, -1.35f);
-            Vector3 lean = new Vector3(0, .7f, .3f);
-            Vector3 tilt = new Vector3(Mathf.Atan2(lean.z, lean.y) * Mathf.Rad2Deg, 0, 0);
             for (int i = 0; i < 4; i++)
             {
-                Vector3 from = foot + new Vector3(.1f * (i % 2 == 0 ? 1 : -1), 0, 0) + lean * i;
                 parts.Add(Part("Growth segment " + i, Primitive.CylinderSegment, ShapeProfile.Segment(.16f, .78f),
-                    from + lean * .5f, new Vector3(.5f, .76f, .5f), tilt));
-                parts.Add(Part("Growth joint " + i, Primitive.Sphere, ShapeProfile.Bulb(), from + lean,
+                    StemFrom(i) + StemLean * .5f, new Vector3(.5f, .76f, .5f), StemTilt));
+                parts.Add(Part("Growth joint " + i, Primitive.Sphere, ShapeProfile.Bulb(), StemFrom(i) + StemLean,
                     Vector3.one * .5f * .72f));
             }
-            parts.Add(Part("Growth bud", Primitive.Sphere, ShapeProfile.Bulb(.9f, .25f), foot + lean * 4f + lean * .5f,
-                new Vector3(.6f, .8f, .6f), tilt));
+            parts.Add(Part("Growth bud", Primitive.Sphere, ShapeProfile.Bulb(.9f, .25f), StemFoot + StemLean * 4.5f,
+                new Vector3(.6f, .8f, .6f), StemTilt));
             return parts.ToArray();
         }
 
@@ -390,6 +391,89 @@ namespace HealerLike.Render.Spells.Editor
                     Radial(i - 1, 4, .55f, .3f, 45f), new Vector3(.36f, .5f, .3f), new Vector3(0, i * 90f + 45f, 180));
             for (int i = 0; i < parts.Length; i++) parts[i].glow = .8f;
             return parts;
+        }
+
+        // The five event kinds in Stone, on the Plant kinds' places so socket, motion and head clearance hold
+
+        // Reactive: a faceted ring at the shoulder round a chipped core, three straight shards snapping out of it
+        public static LookPart[] StoneSpark()
+        {
+            var parts = new List<LookPart>();
+            Vector3 coil = new Vector3(-1.35f, .5f, -.8f);
+            parts.Add(Part("Spark ring", Primitive.Torus, ShapeProfile.Ring(.16f, true), coil, new Vector3(1.3f, .2f, 1.3f),
+                new Vector3(70, 0, 0)));
+            parts.Add(Part("Spark core", Primitive.Boulder, Slab(.7f), coil, new Vector3(.45f, .38f, .3f),
+                new Vector3(0, 0, 17f)));
+            for (int i = 0; i < 3; i++)
+            {
+                float turn = -45f + 45f * i;
+                Vector3 direction = Quaternion.Euler(0, 0, turn) * Vector3.up;
+                parts.Add(Part("Spark shard " + i, Primitive.Pyramid, ShapeProfile.Shard(.8f, 0, .45f),
+                    coil + direction * 1.05f, new Vector3(.34f, .8f, .26f), new Vector3(0, 0, turn)));
+            }
+            return parts.ToArray();
+        }
+
+        // Echo: one straight shard struck and two copies of it trailing behind, each smaller and further back
+        public static LookPart[] StoneEcho()
+        {
+            var parts = new LookPart[3];
+            for (int i = 0; i < parts.Length; i++)
+            {
+                float shrink = 1f - .18f * i;
+                parts[i] = Part("Echo shard " + i, Primitive.Pyramid, ShapeProfile.Shard(.75f, 0, .35f),
+                    new Vector3(1.2f + .6f * i, .35f + .15f * i, -.8f + .25f * i), new Vector3(.6f, 2.1f, .22f) * shrink,
+                    new Vector3(0, 0, -28f));
+            }
+            return parts;
+        }
+
+        // Link: two faceted rings hooked through each other over the head, a chip on each
+        public static LookPart[] StoneTether()
+        {
+            return new[] {
+                Part("Tether ring 0", Primitive.Torus, ShapeProfile.Ring(.1f, true), new Vector3(-.42f, .35f, 0),
+                    new Vector3(1.15f, .16f, 1.15f), new Vector3(90, 0, 0)),
+                Part("Tether ring 1", Primitive.Torus, ShapeProfile.Ring(.1f, true), new Vector3(.42f, .35f, 0),
+                    new Vector3(1.15f, .16f, 1.15f), new Vector3(0, 0, 90)),
+                Part("Tether chip 0", Primitive.Boulder, Slab(.6f), new Vector3(-.98f, .35f, 0),
+                    new Vector3(.3f, .2f, .26f), new Vector3(0, 30f, 8f)),
+                Part("Tether chip 1", Primitive.Boulder, Slab(.6f), new Vector3(.98f, .35f, 0),
+                    new Vector3(.3f, .2f, .26f), new Vector3(0, -40f, -8f))
+            };
+        }
+
+        // Summon: a wedge breaking up through a cracked slab beside the body, two shards split off it like seed leaves
+        public static LookPart[] StoneSprout()
+        {
+            Vector3 at = new Vector3(1.35f, -.7f, -.85f);
+            return new[] {
+                Part("Sprout slab", Primitive.Boulder, Slab(.6f), at + Vector3.up * .15f, new Vector3(1.2f, .4f, 1.2f),
+                    new Vector3(0, 23f, 4f)),
+                Part("Sprout wedge", Primitive.Pyramid, ShapeProfile.Shard(.5f, 0, .4f), at + Vector3.up * .8f,
+                    new Vector3(.26f, 1.2f, .26f)),
+                Part("Sprout shard 0", Primitive.Pyramid, ShapeProfile.Shard(.7f, 0, .35f), at + new Vector3(-.5f, 1.5f, 0),
+                    new Vector3(.6f, 1.1f, .2f), new Vector3(0, 0, 55)),
+                Part("Sprout shard 1", Primitive.Pyramid, ShapeProfile.Shard(.7f, 0, .35f), at + new Vector3(.5f, 1.5f, 0),
+                    new Vector3(.6f, 1.1f, .2f), new Vector3(0, 0, -55))
+            };
+        }
+
+        // Growth: the Plant stem's path in chipped courses, a flat chip for each joint and the creature language's
+        // stone bud (a shard) on top, listed from the ground up so each stack shows one more of them
+        public static LookPart[] StoneStem()
+        {
+            var parts = new List<LookPart>();
+            for (int i = 0; i < 4; i++)
+            {
+                parts.Add(Part("Growth course " + i, Primitive.Boulder, Slab(.45f), StemFrom(i) + StemLean * .5f,
+                    new Vector3(.5f, .76f, .5f), StemTilt + new Vector3(0, 23f * i, 0)));
+                parts.Add(Part("Growth chip " + i, Primitive.Boulder, Slab(.6f), StemFrom(i) + StemLean,
+                    new Vector3(.46f, .14f, .46f), StemTilt + new Vector3(0, 40f + 23f * i, 0)));
+            }
+            parts.Add(Part("Growth bud", Primitive.Pyramid, ShapeProfile.Shard(.62f, 0f), StemFoot + StemLean * 4.5f,
+                new Vector3(.6f, .8f, .6f), StemTilt));
+            return parts.ToArray();
         }
     }
 }

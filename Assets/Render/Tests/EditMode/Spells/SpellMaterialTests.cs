@@ -10,7 +10,8 @@ namespace HealerLike.Render.Spells
     // element still draws its Plant entry until it has a Stone one
     public class SpellMaterialTests
     {
-        static readonly EffectKey[] StoneElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Press };
+        static readonly EffectKey[] StoneElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Press, EffectKey.Spark,
+            EffectKey.Echo, EffectKey.Tether, EffectKey.Sprout, EffectKey.Stem };
         static readonly EffectKey[] PlantOnly = { EffectKey.Stalks, EffectKey.Drips, EffectKey.Orbit,
             EffectKey.Plates, EffectKey.Bud, EffectKey.Crack, EffectKey.ManaUp, EffectKey.ManaDown };
 

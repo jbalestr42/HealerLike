@@ -29,8 +29,9 @@ namespace HealerLike.Render.Stage
             EffectKey.Drips, EffectKey.Orbit, EffectKey.Plates, EffectKey.Bud, EffectKey.Press, EffectKey.Crack,
             EffectKey.ManaUp, EffectKey.ManaDown };
         // The elements that have a Stone entry, measured again as a stone caster draws them
-        static readonly EffectKey[] StoneElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Press };
-        // The Boon offence kinds, measured in Plant: Stone draws them through the Plant fallback
+        static readonly EffectKey[] StoneElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Press, EffectKey.Spark,
+            EffectKey.Echo, EffectKey.Tether, EffectKey.Sprout, EffectKey.Stem };
+        // The Boon offence kinds, measured in Plant: Stone draws the first six through the Plant fallback
         static readonly EffectKey[] KindElements = { EffectKey.Dart, EffectKey.Seeds, EffectKey.Cadence,
             EffectKey.Brackets, EffectKey.Footring, EffectKey.Canopy, EffectKey.Spark, EffectKey.Echo,
             EffectKey.Tether, EffectKey.Sprout, EffectKey.Stem };
@@ -69,6 +70,7 @@ namespace HealerLike.Render.Stage
                         readability.Add(new SpellReadabilityPass.Fixture(element, LookSide.Plant, LookSide.Plant));
                     // The Stem shows one more segment per stack: one stack is its smallest drawing
                     readability.Add(new SpellReadabilityPass.Fixture(EffectKey.Stem, LookSide.Plant, LookSide.Plant, 1));
+                    readability.Add(new SpellReadabilityPass.Fixture(EffectKey.Stem, LookSide.Stone, LookSide.Plant, 1));
                     yield return SpellReadabilityPass.Run(_manager, images, vocabulary, material, readability);
                 }
                 var fixtures = new List<(EffectKey element, LookSide side)>();

@@ -69,6 +69,7 @@ namespace HealerLike.Render.Spells.Editor
             ApplyStone(vocabulary);
             ApplyKinds(vocabulary);
             ApplyEventKinds(vocabulary);
+            ApplyStoneEventKinds(vocabulary);
         }
 
         // Only the Plant Boon offence kinds: the saved entries and cells are read, never rewritten
@@ -139,6 +140,65 @@ namespace HealerLike.Render.Spells.Editor
             stem.minCount = 3;
             Kind(vocabulary, EffectKind.Growth, stem);
             vocabulary.kinds[new EffectKindCell(EffectOperation.Bane, EffectAspect.Defence, EffectKind.Growth)] = stem;
+        }
+
+        // Only the Stone cells of the five event kinds: the saved Plant entries are read, never rewritten
+        [MenuItem("Tools/Render/Author Stone Event Kind Entries")]
+        public static void AuthorStoneEventKinds()
+        {
+            EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(AssetPath);
+            if (vocabulary == null) throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            Undo.RecordObject(vocabulary, "Author stone event kind entries");
+            ApplyStoneEventKinds(vocabulary);
+            EditorUtility.SetDirty(vocabulary);
+            AssetDatabase.SaveAssetIfDirty(vocabulary);
+            Debug.Log("[SpellPolishVocabulary] Authored Stone Spark, Echo, Tether, Sprout and Stem.");
+            if (Application.isBatchMode) EditorApplication.Exit(0);
+        }
+
+        // Each Stone entry keeps its Plant entry's motion, socket, count, clock and presentation; its beads and rims
+        // are chips and faceted rings. The Stem's Stone entry also refines the Bane defence cell, as its Plant one does
+        public static void ApplyStoneEventKinds(EffectVocabulary vocabulary)
+        {
+            if (vocabulary == null) throw new ArgumentNullException(nameof(vocabulary));
+            StoneKind(vocabulary, EffectKind.Reactive, "Stone spark", StoneSpark());
+            StoneKind(vocabulary, EffectKind.Echo, "Stone echo", StoneEcho());
+            StoneKind(vocabulary, EffectKind.Link, "Stone tether", StoneTether());
+            StoneKind(vocabulary, EffectKind.Summon, "Stone sprout", StoneSprout());
+            ElementEntry stem = StoneKind(vocabulary, EffectKind.Growth, "Stone stem", StoneStem());
+            vocabulary.kinds[new EffectKindCell(EffectOperation.Bane, EffectAspect.Defence, EffectKind.Growth,
+                LookSide.Stone)] = stem;
+        }
+
+        static ElementEntry StoneKind(EffectVocabulary vocabulary, EffectKind kind, string label, LookPart[] parts)
+        {
+            ElementEntry plant = vocabulary.entries[EffectVocabulary.KindKey(kind)];
+            ElementEntry entry = Stone(plant, label, parts);
+            if (entry.stackBeads.Length > 0) entry.stackBeads = Chips("Stack chip ", 5, 1.42f, -.32f, .2f);
+            entry.sideRim = Facet(entry.sideRim);
+            entry.criticalRings = Facet(entry.criticalRings);
+            foreach (LookPart part in entry.parts)
+                if (!part.shape.IsValid())
+                    Debug.LogError($"[SpellPolishVocabulary] {entry.label}: {part.id} trips a shape profile bound.");
+            vocabulary.kinds[new EffectKindCell(EffectOperation.Boon, EffectAspect.Offence, kind, LookSide.Stone)] = entry;
+            return entry;
+        }
+
+        // A smooth ring becomes a faceted one of the same size; anything else becomes a chip in its place
+        static LookPart[] Facet(LookPart[] parts)
+        {
+            var faceted = new LookPart[parts.Length];
+            for (int i = 0; i < parts.Length; i++)
+            {
+                faceted[i] = parts[i];
+                if (parts[i].primitive == Primitive.Torus) faceted[i].shape = ShapeProfile.Ring(parts[i].shape.tubeRatio, true);
+                else
+                {
+                    faceted[i].primitive = Primitive.Boulder;
+                    faceted[i].shape = Slab(.6f);
+                }
+            }
+            return faceted;
         }
 
         static void Kind(EffectVocabulary vocabulary, EffectKind kind, ElementEntry entry)

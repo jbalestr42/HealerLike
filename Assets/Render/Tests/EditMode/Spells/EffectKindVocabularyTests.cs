@@ -15,6 +15,9 @@ namespace HealerLike.Render.Spells
         static readonly EffectKind[] Authored = { EffectKind.Projectile, EffectKind.Volume, EffectKind.Rate,
             EffectKind.Conditional, EffectKind.Positional, EffectKind.Flat, EffectKind.Reactive, EffectKind.Echo,
             EffectKind.Link, EffectKind.Summon, EffectKind.Growth };
+        // The kinds with a Stone entry of their own; the six Boon kinds before them draw Plant for a stone caster
+        static readonly EffectKind[] StoneAuthored = { EffectKind.Reactive, EffectKind.Echo, EffectKind.Link,
+            EffectKind.Summon, EffectKind.Growth };
 
         readonly List<Object> _owned = new List<Object>();
 
@@ -100,7 +103,7 @@ namespace HealerLike.Render.Spells
         }
 
         [Test]
-        public void Shipped_AuthoredKinds_ResolveInBoonGoldAndPlantForBothMaterials()
+        public void Shipped_AuthoredKinds_ResolveInBoonGoldInTheirOwnMaterialOrPlant()
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
             EffectRecipe orbit = EffectComposer.Compose(vocabulary, Boon(EffectKind.Plain, LookSide.Plant), 1, 0);
@@ -111,7 +114,9 @@ namespace HealerLike.Render.Spells
                     EffectRecipe recipe = EffectComposer.Compose(vocabulary, Boon(kind, material), 1, 0);
                     Assert.IsNotNull(recipe, kind + " " + material);
                     Assert.AreEqual(EffectVocabulary.KindKey(kind), recipe.element, kind.ToString());
-                    Assert.AreEqual(LookSide.Plant, recipe.material, kind + " draws Plant for " + material);
+                    LookSide drawn = material == LookSide.Stone && StoneAuthored.Contains(kind) ? LookSide.Stone
+                        : LookSide.Plant;
+                    Assert.AreEqual(drawn, recipe.material, kind + " draws " + drawn + " for " + material);
                     Assert.AreEqual(orbit.colour, recipe.colour, kind + " keeps the boon's hue");
                 }
             }
@@ -185,6 +190,11 @@ namespace HealerLike.Render.Spells
                 family = EffectFamily.Bane, group = AttributeGroup.Defence, tempo = EffectTempo.ForDuration,
                 kind = EffectKind.Growth };
             Assert.AreEqual(EffectKey.Stem, EffectComposer.Element(vocabulary, bane));
+            bane.material = LookSide.Stone;
+            EffectRecipe stone = EffectComposer.Compose(vocabulary, bane, 1, 0);
+            Assert.AreEqual(EffectKey.Stem, stone.element);
+            Assert.AreEqual(LookSide.Stone, stone.material, "a stone caster's growth draws the Stone stem");
+            bane.material = LookSide.Plant;
             bane.kind = EffectKind.Plain;
             Assert.AreEqual(EffectKey.Crack, EffectComposer.Element(vocabulary, bane));
         }
