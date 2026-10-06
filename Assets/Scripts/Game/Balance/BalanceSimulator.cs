@@ -128,7 +128,7 @@ public class BalanceSimulator : AGameType
             character.inventoryHandler.AddItem(item.GetItem(), -1);
         }
 
-        PlaceTeam(job.team);
+        PlaceTeam(job.team, job.teamPattern);
         _entities.SpawnWave(job.wave, transform.position, Entity.EntityType.Computer);
         ForEachEntity(KeepAliveIfSimulation);
 
@@ -164,12 +164,16 @@ public class BalanceSimulator : AGameType
         _maxDuration = _plan.GetMaxDuration(job.roomType);
     }
 
-    // The tanks closest to the enemies, then the supports, then the damage dealers, each with its items
-    void PlaceTeam(ReferenceTeam team)
+    // The tanks closest to the enemies, then the supports, then the damage dealers, each with its items. A team
+    // with a pattern is placed as drawn in it
+    void PlaceTeam(ReferenceTeam team, WavePatternData pattern)
     {
         GridManager grid = PlayerBehaviour.instance.grid;
         Dictionary<int, Entity> placed = new Dictionary<int, Entity>();
-        foreach (KeyValuePair<int, Vector2Int> cell in SimulationFormation.GetCells(team.units, _plan.frontColumn, grid.height / 2, _plan.rowsPerColumn))
+        Dictionary<int, Vector2Int> cells = pattern != null
+            ? SimulationFormation.GetPatternCells(pattern, _plan.frontColumn, grid.height / 2)
+            : SimulationFormation.GetCells(team.units, _plan.frontColumn, grid.height / 2, _plan.rowsPerColumn);
+        foreach (KeyValuePair<int, Vector2Int> cell in cells)
         {
             GameObject unit = _entities.SpawnEntity(team.units[cell.Key], grid.GetCellCenterFromCoord(cell.Value), Entity.EntityType.Player);
             if (unit != null)

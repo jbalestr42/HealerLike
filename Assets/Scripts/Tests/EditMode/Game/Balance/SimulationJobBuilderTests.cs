@@ -234,6 +234,18 @@ public class SimulationJobBuilderTests
 
         Assert.IsEmpty(SimulationJobBuilder.BuildForFixedTeam(null, new ReferenceTeam(), waves, 1));
     }
+
+    [Test]
+    public void BuildForFixedTeam_WithAPattern_EveryJobPlacesTheTeamAsDrawn()
+    {
+        WavePatternData dummies = Create<WavePatternData>("Wave_Balance_Dummies");
+        List<SimulatedWave> waves = new List<SimulatedWave> { new SimulatedWave { wave = Create<WavePatternData>("Wave") } };
+
+        List<SimulationJob> jobs = SimulationJobBuilder.BuildForFixedTeam(Create<CharacterData>("Balance"), new ReferenceTeam(), waves, 2, dummies);
+
+        Assert.AreEqual(2, jobs.Count);
+        Assert.IsTrue(jobs.TrueForAll(job => job.teamPattern == dummies));
+    }
 }
 
 }

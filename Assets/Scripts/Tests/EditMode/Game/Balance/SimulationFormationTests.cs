@@ -133,6 +133,56 @@ public class SimulationFormationTests
         Assert.AreEqual(12, cells.Count);
         CollectionAssert.AllItemsAreUnique(cells.Values);
     }
+
+    WavePatternData CreatePattern(int width, int height)
+    {
+        WavePatternData pattern = ScriptableObject.CreateInstance<WavePatternData>();
+        pattern.width = width;
+        pattern.height = height;
+        pattern.slots = new EntitySlot[width, height];
+        _created.Add(pattern);
+        return pattern;
+    }
+
+    [Test]
+    public void GetPatternCells_AnX_PlacedAsDrawnAroundTheCenterRow()
+    {
+        WavePatternData pattern = CreatePattern(3, 3);
+        EntityData dummy = CreateUnit(null);
+        foreach (Vector2Int slot in new[] { new Vector2Int(0, 0), new Vector2Int(0, 2), new Vector2Int(1, 1), new Vector2Int(2, 0), new Vector2Int(2, 2) })
+        {
+            pattern.slots[slot.x, slot.y].entity = dummy;
+        }
+
+        Dictionary<int, Vector2Int> cells = SimulationFormation.GetPatternCells(pattern, 6, 8);
+
+        // Corners and center of the 3x3 square spanning columns 4-6 and rows 7-9
+        CollectionAssert.AreEquivalent(new[] { new Vector2Int(6, 7), new Vector2Int(6, 9), new Vector2Int(5, 8), new Vector2Int(4, 7), new Vector2Int(4, 9) }, cells.Values);
+    }
+
+    // The keys match the order of ReferenceTeam.FromWave, so each unit of the team gets the cell of its slot
+    [Test]
+    public void GetPatternCells_KeyedByTheIndexOfTheUnitInTheTeam()
+    {
+        WavePatternData pattern = CreatePattern(2, 1);
+        EntityData back = CreateUnit(null);
+        EntityData front = CreateUnit(null);
+        pattern.slots[0, 0].entity = front;
+        pattern.slots[1, 0].entity = back;
+
+        Dictionary<int, Vector2Int> cells = SimulationFormation.GetPatternCells(pattern, 6, 8);
+        ReferenceTeam team = ReferenceTeam.FromWave(pattern);
+
+        // The first column of the pattern on the front column
+        Assert.AreEqual(new Vector2Int(6, 8), cells[team.units.IndexOf(front)]);
+        Assert.AreEqual(new Vector2Int(5, 8), cells[team.units.IndexOf(back)]);
+    }
+
+    [Test]
+    public void GetPatternCells_NoPattern_Empty()
+    {
+        Assert.IsEmpty(SimulationFormation.GetPatternCells(null, 6, 8));
+    }
 }
 
 }

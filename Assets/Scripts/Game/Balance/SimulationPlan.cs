@@ -17,7 +17,7 @@ public class SimulationPlan : ScriptableObject
 
     [Header("Fixed team")]
     // When set, the bots, the floors and the reference teams aren't used: every wave fights the units of this
-    // wave placed like a team, next to fixedTeamCharacter casting nothing (e.g. dummies to measure the damage
+    // wave placed as drawn in it, next to fixedTeamCharacter casting nothing (e.g. dummies to measure the damage
     // of the waves). Units tagged Simulation never die
     public WavePatternData fixedTeam;
     // Without item nor skill, so it changes nothing in the fight
@@ -73,7 +73,7 @@ public class SimulationPlan : ScriptableObject
     {
         if (fixedTeam != null)
         {
-            return SimulationJobBuilder.BuildForFixedTeam(fixedTeamCharacter, ReferenceTeam.FromWave(fixedTeam), GetWaves(data), seedCount);
+            return SimulationJobBuilder.BuildForFixedTeam(fixedTeamCharacter, ReferenceTeam.FromWave(fixedTeam), GetWaves(data), seedCount, fixedTeam);
         }
         if (initialTeams)
         {

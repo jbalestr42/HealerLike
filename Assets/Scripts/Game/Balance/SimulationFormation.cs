@@ -40,6 +40,31 @@ public static class SimulationFormation
         return cells;
     }
 
+    // The cell of each unit of a pattern placed as drawn, by its index in ReferenceTeam.FromWave(pattern): its first
+    // column on the front column (as a wave faces the team, mirrored), its rows centered on centerRow
+    public static Dictionary<int, Vector2Int> GetPatternCells(WavePatternData pattern, int frontColumn, int centerRow)
+    {
+        Dictionary<int, Vector2Int> cells = new Dictionary<int, Vector2Int>();
+        if (pattern == null || pattern.slots == null)
+        {
+            return cells;
+        }
+
+        int index = 0;
+        for (int i = 0; i < pattern.slots.GetLength(0); i++)
+        {
+            for (int j = 0; j < pattern.slots.GetLength(1); j++)
+            {
+                if (pattern.slots[i, j].entity != null)
+                {
+                    cells[index] = new Vector2Int(frontColumn - i, centerRow + j - (pattern.slots.GetLength(1) - 1) / 2);
+                    index++;
+                }
+            }
+        }
+        return cells;
+    }
+
     // 0, 1, -1, 2, -2, ...
     public static int GetRowOffset(int index)
     {

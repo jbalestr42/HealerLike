@@ -63,7 +63,7 @@ public static class SimulationJobBuilder
     }
 
     // Every wave against the same team, for every seed, next to a character without bot
-    public static List<SimulationJob> BuildForFixedTeam(CharacterData character, ReferenceTeam team, IReadOnlyList<SimulatedWave> waves, int seedCount)
+    public static List<SimulationJob> BuildForFixedTeam(CharacterData character, ReferenceTeam team, IReadOnlyList<SimulatedWave> waves, int seedCount, WavePatternData teamPattern = null)
     {
         List<SimulationJob> jobs = new List<SimulationJob>();
         if (character == null || team == null)
@@ -75,7 +75,7 @@ public static class SimulationJobBuilder
         {
             foreach (SimulatedWave wave in waves)
             {
-                jobs.Add(new SimulationJob { character = character, team = team, wave = wave.wave, roomType = wave.roomType, floor = team.floor, seed = seed });
+                jobs.Add(new SimulationJob { character = character, team = team, teamPattern = teamPattern, wave = wave.wave, roomType = wave.roomType, floor = team.floor, seed = seed });
             }
         }
         return jobs;

@@ -116,7 +116,7 @@ public class SimulationPlanTests
 
         // 2 seeds x every wave, whatever the floors
         Assert.AreEqual(2 * SimulationJobBuilder.GetWaves(_data).Count, jobs.Count);
-        Assert.IsTrue(jobs.TrueForAll(job => job.bot == null && job.character == character && job.team.units.Count == 2));
+        Assert.IsTrue(jobs.TrueForAll(job => job.bot == null && job.character == character && job.team.units.Count == 2 && job.teamPattern == bags));
         Object.DestroyImmediate(bag);
         Object.DestroyImmediate(bags);
         Object.DestroyImmediate(character);
