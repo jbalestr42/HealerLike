@@ -128,10 +128,10 @@ MonoBehaviour:
   width: 3
   height: 3
   score:
-    dps: 29.580807
-    peakDps: 42.333332
-    survivalTime: 46.3502
-    effectiveHealth: 1860.4279
-    threat: 1371.0763
+    dps: 29.0353
+    peakDps: 43
+    survivalTime: 46.968994
+    effectiveHealth: 1853.5133
+    threat: 1363.7588
     timedOut: 0
-    fingerprint: ac8700a2b9b4a3d874551e56afce2c2e
+    fingerprint: f0e2f6dc1d15bf0aceaf9c8160c83d46
