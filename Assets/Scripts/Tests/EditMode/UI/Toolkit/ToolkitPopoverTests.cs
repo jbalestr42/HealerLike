@@ -24,7 +24,6 @@ namespace UI.Toolkit
                     TestHelpers.WithLoggingDisabled(() => entity = owner.AddComponent<Entity>());
                     entity.data = data;
                     entity.attributeManager = owner.GetComponent<AttributeManager>();
-                    TestHelpers.InvokePrivate(entity.attributeManager, "Awake");
                     entity.attributeManager.Add(AttributeType.HealthMax, new Attribute(100));
                     entity.attributeManager.Add(AttributeType.Damage, new Attribute(12));
                     entity.attributeManager.Add(AttributeType.CriticalChanceResist, new Attribute(0));

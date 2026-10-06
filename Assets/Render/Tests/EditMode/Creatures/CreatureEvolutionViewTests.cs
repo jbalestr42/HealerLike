@@ -108,7 +108,7 @@ namespace HealerLike.Render.Creatures
             Assert.IsNotNull(_view.rig);
             Assert.IsTrue(_view.Rebuild(_manager));
             // A later proper owner initialization opts back into live evolution.
-            TestHelpers.InvokePrivate(_attributes, "Awake");
+            TestHelpers.SetPrivateField(_attributes, "_attributes", new System.Collections.Generic.Dictionary<AttributeType, Attribute>());
             _attributes.Add(AttributeType.HealthMax, new Attribute(100f));
             _entity.attributeManager = _attributes;
             _view.Init(_entity, _manager);
