@@ -35789,7 +35789,7 @@ MonoBehaviour:
       Data: 1
     - Name: cycleSeconds
       Entry: 4
-      Data: 0.9
+      Data: 1.1
     - Name: 
       Entry: 8
       Data: 

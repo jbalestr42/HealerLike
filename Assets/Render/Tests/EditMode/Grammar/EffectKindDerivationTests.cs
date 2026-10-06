@@ -155,14 +155,26 @@ namespace HealerLike.Render.Grammar
             CollectionAssert.AreEquivalent(expected, Rows.Keys);
         }
 
+        // Read on the holder of each item: a growing item's handler carries no kind of its own buffs
         [Test]
         public void Kind_BoonOffenceHandlers_AllCarryAKind()
         {
+            EffectContext context = GrowthContext();
             foreach (SpellChannelAssetPinningTests.HandlerRow row in SpellChannelAssetPinningTests.HandlerRows)
             {
                 if (row.operation != EffectOperation.Boon || row.aspect != EffectAspect.Offence) continue;
-                Assert.AreNotEqual(EffectKind.Plain, Rows[row.path], row.path);
+                ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
+                    "Assets/Data/" + row.path + ".asset");
+                Assert.AreNotEqual(EffectKind.Plain, EffectDerivation.Kind(handler, context), row.path);
             }
+        }
+
+        // Every live growing item's handlers, as on the holder of all of them
+        public static EffectContext GrowthContext()
+        {
+            EffectContext context = EffectContext.Default;
+            context.growthHandlers = EffectDerivation.GrowthHandlers(GrowingItems());
+            return context;
         }
 
         [Test]
@@ -220,8 +232,7 @@ namespace HealerLike.Render.Grammar
         {
             ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>("Assets/Data/" + path + ".asset");
             Assert.IsNotNull(handler, path);
-            EffectContext context = EffectContext.Default;
-            context.growthHandlers = EffectDerivation.GrowthHandlers(GrowingItems());
+            EffectContext context = GrowthContext();
             Assert.AreEqual(EffectKind.Growth, EffectDerivation.Kind(handler, context), path);
             Assert.AreEqual(EffectKind.Growth, EffectDerivation.Channels(handler, true, context).kind, path);
             foreach (EffectChannels layer in EffectDerivation.Layers(handler, true, context))

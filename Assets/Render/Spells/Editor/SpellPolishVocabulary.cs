@@ -129,7 +129,7 @@ namespace HealerLike.Render.Spells.Editor
             Kind(vocabulary, EffectKind.Reactive, Kind(orbit, "Reactive spark", Spark(), EffectMotionKind.Burst,
                 EffectSocket.Body, 1.2f));
             Kind(vocabulary, EffectKind.Echo, Kind(orbit, "Echo blades", Echo(), EffectMotionKind.Press,
-                EffectSocket.Body, .9f));
+                EffectSocket.Body, 1.1f));
             Kind(vocabulary, EffectKind.Link, Kind(orbit, "Soul tether", Tether(), EffectMotionKind.Orbit,
                 EffectSocket.AboveHead, 2.2f));
             Kind(vocabulary, EffectKind.Summon, Kind(orbit, "Summon sprout", Sprout(), EffectMotionKind.Rise,
