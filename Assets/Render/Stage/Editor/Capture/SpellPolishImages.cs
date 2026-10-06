@@ -95,7 +95,7 @@ namespace HealerLike.Render.Stage
         readonly StringBuilder readability = new StringBuilder("element,material,target,age,cycleSeconds,lifetimeSeconds," +
             "effectPixels,backgroundPixels,effectR,effectG,effectB,grassR,grassG,grassB,effectLuma,grassLuma,lumaDifference," +
             "rgbDistance,creaturePixels,silhouetteSurvival,creatureR,creatureG,creatureB,creatureFieldR,creatureFieldG," +
-            "creatureFieldB,creatureLuma,creatureFieldLuma,creatureLumaDifference,creatureRgbDistance\n");
+            "creatureFieldB,creatureLuma,creatureFieldLuma,creatureLumaDifference,creatureRgbDistance,stacks\n");
         readonly StringBuilder pairs = new StringBuilder("first,second,firstPixels,secondPixels,firstR,firstG,firstB," +
             "secondR,secondG,secondB,firstLuma,secondLuma,lumaDifference,rgbDistance\n");
         public readonly List<ReadabilityRow> rows = new List<ReadabilityRow>();
@@ -109,6 +109,7 @@ namespace HealerLike.Render.Stage
         {
             public string element, material, target;
             public float age, cycleSeconds, lifetimeSeconds;
+            public int stacks;
             public int effectPixels, backgroundPixels, creaturePixels;
             public double effectLuma, grassLuma, lumaDifference, rgbDistance;
             public double silhouetteSurvival;
@@ -129,7 +130,8 @@ namespace HealerLike.Render.Stage
         }
 
         public void Readability(Camera camera, GameObject creature, GameObject effectHost, EffectKey element, float age,
-                                EffectRecipe recipe, float lifetime, LookSide target)
+                                EffectRecipe recipe, float lifetime, LookSide target,
+                                int stacks = SpellReadabilityPass.DefaultStacks)
         {
             Renderer[] effectRenderers = Visible(effectHost), creatureRenderers = Visible(creature);
             Texture2D full = StageReadback.Render(camera, PhoneWidth, PhoneHeight);
@@ -160,11 +162,11 @@ namespace HealerLike.Render.Stage
                     creatureContrast.shapeLuma, creatureContrast.fieldLuma, creatureContrast.lumaDifference,
                     creatureContrast.rgbDistance })
                     readability.Append(',').Append(value.ToString("0.###", CultureInfo.InvariantCulture));
-                readability.AppendLine();
+                readability.Append(',').Append(stacks).AppendLine();
                 rows.Add(new ReadabilityRow
                 {
                     element = element.ToString(), material = recipe.material.ToString(), target = target.ToString(),
-                    age = age, cycleSeconds = recipe.cycleSeconds, lifetimeSeconds = lifetime,
+                    age = age, cycleSeconds = recipe.cycleSeconds, lifetimeSeconds = lifetime, stacks = stacks,
                     effectPixels = effect.pixels, backgroundPixels = background, creaturePixels = creatureContrast.pixels,
                     effectLuma = effect.shapeLuma, grassLuma = effect.fieldLuma, lumaDifference = effect.lumaDifference,
                     rgbDistance = effect.rgbDistance, silhouetteSurvival = survival,
@@ -173,7 +175,8 @@ namespace HealerLike.Render.Stage
                     creatureRgbDistance = creatureContrast.rgbDistance
                 });
                 bool isStone = recipe.material == LookSide.Stone;
-                string suffix = (isStone ? "-stone" : "") + (target == LookSide.Stone ? "-on-stone" : "");
+                string suffix = (isStone ? "-stone" : "") + (target == LookSide.Stone ? "-on-stone" : "")
+                    + (stacks != SpellReadabilityPass.DefaultStacks ? "-" + stacks + "-stack" : "");
                 if (element == EffectKey.ManaUp && target == LookSide.Plant) manaUp = a;
                 if (element == EffectKey.ManaDown && target == LookSide.Plant) manaDown = a;
                 File.WriteAllBytes(Path.Combine(folder, $"{(int)element:D2}-{element}{suffix}-peak.png"), full.EncodeToPNG());

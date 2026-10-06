@@ -13,6 +13,8 @@ namespace HealerLike.Render.Stage
     {
         // The middle moment is the harness's readable peak; the readability pass samples only that one
         public const float PeakPhase = .45f;
+        // Every fixture's stacks unless it asks for others
+        public const int DefaultStacks = 3;
         // Damage against heal, heal against boon, boon against bane, each family drawn by its first core element
         public static readonly (EffectKey first, EffectKey second)[] Pairs =
             { (EffectKey.Burst, EffectKey.Rise), (EffectKey.Rise, EffectKey.Orbit), (EffectKey.Orbit, EffectKey.Press) };
@@ -27,12 +29,15 @@ namespace HealerLike.Render.Stage
             public readonly LookSide material;
             // The body the element lands on
             public readonly LookSide target;
+            // The stacks the element is composed at; a stacking element shows one more shape per stack
+            public readonly int stacks;
 
-            public Fixture(EffectKey element, LookSide material, LookSide target)
+            public Fixture(EffectKey element, LookSide material, LookSide target, int stacks = DefaultStacks)
             {
                 this.element = element;
                 this.material = material;
                 this.target = target;
+                this.stacks = stacks;
             }
         }
 
@@ -48,7 +53,7 @@ namespace HealerLike.Render.Stage
                     int creature = SpellPolishRun.CreatureIndex(fixture.target);
                     SpellPolishRun.Prepare(manager, scene, creature);
                     for (int frame = 0; frame < 30; frame++) SpellPolishRun.Tick(scene, step, frame * step);
-                    EffectRecipe recipe = Compose(vocabulary, fixture.element, fixture.material);
+                    EffectRecipe recipe = Compose(vocabulary, fixture.element, fixture.material, fixture.stacks);
                     SpellEffect effect = SpellPolishRun.Build(manager, scene, recipe, material, creature, fixture.target);
                     SpellPolishRun.ShowGround(scene, recipe, Vector3.zero);
                     int total = Mathf.CeilToInt(recipe.cycleSeconds / step);
@@ -60,7 +65,7 @@ namespace HealerLike.Render.Stage
                         if (age >= PeakPhase * recipe.cycleSeconds)
                         {
                             images.Readability(scene.camera, scene.creatures[creature].anchor.gameObject, effect.gameObject,
-                                fixture.element, age, recipe, effect.lifetime, fixture.target);
+                                fixture.element, age, recipe, effect.lifetime, fixture.target, fixture.stacks);
                             break;
                         }
                         yield return null;
@@ -97,9 +102,10 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectKey element, LookSide material)
+        public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectKey element, LookSide material,
+                                           int stacks = DefaultStacks)
         {
-            return EffectComposer.Compose(vocabulary, element, SpellPolishRun.Family(element), EffectTempo.Once, 0f, 3, 3,
+            return EffectComposer.Compose(vocabulary, element, SpellPolishRun.Family(element), EffectTempo.Once, 0f, stacks, 3,
                 .5f, material: material);
         }
     }

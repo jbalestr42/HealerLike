@@ -297,17 +297,21 @@ namespace HealerLike.Render.Spells.Editor
         public static LookPart[] Stem()
         {
             var parts = new List<LookPart>();
-            Vector3 foot = new Vector3(-1.85f, -.15f, -1f);
+            // Clear of the blades and of the arm, leaning away from the camera so the segments climb the screen
+            // instead of stacking into one disc under a camera that looks down
+            Vector3 foot = new Vector3(-1.95f, .35f, -1.35f);
+            Vector3 lean = new Vector3(0, .7f, .3f);
+            Vector3 tilt = new Vector3(Mathf.Atan2(lean.z, lean.y) * Mathf.Rad2Deg, 0, 0);
             for (int i = 0; i < 4; i++)
             {
-                Vector3 from = foot + new Vector3(.1f * (i % 2 == 0 ? 1 : -1), .7f * i, 0);
+                Vector3 from = foot + new Vector3(.1f * (i % 2 == 0 ? 1 : -1), 0, 0) + lean * i;
                 parts.Add(Part("Growth segment " + i, Primitive.CylinderSegment, ShapeProfile.Segment(.16f, .78f),
-                    from + Vector3.up * .35f, new Vector3(.5f, .7f, .5f)));
-                parts.Add(Part("Growth joint " + i, Primitive.Sphere, ShapeProfile.Bulb(), from + Vector3.up * .7f,
+                    from + lean * .5f, new Vector3(.5f, .76f, .5f), tilt));
+                parts.Add(Part("Growth joint " + i, Primitive.Sphere, ShapeProfile.Bulb(), from + lean,
                     Vector3.one * .5f * .72f));
             }
-            parts.Add(Part("Growth bud", Primitive.Sphere, ShapeProfile.Bulb(.9f, .25f), foot + Vector3.up * 3.05f,
-                new Vector3(.6f, .8f, .6f)));
+            parts.Add(Part("Growth bud", Primitive.Sphere, ShapeProfile.Bulb(.9f, .25f), foot + lean * 4f + lean * .5f,
+                new Vector3(.6f, .8f, .6f), tilt));
             return parts.ToArray();
         }
 

@@ -67,6 +67,8 @@ namespace HealerLike.Render.Stage
                         readability.Add(new SpellReadabilityPass.Fixture(element, LookSide.Stone, LookSide.Plant));
                     foreach (EffectKey element in KindElements)
                         readability.Add(new SpellReadabilityPass.Fixture(element, LookSide.Plant, LookSide.Plant));
+                    // The Stem shows one more segment per stack: one stack is its smallest drawing
+                    readability.Add(new SpellReadabilityPass.Fixture(EffectKey.Stem, LookSide.Plant, LookSide.Plant, 1));
                     yield return SpellReadabilityPass.Run(_manager, images, vocabulary, material, readability);
                 }
                 var fixtures = new List<(EffectKey element, LookSide side)>();
