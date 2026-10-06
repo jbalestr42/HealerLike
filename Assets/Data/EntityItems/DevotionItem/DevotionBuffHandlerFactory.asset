@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: DevotionBuffHandlerFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::BuffHandlerFactory
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  uniqueID: 2c0a3479-1d5f-4732-886b-fe46e6116657
+  data:
+    durationType: 1
+    duration: 10
+    isPeriodic: 0
+    periodDuration: 0
+    maxStacks: 3
+    buffFactoryList:
+    - {fileID: 11400000, guid: 1951676ac9a0ead4fb44483dba6c53f2, type: 2}
+    buffEffect: {fileID: 0}
+    icon: {fileID: 21300000, guid: 51c302f64de43fe4b8b02506b6ed1918, type: 3}
+    tags: []

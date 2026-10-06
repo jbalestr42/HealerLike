@@ -80,10 +80,10 @@ MonoBehaviour:
   items:
   - {fileID: 11400000, guid: 82c759f729084ad44a087a4608b18b6b, type: 2}
   entities:
-  - {fileID: 11400000, guid: 0e42156d42eb9244db24d1871321181b, type: 2}
-  - {fileID: 11400000, guid: 723a5c26dd4a39d489c9b9accfc6fec4, type: 2}
-  - {fileID: 11400000, guid: 26dbd27e829bb32408f456f507d1393f, type: 2}
   - {fileID: 11400000, guid: 2042951354ead464aa1cd1fefcd8192c, type: 2}
+  - {fileID: 11400000, guid: 5ae526315401c9343a385aee24faf7e0, type: 2}
+  - {fileID: 11400000, guid: e85cf5282617a01438e560dff6d97937, type: 2}
+  - {fileID: 11400000, guid: e18e77831fceb7342a21e20e32807f03, type: 2}
   classTag: {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
   skills:
   - {fileID: 11400000, guid: 1ebca72647271b94ca5968b1b500f88d, type: 2}

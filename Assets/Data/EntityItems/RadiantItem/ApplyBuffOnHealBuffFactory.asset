@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be2b372e4c9b4b547acb9ede73ef1924, type: 3}
+  m_Name: ApplyBuffOnHealBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::ApplyBuffOnHealBuffFactory
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  uniqueID: ca4f8f87-f7e4-4634-81fc-44d260faa9f6
+  data:
+    buffHandlerFactory: {fileID: 11400000, guid: ae9d78a83cefcfc4bb994715ab851290, type: 2}

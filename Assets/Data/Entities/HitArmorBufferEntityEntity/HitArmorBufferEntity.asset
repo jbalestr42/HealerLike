@@ -122,7 +122,6 @@ MonoBehaviour:
   targetBehaviourType: 1
   targetValidators: []
   tags:
-  - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
   - {fileID: 11400000, guid: 057ac9b64013d5b4a8e7cad3956503b8, type: 2}
   - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
   items: []

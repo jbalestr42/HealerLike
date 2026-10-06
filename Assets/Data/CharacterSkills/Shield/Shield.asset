@@ -24,7 +24,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 8727e7dc0cc99c245922ec614e2e826d, type: 3}
     name: Shield
-    description: 'Give a single ally <color=#008080ff>+[{data:buffHandlerFactory|0.data.buffFactoryList|0.data.value}x100]%</color> armor and <color=#008080ff>+{data:buffHandlerFactory|0.data.buffFactoryList|1.data.value}</color> flat armor during <color="green">{data:buffHandlerFactory|0.data.duration}s</color>
+    description: 'Give a single ally <color=#008080ff>+[{data:buffHandlerFactory|0.data.buffFactoryList|0.data.value}x100]%</color> armor during <color="green">{data:buffHandlerFactory|0.data.duration}s</color>
 
       Cost: <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color> mana
 

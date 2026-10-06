@@ -28,4 +28,6 @@ public static class TagNames
     // Units and items only made for the balance simulations (dummies, the team measuring the waves), never met
     // in a run
     public const string Simulation = "Simulation";
+    // Harmful buffs put on a unit by its enemies (poison, curse, slow...), the ones a cleanse removes
+    public const string Debuff = "Debuff";
 }

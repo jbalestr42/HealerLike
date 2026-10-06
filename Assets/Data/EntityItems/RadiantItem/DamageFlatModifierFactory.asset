@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 984d75a39286c4f498033bb6c8f5e063, type: 3}
-  m_Name: FlatArmorModifierFactory
-  m_EditorClassIdentifier: 
+  m_Name: DamageFlatModifierFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::FlatModifierFactory
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
@@ -21,8 +21,8 @@ MonoBehaviour:
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
     SerializationNodes: []
-  uniqueID: 9cd45a8d-b755-4bb4-9036-16b5ef8b45e6
+  uniqueID: fa7f4f69-85e7-4c1c-a8d6-b2566788d0c8
   data:
-    type: 4
+    type: 2
     modifierType: 0
-    value: 5
+    value: 3

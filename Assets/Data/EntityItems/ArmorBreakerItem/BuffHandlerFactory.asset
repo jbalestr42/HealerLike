@@ -32,4 +32,5 @@ MonoBehaviour:
     - {fileID: 11400000, guid: d291e6caedda4709b49c17265a63ff10, type: 2}
     buffEffect: {fileID: 0}
     icon: {fileID: 21300000, guid: bb5e42897acacad42b733e7575c69ceb, type: 3}
-    tags: []
+    tags:
+    - {fileID: 11400000, guid: 3e3da7a1624a46a6bb004c4cc819f3a3, type: 2}

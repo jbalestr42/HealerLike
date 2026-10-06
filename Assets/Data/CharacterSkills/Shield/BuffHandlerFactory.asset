@@ -30,7 +30,6 @@ MonoBehaviour:
     maxStacks: 0
     buffFactoryList:
     - {fileID: 11400000, guid: b83c5620930e1cd45867fb8221a88da0, type: 2}
-    - {fileID: 11400000, guid: 185d0f39e16144d3a2399f841c10f149, type: 2}
     buffEffect: {fileID: 0}
     icon: {fileID: 0}
     tags: []

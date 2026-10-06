@@ -34,4 +34,4 @@ MonoBehaviour:
       type: {class: FlatValue, ns: , asm: Assembly-CSharp}
       data:
         data:
-          value: 5
+          value: 8
