@@ -36,6 +36,7 @@ public class BalanceReportWindow : EditorWindow
     int _botIndex;
     Vector2 _scroll;
     GUIStyle _cellStyle;
+    bool _wasSimulating;
 
     static string folder => Path.Combine(Path.GetDirectoryName(Application.dataPath), "Logs", "Balance");
 
@@ -49,6 +50,24 @@ public class BalanceReportWindow : EditorWindow
     {
         RefreshFiles();
         Load();
+    }
+
+    void OnInspectorUpdate()
+    {
+        // The simulation just over is shown
+        if (_wasSimulating && !FullSimulation.isRunning)
+        {
+            RefreshFiles();
+            _fileIndex = 0;
+            Load();
+            Repaint();
+        }
+        // The count of fights played goes on
+        else if (FullSimulation.isRunning)
+        {
+            Repaint();
+        }
+        _wasSimulating = FullSimulation.isRunning;
     }
 
     // The simulations, the latest first
@@ -175,7 +194,30 @@ public class BalanceReportWindow : EditorWindow
             _botIndex = EditorGUILayout.Popup(_botIndex, bots, EditorStyles.toolbarPopup, GUILayout.Width(180f));
         }
         GUILayout.FlexibleSpace();
+        DrawSimulationButton();
         EditorGUILayout.EndHorizontal();
+    }
+
+    void DrawSimulationButton()
+    {
+        if (FullSimulation.isRunning)
+        {
+            GUILayout.Label($"Simulating {SimulationQueue.index}/{SimulationQueue.count} fights", EditorStyles.miniLabel);
+            if (GUILayout.Button(new GUIContent("Stop", "Leaves the play mode: the fights played so far stay in the log"), EditorStyles.toolbarButton, GUILayout.Width(50f)))
+            {
+                FullSimulation.Stop();
+            }
+            return;
+        }
+
+        using (new EditorGUI.DisabledScope(ScoreMeasure.isRunning || EditorApplication.isPlayingOrWillChangePlaymode))
+        {
+            string tooltip = $"Plays {Path.GetFileNameWithoutExtension(FullSimulation.PlanPath)} in the simulation scene (every wave on every floor, every character, about an hour), then shows it here";
+            if (GUILayout.Button(new GUIContent("Run full simulation", tooltip), EditorStyles.toolbarButton, GUILayout.Width(130f)))
+            {
+                FullSimulation.Start();
+            }
+        }
     }
 
     void DrawWaves()

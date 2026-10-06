@@ -86,28 +86,12 @@ public static class ScoreMeasure
 
     public static void Start(Kind kind)
     {
-        if (isRunning || EditorApplication.isPlayingOrWillChangePlaymode)
+        if (isRunning || FullSimulation.isRunning || EditorApplication.isPlayingOrWillChangePlaymode || !OpenScene())
         {
             return;
         }
-        if (EditorSceneManager.GetActiveScene().path != ScenePath)
-        {
-            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-            {
-                return;
-            }
-            EditorSceneManager.OpenScene(ScenePath);
-        }
 
-        BalanceSimulator simulator = UnityEngine.Object.FindAnyObjectByType<BalanceSimulator>();
-        if (simulator == null)
-        {
-            Debug.LogError($"[ScoreMeasure] No BalanceSimulator in {ScenePath}");
-            return;
-        }
-
-        SerializedProperty plan = new SerializedObject(simulator).FindProperty("_plan");
-        SessionState.SetString(ScenePlanKey, plan.objectReferenceValue != null ? AssetDatabase.GetAssetPath(plan.objectReferenceValue) : "");
+        SessionState.SetString(ScenePlanKey, GetScenePlan());
         runningKind = kind;
         folder = Path.Combine(GetRoot(kind), DateTime.Now.ToString("yyyyMMdd-HHmmss"));
         step = 0;
@@ -129,8 +113,36 @@ public static class ScoreMeasure
         EditorApplication.isPlaying = true;
     }
 
+    // The simulation scene active, false when the user keeps the current one or it has no simulator
+    public static bool OpenScene()
+    {
+        if (EditorSceneManager.GetActiveScene().path != ScenePath)
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return false;
+            }
+            EditorSceneManager.OpenScene(ScenePath);
+        }
+
+        if (UnityEngine.Object.FindAnyObjectByType<BalanceSimulator>() == null)
+        {
+            Debug.LogError($"[ScoreMeasure] No BalanceSimulator in {ScenePath}");
+            return false;
+        }
+        return true;
+    }
+
+    // The path of the plan of the scene, empty without one
+    public static string GetScenePlan()
+    {
+        BalanceSimulator simulator = UnityEngine.Object.FindAnyObjectByType<BalanceSimulator>();
+        UnityEngine.Object plan = simulator != null ? new SerializedObject(simulator).FindProperty("_plan").objectReferenceValue : null;
+        return plan != null ? AssetDatabase.GetAssetPath(plan) : "";
+    }
+
     // Not saved: the scene keeps its own plan on the disk
-    static void SetScenePlan(string planPath)
+    public static void SetScenePlan(string planPath)
     {
         BalanceSimulator simulator = UnityEngine.Object.FindAnyObjectByType<BalanceSimulator>();
         if (simulator == null)
