@@ -153,6 +153,11 @@ namespace HealerLike.Render.Stage
             if (mode == ClassSelectCaptureRun.Mode) return new ClassSelectCaptureRun();
             if (mode == ClassSelectCaptureRun.BootMode) return new ClassSelectCaptureRun(true);
 
+            if (mode == StageEventRoomRun.Mode)
+            {
+                return new StageEventRoomRun();
+            }
+
             if (mode == "expedition-map")
             {
                 return new StageMapRun();
@@ -234,7 +239,7 @@ namespace HealerLike.Render.Stage
                 _activeRun = run;
                 if (mode == "mobile-interface" || mode == "creature-presentation" || mode == "expedition-map"
                     || mode == "spell-sources" || mode == "selection-facing" || mode == "compact-ui"
-                    || mode == FieldVariantRun.Mode)
+                    || mode == FieldVariantRun.Mode || mode == StageEventRoomRun.Mode)
                 {
                     // Screen and pointer coordinates must be read inside a game frame, not Editor.update. The field
                     // variants read the game camera back too, so they step after the grass's indirect draw is queued.

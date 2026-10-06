@@ -11,6 +11,12 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter("expedition-map", 420f);
         }
 
+        [MenuItem("Tools/Render/Capture Event Rooms")]
+        public static void EventRooms()
+        {
+            StagePlay.Enter(StageEventRoomRun.Mode, 240f);
+        }
+
         [MenuItem("Tools/Render/Capture Creature Presentation")]
         public static void CreaturePresentation()
         {
