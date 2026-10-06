@@ -58,6 +58,20 @@ namespace UI.Toolkit
         }
 
         [Test]
+        public void Hide_EventViewCanvas_KeepsItAndItsRaycasterEnabled()
+        {
+            Canvas eventCanvas = CreateCanvas(_go.transform, RenderMode.ScreenSpaceOverlay);
+            GraphicRaycaster eventRaycaster = eventCanvas.gameObject.AddComponent<GraphicRaycaster>();
+            TestHelpers.WithLoggingDisabled(() => eventCanvas.gameObject.AddComponent<EventView>());
+
+            _legacyCanvases.Hide(_context);
+
+            Assert.IsTrue(eventCanvas.enabled, "The event and rest rooms are chosen on Julien's screen.");
+            Assert.IsTrue(eventRaycaster.enabled);
+            Assert.IsFalse(_screenCanvas.enabled, "The other legacy screens are still hidden.");
+        }
+
+        [Test]
         public void SilenceMenus_LegacyMenuController_IsDisabledAndStaysOffAfterRestore()
         {
             MainMenu menu = _go.AddComponent<MainMenu>();
