@@ -65,10 +65,10 @@ namespace HealerLike.Render.Spells
         {
             string before = JsonUtility.ToJson(vocabulary.GetEntry(EffectKey.Stalks));
             SpellPolishVocabulary.Apply(vocabulary);
-            // One entry per element, the eleven kinds included, and one kind cell per kind plus the Growth of a Bane
-            // defence
+            // One entry per element, the eleven kinds included; one Plant kind cell per kind plus the Growth of a Bane
+            // defence, and the same six again in Stone for the five event kinds
             Assert.That(vocabulary.entries.Count, Is.EqualTo(Enum.GetValues(typeof(EffectKey)).Length));
-            Assert.That(vocabulary.kinds.Count, Is.EqualTo(12));
+            Assert.That(vocabulary.kinds.Count, Is.EqualTo(12 + 6));
             Assert.That(JsonUtility.ToJson(vocabulary.GetEntry(EffectKey.Stalks)), Is.EqualTo(before));
         }
 
