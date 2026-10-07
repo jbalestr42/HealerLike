@@ -196,6 +196,20 @@ namespace UI.Toolkit
         }
 
         [Test]
+        public void Build_NoMaximumManaInTheTable_SkipsThePreviewInsteadOfThrowing()
+        {
+            CharacterData cleric = Character("Cleric");
+            cleric.attributes.Remove(AttributeType.ManaMax);
+            int before = PreviewCount();
+            LogAssert.Expect(LogType.Warning, new Regex(@"\[ToolkitClassKit\] 'Cleric'"));
+
+            ToolkitClassKit kit = ToolkitClassKit.Build(cleric);
+
+            Assert.AreEqual("", kit.stats);
+            Assert.AreEqual(before, PreviewCount());
+        }
+
+        [Test]
         public void Build_NoCharacter_IsEmpty()
         {
             ToolkitClassKit kit = ToolkitClassKit.Build(null);

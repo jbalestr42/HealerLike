@@ -63,6 +63,14 @@ public class ToolkitClassKit
             return false;
         }
 
+        // His Character.InitAttributes reads the maximum mana from the table and throws without it, which would take
+        // the whole class screen down with this card
+        if (!character.attributes.ContainsKey(AttributeType.ManaMax))
+        {
+            Debug.LogWarning("[ToolkitClassKit] '" + character.title + "' has no maximum mana in its attribute table, no stats shown.");
+            return false;
+        }
+
         return true;
     }
 

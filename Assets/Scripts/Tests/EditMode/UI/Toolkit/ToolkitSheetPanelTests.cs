@@ -115,7 +115,7 @@ namespace UI.Toolkit
             StringAssert.Contains("<b>40 / 100</b>", SheetText());
             StringAssert.Contains(EntityInfoFormatter.GetAttributeName(AttributeType.ManaMax) + ": <b>100</b>", SheetText());
             StringAssert.DoesNotContain("<size=+", SheetText());
-            Assert.IsTrue(Regex.IsMatch(SheetText(), @"<size=\d+(\.\d+)?><b>Cleric</b></size>"), SheetText());
+            Assert.IsTrue(Regex.IsMatch(SheetText(), @"<size=\d+(\.\d+)?px><b>Cleric</b></size>"), SheetText());
         }
 
         [Test]
