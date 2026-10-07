@@ -92,6 +92,8 @@ namespace UI.Toolkit
         [UnityTest]
         public IEnumerator ResolveStyles_RestSubtitle_StaysOutOfTheNodeFlow()
         {
+            // The subtitle rule lives in the theme's sheets, so without a theme every label resolves in the flow
+            ToolkitTheme.Apply(_root, null);
             RunState run = CreateSixTypeRun();
             EntityData ally = ScriptableObject.CreateInstance<EntityData>();
             run.AddDeadAlly(ally);
