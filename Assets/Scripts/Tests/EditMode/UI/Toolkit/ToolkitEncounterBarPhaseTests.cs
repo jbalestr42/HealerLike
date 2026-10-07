@@ -73,6 +73,40 @@ namespace UI.Toolkit
             Assert.AreEqual("READY", ToolkitEncounterBar.PhaseText(ViewType.Game, true, true, false));
         }
 
+        [TestCase(true)]
+        [TestCase(false)]
+        public void StatusText_EventView_DoesNotReadAsCombatOrDeployment(bool isPreparing)
+        {
+            string text = ToolkitEncounterBar.StatusText(ViewType.Event, false, false, false, isPreparing, false, 1f);
+
+            StringAssert.DoesNotContain("Combat", text);
+            StringAssert.DoesNotContain("Deploy", text);
+        }
+
+        [Test]
+        public void StatusText_EventViewPaused_StillReadsPaused()
+        {
+            Assert.AreEqual("Paused", ToolkitEncounterBar.StatusText(ViewType.Event, true, false, false, false, false, 1f));
+        }
+
+        [Test]
+        public void StatusText_GameViewInBattle_ReadsCombatWithSpeed()
+        {
+            Assert.AreEqual(
+                "Combat · 2× speed",
+                ToolkitEncounterBar.StatusText(ViewType.Game, false, false, false, false, false, 2f)
+            );
+        }
+
+        [Test]
+        public void StatusText_GameViewPreparingOnTouch_PointsToParty()
+        {
+            Assert.AreEqual(
+                "Open Party to deploy your allies.",
+                ToolkitEncounterBar.StatusText(ViewType.Game, false, false, false, true, true, 1f)
+            );
+        }
+
         [TestCase(MapNodeType.Combat, "Room 1 · Combat")]
         [TestCase(MapNodeType.Elite, "Room 1 · Elite")]
         [TestCase(MapNodeType.Treasure, "Room 1 · Treasure")]

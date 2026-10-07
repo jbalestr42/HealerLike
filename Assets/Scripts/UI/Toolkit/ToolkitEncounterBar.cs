@@ -154,12 +154,33 @@ public class ToolkitEncounterBar
 
     string GetStatusText(bool isStart, bool isPreparing)
     {
-        if (_context.isPaused)
+        return StatusText(
+            GetCurrentPhaseView(),
+            _context.isPaused,
+            _context.hasInteraction,
+            isStart,
+            isPreparing,
+            _view.isTouchLayout,
+            Time.timeScale
+        );
+    }
+
+    public static string StatusText(
+        ViewType view,
+        bool isPaused,
+        bool hasInteraction,
+        bool isStart,
+        bool isPreparing,
+        bool isTouchLayout,
+        float timeScale
+    )
+    {
+        if (isPaused)
         {
             return "Paused";
         }
 
-        if (_context.hasInteraction)
+        if (hasInteraction)
         {
             return "Tap a target, or Cancel.";
         }
@@ -169,13 +190,19 @@ public class ToolkitEncounterBar
             return "Start your expedition";
         }
 
+        // The same fall-through the phase text had: an event or rest screen is not a battle
+        if (view == ViewType.Event)
+        {
+            return "Pick an option to continue.";
+        }
+
         if (isPreparing)
         {
-            return _view.isTouchLayout
+            return isTouchLayout
                 ? "Open Party to deploy your allies."
                 : "Deploy your party, distribute equipment, then start the battle.";
         }
 
-        return $"Combat · {Time.timeScale:0.#}× speed";
+        return $"Combat · {timeScale:0.#}× speed";
     }
 }
