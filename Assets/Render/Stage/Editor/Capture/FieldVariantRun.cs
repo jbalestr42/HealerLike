@@ -33,7 +33,7 @@ namespace HealerLike.Render.Stage
         const int Height = 1920;
         const int RingPixels = 24;
         // Treatment 5's strength of treatments 1, 2 and 3 together; FIELD_COMBINATION_STRENGTH overrides it
-        const float DefaultCombination = .8f;
+        const float DefaultCombination = 0.8f;
 
         [Serializable]
         public class BattleTarget
@@ -242,7 +242,7 @@ namespace HealerLike.Render.Stage
         // The creature of that side nearest the board's centre, so its effect stays inside the frame
         CreatureBuilder Target(Entity.EntityType side)
         {
-            Vector3 centre = _manager.gameCamera.ViewportToWorldPoint(new Vector3(.5f, .5f, 10f));
+            Vector3 centre = _manager.gameCamera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 10f));
             return _manager.entityManager.GetEntities(side)
                 .Select(g => g.GetComponentInChildren<CreatureBuilder>())
                 .Where(host => host && host.rig != null)

@@ -38,7 +38,7 @@ namespace HealerLike.Render.Deliveries
             renderer.GetPropertyBlock(properties);
             Color expected = amount > 0 ? RenderTestAssets.LoadPalette().damage : RenderTestAssets.LoadPalette().heal;
             Color actual = properties.GetColor(RenderObjects.BaseColorId);
-            Assert.That(Vector4.Distance(expected, actual), Is.LessThan(.00001f));
+            Assert.That(Vector4.Distance(expected, actual), Is.LessThan(0.00001f));
             Assert.AreEqual(0, _scene.probe.accents);
         }
 

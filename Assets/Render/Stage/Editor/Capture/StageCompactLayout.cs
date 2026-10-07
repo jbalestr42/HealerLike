@@ -34,7 +34,7 @@ namespace HealerLike.Render.Stage
                 "Global mana remains fixed while spell row scrolls");
             yield return _s.Capture("01c-long-spell-overflow");
             yield return _s.actions.BringIntoView(first);
-            yield return Wait(.1f);
+            yield return Wait(0.1f);
         }
     }
 }

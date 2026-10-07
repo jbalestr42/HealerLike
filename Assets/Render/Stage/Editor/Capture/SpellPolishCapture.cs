@@ -24,7 +24,7 @@ namespace HealerLike.Render.Stage
     {
         const float Step = 1f / 60f;
         public const float FrameStep = Step;
-        static readonly float[] Phases = { .15f, .45f, .8f };
+        static readonly float[] Phases = { 0.15f, 0.45f, 0.8f };
         public static readonly EffectKey[] CoreElements = { EffectKey.Burst, EffectKey.Rise, EffectKey.Stalks,
             EffectKey.Drips, EffectKey.Orbit, EffectKey.Plates, EffectKey.Bud, EffectKey.Press, EffectKey.Crack,
             EffectKey.ManaUp, EffectKey.ManaDown };
@@ -109,7 +109,7 @@ namespace HealerLike.Render.Stage
                         }
 
                         EffectRecipe recipe = EffectComposer.Compose(vocabulary, element, Family(element),
-                            EffectTempo.Once, 0f, 3, 3, .5f, material: side);
+                            EffectTempo.Once, 0f, 3, 3, 0.5f, material: side);
                         SpellEffect effect = Build(_manager, scene, recipe, material, 0);
                         ShowGround(scene, recipe, Vector3.zero);
                         int sample = 0;
@@ -122,7 +122,7 @@ namespace HealerLike.Render.Stage
                                 effect.Advance(Step);
                             }
 
-                            Tick(scene, Step, .5f + age);
+                            Tick(scene, Step, 0.5f + age);
                             if (age >= phases[sample] * recipe.cycleSeconds)
                             {
                                 images.Capture(scene.camera, element, sample, age);
@@ -195,7 +195,7 @@ namespace HealerLike.Render.Stage
             scene.camera.orthographic = true;
             scene.camera.orthographicSize = 2.8f;
             scene.camera.transform.rotation = Quaternion.Euler(50, 0, 0);
-            scene.camera.transform.position = Vector3.up * .45f - scene.camera.transform.forward * 9f;
+            scene.camera.transform.position = Vector3.up * 0.45f - scene.camera.transform.forward * 9f;
         }
 
         public static SpellEffect Build(RenderManager manager, GrassLabScene scene, EffectRecipe recipe, Material material,
@@ -207,7 +207,7 @@ namespace HealerLike.Render.Stage
             effect.Init(recipe, manager.meshes, material, target);
             if (recipe.socket == EffectSocket.Link)
             {
-                effect.SetEndpoints(new Vector3(-1.45f, .65f, -.15f), new Vector3(1.45f, .65f, -.15f), false);
+                effect.SetEndpoints(new Vector3(-1.45f, 0.65f, -0.15f), new Vector3(1.45f, 0.65f, -0.15f), false);
             }
             else if (recipe.socket == EffectSocket.Ground)
             {

@@ -304,7 +304,7 @@ namespace HealerLike.Render.Spells
                 local.headCentre = anchor.InverseTransformPoint(anchors.headCentre);
                 local.neck = anchor.InverseTransformPoint(anchors.neck);
                 local.foot = anchor.InverseTransformPoint(anchors.foot);
-                float scale = Mathf.Max(.0001f, Mathf.Abs(anchor.lossyScale.x));
+                float scale = Mathf.Max(0.0001f, Mathf.Abs(anchor.lossyScale.x));
                 local.bodyRadius /= scale;
                 local.headRadius /= scale;
             }
@@ -322,10 +322,10 @@ namespace HealerLike.Render.Spells
         }
 
         static bool SameDimensions(EffectAnchors a, EffectAnchors b) =>
-            Mathf.Abs(a.bodyRadius - b.bodyRadius) < .0001f && Mathf.Abs(a.headRadius - b.headRadius) < .0001f
-            && (a.bodyCentre - b.bodyCentre).sqrMagnitude < .000001f
-            && (a.headCentre - b.headCentre).sqrMagnitude < .000001f
-            && (a.neck - b.neck).sqrMagnitude < .000001f && (a.foot - b.foot).sqrMagnitude < .000001f;
+            Mathf.Abs(a.bodyRadius - b.bodyRadius) < 0.0001f && Mathf.Abs(a.headRadius - b.headRadius) < 0.0001f
+            && (a.bodyCentre - b.bodyCentre).sqrMagnitude < 0.000001f
+            && (a.headCentre - b.headCentre).sqrMagnitude < 0.000001f
+            && (a.neck - b.neck).sqrMagnitude < 0.000001f && (a.foot - b.foot).sqrMagnitude < 0.000001f;
 
         static void Refresh(Status status, float elapsedSeconds, float durationSeconds)
         {

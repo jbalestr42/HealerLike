@@ -95,7 +95,7 @@ namespace HealerLike.Render.Creatures
             _projectile.transform.position = Vector3.right * 2f;
             TestHelpers.InvokePrivate(free, "LateUpdate");
             Assert.That(Vector3.Distance(last + Vector3.right * 2f - free.launchOrigin / 6f, free.visualPosition),
-                Is.LessThan(.0001f));
+                Is.LessThan(0.0001f));
             Assert.AreEqual(Vector3.right * 2f, _projectile.transform.position);
             foreach (Renderer renderer in GameObject.Find("FreeShot").GetComponentsInChildren<Renderer>(true))
             {

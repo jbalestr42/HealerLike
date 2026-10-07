@@ -27,7 +27,7 @@ namespace HealerLike.Render.Grammar
                 Assert.AreEqual(expected, EffectDerivation.Magnitude(handler, context));
                 Assert.AreEqual(expected, EffectDerivation.Layers(handler, true, context)[0].magnitude);
                 modifier.data.modifierType = AttributeModifierType.Multiply;
-                modifier.data.value = .2f;
+                modifier.data.value = 0.2f;
                 Assert.AreEqual(EffectMagnitude.Solid, EffectDerivation.Magnitude(handler, context));
             }
             finally

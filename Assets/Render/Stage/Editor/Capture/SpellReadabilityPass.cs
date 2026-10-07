@@ -12,7 +12,7 @@ namespace HealerLike.Render.Stage
     public static class SpellReadabilityPass
     {
         // The middle moment is the harness's readable peak; the readability pass samples only that one
-        public const float PeakPhase = .45f;
+        public const float PeakPhase = 0.45f;
         // Every fixture's stacks unless it asks for others
         public const int DefaultStacks = 3;
         // Damage against heal, heal against boon, boon against bane, each family drawn by its first core element
@@ -20,7 +20,7 @@ namespace HealerLike.Render.Stage
             { (EffectKey.Burst, EffectKey.Rise), (EffectKey.Rise, EffectKey.Orbit), (EffectKey.Orbit, EffectKey.Press) };
         // Two plant allies side by side, one grid cell apart; creature 2 is the lab's second NormalEntity
         static readonly int[] pairCreatures = { 0, 2 };
-        static readonly Vector3[] pairPositions = { new Vector3(-.5f, 0f, 0f), new Vector3(.5f, 0f, 0f) };
+        static readonly Vector3[] pairPositions = { new Vector3(-0.5f, 0f, 0f), new Vector3(0.5f, 0f, 0f) };
 
         public readonly struct Fixture
         {
@@ -73,7 +73,7 @@ namespace HealerLike.Render.Stage
                             effect.Advance(step);
                         }
 
-                        SpellPolishRun.Tick(scene, step, .5f + age);
+                        SpellPolishRun.Tick(scene, step, 0.5f + age);
                         if (age >= PeakPhase * recipe.cycleSeconds)
                         {
                             images.Readability(scene.camera, scene.creatures[creature].anchor.gameObject, effect.gameObject,
@@ -121,7 +121,7 @@ namespace HealerLike.Render.Stage
                             secondEffect.Advance(step);
                         }
 
-                        SpellPolishRun.Tick(scene, step, .5f + age);
+                        SpellPolishRun.Tick(scene, step, 0.5f + age);
                         yield return null;
                     }
                     images.Pair(scene.camera, firstEffect.gameObject, secondEffect.gameObject, first, second);
@@ -134,7 +134,7 @@ namespace HealerLike.Render.Stage
                                            int stacks = DefaultStacks)
         {
             return EffectComposer.Compose(vocabulary, element, SpellPolishRun.Family(element), EffectTempo.Once, 0f, stacks, 3,
-                .5f, material: material);
+                0.5f, material: material);
         }
     }
 }

@@ -271,7 +271,7 @@ public class EffectPlacementTests
         _sink.SetStatus(null, _target, renew, 1, 1.5f, 6f);
 
         SpellEffect effect = _sink.GetElement(_target, EffectKey.Stalks);
-        effect.Pose(.5f, 1.5f);
+        effect.Pose(0.5f, 1.5f);
         float top = 0f;
         foreach (Transform sphere in effect.shapes)
         {
@@ -281,7 +281,7 @@ public class EffectPlacementTests
             }
         }
         float authoredHeight = effect.recipe.entry.parts[0].position.y * anchors.bodyRadius * effect.recipe.scale;
-        Assert.AreEqual(authoredHeight, top, .001f);
+        Assert.AreEqual(authoredHeight, top, 0.001f);
         Assert.GreaterOrEqual(effect.transform.localScale.x, effect.transform.localScale.y);
     }
 
@@ -297,7 +297,7 @@ public class EffectPlacementTests
         Transform root = _sink.GetStatus(_target, weaken).transform;
         float top = anchors.headCentre.y + anchors.headRadius;
         Assert.GreaterOrEqual(root.position.y, top + EffectPlacement.AboveHeadGap * anchors.bodyRadius);
-        Assert.LessOrEqual(EffectPlacement.HeadOverlap(root.GetComponent<SpellEffect>(), anchors, true), .001f);
+        Assert.LessOrEqual(EffectPlacement.HeadOverlap(root.GetComponent<SpellEffect>(), anchors, true), 0.001f);
     }
 
     [Test]

@@ -48,7 +48,7 @@ namespace HealerLike.Render.Spells
             {
                 EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
                 asset.recipe = EffectComposer.Compose(vocabulary, EffectKey.Burst, EffectFamily.Damage,
-                    EffectTempo.Once, 0, 1, 0, .5f);
+                    EffectTempo.Once, 0, 1, 0, 0.5f);
                 asset.recipe.additions = new[] { EffectComposer.Compose(vocabulary, EffectKey.Plates,
                     EffectFamily.Boon, EffectTempo.ForDuration, 0, 1, 3, 0) };
                 looks.buffs.Add(handler, new SpellLook { recipe = asset });

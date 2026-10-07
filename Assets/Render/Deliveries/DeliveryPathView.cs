@@ -115,7 +115,7 @@ namespace HealerLike.Render.Deliveries
 
                 _contacts[leg] = new ProjectileContact(contact.target, end);
                 Vector3 side = Vector3.Cross(end - start, Vector3.up).normalized;
-                if (side.sqrMagnitude < .001f)
+                if (side.sqrMagnitude < 0.001f)
                 {
                     side = Vector3.right;
                 }
@@ -131,7 +131,7 @@ namespace HealerLike.Render.Deliveries
             }
             float fade = _releasing ? 1f - Mathf.Clamp01(_releaseAge / _look.releaseSeconds) : 1f;
             Paint(_edge, _colour, _look.width * fade);
-            Paint(_core, Color.Lerp(_colour, Color.white, .75f), _look.width * _look.coreWidth * fade);
+            Paint(_core, Color.Lerp(_colour, Color.white, 0.75f), _look.width * _look.coreWidth * fade);
         }
 
         void Paint(LineRenderer line, Color colour, float width)

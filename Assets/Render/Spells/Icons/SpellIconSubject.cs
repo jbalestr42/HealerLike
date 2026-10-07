@@ -53,8 +53,8 @@ namespace HealerLike.Render.Spells
                 renderer.GetPropertyBlock(properties);
                 properties.SetFloat("_HLHatchMultiplier", 0f);
                 properties.SetFloat("_HLFaceHatch", 0f);
-                properties.SetFloat("_HLOutlineWidthMultiplier", .45f);
-                properties.SetColor("_HLShadeTint", new Color(.32f, .4f, .48f, .18f));
+                properties.SetFloat("_HLOutlineWidthMultiplier", 0.45f);
+                properties.SetColor("_HLShadeTint", new Color(0.32f, 0.4f, 0.48f, 0.18f));
                 properties.SetColor("_HLShadeTurnTint", Color.clear);
                 renderer.SetPropertyBlock(properties);
             }
@@ -80,17 +80,17 @@ namespace HealerLike.Render.Spells
                 {
                     Vector3 middle = _root.transform.position;
                     layer.SetEndpoints(middle + Vector3.left * 1.1f, middle + Vector3.right * 1.1f, false);
-                    layer.Advance(piece.cycleSeconds * .4f);
+                    layer.Advance(piece.cycleSeconds * 0.4f);
                 }
                 else
                 {
-                    layer.Pose(.42f, piece.cycleSeconds * .42f);
+                    layer.Pose(0.42f, piece.cycleSeconds * 0.42f);
                 }
             }
             host.transform.localRotation = recipe.presentation?.billboard == true ? Quaternion.identity
                 : Quaternion.Euler(recipe.socket == EffectSocket.Ground ? 65f : 30f, -18f, 0f);
 
-            float extent = count == 1 ? .92f : count == 2 ? .58f : .46f;
+            float extent = count == 1 ? 0.92f : count == 2 ? 0.58f : 0.46f;
             Fit(host.transform, Slot(index, count), extent);
         }
 
@@ -100,7 +100,7 @@ namespace HealerLike.Render.Spells
             {
                 throw new InvalidOperationException("Spell icon layer has no visible geometry.");
             }
-            float largest = Mathf.Max(.001f, Mathf.Max(bounds.extents.x, bounds.extents.y));
+            float largest = Mathf.Max(0.001f, Mathf.Max(bounds.extents.x, bounds.extents.y));
             glyph.localScale *= extent / largest;
             BoundsOf(glyph, out bounds);
             glyph.position += glyph.parent.TransformPoint(centre) - bounds.center;
@@ -110,18 +110,18 @@ namespace HealerLike.Render.Spells
         {
             if (count == 1)
             {
-                return new Vector3(0, .08f, 0);
+                return new Vector3(0, 0.08f, 0);
             }
             if (count == 2)
             {
-                return new Vector3(index == 0 ? -.53f : .53f, index == 0 ? .3f : -.2f, 0);
+                return new Vector3(index == 0 ? -0.53f : 0.53f, index == 0 ? 0.3f : -0.2f, 0);
             }
             if (count == 3)
             {
-                return index == 0 ? new Vector3(0, .55f, 0)
-                    : new Vector3(index == 1 ? -.52f : .52f, -.38f, 0);
+                return index == 0 ? new Vector3(0, 0.55f, 0)
+                    : new Vector3(index == 1 ? -0.52f : 0.52f, -0.38f, 0);
             }
-            return new Vector3(index % 2 == 0 ? -.52f : .52f, index < 2 ? .53f : -.43f, 0);
+            return new Vector3(index % 2 == 0 ? -0.52f : 0.52f, index < 2 ? 0.53f : -0.43f, 0);
         }
 
         static bool BoundsOf(Transform root, out Bounds bounds)
@@ -130,7 +130,7 @@ namespace HealerLike.Render.Spells
             bool found = false;
             foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>())
             {
-                if (!renderer.enabled || renderer.bounds.size.sqrMagnitude < .000001f)
+                if (!renderer.enabled || renderer.bounds.size.sqrMagnitude < 0.000001f)
                 {
                     continue;
                 }

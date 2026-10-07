@@ -21,11 +21,11 @@ namespace HealerLike.Render.Deliveries
                 LineRenderer line = path.GetComponentInChildren<LineRenderer>();
                 Assert.AreEqual(target.transform.position, line.GetPosition(line.positionCount - 1));
                 target.transform.position += Vector3.forward;
-                path.Advance(.1f);
+                path.Advance(0.1f);
                 Assert.AreEqual(target.transform.position, line.GetPosition(line.positionCount - 1));
                 float width = line.widthMultiplier;
                 path.Release();
-                path.Advance(vocabulary.GetPath(DeliveryPathKind.Chain).releaseSeconds * .5f);
+                path.Advance(vocabulary.GetPath(DeliveryPathKind.Chain).releaseSeconds * 0.5f);
                 Assert.Less(line.widthMultiplier, width);
                 path.Advance(3f);
                 Assert.IsTrue(path == null);

@@ -43,7 +43,7 @@ namespace HealerLike.Render.Deliveries
         public void SetStyle_ResolvesProceduralAttachmentsAndPivotsWithoutMutatingVocabulary()
         {
             LookPart stem = Part("Stem", ShapeProfile.Segment());
-            stem.size = new Vector3(.4f, 1.5f, .4f);
+            stem.size = new Vector3(0.4f, 1.5f, 0.4f);
             stem.euler = new Vector3(0f, 0f, 25f);
             LookPart tip = Part("Leaf", ShapeProfile.Leaf());
             tip.attachTo = "Stem";

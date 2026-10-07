@@ -21,7 +21,7 @@ namespace HealerLike.Render.Studio.Editor
             {
                 parts = new[] { new LookPart { id = "OwnedPreviewShape", primitive = Primitive.Sphere,
                     shape = ShapeProfile.Bulb(), role = PartRole.Body, colour = ColourRole.Accent,
-                    size = Vector3.one * .2f } },
+                    size = Vector3.one * 0.2f } },
                 cycleSeconds = 1f
             };
             _preview = new SpellStudioPreview();
@@ -38,10 +38,10 @@ namespace HealerLike.Render.Studio.Editor
         [Test]
         public void SeekBackAndDispose_ReleaseGeneratedMeshesInDisabledPreview()
         {
-            SpellEffect first = _preview.Sample(_preset, .4f);
+            SpellEffect first = _preview.Sample(_preset, 0.4f);
             Assert.IsNotNull(first);
             Mesh original = first.parts[0].GetComponent<MeshFilter>().sharedMesh;
-            SpellEffect next = _preview.Sample(_preset, .1f);
+            SpellEffect next = _preview.Sample(_preset, 0.1f);
             Assert.IsTrue(original == null, "Rebuilding a disabled preview releases its mesh cache.");
             Mesh replacement = next.parts[0].GetComponent<MeshFilter>().sharedMesh;
             Assert.IsTrue(replacement);

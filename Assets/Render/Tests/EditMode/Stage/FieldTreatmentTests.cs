@@ -49,7 +49,7 @@ namespace HealerLike.Render.Stage
 
             Assert.AreEqual(before.x, after.x, 1e-4f);
             Assert.AreEqual(before.y, after.y, 1e-4f);
-            Assert.AreEqual(before.z * .65f, after.z, 1e-4f);
+            Assert.AreEqual(before.z * 0.65f, after.z, 1e-4f);
         }
 
         [Test]
@@ -58,8 +58,8 @@ namespace HealerLike.Render.Stage
             Vector3 before = Hsv(committed), after = Hsv(FieldTreatment.Sheet(1f)[2].Treat(committed));
 
             Assert.AreEqual(before.x, after.x, 1e-4f);
-            Assert.AreEqual(before.y * .6f, after.y, 1e-4f);
-            Assert.AreEqual(before.z * .7f, after.z, 1e-4f);
+            Assert.AreEqual(before.y * 0.6f, after.y, 1e-4f);
+            Assert.AreEqual(before.z * 0.7f, after.z, 1e-4f);
         }
 
         [Test]
@@ -79,9 +79,9 @@ namespace HealerLike.Render.Stage
             Assert.AreEqual(1f, none.valueScale);
             Assert.AreEqual(1f, none.saturationScale);
             Assert.AreEqual(1f, none.contrastScale);
-            Assert.AreEqual(.65f, full.valueScale, 1e-6f);
-            Assert.AreEqual(.6f, full.saturationScale, 1e-6f);
-            Assert.AreEqual(.5f, full.contrastScale, 1e-6f);
+            Assert.AreEqual(0.65f, full.valueScale, 1e-6f);
+            Assert.AreEqual(0.6f, full.saturationScale, 1e-6f);
+            Assert.AreEqual(0.5f, full.contrastScale, 1e-6f);
         }
 
         [Test]
@@ -93,9 +93,9 @@ namespace HealerLike.Render.Stage
 
             FieldTreatment.Snapshot saved = FieldTreatment.Sheet(1f)[3].Apply(_material);
 
-            Assert.AreEqual(hatch * .5f, _material.GetFloat("_HLHatchMultiplier"), 1e-6f);
-            Assert.AreEqual(shade.a * .5f, _material.GetColor("_HLShadeTint").a, 1e-6f);
-            Assert.AreEqual(turn.a * .5f, _material.GetColor("_HLShadeTurnTint").a, 1e-6f);
+            Assert.AreEqual(hatch * 0.5f, _material.GetFloat("_HLHatchMultiplier"), 1e-6f);
+            Assert.AreEqual(shade.a * 0.5f, _material.GetColor("_HLShadeTint").a, 1e-6f);
+            Assert.AreEqual(turn.a * 0.5f, _material.GetColor("_HLShadeTurnTint").a, 1e-6f);
             Assert.That(Vector4.Distance(_material.GetColor("_BaseColor"), baseColor), Is.LessThan(1e-5f),
                 "The hatch treatment keeps the committed colour");
 

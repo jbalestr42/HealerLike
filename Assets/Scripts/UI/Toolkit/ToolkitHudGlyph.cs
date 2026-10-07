@@ -9,7 +9,7 @@ public sealed class ToolkitHudGlyph : VisualElement
     {
         _kind = kind; pickingMode = PickingMode.Ignore;
         style.width = style.height = 22; style.alignSelf = Align.Center;
-        style.scale = new Scale(new Vector3(.8f, .8f, 1));
+        style.scale = new Scale(new Vector3(0.8f, 0.8f, 1));
         generateVisualContent += Draw;
     }
     public static void Attach(VisualElement root)
@@ -32,7 +32,7 @@ public sealed class ToolkitHudGlyph : VisualElement
     void Draw(MeshGenerationContext context)
     {
         var p = context.painter2D;
-        p.strokeColor = new Color(.97f, .96f, .87f); p.lineWidth = 1.5f;
+        p.strokeColor = new Color(0.97f, 0.96f, 0.87f); p.lineWidth = 1.5f;
         if (_kind == "pause") { Line(p, 7, 4, 7, 19); Line(p, 15, 4, 15, 19); }
         else if (_kind == "inventory")
         {

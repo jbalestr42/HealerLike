@@ -10,14 +10,14 @@ namespace HealerLike.Render.Stage
         readonly float _size;
         public StagePlacementCell(float size)
         {
-            _size = size * .46f;
+            _size = size * 0.46f;
             _host = new GameObject("Roster placement cell");
             _line = _host.AddComponent<LineRenderer>();
             _material = new Material(Resources.Load<Shader>("CompactPlacement"));
             _line.sharedMaterial = _material;
             _line.loop = true; _line.positionCount = 4;
-            _line.startWidth = _line.endWidth = size * .035f;
-            _line.startColor = _line.endColor = new Color(.88f, 1, .7f, .95f);
+            _line.startWidth = _line.endWidth = size * 0.035f;
+            _line.startColor = _line.endColor = new Color(0.88f, 1, 0.7f, 0.95f);
             _line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _line.receiveShadows = false;
         }
@@ -29,7 +29,7 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            point.y += .04f;
+            point.y += 0.04f;
             _line.SetPositions(new[] { point + new Vector3(-_size, 0, -_size),
                 point + new Vector3(_size, 0, -_size), point + new Vector3(_size, 0, _size),
                 point + new Vector3(-_size, 0, _size) });

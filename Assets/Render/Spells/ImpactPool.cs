@@ -98,7 +98,7 @@ namespace HealerLike.Render.Spells
             }
 
             Add(effect.gameObject);
-            SpellGround.Play(_ground, recipe, target.transform.position, Mathf.Lerp(.85f, 1.5f, amount), isCritical);
+            SpellGround.Play(_ground, recipe, target.transform.position, Mathf.Lerp(0.85f, 1.5f, amount), isCritical);
             // Only a hit on health blasts the grass; a spell's mana cost is not a blow
             if (_ground != null && recipe.entry.ground == null && resource == ResourceKind.Health && preClampAmount < 0f)
             {

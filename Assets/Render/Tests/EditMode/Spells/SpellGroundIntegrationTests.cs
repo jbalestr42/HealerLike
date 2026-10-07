@@ -37,8 +37,8 @@ namespace HealerLike.Render.Spells
                 {
                     parts = new[] { new LookPart { id = "Shape", primitive = Primitive.Sphere,
                         colour = ColourRole.Accent, size = Vector3.one } },
-                    ground = new GroundEffect { light = light, ash = ash, hold = .2f, lifetime = .6f },
-                    groundRadius = 1.3f, groundStrength = .6f
+                    ground = new GroundEffect { light = light, ash = ash, hold = 0.2f, lifetime = 0.6f },
+                    groundRadius = 1.3f, groundStrength = 0.6f
                 }
             };
         }
@@ -56,7 +56,7 @@ namespace HealerLike.Render.Spells
         public void Play_AuthoredImpactPublishesRadiusStrengthAndRecoversAfterLifetime()
         {
             EffectRecipe recipe = EffectComposer.Compose(RenderTestAssets.LoadEffectVocabulary(),
-                EffectKey.Rise, EffectFamily.Heal, EffectTempo.Once, 0f, 1, 0f, .4f);
+                EffectKey.Rise, EffectFamily.Heal, EffectTempo.Once, 0f, 1, 0f, 0.4f);
             Assert.IsNotNull(recipe.entry.ground);
             _target.transform.position = new Vector3(3f, 2f, 4f);
             SpellGround.Play(_ground, recipe, _target.transform.position, 2f, true);
@@ -66,7 +66,7 @@ namespace HealerLike.Render.Spells
             Assert.AreEqual(new Vector2(3f, 4f), from);
             Assert.AreEqual(recipe.entry.groundRadius * 2f, radius);
             Assert.AreEqual(Mathf.Clamp01(recipe.entry.groundStrength * 1.35f), strength);
-            _ground.Advance(.3f);
+            _ground.Advance(0.3f);
             Assert.Greater(GroundProbe.State(_ground, _target.transform.position).magnitude, 0f);
             _ground.Advance(recipe.entry.ground.lifetime + 1f);
             Assert.AreEqual(0, _ground.oneShotCount);
@@ -76,12 +76,12 @@ namespace HealerLike.Render.Spells
         [Test]
         public void BindGround_FollowsTargetAndRebindDoesNotLeakHandles()
         {
-            SpellEffect effect = Create(Recipe(.7f));
+            SpellEffect effect = Create(Recipe(0.7f));
             effect.BindGround(_ground, _target);
             Assert.AreEqual(1, _ground.heldCount);
             Assert.Greater(GroundProbe.State(_ground, Vector3.zero).z, 0f);
             _target.transform.position = Vector3.right * 5f;
-            effect.Advance(.1f);
+            effect.Advance(0.1f);
             Assert.AreEqual(Vector4.zero, GroundProbe.State(_ground, Vector3.zero));
             Assert.Greater(GroundProbe.State(_ground, _target.transform.position).z, 0f);
             effect.BindGround(_ground, _target);
@@ -91,8 +91,8 @@ namespace HealerLike.Render.Spells
         [TestCase(0)] [TestCase(1)] [TestCase(2)] [TestCase(3)]
         public void Lifecycle_ReleasesRootAndDisabledCompositeLayers(int end)
         {
-            EffectRecipe recipe = Recipe(.4f);
-            recipe.additions = new[] { Recipe(0f, .8f) };
+            EffectRecipe recipe = Recipe(0.4f);
+            recipe.additions = new[] { Recipe(0f, 0.8f) };
             SpellEffect effect = Create(recipe);
             effect.BindGround(_ground, _target);
             Assert.AreEqual(2, _ground.heldCount);
@@ -126,33 +126,33 @@ namespace HealerLike.Render.Spells
         [Test]
         public void Removal_StopsGroundInputAndExistingStateRecoversNaturally()
         {
-            SpellEffect effect = Create(Recipe(.8f, .8f));
+            SpellEffect effect = Create(Recipe(0.8f, 0.8f));
             effect.BindGround(_ground, _target);
             Vector4 state = Vector4.zero;
             for (int i = 0; i < 20; i++)
             {
-                state = GroundState.Step(state, GroundProbe.State(_ground, Vector3.zero), .1f,
+                state = GroundState.Step(state, GroundProbe.State(_ground, Vector3.zero), 0.1f,
                     GroundStateSettings.Default);
             }
 
-            Assert.Greater(state.x, .3f);
-            Assert.Greater(state.z, .3f);
+            Assert.Greater(state.x, 0.3f);
+            Assert.Greater(state.z, 0.3f);
             effect.BeginRemoval();
             Assert.AreEqual(0, _ground.heldCount);
             for (int i = 0; i < 200; i++)
             {
-                state = GroundState.Step(state, GroundProbe.State(_ground, Vector3.zero), .1f,
+                state = GroundState.Step(state, GroundProbe.State(_ground, Vector3.zero), 0.1f,
                     GroundStateSettings.Default);
             }
 
-            Assert.Less(state.magnitude, .001f);
+            Assert.Less(state.magnitude, 0.001f);
         }
 
         [Test]
         public void Play_CompositeLayersEachContributeTheirAuthoredReaction()
         {
-            EffectRecipe recipe = Recipe(.7f);
-            recipe.additions = new[] { Recipe(0f, .8f) };
+            EffectRecipe recipe = Recipe(0.7f);
+            recipe.additions = new[] { Recipe(0f, 0.8f) };
             SpellGround.Play(_ground, recipe, Vector3.zero);
             Assert.AreEqual(2, _ground.oneShotCount);
             Vector4 state = GroundProbe.State(_ground, Vector3.zero);
@@ -162,9 +162,9 @@ namespace HealerLike.Render.Spells
         [Test]
         public void Line_CompositeEmitsLineAndPointReactionsAtTheirIntendedLocations()
         {
-            EffectRecipe recipe = Recipe(.7f);
+            EffectRecipe recipe = Recipe(0.7f);
             recipe.entry.ground.shape = GroundShape.Line;
-            recipe.additions = new[] { Recipe(0f, .8f) };
+            recipe.additions = new[] { Recipe(0f, 0.8f) };
             SpellGround.Line(_ground, recipe, Vector3.zero, Vector3.right * 4f);
             Assert.AreEqual(2, _ground.oneShotCount);
             Assert.Greater(GroundProbe.State(_ground, Vector3.right * 2f).z, 0f);
@@ -175,7 +175,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void Play_InvalidCompositePublishesNothing()
         {
-            EffectRecipe recipe = Recipe(.7f);
+            EffectRecipe recipe = Recipe(0.7f);
             recipe.additions = new[] { recipe };
             SpellGround.Play(_ground, recipe, Vector3.zero);
             SpellGround.Line(_ground, recipe, Vector3.zero, Vector3.right);
@@ -185,10 +185,10 @@ namespace HealerLike.Render.Spells
         [Test]
         public void HeldCompositeLink_TracksEndpointsAndReleasesEveryLayer()
         {
-            EffectRecipe recipe = Recipe(.7f);
+            EffectRecipe recipe = Recipe(0.7f);
             recipe.socket = recipe.entry.socket = EffectSocket.Link;
             recipe.entry.ground.shape = GroundShape.Line;
-            EffectRecipe child = Recipe(0f, .8f);
+            EffectRecipe child = Recipe(0f, 0.8f);
             child.socket = child.entry.socket = EffectSocket.Link;
             child.entry.ground.shape = GroundShape.Line;
             recipe.additions = new[] { child };
@@ -210,9 +210,9 @@ namespace HealerLike.Render.Spells
         [Test]
         public void Dispose_EditModeReleasesRootAndChildProceduralMeshes()
         {
-            EffectRecipe recipe = Recipe(.7f);
+            EffectRecipe recipe = Recipe(0.7f);
             recipe.entry.parts[0].shape = ShapeProfile.Bulb();
-            EffectRecipe child = Recipe(0f, .8f);
+            EffectRecipe child = Recipe(0f, 0.8f);
             child.entry.parts[0].shape = ShapeProfile.Leaf();
             recipe.additions = new[] { child };
             SpellEffect effect = Create(recipe);

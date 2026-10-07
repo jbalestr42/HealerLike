@@ -219,11 +219,11 @@ public class GroundSimulationTests
         // Read() samples the texel centre, not exactly radius=1; the state also eases in over time.
         Vector2 uv = _volume.ToUV(Vector2.right);
         Vector2 centre = _volume.ToWorld(new Vector2(
-            (Mathf.Floor(uv.x * _volume.width) + .5f) / _volume.width,
-            (Mathf.Floor(uv.y * _volume.height) + .5f) / _volume.height));
-        Vector4 expected = GroundState.Step(Vector4.zero, stamp.State(centre), .5f, _ground.stateSettings);
-        Assert.That(At(state, Vector2.right).r, Is.EqualTo(expected.x).Within(.006f));
-        Assert.Greater(expected.x, .4f);
+            (Mathf.Floor(uv.x * _volume.width) + 0.5f) / _volume.width,
+            (Mathf.Floor(uv.y * _volume.height) + 0.5f) / _volume.height));
+        Vector4 expected = GroundState.Step(Vector4.zero, stamp.State(centre), 0.5f, _ground.stateSettings);
+        Assert.That(At(state, Vector2.right).r, Is.EqualTo(expected.x).Within(0.006f));
+        Assert.Greater(expected.x, 0.4f);
         Assert.Less(At(state, Vector2.zero).r, 0.01f);
         Assert.Less(At(state, Vector2.right * 2f).r, 0.01f);
         Assert.Less(At(Read(_ground.motion), Vector2.right).r, 0.001f);

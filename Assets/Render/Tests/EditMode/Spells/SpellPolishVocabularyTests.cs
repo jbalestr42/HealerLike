@@ -99,7 +99,7 @@ namespace HealerLike.Render.Spells
             ElementEntry armor = vocabulary.GetEntry(EffectKey.Plates);
             Assert.That(EffectComposer.Count(armor, 1, 1, 0), Is.EqualTo(1));
             Assert.That(armor.parts[0].position.z, Is.LessThan(-1f));
-            Assert.That(armor.parts[0].position.x, Is.EqualTo(0).Within(.0001f));
+            Assert.That(armor.parts[0].position.x, Is.EqualTo(0).Within(0.0001f));
         }
 
         [Test]
@@ -112,7 +112,7 @@ namespace HealerLike.Render.Spells
                 Assert.That(entry.ground.hasState, Is.True, element.ToString());
                 Assert.That(entry.ground.kick != 0 || entry.ground.hold != 0, Is.True, element.ToString());
                 Assert.That(entry.groundRadius, Is.GreaterThan(0));
-                Assert.That(entry.groundStrength, Is.InRange(.1f, 1f));
+                Assert.That(entry.groundStrength, Is.InRange(0.1f, 1f));
             }
         }
     }

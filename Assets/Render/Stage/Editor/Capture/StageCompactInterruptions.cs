@@ -24,7 +24,7 @@ namespace HealerLike.Render.Stage
                     yield return touch.Frame(TouchPhase.Began, point);
                     yield return touch.Frame(TouchPhase.Moved, point + Vector2.up * 48);
                     yield return touch.Frame(TouchPhase.Moved, destination);
-                    yield return StageCompactGestures.Still(touch, destination, .15f);
+                    yield return StageCompactGestures.Still(touch, destination, 0.15f);
                     _s.output.Check(_s.actions.touch.roster.active, "Actual placement owns press before " + interruption);
                     if (interruption == "pointer-loss")
                     {
@@ -45,7 +45,7 @@ namespace HealerLike.Render.Stage
                         _s.actions.ui.enabled = false;
                     }
 
-                    yield return Wait(.25f);
+                    yield return Wait(0.25f);
                     _s.output.ObserveGameplay(interruption, _s.manager, _s.actions.touch);
                     _s.output.Check(_s.manager.entityManager.GetEntities(Entity.EntityType.Player).Count == before
                         && _s.manager.player.character.mana.Value == mana
@@ -61,10 +61,10 @@ namespace HealerLike.Render.Stage
                         _s.actions.ui.enabled = true;
                     }
 
-                    yield return Wait(.25f);
+                    yield return Wait(0.25f);
                     yield return touch.Frame(TouchPhase.Ended, destination);
                 }
-                yield return Wait(.15f);
+                yield return Wait(0.15f);
                 _s.output.Check(_s.manager.entityManager.GetEntities(Entity.EntityType.Player).Count == before,
                     "Late release after interruption still creates no creature: " + interruption);
             }

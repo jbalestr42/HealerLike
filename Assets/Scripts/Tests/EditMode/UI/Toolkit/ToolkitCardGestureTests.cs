@@ -56,7 +56,7 @@ namespace UI.Toolkit
         }
         IEnumerator Hold()
         {
-            double end = UnityEditor.EditorApplication.timeSinceStartup + .48;
+            double end = UnityEditor.EditorApplication.timeSinceStartup + 0.48;
             while (UnityEditor.EditorApplication.timeSinceStartup < end)
             {
                 yield return null;

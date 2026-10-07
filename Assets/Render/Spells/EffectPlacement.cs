@@ -67,14 +67,14 @@ namespace HealerLike.Render.Spells
                 bool facesCamera = layer.recipe?.presentation?.billboard == true;
                 root.SetPositionAndRotation(positions[i], facesCamera ? camera.transform.rotation : rotations[i]);
                 Vector3 parentScale = root.parent ? root.parent.lossyScale : Vector3.one;
-                if (Mathf.Abs(parentScale.x - parentScale.y) > .0001f
-                    || Mathf.Abs(parentScale.x - parentScale.z) > .0001f)
+                if (Mathf.Abs(parentScale.x - parentScale.y) > 0.0001f
+                    || Mathf.Abs(parentScale.x - parentScale.z) > 0.0001f)
                 {
                     Vector3 current = root.lossyScale;
                     root.localScale = Vector3.Scale(root.localScale, new Vector3(
-                        scales[i].x / Mathf.Max(.0001f, current.x),
-                        scales[i].y / Mathf.Max(.0001f, current.y),
-                        scales[i].z / Mathf.Max(.0001f, current.z)));
+                        scales[i].x / Mathf.Max(0.0001f, current.x),
+                        scales[i].y / Mathf.Max(0.0001f, current.y),
+                        scales[i].z / Mathf.Max(0.0001f, current.z)));
                 }
                 if (facesCamera)
                 {
@@ -110,7 +110,7 @@ namespace HealerLike.Render.Spells
             // Drops fall from where they ended up to the ground
             if (effect.recipe.socket == EffectSocket.UnderHead)
             {
-                effect.SetFallDistance((root.position.y - anchors.foot.y) / Mathf.Max(.0001f, root.lossyScale.y));
+                effect.SetFallDistance((root.position.y - anchors.foot.y) / Mathf.Max(0.0001f, root.lossyScale.y));
             }
             effect.PlaceLayers(anchors);
             effect.Advance(0f);

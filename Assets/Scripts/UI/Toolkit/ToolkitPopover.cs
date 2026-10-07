@@ -51,7 +51,7 @@ public sealed class ToolkitPopover : IDisposable
         _panel.style.width = width;
         _panel.style.maxHeight = height;
         float actual = float.IsNaN(_panel.resolvedStyle.height) ? height : Mathf.Min(height, _panel.resolvedStyle.height);
-        float x = _anchor.width > 0 ? _anchor.center.x - width * .5f : left;
+        float x = _anchor.width > 0 ? _anchor.center.x - width * 0.5f : left;
         float y = _anchor.width > 0 ? _anchor.yMin - actual - 12 : bottom - actual;
         _panel.style.left = Mathf.Clamp(x, left, Mathf.Max(left, right - width)) - bounds.xMin;
         _panel.style.top = Mathf.Clamp(y, top, Mathf.Max(top, bottom - actual)) - bounds.yMin;

@@ -24,7 +24,7 @@ namespace HealerLike.Render.Stage
         {
             _press.Begin(1, Vector2.zero, _fixture.hit, true);
             Assert.That(_draggable.calls, Is.Empty);
-            _now = .41f;
+            _now = 0.41f;
             _press.Move(1, Vector2.zero, _fixture.hit, null, Vector2.zero);
             Assert.That(_press.consumed, Is.True);
             _press.Move(1, Vector2.down * 100, _fixture.hit, null, Vector2.zero);

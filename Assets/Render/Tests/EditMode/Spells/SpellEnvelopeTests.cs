@@ -25,7 +25,7 @@ namespace HealerLike.Render.Spells
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
             EffectRecipe recipe = EffectComposer.Compose(vocabulary, element, EffectFamily.Heal,
-                EffectTempo.Once, 0, 3, 3, .5f);
+                EffectTempo.Once, 0, 3, 3, 0.5f);
             GameObject host = new GameObject("Envelope fixture");
             objects.Add(host);
             SpellEffect effect = host.AddComponent<SpellEffect>();
@@ -41,8 +41,8 @@ namespace HealerLike.Render.Spells
         [Test]
         public void GroundSocket_UsesFootHeightForCompositeAuras()
         {
-            var anchors = new EffectAnchors { foot = new Vector3(2, .1f, 3),
-                bodyCentre = new Vector3(2, .8f, 3) };
+            var anchors = new EffectAnchors { foot = new Vector3(2, 0.1f, 3),
+                bodyCentre = new Vector3(2, 0.8f, 3) };
             Assert.AreEqual(anchors.foot, EffectPlacement.Socket(anchors, EffectSocket.Ground));
         }
 
@@ -50,14 +50,14 @@ namespace HealerLike.Render.Spells
         public void SetEndpoints_BeamInScaledCompositeStillConnectsBothWorldEndpoints()
         {
             SpellEffect effect = Build(EffectKey.Beam);
-            effect.transform.localScale = new Vector3(.2f, .4f, .3f);
+            effect.transform.localScale = new Vector3(0.2f, 0.4f, 0.3f);
             effect.transform.rotation = Quaternion.Euler(10, 25, 0);
-            Vector3 start = new Vector3(-2, .6f, .3f), end = new Vector3(1, .8f, -.2f);
+            Vector3 start = new Vector3(-2, 0.6f, 0.3f), end = new Vector3(1, 0.8f, -0.2f);
             effect.SetEndpoints(start, end, false);
             Transform first = effect.stalks[0];
             Transform last = effect.stalks[effect.stalks.Count - 1];
-            Assert.Less(Vector3.Distance(start, first.TransformPoint(Vector3.down * .5f)), .0001f);
-            Assert.Less(Vector3.Distance(end, last.TransformPoint(Vector3.up * .5f)), .0001f);
+            Assert.Less(Vector3.Distance(start, first.TransformPoint(Vector3.down * 0.5f)), 0.0001f);
+            Assert.Less(Vector3.Distance(end, last.TransformPoint(Vector3.up * 0.5f)), 0.0001f);
         }
 
         [Test]
@@ -68,17 +68,17 @@ namespace HealerLike.Render.Spells
             effect.recipe.entry = EffectRecipeCopy.Entry(effect.recipe.entry);
             effect.recipe.presentation.cameraDepth = 1.2f;
             effect.transform.position = new Vector3(2, 1, 3);
-            effect.transform.localScale = Vector3.one * .4f;
+            effect.transform.localScale = Vector3.one * 0.4f;
             GameObject cameraObject = new GameObject("Billboard camera");
             objects.Add(cameraObject);
             Camera camera = cameraObject.AddComponent<Camera>();
             camera.transform.rotation = Quaternion.Euler(35, 20, 0);
             Vector3 before = effect.transform.position;
             EffectPlacement.FaceCamera(effect, camera);
-            Assert.Less(Vector3.Distance(before - camera.transform.forward * .48f,
-                effect.transform.position), .00001f);
-            Assert.Less(Quaternion.Angle(camera.transform.rotation, effect.transform.rotation), .001f);
-            Assert.AreEqual(Vector3.one * .4f, effect.transform.localScale);
+            Assert.Less(Vector3.Distance(before - camera.transform.forward * 0.48f,
+                effect.transform.position), 0.00001f);
+            Assert.Less(Quaternion.Angle(camera.transform.rotation, effect.transform.rotation), 0.001f);
+            Assert.AreEqual(Vector3.one * 0.4f, effect.transform.localScale);
         }
 
         [Test]
@@ -86,16 +86,16 @@ namespace HealerLike.Render.Spells
         {
             SpellEffect stepped = Build(EffectKey.Beam);
             SpellEffect direct = Build(EffectKey.Beam);
-            float time = stepped.lifetime * .5f;
+            float time = stepped.lifetime * 0.5f;
             for (int i = 0; i < 50; i++)
             {
                 stepped.Advance(time / 50f);
             }
 
             direct.Advance(time);
-            Assert.That(stepped.shapes[0].localScale.magnitude, Is.GreaterThan(.05f));
+            Assert.That(stepped.shapes[0].localScale.magnitude, Is.GreaterThan(0.05f));
             Assert.That(Vector3.Distance(stepped.shapes[0].localScale, direct.shapes[0].localScale),
-                Is.LessThan(.00001f));
+                Is.LessThan(0.00001f));
         }
 
         [Test]
@@ -105,12 +105,12 @@ namespace HealerLike.Render.Spells
             effect.ShowCritical();
             Transform halo = effect.rings[0];
             float authored = effect.recipe.entry.criticalRings[0].size.magnitude;
-            effect.Advance(effect.lifetime * .4f);
-            Assert.That(halo.localScale.magnitude, Is.EqualTo(authored).Within(.0001f));
-            effect.Advance(effect.lifetime * .55f);
-            Assert.That(halo.localScale.magnitude, Is.LessThan(authored * .2f));
-            effect.Advance(effect.lifetime * .1f);
-            Assert.That(halo.localScale.magnitude, Is.EqualTo(0).Within(.0001f));
+            effect.Advance(effect.lifetime * 0.4f);
+            Assert.That(halo.localScale.magnitude, Is.EqualTo(authored).Within(0.0001f));
+            effect.Advance(effect.lifetime * 0.55f);
+            Assert.That(halo.localScale.magnitude, Is.LessThan(authored * 0.2f));
+            effect.Advance(effect.lifetime * 0.1f);
+            Assert.That(halo.localScale.magnitude, Is.EqualTo(0).Within(0.0001f));
         }
 
         [Test]
@@ -119,15 +119,15 @@ namespace HealerLike.Render.Spells
             SpellEffect effect = Build(EffectKey.Orbit);
             effect.SetStatus(3, 0, 8);
             effect.SetSide(Entity.EntityType.Player);
-            effect.Advance(.5f);
+            effect.Advance(0.5f);
             Transform bead = effect.transform.Find(effect.recipe.entry.stackBeads[0].id);
             Transform rim = effect.transform.Find(effect.recipe.entry.sideRim[0].id);
             float beadSize = bead.localScale.magnitude;
             float rimSize = rim.localScale.magnitude;
             effect.BeginRemoval();
-            effect.Advance(effect.recipe.presentation.releaseSeconds * .8f);
-            Assert.That(bead.localScale.magnitude, Is.LessThan(beadSize * .2f));
-            Assert.That(rim.localScale.magnitude, Is.LessThan(rimSize * .2f));
+            effect.Advance(effect.recipe.presentation.releaseSeconds * 0.8f);
+            Assert.That(bead.localScale.magnitude, Is.LessThan(beadSize * 0.2f));
+            Assert.That(rim.localScale.magnitude, Is.LessThan(rimSize * 0.2f));
         }
     }
 }

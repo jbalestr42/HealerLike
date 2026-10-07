@@ -32,8 +32,8 @@ namespace HealerLike.Render.Stage
                         for (int sx = 0; sx < 2; sx++)
                         {
                             if (DataIconGlyph.Contains(DataIconKind.Spell, symbol,
-                        ((x + (sx + .5f) / 2f) / size * 2f - 1f) * .7f,
-                        ((y + (sy + .5f) / 2f) / size * 2f - 1f) * .7f))
+                        ((x + (sx + 0.5f) / 2f) / size * 2f - 1f) * 0.7f,
+                        ((y + (sy + 0.5f) / 2f) / size * 2f - 1f) * 0.7f))
                             {
                                 covered++;
                             }

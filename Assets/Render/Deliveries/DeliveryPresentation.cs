@@ -14,7 +14,7 @@ namespace HealerLike.Render.Deliveries
         [Range(0f, 1f)] public float trailWidth = 0.35f;
         [Min(0.01f)] public float trailBreakDistance = 2f;
 
-        public bool IsValid() => Positive(size) && Range(pulseAmount, 0f, .25f)
+        public bool IsValid() => Positive(size) && Range(pulseAmount, 0f, 0.25f)
             && Nonnegative(pulseFrequency) && Nonnegative(trailSeconds) && Range(trailWidth, 0f, 1f)
             && Positive(trailBreakDistance);
 

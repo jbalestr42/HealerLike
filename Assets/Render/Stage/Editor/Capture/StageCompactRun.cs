@@ -31,9 +31,9 @@ namespace HealerLike.Render.Stage
                 _session.mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
                 UnityEngine.Random.InitState(271828);
                 yield return _session.actions.PointerTap("start-button");
-                yield return Wait(.8f);
+                yield return Wait(0.8f);
                 yield return StageMapActions.SelectFirst(_session.actions, true);
-                yield return Wait(.5f);
+                yield return Wait(0.5f);
                 yield return _session.Capture("01-preparation");
                 var review = new StageCompactReview(_session);
                 review.PortraitPixels();
@@ -94,17 +94,17 @@ namespace HealerLike.Render.Stage
                 _output.Check(root.Q<Button>("detail-inventory-button").enabledSelf, "Deployed detail retains equipment access");
                 yield return _session.actions.BringIntoView(root.Q<Button>("detail-inventory-button"));
                 yield return _session.actions.PointerTap("detail-inventory-button");
-                yield return Wait(.2f);
+                yield return Wait(0.2f);
                 _output.Check(StageInterfaceOutput.IsVisible(root.Q("inventory-panel")),
                     "Actual Equipment tap opens the inventory screen");
                 yield return _session.Capture("08-equipment");
                 yield return _session.actions.PointerTap("inventory-close-button");
-                yield return Wait(.2f);
+                yield return Wait(0.2f);
                 yield return _session.actions.PointerTap("map-button");
-                yield return Wait(.2f);
+                yield return Wait(0.2f);
                 yield return _session.Capture("09-map");
                 yield return _session.actions.PointerTap("map-close-button");
-                yield return Wait(.2f);
+                yield return Wait(0.2f);
                 for (int i = 0; i < 2; i++)
                 {
                     cell = _manager.player.grid.GetNearestWalkablePosition(new Vector3(-3, 0, i * 2));
@@ -113,13 +113,13 @@ namespace HealerLike.Render.Stage
                 yield return new StageCompactSpells(_session, _gestures).Run();
                 yield return _session.Resize(1170, 2532);
                 _session.actions.ui.safeAreaProvider = () => new Rect(0, 34f / 844, 1, 1 - 78f / 844);
-                yield return Wait(.3f);
+                yield return Wait(0.3f);
                 yield return _session.Capture("16-tall-safe-area");
                 _session.actions.ui.safeAreaProvider = null;
                 yield return _session.Resize(844, 390);
                 yield return _session.Capture("17-landscape");
                 yield return _session.actions.PointerTap("pause-button");
-                yield return Wait(.2f);
+                yield return Wait(0.2f);
                 yield return _session.Capture("18-landscape-pause");
                 yield return _session.actions.PointerTap("focus-button");
                 _output.Check(Time.timeScale == 0, "Overview control remains usable inside Pause without resuming");

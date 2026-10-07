@@ -41,7 +41,7 @@ namespace HealerLike.Render.Spells
             for (int i = 0; i < parts.Length; i++)
             {
                 parts[i] = new LookPart { id = "part" + i, primitive = Primitive.Sphere,
-                    role = PartRole.Body, size = Vector3.one * .1f, position = Vector3.right * i * .2f };
+                    role = PartRole.Body, size = Vector3.one * 0.1f, position = Vector3.right * i * 0.2f };
             }
 
             var entry = new ElementEntry { parts = parts, count = count, cycleSeconds = 1f,
@@ -115,11 +115,11 @@ namespace HealerLike.Render.Spells
             effect.SetEndpoints(Vector3.zero, Vector3.right * 5f, false);
             effect.SetCastSource(_source);
             _source.transform.position = new Vector3(2f, 1f, 3f);
-            effect.Advance(.1f);
+            effect.Advance(0.1f);
             Vector3 expected = EffectPlacement.Anchors(_source).castPoint;
             foreach (SpellEffect layer in effect.GetComponentsInChildren<SpellEffect>(true))
             {
-                Assert.That(Vector3.Distance(expected, layer.castOrigin), Is.LessThan(.00001f));
+                Assert.That(Vector3.Distance(expected, layer.castOrigin), Is.LessThan(0.00001f));
             }
         }
     }

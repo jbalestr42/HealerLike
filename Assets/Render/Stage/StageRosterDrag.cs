@@ -81,7 +81,7 @@ namespace HealerLike.Render.Stage
 
             Vector3 first = _grid.GetCell(0, 0).center;
             Vector3 last = _grid.GetCell(_grid.width - 1, _grid.height - 1).center;
-            float half = _grid.size * .5f;
+            float half = _grid.size * 0.5f;
             if (hit.point.x < first.x - half || hit.point.x > last.x + half
                 || hit.point.z < first.z - half || hit.point.z > last.z + half)
             {

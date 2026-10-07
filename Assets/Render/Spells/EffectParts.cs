@@ -151,10 +151,10 @@ namespace HealerLike.Render.Spells
                 Vector3 localPoint = parent.InverseTransformPoint(point);
                 Vector3 localNext = parent.InverseTransformPoint(next);
                 Vector3 delta = localNext - localPoint;
-                _stalks[i].localPosition = (localPoint + localNext) * .5f;
+                _stalks[i].localPosition = (localPoint + localNext) * 0.5f;
                 _stalks[i].localRotation = delta.sqrMagnitude < 1e-12f ? Quaternion.identity
                     : Quaternion.FromToRotation(Vector3.up, delta);
-                float unit = Mathf.Max(.0001f, parent.lossyScale.x);
+                float unit = Mathf.Max(0.0001f, parent.lossyScale.x);
                 _stalks[i].localScale = new Vector3(width / unit, delta.magnitude, width / unit);
             }
 
@@ -163,7 +163,7 @@ namespace HealerLike.Render.Spells
                 float t = Mathf.Repeat((float)i / Mathf.Max(1, _shapes.Count) + age / (_recipe.presentation != null && _recipe.presentation.enabled ? _recipe.presentation.linkBeadSeconds : beadSeconds), 1f);
                 _shapes[i].gameObject.SetActive(!isContactThread && i < count);
                 _shapes[i].position = EffectMotion.Curve(start, end, t);
-                _shapes[i].localScale = _shapeParts[i].size / Mathf.Max(.0001f, _shapes[i].parent.lossyScale.x);
+                _shapes[i].localScale = _shapeParts[i].size / Mathf.Max(0.0001f, _shapes[i].parent.lossyScale.x);
             }
         }
 

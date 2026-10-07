@@ -251,7 +251,7 @@ namespace HealerLike.Render.Spells
 
             if (polished && _isStatus && _recipe.tempo == EffectTempo.PerPeriod)
             {
-                phase = Mathf.Lerp(_recipe.presentation.idleVisibility * .3f, .94f, phase);
+                phase = Mathf.Lerp(_recipe.presentation.idleVisibility * 0.3f, 0.94f, phase);
             }
 
             Pose(phase, time);

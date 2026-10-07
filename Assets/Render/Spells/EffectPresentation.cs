@@ -10,10 +10,10 @@ namespace HealerLike.Render.Spells
     {
         public bool enabled;
         public float scale = 1f;
-        public float entranceSeconds = .12f;
-        public float releaseSeconds = .35f;
-        public float motionSpan = .45f;
-        public float idleVisibility = .35f;
+        public float entranceSeconds = 0.12f;
+        public float releaseSeconds = 0.35f;
+        public float motionSpan = 0.45f;
+        public float idleVisibility = 0.35f;
         public bool billboard;
         public float cameraDepth;
         public bool closesOverHead;
@@ -21,8 +21,8 @@ namespace HealerLike.Render.Spells
         public bool isShield;
         public bool avoidHead = true;
         public ColourRole colourRole = ColourRole.Accent;
-        public float linkWidth = .04f;
-        public float linkBeadSeconds = .85f;
+        public float linkWidth = 0.04f;
+        public float linkBeadSeconds = 0.85f;
 
         public EffectPresentation Clone() => (EffectPresentation)MemberwiseClone();
         public bool IsValid() => Positive(scale) && Nonnegative(cameraDepth) && Nonnegative(entranceSeconds)
@@ -43,14 +43,14 @@ namespace HealerLike.Render.Spells
                 return 1f;
             }
 
-            float enter = profile.entranceSeconds <= 0 ? 1 : Mathf.SmoothStep(.28f, 1,
+            float enter = profile.entranceSeconds <= 0 ? 1 : Mathf.SmoothStep(0.28f, 1,
                 Mathf.Clamp01(age / profile.entranceSeconds));
             if (held)
             {
                 return enter;
             }
 
-            float release = Mathf.Min(profile.releaseSeconds, lifetime * .45f);
+            float release = Mathf.Min(profile.releaseSeconds, lifetime * 0.45f);
             return enter * (1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(lifetime - release, lifetime, age)));
         }
     }

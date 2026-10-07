@@ -33,8 +33,8 @@ namespace HealerLike.Render.Stage
         {
             return new FieldTreatment
             {
-                name = "combination", hue = -1f, valueScale = 1f - .35f * strength,
-                saturationScale = 1f - .4f * strength, contrastScale = 1f - .5f * strength
+                name = "combination", hue = -1f, valueScale = 1f - 0.35f * strength,
+                saturationScale = 1f - 0.4f * strength, contrastScale = 1f - 0.5f * strength
             };
         }
 
@@ -43,16 +43,16 @@ namespace HealerLike.Render.Stage
         {
             FieldTreatment value = Control(), saturation = Control(), hatch = Control(), hue = Control();
             value.name = "value-only";
-            value.valueScale = .65f;
+            value.valueScale = 0.65f;
             saturation.name = "saturation-and-value";
-            saturation.saturationScale = .6f;
-            saturation.valueScale = .7f;
+            saturation.saturationScale = 0.6f;
+            saturation.valueScale = 0.7f;
             hatch.name = "hatch-contrast";
-            hatch.contrastScale = .5f;
+            hatch.contrastScale = 0.5f;
             // Deep teal-green: the committed hue is about 142 degrees, the lime creatures sit below it
             hue.name = "hue-separation";
             hue.hue = 165f / 360f;
-            hue.valueScale = .6f;
+            hue.valueScale = 0.6f;
             return new[] { Control(), value, saturation, hatch, hue, Combination(combinationStrength) };
         }
 

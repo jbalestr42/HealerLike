@@ -6,12 +6,12 @@ namespace HealerLike.Render.Deliveries
     [Serializable]
     public class DeliveryPathLook
     {
-        public float width = .085f;
-        public float deviation = .15f;
+        public float width = 0.085f;
+        public float deviation = 0.15f;
         public int segmentsPerLeg = 9;
         public float pulseFrequency = 7f;
-        public float releaseSeconds = .18f;
-        public float coreWidth = .32f;
+        public float releaseSeconds = 0.18f;
+        public float coreWidth = 0.32f;
 
         public bool IsValid()
         {

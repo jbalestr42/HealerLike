@@ -25,8 +25,8 @@ public sealed class ToolkitCooldown : VisualElement
 
         var painter = context.painter2D;
         Vector2 center = contentRect.center;
-        float radius = Mathf.Min(contentRect.width, contentRect.height) * .5f;
-        painter.fillColor = new Color(.02f, .08f, .08f, .72f);
+        float radius = Mathf.Min(contentRect.width, contentRect.height) * 0.5f;
+        painter.fillColor = new Color(0.02f, 0.08f, 0.08f, 0.72f);
         painter.BeginPath(); painter.MoveTo(center);
         painter.LineTo(center + Vector2.up * -radius);
         // The legacy radial image starts at the top and fills counterclockwise.

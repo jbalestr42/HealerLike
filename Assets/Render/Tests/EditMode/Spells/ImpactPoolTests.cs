@@ -91,7 +91,7 @@ namespace HealerLike.Render.Spells
             Assert.IsTrue(_ground.Find(entry.ground, out Vector2 at, out _, out float radius,
                 out float strength));
             Assert.AreEqual(new Vector2(2f, 1f), at);
-            Assert.AreEqual(entry.groundRadius * Mathf.Lerp(.85f, 1.5f, .3f), radius, 1e-5f);
+            Assert.AreEqual(entry.groundRadius * Mathf.Lerp(0.85f, 1.5f, 0.3f), radius, 1e-5f);
             Assert.AreEqual(entry.groundStrength, strength, 1e-5f);
         }
 

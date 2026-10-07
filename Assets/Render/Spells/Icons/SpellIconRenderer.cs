@@ -93,7 +93,7 @@ namespace HealerLike.Render.Spells
             _camera.orthographic = true;
             _camera.orthographicSize = 1.48f;
             _camera.aspect = 1;
-            _camera.nearClipPlane = .01f;
+            _camera.nearClipPlane = 0.01f;
             _camera.farClipPlane = 12;
             _camera.transform.SetPositionAndRotation(Origin + Vector3.back * 6, Quaternion.identity);
             _camera.cullingMask = 1 << CaptureLayer;

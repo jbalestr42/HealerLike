@@ -38,7 +38,7 @@ namespace HealerLike.Render.Spells
                 entry = new ElementEntry { socket = socket, motion = EffectMotionKind.Orbit,
                     presentation = new EffectPresentation { billboard = billboard, avoidHead = false },
                     parts = new[] { new LookPart { id = "shape", primitive = Primitive.Sphere,
-                        role = PartRole.Body, size = Vector3.one * .2f } } } };
+                        role = PartRole.Body, size = Vector3.one * 0.2f } } } };
         }
 
         SpellEffect Build(EffectRecipe recipe)
@@ -58,12 +58,12 @@ namespace HealerLike.Render.Spells
             effect.SetEndpoints(Vector3.zero, Vector3.right, false);
             effect.SetCastSource(source);
             Object.DestroyImmediate(source);
-            effect.Advance(.1f);
+            effect.Advance(0.1f);
             Assert.IsTrue(effect);
             Assert.AreEqual(1, effect.GetComponentsInChildren<SpellEffect>(true).Length);
             Assert.DoesNotThrow(() =>
             {
-                effect.Advance(.1f);
+                effect.Advance(0.1f);
                 effect.RefreshCount(2, 3);
                 effect.SetStatus(2, 1, 4);
                 effect.SetSide(Entity.EntityType.Player);
@@ -85,7 +85,7 @@ namespace HealerLike.Render.Spells
             recipe.additions = new[] { Recipe(EffectSocket.Feet, childBillboard), Recipe(EffectSocket.AboveHead) };
             SpellEffect effect = Build(recipe);
             var anchors = new EffectAnchors { bodyCentre = Vector3.up, foot = Vector3.zero,
-                neck = Vector3.up * 1.4f, headCentre = Vector3.up * 1.8f, bodyRadius = .4f, headRadius = .2f };
+                neck = Vector3.up * 1.4f, headCentre = Vector3.up * 1.8f, bodyRadius = 0.4f, headRadius = 0.2f };
             EffectPlacement.Place(effect, effect.transform.parent, anchors);
             SpellEffect[] layers = effect.GetComponentsInChildren<SpellEffect>(true);
             Vector3[] positions = { layers[0].transform.position, layers[1].transform.position,
@@ -97,11 +97,11 @@ namespace HealerLike.Render.Spells
             EffectPlacement.FaceCamera(effect, camera);
             for (int i = 0; i < layers.Length; i++)
             {
-                Assert.That(Vector3.Distance(positions[i], layers[i].transform.position), Is.LessThan(.00001f));
-                Assert.That(Vector3.Distance(scales[i], layers[i].transform.lossyScale), Is.LessThan(.00001f));
+                Assert.That(Vector3.Distance(positions[i], layers[i].transform.position), Is.LessThan(0.00001f));
+                Assert.That(Vector3.Distance(scales[i], layers[i].transform.lossyScale), Is.LessThan(0.00001f));
                 Quaternion expected = layers[i].recipe.presentation.billboard
                     ? camera.transform.rotation : Quaternion.identity;
-                Assert.That(Quaternion.Angle(expected, layers[i].transform.rotation), Is.LessThan(.001f));
+                Assert.That(Quaternion.Angle(expected, layers[i].transform.rotation), Is.LessThan(0.001f));
             }
         }
     }

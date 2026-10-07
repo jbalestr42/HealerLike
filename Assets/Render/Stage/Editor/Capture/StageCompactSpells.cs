@@ -26,7 +26,7 @@ namespace HealerLike.Render.Stage
             _s.output.Check(character.mana.Value == before && _s.interaction.GetInteraction() == null,
                 "Held usable spell and duplicate release never cast or spend mana");
             yield return _s.actions.PointerTap(spell);
-            yield return Wait(.2f);
+            yield return Wait(0.2f);
             Observe("short-spell-activation");
             AInteraction targeting = _s.interaction.GetInteraction();
             _s.output.Check(targeting != null, "Short spell touch activates existing targeting on release");
@@ -38,7 +38,7 @@ namespace HealerLike.Render.Stage
             using (var touch = new StagePresentationTouch(_s.actions))
             {
                 yield return touch.Frame(TouchPhase.Began, board);
-                yield return StageCompactGestures.Still(touch, board, .55f);
+                yield return StageCompactGestures.Still(touch, board, 0.55f);
                 _s.output.Check(StageInterfaceOutput.IsVisible(_s.actions.root.Q("detail-panel"))
                     && _s.actions.root.Q<Label>("detail-title").text == entity.data.title,
                     "Holding actual board creature selects its details while spell targeting is active");
@@ -47,7 +47,7 @@ namespace HealerLike.Render.Stage
                 yield return _s.Capture("11-world-creature-hold");
                 yield return touch.Frame(TouchPhase.Ended, board);
             }
-            yield return Wait(.2f);
+            yield return Wait(0.2f);
             Observe("world-or-ui-release");
             _s.output.Check(ReferenceEquals(targeting, _s.interaction.GetInteraction()) && character.mana.Value == before,
                 "Held world-creature release consumes press without casting targeted spell");
@@ -59,7 +59,7 @@ namespace HealerLike.Render.Stage
                 yield return touch.Frame(TouchPhase.Moved, board);
                 yield return touch.Frame(TouchPhase.Ended, board);
             }
-            yield return Wait(.1f);
+            yield return Wait(0.1f);
             Observe("world-or-ui-release");
             _s.output.Check(ReferenceEquals(targeting, _s.interaction.GetInteraction()) && character.mana.Value == before,
                 "Unrelated UI-origin release over a valid target cannot activate the board");
@@ -69,7 +69,7 @@ namespace HealerLike.Render.Stage
                 Mathf.Infinity, targeting.GetLayerMask()) && targeting.IsValidTarget(castHit.collider.gameObject),
                 "Reprojected spell target hits an actual legal entity collider");
             yield return _s.actions.TouchGesture(board);
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             Observe("actual-spell-cast");
             _s.output.Check(_s.interaction.GetInteraction() == null && character.mana.Value < before,
                 "Short world release completes real spell action and spends actual mana");
@@ -81,7 +81,7 @@ namespace HealerLike.Render.Stage
             var consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
             consumer.data = new ConsumerData { value = new FlatValue { data = new FlatValueData { value = 10000 } } };
             character.mana.AddResourceModifier(ResourceModifier.Create(consumer, character.gameObject, character.gameObject));
-            yield return Wait(.2f);
+            yield return Wait(0.2f);
             Object.Destroy(consumer);
             _s.output.Check(character.mana.Value < ToolkitSpellState.Read(slot, character).cost,
                 "Fixture public mana consumer creates actual insufficient-mana state");
@@ -92,19 +92,19 @@ namespace HealerLike.Render.Stage
             _s.output.Check(character.mana.Value == shortage && _s.interaction.GetInteraction() == null,
                 "Unavailable spell stays inspectable without activation");
             yield return new StageCompactReview(_s).ControllerInspect(spell);
-            yield return Wait(ToolkitSpellState.Read(slot, character).duration + .1f);
+            yield return Wait(ToolkitSpellState.Read(slot, character).duration + 0.1f);
             _s.output.Check(ToolkitSpellState.Read(slot, character).remaining == 0,
                 "Existing cooldown recovers and clears the dark remaining sector");
             yield return _s.Capture("14c-cooldown-recovered-shortage");
             character.mana.Refill();
             yield return _s.actions.PointerTap("wave-button");
-            yield return Wait(.6f);
+            yield return Wait(0.6f);
             _s.output.Check(!StageInterfaceOutput.IsVisible(_s.actions.root.Q("wave-button")),
                 "Start battle disappears during real combat");
             yield return _s.Capture("15-combat");
             Rect beforeTargeting = _s.actions.ui.normalizedWorldViewport;
             yield return _s.actions.PointerTap(spell);
-            yield return Wait(.2f);
+            yield return Wait(0.2f);
             _s.output.Check(beforeTargeting != _s.actions.ui.normalizedWorldViewport,
                 "Combat targeting contextual control changes the reserved viewport");
             yield return _s.Capture("15b-combat-targeting");
@@ -126,7 +126,7 @@ namespace HealerLike.Render.Stage
                     "Moving combat creature remains a legal target at the tracked short release");
                 yield return touch.Frame(TouchPhase.Ended, release);
             }
-            yield return Wait(.1f);
+            yield return Wait(0.1f);
             Observe("combat-reprojected-cast");
             _s.output.Check(_s.interaction.GetInteraction() == null && character.mana.Value < before,
                 "Reprojected combat target casts successfully after camera refit");

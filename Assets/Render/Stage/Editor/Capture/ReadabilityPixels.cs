@@ -112,7 +112,7 @@ namespace HealerLike.Render.Stage
         }
 
         // Rec. 709 weights on the stored sRGB bytes
-        public static double Luma(double[] rgb) { return .2126 * rgb[0] + .7152 * rgb[1] + .0722 * rgb[2]; }
+        public static double Luma(double[] rgb) { return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]; }
 
         public static double Distance(double[] a, double[] b)
         {

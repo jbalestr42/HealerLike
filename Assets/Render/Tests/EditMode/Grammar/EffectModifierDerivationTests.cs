@@ -6,9 +6,9 @@ namespace HealerLike.Render.Grammar
 {
     public class EffectModifierDerivationTests
     {
-        [TestCase(.05f, EffectMagnitude.Light)]
-        [TestCase(.2f, EffectMagnitude.Solid)]
-        [TestCase(-.5f, EffectMagnitude.Heavy)]
+        [TestCase(0.05f, EffectMagnitude.Light)]
+        [TestCase(0.2f, EffectMagnitude.Solid)]
+        [TestCase(-0.5f, EffectMagnitude.Heavy)]
         [TestCase(1f, EffectMagnitude.Heavy)]
         public void MultiplierMagnitude_UsesFractionalChangeForLegacyAndLayerReadings(float value,
             EffectMagnitude expected)
@@ -34,9 +34,9 @@ namespace HealerLike.Render.Grammar
         }
 
         // Zeal's modifier: the whole value above a health threshold, read like any other modifier of its type
-        [TestCase(.5f, EffectMagnitude.Heavy, EffectFamily.Boon)]
-        [TestCase(.05f, EffectMagnitude.Light, EffectFamily.Boon)]
-        [TestCase(-.2f, EffectMagnitude.Solid, EffectFamily.Bane)]
+        [TestCase(0.5f, EffectMagnitude.Heavy, EffectFamily.Boon)]
+        [TestCase(0.05f, EffectMagnitude.Light, EffectFamily.Boon)]
+        [TestCase(-0.2f, EffectMagnitude.Solid, EffectFamily.Bane)]
         public void HealthThresholdModifier_ReadsItsValueAsAModifier(float value, EffectMagnitude magnitude,
             EffectFamily family)
         {
@@ -120,9 +120,9 @@ namespace HealerLike.Render.Grammar
 
         // PercentArmor scales the damage taken by (1 - value), so an added fraction is its own share:
         // 0.05 is 5% less damage (Light), 0.3 is 30% (Solid), Shield's 0.5 halves it (Heavy)
-        [TestCase(.05f, EffectMagnitude.Light)]
-        [TestCase(.3f, EffectMagnitude.Solid)]
-        [TestCase(.5f, EffectMagnitude.Heavy)]
+        [TestCase(0.05f, EffectMagnitude.Light)]
+        [TestCase(0.3f, EffectMagnitude.Solid)]
+        [TestCase(0.5f, EffectMagnitude.Heavy)]
         public void AddedDamageReduction_SizedByItsClass_IsItsOwnShare(float value, EffectMagnitude expected)
         {
             Assert.AreEqual(expected, AddedMagnitude(AttributeType.PercentArmor, value, ClassContext(),
@@ -134,15 +134,15 @@ namespace HealerLike.Render.Grammar
         [Test]
         public void AddedVulnerability_SizedByItsClass_IsItsOwnShare()
         {
-            Assert.AreEqual(EffectMagnitude.Solid, AddedMagnitude(AttributeType.Vulnerability, .3f, ClassContext(),
+            Assert.AreEqual(EffectMagnitude.Solid, AddedMagnitude(AttributeType.Vulnerability, 0.3f, ClassContext(),
                 out EffectMagnitude layer));
             Assert.AreEqual(EffectMagnitude.Solid, layer);
         }
 
         // Without an owning class the fraction keeps the 100-point reading, so creature effects never move:
         // 0.5 / 100 = 0.005 and Hexer's 0.3 / 100 = 0.003, both Light
-        [TestCase(AttributeType.PercentArmor, .5f)]
-        [TestCase(AttributeType.Vulnerability, .3f)]
+        [TestCase(AttributeType.PercentArmor, 0.5f)]
+        [TestCase(AttributeType.Vulnerability, 0.3f)]
         public void AddedDamageFraction_WithoutClass_KeepsTheHundredPointReading(AttributeType type, float value)
         {
             Assert.AreEqual(EffectMagnitude.Light, AddedMagnitude(type, value, EffectContext.Default,

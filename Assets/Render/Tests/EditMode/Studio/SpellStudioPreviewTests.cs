@@ -153,7 +153,7 @@ public class SpellStudioPreviewTests
         bool presence = false;
         foreach (Transform shape in before.shapes)
             {
-                presence |= shape.gameObject.activeSelf && shape.localScale.sqrMagnitude > .001f;
+                presence |= shape.gameObject.activeSelf && shape.localScale.sqrMagnitude > 0.001f;
             }
 
             Assert.IsTrue(presence);

@@ -48,14 +48,14 @@ namespace UI.Toolkit
             var fill = CreateChild<Image>();
             fill.type = Image.Type.Filled;
             fill.fillMethod = Image.FillMethod.Radial360;
-            fill.fillAmount = .65f;
+            fill.fillAmount = 0.65f;
             button.hasCooldown = true;
             var skill = new ApplyConsumerCharacterSkill { data = new ApplyConsumerCharacterSkillData
                 { name = "Heal", validators = new List<ACharacterSkillValidatorFactory>() } };
             slot.Init(skill, button, false);
             action.interactable = false;
             var state = ToolkitSpellState.Read(slot, character);
-            Assert.That(state.remaining, Is.EqualTo(.65f).Within(.001f));
+            Assert.That(state.remaining, Is.EqualTo(0.65f).Within(0.001f));
             Assert.That(state.canUse, Is.False);
             Assert.That(state.cost, Is.Zero);
             Assert.That(slot.data.name, Is.EqualTo("Heal"));

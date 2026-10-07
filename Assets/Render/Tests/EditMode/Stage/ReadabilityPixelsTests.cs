@@ -37,7 +37,7 @@ namespace HealerLike.Render.Stage
             Color32[] without = { body, body, body, body, grass, grass };
             Color32[] with = { burst, burst, body, body, burst, burst };
 
-            Assert.AreEqual(.5, ReadabilityPixels.Survival(mask, with, without), 1e-9);
+            Assert.AreEqual(0.5, ReadabilityPixels.Survival(mask, with, without), 1e-9);
         }
 
         [Test]
@@ -86,7 +86,7 @@ namespace HealerLike.Render.Stage
             CollectionAssert.AreEqual(new double[] { 55, 191, 104 }, contrast.field);
             double expected = System.Math.Sqrt(65 * 65 + 9 * 9 + 44 * 44);
             Assert.AreEqual(expected, contrast.rgbDistance, 1e-9);
-            Assert.AreEqual(.2126 * 65 + .7152 * 9 - .0722 * 44, contrast.lumaDifference, 1e-9);
+            Assert.AreEqual(0.2126 * 65 + 0.7152 * 9 - 0.0722 * 44, contrast.lumaDifference, 1e-9);
         }
 
         [Test]

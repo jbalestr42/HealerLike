@@ -141,13 +141,13 @@ namespace HealerLike.Render.Spells
         public void Shipped_StoneCasterImpact_DrawsStone()
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
-            EffectRecipe hit = EffectComposer.Impact(vocabulary, ResourceKind.Health, false, .3f, LookSide.Stone);
-            EffectRecipe heal = EffectComposer.Impact(vocabulary, ResourceKind.Health, true, .3f, LookSide.Stone);
+            EffectRecipe hit = EffectComposer.Impact(vocabulary, ResourceKind.Health, false, 0.3f, LookSide.Stone);
+            EffectRecipe heal = EffectComposer.Impact(vocabulary, ResourceKind.Health, true, 0.3f, LookSide.Stone);
             Assert.AreEqual(EffectKey.Burst, hit.element);
             Assert.AreEqual(LookSide.Stone, hit.material);
             Assert.AreEqual(EffectKey.Rise, heal.element);
             Assert.AreEqual(LookSide.Stone, heal.material);
-            Assert.AreEqual(LookSide.Plant, EffectComposer.Impact(vocabulary, ResourceKind.Health, true, .3f).material);
+            Assert.AreEqual(LookSide.Plant, EffectComposer.Impact(vocabulary, ResourceKind.Health, true, 0.3f).material);
         }
 
         [Test]
@@ -163,7 +163,7 @@ namespace HealerLike.Render.Spells
 
         static EffectRecipe Compose(EffectVocabulary vocabulary, EffectKey element, LookSide material)
         {
-            return EffectComposer.Compose(vocabulary, element, EffectFamily.Damage, EffectTempo.Once, 0f, 3, 3, .5f,
+            return EffectComposer.Compose(vocabulary, element, EffectFamily.Damage, EffectTempo.Once, 0f, 3, 3, 0.5f,
                 material: material);
         }
 

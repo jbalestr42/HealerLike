@@ -37,7 +37,7 @@ namespace HealerLike.Render.Stage
             _s.output.Check(StageInterfaceOutput.IsVisible(_s.actions.root.Q("detail-panel")),
                 "Persistent details are open before outside battlefield tap");
             yield return _s.actions.TouchGesture(point);
-            yield return Wait(.2f);
+            yield return Wait(0.2f);
             _s.output.Check(!StageInterfaceOutput.IsVisible(_s.actions.root.Q("detail-panel")),
                 "Native empty battlefield press dismisses persistent details: " + image);
             yield return _s.Capture(image, "Synthetic native touch through StandaloneInputModule and world-origin press dismissal");
@@ -52,7 +52,7 @@ namespace HealerLike.Render.Stage
             var consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
             consumer.data = new ConsumerData { value = new FlatValue { data = new FlatValueData { value = 7 } } };
             entity.health.AddResourceModifier(ResourceModifier.Create(consumer, entity.gameObject, entity.gameObject));
-            yield return Wait(.3f);
+            yield return Wait(0.3f);
             UnityEngine.Object.Destroy(consumer);
             _s.output.Check(entity.health.Value < health, "Public health consumer changes the live inspected creature after hold release");
             string summary = root.Q<Label>("detail-description").text;
@@ -74,7 +74,7 @@ namespace HealerLike.Render.Stage
             var foldout = root.Q<Foldout>("detail-attributes");
             var toggle = foldout.Q<Toggle>();
             root.Q<ScrollView>("detail-scroll").ScrollTo(toggle);
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             Rect target = toggle.worldBound;
             viewport = root.Q<ScrollView>("detail-scroll").contentViewport.worldBound;
             _s.output.Check(target.width >= 44 && target.height >= 44
@@ -87,16 +87,16 @@ namespace HealerLike.Render.Stage
                     "All attributes target is pickable at vertical inset " + edge);
             }
             yield return _s.actions.TouchGesture(StageInterfaceActions.ScreenPoint(toggle));
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             _s.output.Check(foldout.value && root.Q<Label>("detail-full-stats").text.Contains("Maximum health"),
                 "Actual All attributes tap expands the complete readable attribute list");
             var scroll = root.Q<ScrollView>("detail-scroll");
             scroll.scrollOffset = new Vector2(0, foldout.worldBound.yMin - scroll.contentContainer.worldBound.yMin);
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             yield return _s.Capture("07c-expanded-attributes");
             yield return _s.actions.TouchGesture(StageInterfaceActions.ScreenPoint(toggle));
             root.Q<ScrollView>("detail-scroll").scrollOffset = Vector2.zero;
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
         }
 
         public IEnumerator ControllerInspect(Button spell)
@@ -108,7 +108,7 @@ namespace HealerLike.Render.Stage
             _s.actions.captureInput.navigationButton = "Cancel";
             yield return null;
             _s.actions.captureInput.navigationButton = null;
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             _s.output.Check(StageInterfaceOutput.IsVisible(_s.actions.root.Q("detail-panel"))
                 && _s.manager.player.character.mana.Value == mana && _s.interaction.GetInteraction() == null,
                 "Native input module Cancel action inspects an unavailable spell without casting");
@@ -116,7 +116,7 @@ namespace HealerLike.Render.Stage
             _s.actions.captureInput.navigationButton = "Submit";
             yield return null;
             _s.actions.captureInput.navigationButton = null;
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             _s.output.Check(!StageInterfaceOutput.IsVisible(_s.actions.root.Q("detail-panel"))
                 && _s.manager.player.character.mana.Value == mana && _s.interaction.GetInteraction() == null,
                 "Ordinary Submit closes inspection and cannot activate an unavailable spell");
@@ -163,22 +163,22 @@ namespace HealerLike.Render.Stage
             yield return _s.actions.BringIntoView(spell);
             spell.Focus(); yield return null;
             Escape(spell, false, null);
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             _s.output.Check(Time.timeScale == 0 && StageInterfaceOutput.IsVisible(root.Q("pause-panel"))
                 && !StageInterfaceOutput.IsVisible(root.Q("detail-panel")),
                 "Focused-card Escape with no popup pauses once instead of swallowing cancellation");
             yield return _s.Capture("10a-keyboard-escape-pause", input);
             yield return _s.actions.PointerTap("resume-button");
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             spell.Focus(); yield return null;
             _s.actions.captureInput.navigationButton = "Cancel";
             yield return null;
             _s.actions.captureInput.navigationButton = null;
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             _s.output.Check(StageInterfaceOutput.IsVisible(root.Q("detail-panel")) && Time.timeScale > 0,
                 "Controller Cancel still inspects on a later frame after keyboard Escape");
             Escape(spell, true, null);
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             _s.output.Check(Time.timeScale > 0 && !StageInterfaceOutput.IsVisible(root.Q("detail-panel"))
                 && !StageInterfaceOutput.IsVisible(root.Q("pause-panel")),
                 "Escape closes navigation inspection once without falling through to pause");
@@ -187,11 +187,11 @@ namespace HealerLike.Render.Stage
             _s.actions.captureInput.navigationButton = "Submit";
             yield return null;
             _s.actions.captureInput.navigationButton = null;
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             AInteraction targeting = _s.interaction.GetInteraction();
             _s.output.Check(targeting != null, "Ordinary controller Submit still starts usable spell targeting");
             Escape(spell, false, targeting);
-            yield return Wait(.15f);
+            yield return Wait(0.15f);
             _s.output.Check(_s.interaction.GetInteraction() == null && Time.timeScale > 0
                 && !StageInterfaceOutput.IsVisible(root.Q("detail-panel"))
                 && !StageInterfaceOutput.IsVisible(root.Q("pause-panel"))

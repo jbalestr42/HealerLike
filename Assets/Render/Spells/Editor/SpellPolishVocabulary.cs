@@ -41,25 +41,25 @@ namespace HealerLike.Render.Spells.Editor
                 EffectMotionKind.Rise, EffectSocket.Body, 1.65f, EffectCount.Amount, 3);
             vocabulary.entries[EffectKey.Stalks] = Entry(Stalks(), EffectMotionKind.Grow,
                 EffectSocket.Feet, 2f, EffectCount.Stacks, 3);
-            vocabulary.entries[EffectKey.Drips] = Entry(Motes("Poison drop ", 5, .5f, .12f, .46f, true),
+            vocabulary.entries[EffectKey.Drips] = Entry(Motes("Poison drop ", 5, 0.5f, 0.12f, 0.46f, true),
                 EffectMotionKind.Fall, EffectSocket.UnderHead, 1.8f, EffectCount.Stacks, 3);
             vocabulary.entries[EffectKey.Orbit] = Entry(new[] {
-                Ring("Outer blessing", 3.05f, -.25f, .075f, rotation: new Vector3(14, 0, 0)),
-                Ring("Inner blessing", 2.85f, -.15f, .085f, rotation: new Vector3(-18, 35, 0)) },
+                Ring("Outer blessing", 3.05f, -0.25f, 0.075f, rotation: new Vector3(14, 0, 0)),
+                Ring("Inner blessing", 2.85f, -0.15f, 0.085f, rotation: new Vector3(-18, 35, 0)) },
                 EffectMotionKind.Orbit, EffectSocket.Body, 2.4f);
-            vocabulary.entries[EffectKey.Plates] = Entry(Petals("Armor petal ", 6, 1.5f, -.12f,
-                new Vector3(1.35f, 1.45f, .3f), angleOffset: 180f), EffectMotionKind.Close, EffectSocket.Body,
+            vocabulary.entries[EffectKey.Plates] = Entry(Petals("Armor petal ", 6, 1.5f, -0.12f,
+                new Vector3(1.35f, 1.45f, 0.3f), angleOffset: 180f), EffectMotionKind.Close, EffectSocket.Body,
                 1.1f, EffectCount.Charges, 1);
-            vocabulary.entries[EffectKey.Bud] = Entry(Petals("Ward petal ", 6, 1.08f, .12f,
-                new Vector3(.74f, 1.65f, .26f), false, -12), EffectMotionKind.Close, EffectSocket.Body, 1.1f);
+            vocabulary.entries[EffectKey.Bud] = Entry(Petals("Ward petal ", 6, 1.08f, 0.12f,
+                new Vector3(0.74f, 1.65f, 0.26f), false, -12), EffectMotionKind.Close, EffectSocket.Body, 1.1f);
             vocabulary.entries[EffectKey.Press] = Entry(Press(), EffectMotionKind.Press,
                 EffectSocket.AboveHead, 1.65f, EffectCount.Stacks, 4);
-            vocabulary.entries[EffectKey.Crack] = Entry(Petals("Fracture ", 6, 1.08f, -.12f,
-                new Vector3(.58f, 1f, .26f), true, 16), EffectMotionKind.Shed,
+            vocabulary.entries[EffectKey.Crack] = Entry(Petals("Fracture ", 6, 1.08f, -0.12f,
+                new Vector3(0.58f, 1f, 0.26f), true, 16), EffectMotionKind.Shed,
                 EffectSocket.Body, 1.65f, EffectCount.Stacks, 3);
-            vocabulary.entries[EffectKey.ManaUp] = Entry(Motes("Mana pearl ", 5, 1.25f, -.2f, .42f, false),
+            vocabulary.entries[EffectKey.ManaUp] = Entry(Motes("Mana pearl ", 5, 1.25f, -0.2f, 0.42f, false),
                 EffectMotionKind.Rise, EffectSocket.Body, 1.45f, EffectCount.Amount, 3);
-            vocabulary.entries[EffectKey.ManaDown] = Entry(Motes("Spent mana ", 5, .55f, .15f, .42f, true),
+            vocabulary.entries[EffectKey.ManaDown] = Entry(Motes("Spent mana ", 5, 0.55f, 0.15f, 0.42f, true),
                 EffectMotionKind.Fall, EffectSocket.UnderHead, 1.45f, EffectCount.Amount, 3);
             vocabulary.entries[EffectKey.Beam] = Entry(Beam(), EffectMotionKind.Orbit,
                 EffectSocket.Link, 1.3f);
@@ -220,7 +220,7 @@ namespace HealerLike.Render.Spells.Editor
             ElementEntry entry = Stone(plant, label, parts);
             if (entry.stackBeads.Length > 0)
             {
-                entry.stackBeads = Chips("Stack chip ", 5, 1.42f, -.32f, .2f);
+                entry.stackBeads = Chips("Stack chip ", 5, 1.42f, -0.32f, 0.2f);
             }
 
             entry.sideRim = Facet(entry.sideRim);
@@ -251,7 +251,7 @@ namespace HealerLike.Render.Spells.Editor
                 else
                 {
                     faceted[i].primitive = Primitive.Boulder;
-                    faceted[i].shape = Slab(.6f);
+                    faceted[i].shape = Slab(0.6f);
                 }
             }
             return faceted;
@@ -308,12 +308,12 @@ namespace HealerLike.Render.Spells.Editor
             }
 
             ElementEntry burst = Stone(vocabulary.entries[EffectKey.Burst], "Stone burst", StoneBurst());
-            burst.criticalRings = new[] { FacetedRing("Critical outer halo", 2.8f, 0, .07f,
+            burst.criticalRings = new[] { FacetedRing("Critical outer halo", 2.8f, 0, 0.07f,
                 ColourRole.MushroomCapPale, new Vector3(90, 0, 0)) };
             ElementEntry rise = Stone(vocabulary.entries[EffectKey.Rise], "Stone rise", StoneRise());
-            rise.criticalRings = new[] { FacetedRing("Critical healing halo", 2.65f, -.35f, .07f) };
+            rise.criticalRings = new[] { FacetedRing("Critical healing halo", 2.65f, -0.35f, 0.07f) };
             ElementEntry press = Stone(vocabulary.entries[EffectKey.Press], "Stone press", StonePress());
-            press.stackBeads = Chips("Stack chip ", 5, 1.42f, -.32f, .2f);
+            press.stackBeads = Chips("Stack chip ", 5, 1.42f, -0.32f, 0.2f);
             foreach (EffectAspect aspect in Enum.GetValues(typeof(EffectAspect)))
             {
                 vocabulary.cells[new EffectCell(EffectOperation.Damage, aspect, LookSide.Stone)] =
@@ -344,8 +344,8 @@ namespace HealerLike.Render.Spells.Editor
         {
             return new ElementEntry { parts = parts, motion = motion, socket = socket,
                 cycleSeconds = seconds, count = count, minCount = minimum,
-                presentation = new EffectPresentation { enabled = true, entranceSeconds = .14f,
-                    releaseSeconds = .38f, motionSpan = .45f, idleVisibility = .45f } };
+                presentation = new EffectPresentation { enabled = true, entranceSeconds = 0.14f,
+                    releaseSeconds = 0.38f, motionSpan = 0.45f, idleVisibility = 0.45f } };
         }
 
         static void Configure(EffectVocabulary vocabulary)
@@ -356,13 +356,13 @@ namespace HealerLike.Render.Spells.Editor
             burst.presentation.cameraDepth = 1.1f;
             burst.presentation.scalesWithAmount = true;
             burst.presentation.avoidHead = false;
-            burst.presentation.entranceSeconds = .07f;
-            burst.criticalRings = new[] { Ring("Critical outer halo", 2.8f, 0, .07f,
+            burst.presentation.entranceSeconds = 0.07f;
+            burst.criticalRings = new[] { Ring("Critical outer halo", 2.8f, 0, 0.07f,
                 ColourRole.MushroomCapPale, new Vector3(90, 0, 0)) };
             ElementEntry rise = vocabulary.entries[EffectKey.Rise];
             rise.presentation.avoidHead = false;
             rise.presentation.scale = 1.65f;
-            rise.criticalRings = new[] { Ring("Critical healing halo", 2.65f, -.35f, .07f) };
+            rise.criticalRings = new[] { Ring("Critical healing halo", 2.65f, -0.35f, 0.07f) };
             vocabulary.entries[EffectKey.Stalks].presentation.scale = 1.35f;
             vocabulary.entries[EffectKey.Drips].presentation.scale = 1.25f;
             vocabulary.entries[EffectKey.Orbit].presentation.scale = 1.15f;
@@ -375,15 +375,15 @@ namespace HealerLike.Render.Spells.Editor
             vocabulary.entries[EffectKey.ManaUp].presentation.colourRole = ColourRole.Mana;
             vocabulary.entries[EffectKey.ManaDown].presentation.colourRole = ColourRole.Mana;
             vocabulary.entries[EffectKey.ManaUp].presentation.avoidHead = false;
-            vocabulary.entries[EffectKey.Beam].presentation.linkWidth = .065f;
+            vocabulary.entries[EffectKey.Beam].presentation.linkWidth = 0.065f;
             vocabulary.entries[EffectKey.Beam].presentation.linkBeadSeconds = 1.05f;
             foreach (EffectKey element in new[] { EffectKey.Stalks, EffectKey.Drips,
                 EffectKey.Orbit, EffectKey.Plates, EffectKey.Bud, EffectKey.Press, EffectKey.Crack })
             {
                 ElementEntry entry = vocabulary.entries[element];
-                entry.stackBeads = Motes("Stack pearl ", 5, 1.42f, -.32f, .18f, false);
-                entry.sideRim = new[] { Ring("Caster signature", 2.65f, -.55f, .06f, ColourRole.Rim) };
-                entry.presentation.releaseSeconds = .45f;
+                entry.stackBeads = Motes("Stack pearl ", 5, 1.42f, -0.32f, 0.18f, false);
+                entry.sideRim = new[] { Ring("Caster signature", 2.65f, -0.55f, 0.06f, ColourRole.Rim) };
+                entry.presentation.releaseSeconds = 0.45f;
                 if (element == EffectKey.Press)
                 {
                     entry.sideRim = Array.Empty<LookPart>();
@@ -391,7 +391,7 @@ namespace HealerLike.Render.Spells.Editor
 
                 if (element == EffectKey.Drips)
                 {
-                    entry.sideRim = new[] { Ring("Caster signature", 1.2f, -.12f, .06f, ColourRole.Rim) };
+                    entry.sideRim = new[] { Ring("Caster signature", 1.2f, -0.12f, 0.06f, ColourRole.Rim) };
                 }
             }
         }

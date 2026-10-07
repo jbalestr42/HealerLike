@@ -180,7 +180,7 @@ namespace HealerLike.Render.Grammar
 
         // A heal of 0.2 x HealPower: 25 x 0.2 = 5, 5 / 100 = 0.05 Light; 1.5 x HealPower on 25 is 37.5, 0.375 Solid;
         // 2 x HealPower on 25 is 50, 0.5 Heavy. Unowned it reads 1 x multiplier / 100, always Light here
-        [TestCase(-.2f, EffectMagnitude.Light)]
+        [TestCase(-0.2f, EffectMagnitude.Light)]
         [TestCase(-1.5f, EffectMagnitude.Solid)]
         [TestCase(-2f, EffectMagnitude.Heavy)]
         public void Magnitude_ClassHeal_SizedAtTheClassHealPower(float multiplier, EffectMagnitude expected)

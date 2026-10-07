@@ -150,8 +150,8 @@ namespace HealerLike.Render.Stage
             {
                 for (int column = 0; column < tileSize; column++)
                 {
-                    Color ink = icon.GetPixelBilinear((column + .5f) / tileSize, (row + .5f) / tileSize);
-                    pixels[row * tileSize + column] = Color.Lerp(new Color(.067f, .114f, .137f, 1), ink, ink.a);
+                    Color ink = icon.GetPixelBilinear((column + 0.5f) / tileSize, (row + 0.5f) / tileSize);
+                    pixels[row * tileSize + column] = Color.Lerp(new Color(0.067f, 0.114f, 0.137f, 1), ink, ink.a);
                 }
             }
             sheet.SetPixels(x, y + labelHeight, tileSize, tileSize, pixels);

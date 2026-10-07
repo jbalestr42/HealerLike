@@ -19,17 +19,17 @@ namespace HealerLike.Render.Stage
             using (var touch = new StagePresentationTouch(_session.actions))
             {
                 yield return touch.Frame(TouchPhase.Began, point);
-                yield return Still(touch, point, .55f);
+                yield return Still(touch, point, 0.55f);
                 _session.output.Check(StageInterfaceOutput.IsVisible(_session.actions.root.Q("detail-panel")),
                     "Native held pointer opens details: " + image);
                 _session.output.Check(viewport == _session.actions.ui.normalizedWorldViewport
-                    && Vector3.Distance(camera, _session.manager.gameCamera.transform.position) < .01f,
+                    && Vector3.Distance(camera, _session.manager.gameCamera.transform.position) < 0.01f,
                     "Inspection leaves viewport and camera stable: " + image);
                 yield return _session.Capture(image, "Multi-frame StandaloneInputModule touch hold, real Toolkit pointer callbacks");
                 yield return touch.Frame(TouchPhase.Ended, point);
                 yield return touch.Frame(TouchPhase.Ended, point); // duplicate release must be harmless
             }
-            yield return Wait(.2f);
+            yield return Wait(0.2f);
             _session.output.Check(StageInterfaceOutput.IsVisible(_session.actions.root.Q("detail-panel")) == persistent,
                 "Correct popover lifetime after release: " + image);
         }
@@ -52,7 +52,7 @@ namespace HealerLike.Render.Stage
                 yield return touch.Frame(TouchPhase.Began, start);
                 yield return touch.Frame(TouchPhase.Moved, start + Vector2.up * 48);
                 yield return touch.Frame(TouchPhase.Moved, destination);
-                yield return Still(touch, destination, .25f);
+                yield return Still(touch, destination, 0.25f);
                 if (image != null)
                 {
                     yield return _session.Capture(image, "Owned roster drag through actual Toolkit pointer events");
@@ -68,11 +68,11 @@ namespace HealerLike.Render.Stage
                 {
                     var entities = _session.manager.entityManager.GetEntities(Entity.EntityType.Player);
                     _session.output.Check(entities.Count == before + 1
-                        && Vector3.Distance(entities[entities.Count - 1].transform.position, intended) < .01f,
+                        && Vector3.Distance(entities[entities.Count - 1].transform.position, intended) < 0.01f,
                         "Valid release creates one actual creature at the highlighted legal cell");
                 }
             }
-            yield return Wait(.25f);
+            yield return Wait(0.25f);
         }
         public IEnumerator Scroll(Button button)
         {
@@ -85,7 +85,7 @@ namespace HealerLike.Render.Stage
                 yield return touch.Frame(TouchPhase.Moved, start + Vector2.left * 140 + Vector2.up * 200);
                 yield return touch.Frame(TouchPhase.Ended, start + Vector2.left * 140 + Vector2.up * 200);
             }
-            yield return Wait(.2f);
+            yield return Wait(0.2f);
         }
     }
 }

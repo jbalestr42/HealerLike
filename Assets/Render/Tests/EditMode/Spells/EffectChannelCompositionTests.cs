@@ -43,11 +43,11 @@ namespace HealerLike.Render.Spells
             for (int i = 0; i < count; i++)
             {
                 parts[i] = new LookPart { id = "part" + i, primitive = Primitive.Sphere,
-                    role = PartRole.Body, size = Vector3.one * .1f };
+                    role = PartRole.Body, size = Vector3.one * 0.1f };
             }
 
             return new ElementEntry { parts = parts, socket = EffectSocket.Feet,
-                motion = EffectMotionKind.Grow, cycleSeconds = .9f };
+                motion = EffectMotionKind.Grow, cycleSeconds = 0.9f };
         }
 
         void Select(int channel, ElementEntry entry)

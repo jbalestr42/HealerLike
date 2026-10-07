@@ -63,7 +63,7 @@ namespace HealerLike.Render.Spells.Editor
                 foreach (EffectKey key in Enum.GetValues(typeof(EffectKey)))
                 {
                     WriteOne(folder, "fixture-" + ((int)key).ToString("D2") + "-" + key, new[] {
-                        EffectComposer.Compose(vocabulary, key, Family(key), EffectTempo.Once, 0f, 3, 3, .5f) });
+                        EffectComposer.Compose(vocabulary, key, Family(key), EffectTempo.Once, 0f, 3, 3, 0.5f) });
                 }
 
                 foreach (EffectOperation operation in Enum.GetValues(typeof(EffectOperation)))
@@ -84,7 +84,7 @@ namespace HealerLike.Render.Spells.Editor
                 foreach (EffectPiece piece in Enum.GetValues(typeof(EffectPiece)))
                 {
                     WriteOne(folder, "piece-" + piece, new[] { EffectComposer.Compose(vocabulary,
-                        (EffectKey)((int)EffectKey.Beam + (int)piece), EffectFamily.Heal, EffectTempo.Once, 0f, 3, 3, .5f) });
+                        (EffectKey)((int)EffectKey.Beam + (int)piece), EffectFamily.Heal, EffectTempo.Once, 0f, 3, 3, 0.5f) });
                 }
 
                 WriteSupportComposition(folder, vocabulary);

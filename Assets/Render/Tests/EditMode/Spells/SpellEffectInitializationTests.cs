@@ -57,7 +57,7 @@ namespace HealerLike.Render.Spells
             Assert.AreEqual(1.25f, _effect.lifetime);
             Assert.AreEqual(0f, recipe.cycleSeconds);
             Assert.AreNotSame(recipe, _effect.recipe);
-            _effect.Advance(.2f);
+            _effect.Advance(0.2f);
             Assert.IsTrue(_effect.shapes[0].gameObject.activeSelf);
         }
 
@@ -65,7 +65,7 @@ namespace HealerLike.Render.Spells
         public void Init_RepeatedCallKeepsExistingGeometryStateAndOwnership()
         {
             _effect.Init(Recipe(), RenderTestAssets.LoadMeshes(), null, LookSide.Plant);
-            _effect.SetStatus(3, .4f, 8f);
+            _effect.SetStatus(3, 0.4f, 8f);
             Mesh owned = _effect.shapes[0].GetComponent<MeshFilter>().sharedMesh;
             EffectRecipe accepted = _effect.recipe;
             TestHelpers.WithLoggingDisabled(() =>
@@ -75,7 +75,7 @@ namespace HealerLike.Render.Spells
             Assert.AreEqual(1, _owner.transform.childCount);
             Assert.AreSame(owned, _effect.shapes[0].GetComponent<MeshFilter>().sharedMesh);
             Assert.AreEqual(3, _effect.stacks);
-            Assert.AreEqual(.4f, _effect.elapsedSeconds);
+            Assert.AreEqual(0.4f, _effect.elapsedSeconds);
             SpellEffect.Dispose(_owner);
             Assert.IsTrue(owned == null);
         }

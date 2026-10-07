@@ -6,9 +6,9 @@ namespace HealerLike.Render.Grammar
 {
     public class LiveUnitDerivationTests
     {
-        [TestCase(AttributeType.AttackRate, .5f, 1f, AccessoryKind.SmallTorus)]
+        [TestCase(AttributeType.AttackRate, 0.5f, 1f, AccessoryKind.SmallTorus)]
         [TestCase(AttributeType.AttackRate, 2f, 1f, AccessoryKind.ConeCrown)]
-        [TestCase(AttributeType.Vulnerability, .1f, .2f, AccessoryKind.SmallTorus)]
+        [TestCase(AttributeType.Vulnerability, 0.1f, 0.2f, AccessoryKind.SmallTorus)]
         [TestCase(AttributeType.Damage, 20f, 10f, AccessoryKind.SmallTorus)]
         public void UpgradeAccessory_UsesTheSharedAttributePolarity(AttributeType type, float current,
             float baseline, AccessoryKind expected)

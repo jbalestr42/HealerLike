@@ -12,7 +12,7 @@ namespace HealerLike.Render.Spells
         static EffectRecipe Layer(EffectKey element = EffectKey.Rise)
         {
             return EffectComposer.Compose(RenderTestAssets.LoadEffectVocabulary(), element, EffectFamily.Heal,
-                EffectTempo.Once, 0, 3, 3, .5f);
+                EffectTempo.Once, 0, 3, 3, 0.5f);
         }
 
         [Test]
