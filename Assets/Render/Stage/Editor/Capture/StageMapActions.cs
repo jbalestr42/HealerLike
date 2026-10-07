@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -29,7 +30,9 @@ namespace HealerLike.Render.Stage
             return actions.root.Q<Button>("map-node-" + node.floor + "-" + node.column);
         }
 
-        public static IEnumerator SelectFirst(StageInterfaceActions actions, bool useTouch)
+        // preferFight picks the first Combat or Elite room when one is offered: an Event room parks the run on
+        // Julien's event screen rather than the map, which a caller looking for combat cannot get past
+        public static IEnumerator SelectFirst(StageInterfaceActions actions, bool useTouch, bool preferFight = false)
         {
             yield return WaitForSelection(actions);
             AscensionGameType ascension = UnityEngine.Object.FindAnyObjectByType<AscensionGameType>();
@@ -39,6 +42,12 @@ namespace HealerLike.Render.Stage
             }
 
             MapNode node = ascension.run.GetAvailableNodes()[0];
+            if (preferFight)
+            {
+                node = ascension.run.GetAvailableNodes().FirstOrDefault(available => available.type == MapNodeType.Combat
+                    || available.type == MapNodeType.Elite) ?? node;
+            }
+
             Button button = ButtonFor(actions, node);
             yield return actions.BringIntoView(button);
             if (useTouch)
@@ -77,7 +86,7 @@ namespace HealerLike.Render.Stage
                 }
                 else
                 {
-                    yield return SelectFirst(actions, true);
+                    yield return SelectFirst(actions, true, true);
                 }
             }
 

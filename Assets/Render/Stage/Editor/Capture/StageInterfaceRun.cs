@@ -114,6 +114,11 @@ namespace HealerLike.Render.Stage
                     "Inventory closes");
                 yield return deployment.GestureExclusion();
                 yield return deployment.Deploy(1, Vector3.left * 2f + Vector3.forward * 2f);
+                // Three unassisted allies lose the current first wave of seed 271828; the reward flow needs a win
+                yield return deployment.Deploy(1, Vector3.left * 4f + Vector3.forward);
+                yield return deployment.Deploy(1, Vector3.left * 4f + Vector3.back * 3f);
+                _output.manifest.checks.Add("Five allies deployed before the first encounter so the run reaches "
+                    + "its reward; three lose the current first wave without spell assistance");
                 yield return navigation.LandscapeControls();
                 _session.actions.Submit("wave-button");
                 yield return Wait(2f);
