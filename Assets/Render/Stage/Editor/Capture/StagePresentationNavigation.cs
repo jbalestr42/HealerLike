@@ -55,6 +55,8 @@ namespace HealerLike.Render.Stage
             yield return _session.actions.StartExpedition();
             yield return Wait(1.2f);
             _session.AttachInput();
+            // Let EventSystem activate the configured legacy module before delivering a new Began
+            yield return Wait(0.2f);
             _output.Check(Object.FindAnyObjectByType<RenderManager>() == _session.manager,
                 "New expedition retains the single original RenderManager");
             _session.mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
