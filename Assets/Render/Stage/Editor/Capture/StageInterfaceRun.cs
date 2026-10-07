@@ -146,8 +146,11 @@ namespace HealerLike.Render.Stage
                 yield return _session.Resize(1080, 1920);
                 yield return encounter.Reward();
                 yield return navigation.Navigation();
-                _output.Check(_session.actions.scrollActions > 0,
-                    "Scrolled cards below the fold before activating reachable controls");
+                // The party drawer put cards below its fold; the roster row that replaced it fits five cards across
+                // the portrait frame, so a scroll is now a property of the roster's length, not of the layout
+                _output.manifest.checks.Add("Cards scrolled into view before activation: "
+                    + _session.actions.scrollActions + (_session.actions.scrollActions == 0
+                    ? " (every activated card was already on screen; scroll-to-activate not exercised)" : ""));
                 passed = true;
             }
             finally
