@@ -20,7 +20,7 @@ namespace UI.Toolkit
         {
             _casts = _inspects = 0; _drag = new Drag();
             _panel = new ToolkitTestPanel();
-            var root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+            TemplateContainer root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
             root.style.width = 390; root.style.height = 844; root.style.flexShrink = 0;
             _panel.root.Add(root); ToolkitTheme.Apply(root, null);
             _view = new ToolkitGameView(root) { rosterDrag = _drag, screenPointProvider = point => point };
@@ -30,7 +30,7 @@ namespace UI.Toolkit
         }
         void Bind(bool spell, bool enabled = true)
         {
-            var model = new ToolkitCardModel { key = "entry", title = "Heal", isEnabled = enabled,
+            ToolkitCardModel model = new ToolkitCardModel { key = "entry", title = "Heal", isEnabled = enabled,
                 canDrag = !spell, source = spell ? (object)_owner.AddComponent<CharacterSkillSlot>() : _data,
                 activate = _ => _casts++ };
             _view.SetCards(spell ? "spell-list" : "party-list", new[] { model });
@@ -41,17 +41,17 @@ namespace UI.Toolkit
         { _view.Release(); _panel.Dispose(); Object.DestroyImmediate(_owner); Object.DestroyImmediate(_data); }
         void Down(Vector2 point)
         {
-            using (var e = PointerDownEvent.GetPooled(new Event { type = EventType.MouseDown, button = 0, mousePosition = point }))
+            using (PointerDownEvent e = PointerDownEvent.GetPooled(new Event { type = EventType.MouseDown, button = 0, mousePosition = point }))
                 { e.target = _button; _button.SendEvent(e); }
         }
         void Move(Vector2 point)
         {
-            using (var e = PointerMoveEvent.GetPooled(new Event { type = EventType.MouseDrag, button = 0, mousePosition = point }))
+            using (PointerMoveEvent e = PointerMoveEvent.GetPooled(new Event { type = EventType.MouseDrag, button = 0, mousePosition = point }))
                 { e.target = _button; _button.SendEvent(e); }
         }
         void Up(Vector2 point)
         {
-            using (var e = PointerUpEvent.GetPooled(new Event { type = EventType.MouseUp, button = 0, mousePosition = point }))
+            using (PointerUpEvent e = PointerUpEvent.GetPooled(new Event { type = EventType.MouseUp, button = 0, mousePosition = point }))
                 { e.target = _button; _button.SendEvent(e); }
         }
         IEnumerator Hold()
@@ -144,7 +144,7 @@ namespace UI.Toolkit
         public IEnumerator OrphanedNativePressDoesNotDismissPersistentCreatureDetails()
         {
             Bind(false); yield return null; yield return null;
-            using (var popover = new ToolkitPopover(_view))
+            using (ToolkitPopover popover = new ToolkitPopover(_view))
             {
                 Vector2 point = _button.worldBound.center;
                 Down(point); yield return Hold(); Up(point);
@@ -159,36 +159,36 @@ namespace UI.Toolkit
         public IEnumerator ControllerCancelInspectsUnavailableSpellAndSubmitKeepsActivationMeaning()
         {
             Bind(true, false); yield return null; yield return null;
-            using (var popover = new ToolkitPopover(_view))
+            using (ToolkitPopover popover = new ToolkitPopover(_view))
             {
                 _button.Focus();
-                using (var inspect = NavigationCancelEvent.GetPooled())
+                using (NavigationCancelEvent inspect = NavigationCancelEvent.GetPooled())
                 {
                     _button.SendEvent(inspect);
                 }
 
                 Assert.That(popover.isOpen, Is.True);
                 Assert.That(_inspects, Is.EqualTo(1)); Assert.That(_casts, Is.Zero);
-                using (var submit = NavigationSubmitEvent.GetPooled())
+                using (NavigationSubmitEvent submit = NavigationSubmitEvent.GetPooled())
                 {
                     _button.SendEvent(submit);
                 }
 
                 Assert.That(popover.isOpen, Is.False); Assert.That(_casts, Is.Zero);
                 Bind(true); yield return null;
-                using (var submit = NavigationSubmitEvent.GetPooled())
+                using (NavigationSubmitEvent submit = NavigationSubmitEvent.GetPooled())
                 {
                     _button.SendEvent(submit);
                 }
 
                 Assert.That(_casts, Is.EqualTo(1));
-                using (var inspect = NavigationCancelEvent.GetPooled())
+                using (NavigationCancelEvent inspect = NavigationCancelEvent.GetPooled())
                 {
                     _button.SendEvent(inspect);
                 }
 
                 Assert.That(popover.isOpen, Is.True);
-                using (var inspect = NavigationCancelEvent.GetPooled())
+                using (NavigationCancelEvent inspect = NavigationCancelEvent.GetPooled())
                 {
                     _button.SendEvent(inspect);
                 }
@@ -198,14 +198,14 @@ namespace UI.Toolkit
         }
         void Key(KeyCode key)
         {
-            using (var evt = KeyDownEvent.GetPooled(new Event { type = EventType.KeyDown, keyCode = key }))
+            using (KeyDownEvent evt = KeyDownEvent.GetPooled(new Event { type = EventType.KeyDown, keyCode = key }))
             {
                 _button.SendEvent(evt);
             }
         }
         void NavigationCancel()
         {
-            using (var evt = NavigationCancelEvent.GetPooled())
+            using (NavigationCancelEvent evt = NavigationCancelEvent.GetPooled())
             {
                 _button.SendEvent(evt);
             }
@@ -228,18 +228,18 @@ namespace UI.Toolkit
         }
         void WithEscapeRoute(System.Action<ToolkitGameActions, ToolkitGameContext> check)
         {
-            var settings = ToolkitMobileLayout.CreatePanelSettings(null);
-            var document = _owner.GetComponent<UIDocument>() ?? _owner.AddComponent<UIDocument>();
+            PanelSettings settings = ToolkitMobileLayout.CreatePanelSettings(null);
+            UIDocument document = _owner.GetComponent<UIDocument>() ?? _owner.AddComponent<UIDocument>();
             document.panelSettings = settings;
-            var context = new ToolkitGameContext();
+            ToolkitGameContext context = new ToolkitGameContext();
             float speed = Time.timeScale;
-            using (var mobile = new ToolkitMobileLayout())
-            using (var time = new ToolkitTimeControls())
-            using (var map = new ToolkitMapPanel())
+            using (ToolkitMobileLayout mobile = new ToolkitMobileLayout())
+            using (ToolkitTimeControls time = new ToolkitTimeControls())
+            using (ToolkitMapPanel map = new ToolkitMapPanel())
             {
                 mobile.Init(_view, context, document);
                 time.Init(null, context, _view);
-                using (var actions = new ToolkitGameActions(null, context, _view, time, mobile, map))
+                using (ToolkitGameActions actions = new ToolkitGameActions(null, context, _view, time, mobile, map))
                 {
                     try { check(actions, context); }
                     finally { time.Resume(); Time.timeScale = speed; document.panelSettings = null;
@@ -289,12 +289,12 @@ namespace UI.Toolkit
         {
             Bind(true); yield return null; yield return null;
             _button.Focus();
-            var manager = _owner.AddComponent<InteractionManager>();
+            InteractionManager manager = _owner.AddComponent<InteractionManager>();
             foreach (bool actionsFirst in new[] { false, true })
             {
                 WithEscapeRoute((actions, context) =>
                 {
-                    var targeting = new Targeting();
+                    Targeting targeting = new Targeting();
                     manager.SetInteraction(targeting);
                     context.interaction = manager;
                     Escape(actions, actionsFirst);
@@ -310,7 +310,7 @@ namespace UI.Toolkit
         {
             Bind(true); yield return null; yield return null;
             _button.Focus();
-            using (var popover = new ToolkitPopover(_view))
+            using (ToolkitPopover popover = new ToolkitPopover(_view))
             {
                 foreach (KeyCode key in new[] { KeyCode.I, KeyCode.F1 })
                 {

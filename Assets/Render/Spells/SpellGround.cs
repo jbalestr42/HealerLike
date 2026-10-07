@@ -26,7 +26,7 @@ namespace HealerLike.Render.Spells
                 return;
             }
 
-            var pending = new Stack<EffectRecipe>();
+            Stack<EffectRecipe> pending = new Stack<EffectRecipe>();
             pending.Push(recipe);
             while (pending.Count > 0)
             {

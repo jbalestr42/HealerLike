@@ -31,7 +31,7 @@ namespace HealerLike.Render.Deliveries
         {
             _parent.transform.localScale = Vector3.one * 5f;
             _wake.Draw(_parent.transform, _material, _look, Color.green, 0.5f);
-            var trail = _parent.GetComponentInChildren<TrailRenderer>();
+            TrailRenderer trail = _parent.GetComponentInChildren<TrailRenderer>();
             Assert.AreSame(_material, trail.sharedMaterial);
             Assert.AreEqual(0.15f, trail.widthMultiplier, 0.0001f);
             Assert.IsTrue(trail.generateLightingData);
@@ -41,7 +41,7 @@ namespace HealerLike.Render.Deliveries
         public void HideAndTeleport_ClearPreviousPathBeforeReusingRenderer()
         {
             _wake.Draw(_parent.transform, _material, _look, Color.green, 1f);
-            var trail = _parent.GetComponentInChildren<TrailRenderer>();
+            TrailRenderer trail = _parent.GetComponentInChildren<TrailRenderer>();
             trail.AddPosition(Vector3.zero);
             trail.AddPosition(Vector3.right);
             _parent.transform.position = Vector3.right * 20f;

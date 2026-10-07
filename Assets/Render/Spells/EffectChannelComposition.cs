@@ -59,7 +59,7 @@ namespace HealerLike.Render.Spells
         public static EffectRecipe[] Compose(EffectVocabulary vocabulary, EffectChannels channels,
             EffectKey label, int stacks, float charges)
         {
-            var additions = new List<EffectRecipe>();
+            List<EffectRecipe> additions = new List<EffectRecipe>();
             foreach (ElementEntry entry in Entries(vocabulary, channels))
             {
                 EffectRecipe piece = EffectComposer.Compose(vocabulary, label, channels.family, channels.tempo,

@@ -11,7 +11,7 @@ namespace HealerLike.Render.Spells
         public void Build_UsesTheSameMineralVariantForSurfaceAttachmentsAndRenderedMeshes()
         {
             GameObject host = new GameObject("Resolved spell fragment");
-            var parts = new EffectParts();
+            EffectParts parts = new EffectParts();
             ShapeProfile shape = ShapeProfile.Shard(fracture: 0.65f);
             LookPart[] authored =
             {
@@ -21,7 +21,7 @@ namespace HealerLike.Render.Spells
                     attachTo = "first", attachAt = ShapeAnchor.Top, size = new Vector3(0.3f, 0.6f, 0.3f),
                     euler = new Vector3(0f, 0f, -25f) }
             };
-            var recipe = new EffectRecipe { entry = new ElementEntry { parts = authored },
+            EffectRecipe recipe = new EffectRecipe { entry = new ElementEntry { parts = authored },
                 palette = RenderTestAssets.LoadPalette(), count = 2, colour = Color.white };
             try
             {

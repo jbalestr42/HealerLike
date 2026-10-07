@@ -11,7 +11,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void MissingElementAndNullDictionaries_ReturnErrorsWithoutLoggedLookup()
         {
-            var vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
+            EffectVocabulary vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
             try
             {
                 vocabulary.legacyTable[new EffectCell(EffectOperation.Damage, EffectAspect.Offence)] =
@@ -30,7 +30,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void SelectedEntry_IsValidatedBeforeComposition()
         {
-            var vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
+            EffectVocabulary vocabulary = ScriptableObject.CreateInstance<EffectVocabulary>();
             try
             {
                 vocabulary.legacyTable[new EffectCell(EffectOperation.Damage, EffectAspect.Offence)] =
@@ -47,7 +47,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void Channels_AllEnumsAreCheckedAndRawPeriodsKeepFallbackSemantics()
         {
-            var cases = new[]
+            EffectChannels[] cases = new[]
             {
                 new EffectChannels { operation = (EffectOperation)999 },
                 new EffectChannels { aspect = (EffectAspect)999 },

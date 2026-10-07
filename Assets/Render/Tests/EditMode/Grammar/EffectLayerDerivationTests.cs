@@ -115,7 +115,7 @@ namespace HealerLike.Render.Grammar
             BuffHandlerFactory handler = Handler(Apply(10f), Modifier(AttributeType.HealthMax, 30f));
             handler.data.durationType = DurationType.Instant;
             handler.data.isPeriodic = true;
-            var context = new EffectContext
+            EffectContext context = new EffectContext
             {
                 origin = EffectOrigin.Item, targetCount = int.MaxValue,
                 triggers = new[] { EffectTrigger.OnHit }

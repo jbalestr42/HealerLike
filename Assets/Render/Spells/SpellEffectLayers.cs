@@ -14,7 +14,7 @@ namespace HealerLike.Render.Spells
         {
             foreach (EffectRecipe addition in _recipe.additions ?? System.Array.Empty<EffectRecipe>())
             {
-                var root = new GameObject("Spell layer " + addition.element);
+                GameObject root = new GameObject("Spell layer " + addition.element);
                 root.transform.SetParent(transform, false);
                 SpellEffect layer = root.AddComponent<SpellEffect>();
                 layer.enabled = false; // The owning effect advances all layer clocks exactly once.

@@ -34,7 +34,7 @@ namespace HealerLike.Render.Deliveries
             FreeShot shot = _scene.projectileObject.GetComponent<FreeShot>();
             TestHelpers.InvokePrivate(shot, "LateUpdate");
             Renderer renderer = GameObject.Find("FreeShot").GetComponentInChildren<Renderer>();
-            var properties = new MaterialPropertyBlock();
+            MaterialPropertyBlock properties = new MaterialPropertyBlock();
             renderer.GetPropertyBlock(properties);
             Color expected = amount > 0 ? RenderTestAssets.LoadPalette().damage : RenderTestAssets.LoadPalette().heal;
             Color actual = properties.GetColor(RenderObjects.BaseColorId);

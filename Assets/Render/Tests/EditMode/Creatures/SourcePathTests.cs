@@ -147,8 +147,8 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void CountChange_KeepsExistingCopiedOutletIdentityAndInvalidatesRemovedCopy()
         {
-            using var kept = new CastSourceLease(_host.rig, 0);
-            using var removed = new CastSourceLease(_host.rig, 4);
+            using CastSourceLease kept = new CastSourceLease(_host.rig, 0);
+            using CastSourceLease removed = new CastSourceLease(_host.rig, 4);
             CreatureRecipe fewer = LookComposer.Compose(RenderTestAssets.CreateChannels(LookSide.Plant, HeadKind.Arch),
                 RenderTestAssets.LoadLookVocabulary());
             try

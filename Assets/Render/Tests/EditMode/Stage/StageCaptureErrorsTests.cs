@@ -9,7 +9,7 @@ namespace HealerLike.Render.Stage
         [Test]
         public void CaptureRecordsExpectedEngineErrorAndUnsubscribesOnDisposal()
         {
-            var errors = new StageCaptureErrors();
+            StageCaptureErrors errors = new StageCaptureErrors();
             try
             {
                 LogAssert.Expect(LogType.Error, "Native capture error fixture");

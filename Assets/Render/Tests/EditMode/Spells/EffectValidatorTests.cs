@@ -17,7 +17,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void LegacyDefaults_AreValidWithoutPaletteOrPresentation()
         {
-            var recipe = Recipe();
+            EffectRecipe recipe = Recipe();
             recipe.entry.presentation = null;
             recipe.entry.stackBeads = null;
             recipe.additions = null;
@@ -27,8 +27,8 @@ namespace HealerLike.Render.Spells
         [TestCase(0)] [TestCase(1)] [TestCase(2)]
         public void AuxiliaryFragments_ValidatePartData(int fragment)
         {
-            var recipe = Recipe();
-            var parts = new[] { new LookPart() };
+            EffectRecipe recipe = Recipe();
+            LookPart[] parts = new[] { new LookPart() };
             if (fragment == 0)
             {
                 recipe.entry.stackBeads = parts;
@@ -51,7 +51,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void AggregateBudget_IncludesAuxiliaryFragmentsAndEveryCompositeOccurrence()
         {
-            var recipe = Recipe();
+            EffectRecipe recipe = Recipe();
             recipe.entry.stackBeads = new LookPart[256];
             for (int i = 0; i < 256; i++)
             {
@@ -61,7 +61,7 @@ namespace HealerLike.Render.Spells
             Assert.IsFalse(EffectValidator.TryValidate(recipe, out string error));
             StringAssert.Contains("1..256", error);
             recipe.entry.stackBeads = Array.Empty<LookPart>();
-            var child = Recipe();
+            EffectRecipe child = Recipe();
             recipe.additions = new EffectRecipe[255];
             for (int i = 0; i < 255; i++)
             {
@@ -82,8 +82,8 @@ namespace HealerLike.Render.Spells
         [Test]
         public void CompositeCycleAndNullChild_ReturnDiagnosticsWithoutRecursing()
         {
-            var recipe = Recipe();
-            var child = Recipe();
+            EffectRecipe recipe = Recipe();
+            EffectRecipe child = Recipe();
             recipe.additions = new[] { child };
             child.additions = new[] { recipe };
             Assert.IsFalse(EffectValidator.TryValidate(recipe, out string error));
@@ -96,11 +96,11 @@ namespace HealerLike.Render.Spells
         [Test]
         public void DeepComposite_IsBoundedByTheAggregateBudget()
         {
-            var root = Recipe();
-            var tip = root;
+            EffectRecipe root = Recipe();
+            EffectRecipe tip = root;
             for (int i = 0; i < 1000; i++)
             {
-                var next = Recipe();
+                EffectRecipe next = Recipe();
                 tip.additions = new[] { next };
                 tip = next;
             }
@@ -111,7 +111,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void AttachmentsAndPivots_UseSharedFragmentValidation()
         {
-            var recipe = Recipe();
+            EffectRecipe recipe = Recipe();
             LookPart attached = Part("Attached");
             attached.attachTo = "Missing";
             recipe.entry.sideRim = new[] { attached };
@@ -150,9 +150,9 @@ namespace HealerLike.Render.Spells
                 r => r.entry.cycleSeconds = 0,
                 r => r.entry.presentation.releaseSeconds = -1
             };
-            foreach (var change in invalid)
+            foreach (Action<EffectRecipe> change in invalid)
             {
-                var recipe = Recipe();
+                EffectRecipe recipe = Recipe();
                 change(recipe);
                 Assert.IsFalse(EffectValidator.TryValidate(recipe, out string error));
                 Assert.IsNotEmpty(error);
@@ -173,15 +173,15 @@ namespace HealerLike.Render.Spells
                 g => g.band = -1,
                 g => g.shiver = float.NaN
             };
-            foreach (var change in invalid)
+            foreach (Action<GroundEffect> change in invalid)
             {
-                var recipe = Recipe();
+                EffectRecipe recipe = Recipe();
                 recipe.entry.ground = new GroundEffect();
                 change(recipe.entry.ground);
                 Assert.IsFalse(EffectValidator.TryValidate(recipe, out string error));
                 StringAssert.Contains("ground", error);
             }
-            var valid = Recipe();
+            EffectRecipe valid = Recipe();
             valid.entry.ground = new GroundEffect { light = -1, vitality = -1, kick = -10 };
             Assert.IsTrue(EffectValidator.TryValidate(valid, out string validError), validError);
             valid.entry.groundRadius = float.NaN;

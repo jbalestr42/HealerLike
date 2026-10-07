@@ -47,7 +47,7 @@ namespace HealerLike.Render.Stage
             const float step = SpellPolishRun.FrameStep;
             foreach (Fixture fixture in fixtures)
             {
-                using (var scene = new GrassLabScene(manager))
+                using (GrassLabScene scene = new GrassLabScene(manager))
                 {
                     if (!scene.Init())
                     {
@@ -87,7 +87,7 @@ namespace HealerLike.Render.Stage
             }
             foreach (var (first, second) in Pairs)
             {
-                using (var scene = new GrassLabScene(manager))
+                using (GrassLabScene scene = new GrassLabScene(manager))
                 {
                     if (!scene.Init())
                     {

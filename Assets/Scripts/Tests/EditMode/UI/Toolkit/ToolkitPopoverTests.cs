@@ -11,12 +11,12 @@ namespace UI.Toolkit
         [Test]
         public void PersistentDetailsRefreshHealthWithoutFollowingAnotherWorldSelection()
         {
-            var owner = new GameObject("Live inspected creature"); owner.SetActive(false);
-            var other = new GameObject("Other selection"); other.SetActive(false);
-            var data = ScriptableObject.CreateInstance<EntityData>();
-            var root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
-            var view = new ToolkitGameView(root);
-            using (var details = new ToolkitDetailPanel())
+            GameObject owner = new GameObject("Live inspected creature"); owner.SetActive(false);
+            GameObject other = new GameObject("Other selection"); other.SetActive(false);
+            EntityData data = ScriptableObject.CreateInstance<EntityData>();
+            TemplateContainer root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+            ToolkitGameView view = new ToolkitGameView(root);
+            using (ToolkitDetailPanel details = new ToolkitDetailPanel())
             {
                 try
                 {
@@ -27,14 +27,14 @@ namespace UI.Toolkit
                     entity.attributeManager.Add(AttributeType.HealthMax, new Attribute(100));
                     entity.attributeManager.Add(AttributeType.Damage, new Attribute(12));
                     entity.attributeManager.Add(AttributeType.CriticalChanceResist, new Attribute(0));
-                    var health = owner.AddComponent<ResourceAttribute>(); health.Init(AttributeType.HealthMax);
+                    ResourceAttribute health = owner.AddComponent<ResourceAttribute>(); health.Init(AttributeType.HealthMax);
                     TestHelpers.SetPrivateField(entity, "_health", health);
-                    var legacy = owner.AddComponent<GameView>();
-                    var context = new ToolkitGameContext { legacy = legacy };
+                    GameView legacy = owner.AddComponent<GameView>();
+                    ToolkitGameContext context = new ToolkitGameContext { legacy = legacy };
                     details.Init(context, view);
                     view.OnInspect.AddListener(details.OnInspect);
                     view.OnInspectEnded.AddListener(details.OnInspectEnded);
-                    using (var popover = new ToolkitPopover(view))
+                    using (ToolkitPopover popover = new ToolkitPopover(view))
                     {
                         popover.Open(new ToolkitCardModel { source = entity });
                         // A hold release deliberately leaves the popover open, followed by 100 ms refreshes.
@@ -50,7 +50,7 @@ namespace UI.Toolkit
                         Assert.That(summary, Does.Not.Contain("Maximum health").And.Not.Contain("Critical"));
                         Assert.That(root.Q<Label>("detail-full-stats").text,
                             Does.Contain("Maximum health: 100").And.Contain("Critical resistance: 0"));
-                        var expanded = root.Q<Foldout>("detail-attributes");
+                        Foldout expanded = root.Q<Foldout>("detail-attributes");
                         Assert.That(expanded.value, Is.False);
                         expanded.value = true; details.Refresh();
                         Assert.That(expanded.value, Is.True, "Live refresh preserves the expanded state");
@@ -72,13 +72,13 @@ namespace UI.Toolkit
         [UnityTest]
         public IEnumerator WorldAndRowAnchorsKeepHeaderAndRowsClearWithoutChangingViewport()
         {
-            using (var panel = new ToolkitTestPanel())
+            using (ToolkitTestPanel panel = new ToolkitTestPanel())
             {
-                var root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+                TemplateContainer root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
                 root.style.flexShrink = 0;
                 panel.root.Add(root); ToolkitTheme.Apply(root, null);
-                var view = new ToolkitGameView(root);
-                using (var popover = new ToolkitPopover(view))
+                ToolkitGameView view = new ToolkitGameView(root);
+                using (ToolkitPopover popover = new ToolkitPopover(view))
                 {
                     foreach (Vector2 size in new[] { new Vector2(390, 844), new Vector2(844, 390) })
                     {

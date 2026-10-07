@@ -51,14 +51,14 @@ namespace HealerLike.Render.Stage
             Material material = RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat");
             float[] phases = Phases;
             EffectKey[] elements = (EffectKey[])Enum.GetValues(typeof(EffectKey));
-            using (var images = new SpellPolishImages(folder))
+            using (SpellPolishImages images = new SpellPolishImages(folder))
             {
                 if (_isReadability)
                 {
                     List<CharacterData> characters = AtlasAssetCatalog.Characters();
                     images.Resolved(Resolve(vocabulary, GainHandler, characters),
                         Resolve(vocabulary, DrainHandler, characters));
-                    var readability = new List<SpellReadabilityPass.Fixture>();
+                    List<SpellReadabilityPass.Fixture> readability = new List<SpellReadabilityPass.Fixture>();
                     // Each core element in its plant drawing on both target bodies, the plant ally and the stone enemy
                     foreach (EffectKey element in CoreElements)
                     {
@@ -95,7 +95,7 @@ namespace HealerLike.Render.Stage
 
                 foreach (var (element, side) in fixtures)
                 {
-                    using (var scene = new GrassLabScene(_manager))
+                    using (GrassLabScene scene = new GrassLabScene(_manager))
                     {
                         if (!scene.Init())
                         {

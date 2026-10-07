@@ -20,7 +20,7 @@ namespace HealerLike.Render.Grammar
                 return System.Array.Empty<EffectChannels>();
             }
 
-            var layers = new List<EffectChannels>(buffs.Count);
+            List<EffectChannels> layers = new List<EffectChannels>(buffs.Count);
             bool isGrowth = IsGrowth(handler, context);
             foreach (ABuffFactory buff in buffs)
             {

@@ -18,8 +18,8 @@ public class EnvironmentLayoutTests
         Rect board = new Rect(-8f, -6f, 16f, 12f);
         Rect localBoard = new Rect(-6f, -8f, 12f, 16f);
         Quaternion turn = Quaternion.Euler(0f, 90f, 0f);
-        var original = EnvironmentLayout.Generate(EnvironmentSettings.Default, localBoard, 1f, 0.5f);
-        var portrait = EnvironmentLayout.Generate(EnvironmentSettings.Default, board, 1f, 0.5f, 90f);
+        List<EnvironmentItem> original = EnvironmentLayout.Generate(EnvironmentSettings.Default, localBoard, 1f, 0.5f);
+        List<EnvironmentItem> portrait = EnvironmentLayout.Generate(EnvironmentSettings.Default, board, 1f, 0.5f, 90f);
         Assert.AreEqual(original.Count, portrait.Count);
         for (int i = 0; i < original.Count; i++)
         {
@@ -57,7 +57,7 @@ public class EnvironmentLayoutTests
     {
         EnvironmentSettings settings = EnvironmentSettings.Default;
         settings.seed = seed;
-        var items = EnvironmentLayout.Generate(settings, grid, 1f, 0.5f);
+        List<EnvironmentItem> items = EnvironmentLayout.Generate(settings, grid, 1f, 0.5f);
         EnvironmentItem stone = items.First(i => i.kind == EnvironmentKind.Monolith);
         EnvironmentItem mushroom = items.First(i => i.kind == EnvironmentKind.MushroomTree);
         Assert.That(stone.position.x, Is.LessThan(grid.center.x));

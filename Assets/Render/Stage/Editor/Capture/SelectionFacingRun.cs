@@ -72,7 +72,7 @@ namespace HealerLike.Render.Stage
                     yield return null;
                     yield return null;
                     yield return Selection(entity, host, subject);
-                    using (var control = new SelectionFacingControl(entity.GetComponent<Entity>(), host, _output))
+                    using (SelectionFacingControl control = new SelectionFacingControl(entity.GetComponent<Entity>(), host, _output))
                     {
                         yield return Turns(control, subject);
                     }
@@ -105,7 +105,7 @@ namespace HealerLike.Render.Stage
             source.SendMessage("OnMouseExit", SendMessageOptions.RequireReceiver);
             yield return null;
             yield return null;
-            var observation = new StageSelectionObservation(host, source, _output);
+            StageSelectionObservation observation = new StageSelectionObservation(host, source, _output);
             Vector3 ownerPosition = entity.transform.position;
             Quaternion ownerRotation = entity.transform.rotation;
             foreach (string state in new[] { "idle", "selected", "deselected" })
@@ -122,7 +122,7 @@ namespace HealerLike.Render.Stage
 
                 yield return null;
                 yield return null;
-                var frame = observation.Sample(subject, state, state == "selected");
+                StageSelectionObservation.Frame frame = observation.Sample(subject, state, state == "selected");
                 _output.Check(entity.transform.position.Equals(ownerPosition)
                     && entity.transform.rotation.Equals(ownerRotation), "Selection keeps gameplay owner pose exact");
                 yield return _session.Capture(frame.file.Replace(".png", ""),
@@ -156,7 +156,7 @@ namespace HealerLike.Render.Stage
                     yield return null;
                     string file = "facing-" + subject + "-" + turn + "-" + sample.ToString("0.00",
                         System.Globalization.CultureInfo.InvariantCulture);
-                    var frame = control.Sample(subject, turn, elapsed, sample > 0f ? file : null, _manager.gameCamera);
+                    SelectionFacingProof.Frame frame = control.Sample(subject, turn, elapsed, sample > 0f ? file : null, _manager.gameCamera);
                     _proof.frames.Add(frame);
                     if (sample > 0f)
                     {

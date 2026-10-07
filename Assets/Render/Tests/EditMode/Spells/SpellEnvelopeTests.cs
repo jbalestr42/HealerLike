@@ -41,7 +41,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void GroundSocket_UsesFootHeightForCompositeAuras()
         {
-            var anchors = new EffectAnchors { foot = new Vector3(2, 0.1f, 3),
+            EffectAnchors anchors = new EffectAnchors { foot = new Vector3(2, 0.1f, 3),
                 bodyCentre = new Vector3(2, 0.8f, 3) };
             Assert.AreEqual(anchors.foot, EffectPlacement.Socket(anchors, EffectSocket.Ground));
         }

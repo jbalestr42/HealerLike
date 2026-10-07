@@ -44,13 +44,13 @@ namespace HealerLike.Render.Stage
                 manager.spellSink.Clear();
                 // RestHealConsumer reads HealthMax, which creatures actually possess. The Character heal
                 // instead requires the player-only HealPower attribute and is not a valid creature fixture.
-                var healFactory = RenderAssets.Load<ConsumerFactory>("Assets/Data/Run/RestHealConsumer.asset");
+                ConsumerFactory healFactory = RenderAssets.Load<ConsumerFactory>("Assets/Data/Run/RestHealConsumer.asset");
                 target.health.AddResourceModifier(ResourceModifier.Create(healFactory, source.gameObject, target.gameObject));
                 yield return AStageRun.Wait(0.2f);
                 proof.supportHealLinks = Measure(manager, host, proof);
                 yield return session.Capture("02-mineral-heal-fixture", "Real resource outcome; labelled mineral healer fixture");
                 manager.spellSink.Clear();
-                var boonFactory = RenderAssets.Load<BuffCharacterSkillFactory>(
+                BuffCharacterSkillFactory boonFactory = RenderAssets.Load<BuffCharacterSkillFactory>(
                     "Assets/Data/CharacterSkills/SingleTargetBuffAttackRate/SingleTargetBuffAttackRate.asset");
                 ((BuffCharacterSkill)boonFactory.Create()).ApplySkillOnTarget(source.gameObject, target.gameObject);
                 target.buffManager.ForceUpdate();

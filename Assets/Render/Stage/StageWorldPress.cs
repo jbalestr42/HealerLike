@@ -23,7 +23,7 @@ namespace HealerLike.Render.Stage
         }
         public void Move(int id, Vector2 point, RaycastHit hit, ToolkitGameUI ui, Vector2 screen)
         {
-            var owner = _press.Move(id, point, _clock());
+            ToolkitPress.Owner owner = _press.Move(id, point, _clock());
             if (owner == ToolkitPress.Owner.Hold && !consumed && _entity != null)
             {
                 consumed = true;

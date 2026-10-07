@@ -58,7 +58,7 @@ namespace HealerLike.Render.Creatures
             CreatureRig rig = _view.rig;
             Transform root = rig.root;
             int initial = rig.revision;
-            using (var lease = new CastSourceLease(rig))
+            using (CastSourceLease lease = new CastSourceLease(rig))
             {
                 Assert.IsTrue(lease.TryGet(out _));
                 string id = lease.sourceId;

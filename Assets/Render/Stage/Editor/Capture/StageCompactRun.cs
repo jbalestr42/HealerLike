@@ -20,7 +20,7 @@ namespace HealerLike.Render.Stage
         protected override IEnumerator Run()
         {
             bool passed = false;
-            using var errors = new StageCaptureErrors();
+            using StageCaptureErrors errors = new StageCaptureErrors();
             try
             {
                 ThemeStyleSheet theme = StageCaptureTheme.TakeSelection();
@@ -35,9 +35,9 @@ namespace HealerLike.Render.Stage
                 yield return StageMapActions.SelectFirst(_session.actions, true);
                 yield return Wait(0.5f);
                 yield return _session.Capture("01-preparation");
-                var review = new StageCompactReview(_session);
+                StageCompactReview review = new StageCompactReview(_session);
                 review.PortraitPixels();
-                var root = _session.actions.root;
+                VisualElement root = _session.actions.root;
                 _output.Check(_session.actions.legacyModuleReadTouches, "Actual input module consumed synthetic touch frames");
                 _output.Check(root.Q("party-panel").worldBound.yMax <= root.Q("command-dock").worldBound.yMin + 1,
                     "Party is immediately above spells");

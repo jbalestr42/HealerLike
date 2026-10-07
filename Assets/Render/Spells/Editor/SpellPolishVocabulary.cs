@@ -240,7 +240,7 @@ namespace HealerLike.Render.Spells.Editor
         // A smooth ring becomes a faceted one of the same size; anything else becomes a chip in its place
         static LookPart[] Facet(LookPart[] parts)
         {
-            var faceted = new LookPart[parts.Length];
+            LookPart[] faceted = new LookPart[parts.Length];
             for (int i = 0; i < parts.Length; i++)
             {
                 faceted[i] = parts[i];

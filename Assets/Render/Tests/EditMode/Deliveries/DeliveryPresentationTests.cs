@@ -8,7 +8,7 @@ namespace HealerLike.Render.Deliveries
         [Test]
         public void ScaleAt_PulseBreathesWithoutShrinkingBelowAuthoredSize()
         {
-            var look = new DeliveryPresentation { size = 1.3f, pulseAmount = 0.2f, pulseFrequency = 2f };
+            DeliveryPresentation look = new DeliveryPresentation { size = 1.3f, pulseAmount = 0.2f, pulseFrequency = 2f };
             Assert.AreEqual(1.3f, look.ScaleAt(0f), 0.0001f);
             Assert.AreEqual(1.56f, look.ScaleAt(0.25f), 0.0001f);
             Assert.AreEqual(1.3f, look.ScaleAt(0.5f), 0.0001f);
@@ -18,7 +18,7 @@ namespace HealerLike.Render.Deliveries
         [Test]
         public void Presets_CoverAllDeliveriesAndAreIdempotent()
         {
-            var vocabulary = ScriptableObject.CreateInstance<DeliveryVocabulary>();
+            DeliveryVocabulary vocabulary = ScriptableObject.CreateInstance<DeliveryVocabulary>();
             try
             {
                 DeliveryPresentationPresets.Apply(vocabulary);
@@ -37,10 +37,10 @@ namespace HealerLike.Render.Deliveries
         [Test]
         public void MissingProfile_PreservesTheAuthoredGeometry()
         {
-            var vocabulary = ScriptableObject.CreateInstance<DeliveryVocabulary>();
+            DeliveryVocabulary vocabulary = ScriptableObject.CreateInstance<DeliveryVocabulary>();
             try
             {
-                var look = vocabulary.GetPresentation(DeliveryStyle.Direct);
+                DeliveryPresentation look = vocabulary.GetPresentation(DeliveryStyle.Direct);
                 Assert.AreEqual(1f, look.ScaleAt(1f));
                 Assert.AreEqual(0f, look.trailSeconds);
             }
@@ -49,7 +49,7 @@ namespace HealerLike.Render.Deliveries
         [Test]
         public void InvalidAuthoredProfiles_FallBackWithoutNonfiniteTransforms()
         {
-            var vocabulary = ScriptableObject.CreateInstance<DeliveryVocabulary>();
+            DeliveryVocabulary vocabulary = ScriptableObject.CreateInstance<DeliveryVocabulary>();
             try
             {
                 System.Action<DeliveryPresentation>[] invalid =
@@ -63,7 +63,7 @@ namespace HealerLike.Render.Deliveries
                 };
                 foreach (var change in invalid)
                 {
-                    var look = new DeliveryPresentation();
+                    DeliveryPresentation look = new DeliveryPresentation();
                     change(look);
                     Assert.IsFalse(look.IsValid());
                     Assert.AreEqual(1f, look.ScaleAt(1f));

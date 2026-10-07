@@ -47,7 +47,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void KindKey_EveryKindButPlain_HasItsOwnElementAndReadsBack()
         {
-            var keys = new HashSet<EffectKey>();
+            HashSet<EffectKey> keys = new HashSet<EffectKey>();
             foreach (EffectKind kind in Authored)
             {
                 EffectKey key = EffectVocabulary.KindKey(kind);
@@ -155,8 +155,8 @@ namespace HealerLike.Render.Spells
         public void Shipped_AuthoredKinds_HaveDistinctConstructions()
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
-            var signatures = new HashSet<string>();
-            var shapes = new HashSet<string>();
+            HashSet<string> signatures = new HashSet<string>();
+            HashSet<string> shapes = new HashSet<string>();
             foreach (EffectKind kind in Authored)
             {
                 ElementEntry entry = vocabulary.GetEntry(EffectVocabulary.KindKey(kind));

@@ -43,7 +43,7 @@ namespace HealerLike.Render.Stage
 
         bool CanBeginPointer(int pointer)
         {
-            var module = EventSystem.current != null ? EventSystem.current.currentInputModule : null;
+            BaseInputModule module = EventSystem.current != null ? EventSystem.current.currentInputModule : null;
             Touch[] samples = Input.touches;
 #if UNITY_EDITOR
             if (captureTouches != null)

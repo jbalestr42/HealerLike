@@ -117,7 +117,7 @@ public sealed class ToolkitCardGesture : IDisposable
 
         _point = evt.position;
         Resolve();
-        var owner = _press.End(evt.pointerId, _point, Time.realtimeSinceStartup);
+        ToolkitPress.Owner owner = _press.End(evt.pointerId, _point, Time.realtimeSinceStartup);
         if (_dragging)
         {
             if (_pressed.canBeginDrag?.Invoke() ?? true)

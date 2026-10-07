@@ -50,9 +50,9 @@ namespace HealerLike.Render.Spells
             }
 
             SpellEffect[] layers = effect.GetComponentsInChildren<SpellEffect>(true);
-            var positions = new Vector3[layers.Length];
-            var rotations = new Quaternion[layers.Length];
-            var scales = new Vector3[layers.Length];
+            Vector3[] positions = new Vector3[layers.Length];
+            Quaternion[] rotations = new Quaternion[layers.Length];
+            Vector3[] scales = new Vector3[layers.Length];
             for (int i = 0; i < layers.Length; i++)
             {
                 positions[i] = layers[i].transform.position;

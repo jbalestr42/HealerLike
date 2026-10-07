@@ -18,7 +18,7 @@ namespace HealerLike.Render.Stage
             }
 
             const int size = 80;
-            var pixels = new Color[size * size];
+            Color[] pixels = new Color[size * size];
             Color ink = symbol == DataIconSymbol.Poison ? new Color32(91, 112, 46, 255)
                 : symbol == DataIconSymbol.Bolt || symbol == DataIconSymbol.Flame ? new Color32(148, 83, 52, 255)
                 : new Color32(37, 100, 86, 255);

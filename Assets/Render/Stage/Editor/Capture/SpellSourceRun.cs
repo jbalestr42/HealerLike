@@ -140,7 +140,7 @@ namespace HealerLike.Render.Stage
                 Object.Destroy(shotObject);
                 shotObject = null;
                 yield return SpellSourceSupport.Capture(_manager, _session, _proof);
-                using (var fixture = new SpellSourceFixture(_manager, _session))
+                using (SpellSourceFixture fixture = new SpellSourceFixture(_manager, _session))
                 {
                     yield return fixture.Capture();
                 }

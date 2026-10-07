@@ -46,10 +46,10 @@ namespace HealerLike.Render.Stage
         public IEnumerator LiveDetails(Button entry)
         {
             Entity entity = (Entity)((ToolkitCardModel)entry.userData).source;
-            var root = _s.actions.root;
+            VisualElement root = _s.actions.root;
             string before = root.Q<Label>("detail-description").text;
             float health = entity.health.Value;
-            var consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
+            ConsumerFactory consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
             consumer.data = new ConsumerData { value = new FlatValue { data = new FlatValueData { value = 7 } } };
             entity.health.AddResourceModifier(ResourceModifier.Create(consumer, entity.gameObject, entity.gameObject));
             yield return Wait(0.3f);
@@ -60,8 +60,8 @@ namespace HealerLike.Render.Stage
                 && root.Q<Label>("detail-title").text == entity.data.title
                 && StageInterfaceOutput.IsVisible(root.Q("detail-panel")),
                 "Persistent details refresh actual health after release without changing inspected subject");
-            var equipment = root.Q<Button>("detail-inventory-button");
-            var viewport = root.Q<ScrollView>("detail-scroll").contentViewport.worldBound;
+            Button equipment = root.Q<Button>("detail-inventory-button");
+            Rect viewport = root.Q<ScrollView>("detail-scroll").contentViewport.worldBound;
             _s.output.Check(equipment.worldBound.xMin >= viewport.xMin - 1 && equipment.worldBound.yMin >= viewport.yMin - 1
                 && equipment.worldBound.xMax <= viewport.xMax + 1 && equipment.worldBound.yMax <= viewport.yMax + 1,
                 "Equipment is fully visible in the initial compact summary without scrolling: " + equipment.worldBound + " inside " + viewport);
@@ -71,8 +71,8 @@ namespace HealerLike.Render.Stage
             _s.output.Check(summaryBounds.yMin >= viewport.yMin - 1 && summaryBounds.yMax <= viewport.yMax + 1,
                 "Initial portrait summary fits before scrolling: " + summaryBounds + " inside " + viewport);
             yield return _s.Capture("07b-persistent-live-health");
-            var foldout = root.Q<Foldout>("detail-attributes");
-            var toggle = foldout.Q<Toggle>();
+            Foldout foldout = root.Q<Foldout>("detail-attributes");
+            Toggle toggle = foldout.Q<Toggle>();
             root.Q<ScrollView>("detail-scroll").ScrollTo(toggle);
             yield return Wait(0.15f);
             Rect target = toggle.worldBound;
@@ -90,7 +90,7 @@ namespace HealerLike.Render.Stage
             yield return Wait(0.15f);
             _s.output.Check(foldout.value && root.Q<Label>("detail-full-stats").text.Contains("Maximum health"),
                 "Actual All attributes tap expands the complete readable attribute list");
-            var scroll = root.Q<ScrollView>("detail-scroll");
+            ScrollView scroll = root.Q<ScrollView>("detail-scroll");
             scroll.scrollOffset = new Vector2(0, foldout.worldBound.yMin - scroll.contentContainer.worldBound.yMin);
             yield return Wait(0.15f);
             yield return _s.Capture("07c-expanded-attributes");
@@ -128,10 +128,10 @@ namespace HealerLike.Render.Stage
         // navigation source classification. Physical polling remains unobserved.
         void Escape(Button spell, bool inspectionOpen, AInteraction targeting)
         {
-            var root = _s.actions.root;
+            VisualElement root = _s.actions.root;
             _s.output.Check(ReferenceEquals(spell.focusController.focusedElement, spell),
                 "Keyboard Escape starts with the compact spell card focused");
-            using (var key = KeyDownEvent.GetPooled(new Event { type = EventType.KeyDown, keyCode = KeyCode.Escape }))
+            using (KeyDownEvent key = KeyDownEvent.GetPooled(new Event { type = EventType.KeyDown, keyCode = KeyCode.Escape }))
             {
                 spell.SendEvent(key);
             }
@@ -158,7 +158,7 @@ namespace HealerLike.Render.Stage
         public IEnumerator KeyboardEscapeOwnership(Button spell)
         {
             const string input = "Synthetic Escape KeyDown plus actual Standalone Cancel; existing OnEscape invoked once, hardware key poll unobserved";
-            var root = _s.actions.root;
+            VisualElement root = _s.actions.root;
             float mana = _s.manager.player.character.mana.Value;
             yield return _s.actions.BringIntoView(spell);
             spell.Focus(); yield return null;
@@ -202,18 +202,18 @@ namespace HealerLike.Render.Stage
 
         public void PortraitPixels()
         {
-            var data = (EntityData)((ToolkitCardModel)_s.actions.Cards("party-list")[0].userData).source;
+            EntityData data = (EntityData)((ToolkitCardModel)_s.actions.Cards("party-list")[0].userData).source;
             Texture2D portrait = _s.actions.ui.iconProvider.GetCreatureIcon(data, Entity.EntityType.Player);
-            var target = RenderTexture.GetTemporary(portrait.width, portrait.height, 0, RenderTextureFormat.ARGB32);
-            var previous = RenderTexture.active;
-            var readable = new Texture2D(portrait.width, portrait.height, TextureFormat.RGBA32, false);
+            RenderTexture target = RenderTexture.GetTemporary(portrait.width, portrait.height, 0, RenderTextureFormat.ARGB32);
+            RenderTexture previous = RenderTexture.active;
+            Texture2D readable = new Texture2D(portrait.width, portrait.height, TextureFormat.RGBA32, false);
             try
             {
                 Graphics.Blit(portrait, target);
                 RenderTexture.active = target;
                 readable.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
                 readable.Apply();
-                var pixels = readable.GetPixels32();
+                Color32[] pixels = readable.GetPixels32();
                 int transparent = pixels.Count(c => c.a == 0), opaque = pixels.Count(c => c.a == 255);
                 _s.output.Check(transparent > pixels.Length / 2 && opaque > 500,
                     "Native 256px portrait contains transparent clear and opaque creature pixels: " + transparent + "/" + opaque);

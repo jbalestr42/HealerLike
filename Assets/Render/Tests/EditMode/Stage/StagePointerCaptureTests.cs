@@ -16,18 +16,18 @@ namespace HealerLike.Render.Stage
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             yield return new EnterPlayMode();
-            var host = new GameObject("Captured roster test");
-            var settings = ScriptableObject.CreateInstance<PanelSettings>();
-            var system = host.AddComponent<EventSystem>();
+            GameObject host = new GameObject("Captured roster test");
+            PanelSettings settings = ScriptableObject.CreateInstance<PanelSettings>();
+            EventSystem system = host.AddComponent<EventSystem>();
             host.AddComponent<StandaloneInputModule>();
-            var input = host.AddComponent<StageTouchInput>();
-            var document = host.AddComponent<UIDocument>();
+            StageTouchInput input = host.AddComponent<StageTouchInput>();
+            UIDocument document = host.AddComponent<UIDocument>();
             document.panelSettings = settings;
-            var root = document.rootVisualElement;
+            VisualElement root = document.rootVisualElement;
             root.pickingMode = PickingMode.Ignore;
             root.style.position = Position.Absolute;
             root.style.left = root.style.top = root.style.right = root.style.bottom = 0;
-            var card = new VisualElement();
+            VisualElement card = new VisualElement();
             card.style.width = card.style.height = 80;
             root.Add(card);
             yield return null;
@@ -40,7 +40,7 @@ namespace HealerLike.Render.Stage
             card.CapturePointer(PointerId.mousePointerId);
             yield return null;
             Assert.That(card.HasPointerCapture(PointerId.mousePointerId), Is.True);
-            var hits = new List<RaycastResult>();
+            List<RaycastResult> hits = new List<RaycastResult>();
             system.RaycastAll(new PointerEventData(system) { pointerId = -1, position = onBoard }, hits);
             Assert.That(hits.Exists(hit => hit.module is PanelRaycaster), Is.True,
                 "Reproduce the captured panel hit outside the roster.");

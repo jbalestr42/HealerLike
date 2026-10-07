@@ -23,7 +23,7 @@ public sealed class ToolkitHudGlyph : VisualElement
             }
 
             button.text = "";
-            var surface = new VisualElement { pickingMode = PickingMode.Ignore };
+            VisualElement surface = new VisualElement { pickingMode = PickingMode.Ignore };
             surface.AddToClassList("hud-icon-surface");
             surface.Add(new ToolkitHudGlyph(kind));
             button.Add(surface);
@@ -31,7 +31,7 @@ public sealed class ToolkitHudGlyph : VisualElement
     }
     void Draw(MeshGenerationContext context)
     {
-        var p = context.painter2D;
+        Painter2D p = context.painter2D;
         p.strokeColor = new Color(0.97f, 0.96f, 0.87f); p.lineWidth = 1.5f;
         if (_kind == "pause") { Line(p, 7, 4, 7, 19); Line(p, 15, 4, 15, 19); }
         else if (_kind == "inventory")

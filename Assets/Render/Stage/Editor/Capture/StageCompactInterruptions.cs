@@ -19,7 +19,7 @@ namespace HealerLike.Render.Stage
                 int before = _s.manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
                 float mana = _s.manager.player.character.mana.Value;
                 Vector2 point = StageInterfaceActions.ScreenPoint(card);
-                using (var touch = new StagePresentationTouch(_s.actions))
+                using (StagePresentationTouch touch = new StagePresentationTouch(_s.actions))
                 {
                     yield return touch.Frame(TouchPhase.Began, point);
                     yield return touch.Frame(TouchPhase.Moved, point + Vector2.up * 48);

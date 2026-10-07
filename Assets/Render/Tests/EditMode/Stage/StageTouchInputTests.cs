@@ -25,12 +25,12 @@ namespace HealerLike.Render.Stage
         [Test]
         public void PointerStartGateOnlyInterpretsLegacyTouchIdsForStandaloneModule()
         {
-            var host = new GameObject("Pointer module fixture");
+            GameObject host = new GameObject("Pointer module fixture");
             host.SetActive(false);
             try
             {
                 var legacy = host.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
-                var samples = new[] { new Touch { fingerId = 2, phase = TouchPhase.Began } };
+                Touch[] samples = new[] { new Touch { fingerId = 2, phase = TouchPhase.Began } };
                 int pointer = UnityEngine.UIElements.PointerId.touchPointerIdBase + 2;
                 Assert.That(StageTouchInput.CanBeginPointer(legacy, pointer, samples), Is.True);
                 samples[0] = new Touch { fingerId = 2, phase = TouchPhase.Ended };
@@ -56,12 +56,12 @@ namespace HealerLike.Render.Stage
         {
             _fixture.WithInput((input, manager, interaction) =>
             {
-                var root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
-                var view = new ToolkitGameView(root);
-                var ui = manager.gameObject.AddComponent<ToolkitGameUI>();
+                TemplateContainer root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+                ToolkitGameView view = new ToolkitGameView(root);
+                ToolkitGameUI ui = manager.gameObject.AddComponent<ToolkitGameUI>();
                 TestHelpers.SetPrivateField(ui, "_view", view);
                 input.Init(manager);
-                using (var popover = new ToolkitPopover(view))
+                using (ToolkitPopover popover = new ToolkitPopover(view))
                 {
                     popover.Open(new ToolkitCardModel { title = "Persistent creature" });
                     input.ProcessTouch(2, TouchPhase.Began, Vector2.left);
@@ -86,7 +86,7 @@ namespace HealerLike.Render.Stage
         {
             var order = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(StageTouchInput),
                 typeof(DefaultExecutionOrder));
-            var scripts = UnityEditor.AssetDatabase.FindAssets("EventSystem t:MonoScript", new[] { "Packages/com.unity.ugui" });
+            string[] scripts = UnityEditor.AssetDatabase.FindAssets("EventSystem t:MonoScript", new[] { "Packages/com.unity.ugui" });
             bool checkedSystem = false;
             foreach (string guid in scripts)
             {

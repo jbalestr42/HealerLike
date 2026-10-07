@@ -108,7 +108,7 @@ namespace HealerLike.Render.Spells.Editor
 
             SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>(
                 "Assets/Render/Spells/Data/SpellLooks.asset");
-            var handlers = new HashSet<ABuffHandlerFactory>();
+            HashSet<ABuffHandlerFactory> handlers = new HashSet<ABuffHandlerFactory>();
             foreach (ABuffHandlerFactory handler in Resources.FindObjectsOfTypeAll<ABuffHandlerFactory>())
             {
                 if (handler)

@@ -94,7 +94,7 @@ namespace HealerLike.Render.Stage
                         int outlets = recipe.parts.Count(p => p.isSource);
                         Label(channels.side + "  " + LookComposer.Copies(channels.count) + " / " + outlets + " outlets",
                             0.04f, 1f - y + 0.06f, 11);
-                        using var source = new CastSourceLease(rig);
+                        using CastSourceLease source = new CastSourceLease(rig);
                         source.TryGet(out Vector3 start);
                         foreach (Transform partTransform in rig.root.GetComponentsInChildren<Transform>(true))
                         {
@@ -139,7 +139,7 @@ namespace HealerLike.Render.Stage
 
         void Label(string text, float x, float y, int size)
         {
-            var label = new Label(text);
+            Label label = new Label(text);
             label.style.position = Position.Absolute;
             label.style.left = Length.Percent(x * 100f);
             label.style.top = Length.Percent(y * 100f);

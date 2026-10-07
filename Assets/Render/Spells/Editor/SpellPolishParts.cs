@@ -31,7 +31,7 @@ namespace HealerLike.Render.Spells.Editor
         public static LookPart[] Petals(string id, int count, float radius, float height, Vector3 size,
             bool mineral = false, float lean = 0, float angleOffset = 0)
         {
-            var parts = new LookPart[count];
+            LookPart[] parts = new LookPart[count];
             for (int i = 0; i < count; i++)
             {
                 int slot = count == 6 ? (i % 3) * 2 + i / 3 : i;
@@ -45,7 +45,7 @@ namespace HealerLike.Render.Spells.Editor
 
         public static LookPart[] Motes(string id, int count, float radius, float height, float size, bool drops)
         {
-            var parts = new LookPart[count];
+            LookPart[] parts = new LookPart[count];
             for (int i = 0; i < count; i++)
             {
                 parts[i] = Part(id + i, drops ? Primitive.Cone : Primitive.Sphere,
@@ -60,7 +60,7 @@ namespace HealerLike.Render.Spells.Editor
 
         public static LookPart[] Heal()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             // Three readable leaves form the smallest heal; larger heals add a constellation of pearls.
             parts.AddRange(Petals("Healing leaf ", 3, 1.65f, -0.12f,
                 new Vector3(0.65f, 1.15f, 0.24f), false, 18));
@@ -70,7 +70,7 @@ namespace HealerLike.Render.Spells.Editor
 
         public static LookPart[] Stalks()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             LookPart[] crowns = Petals("Renewal petal ", 6, 1.55f, 1.2f, new Vector3(0.6f, 0.85f, 0.25f));
             for (int i = 0; i < crowns.Length; i++)
             {
@@ -86,7 +86,7 @@ namespace HealerLike.Render.Spells.Editor
 
         public static LookPart[] Beam()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             for (int i = 0; i < 12; i++)
             {
                 LookPart segment = Part("Ribbon segment " + i, Primitive.CylinderSegment,
@@ -105,7 +105,7 @@ namespace HealerLike.Render.Spells.Editor
 
         public static LookPart[] Burst()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             for (int i = 0; i < 6; i++)
             {
                 float angle = i * 60f * Mathf.Deg2Rad;
@@ -121,7 +121,7 @@ namespace HealerLike.Render.Spells.Editor
 
         public static LookPart[] Press()
         {
-            var parts = new LookPart[5];
+            LookPart[] parts = new LookPart[5];
             for (int i = 0; i < parts.Length; i++)
             {
                 parts[i] = Part("Pressure thorn " + i, Primitive.Cone, ShapeProfile.Shard(0.9f, 0),
@@ -138,7 +138,7 @@ namespace HealerLike.Render.Spells.Editor
 
         public static LookPart[] Zone(bool hostile)
         {
-            var parts = new List<LookPart> { Ring("Boundary", 2f, 0.16f, 0.09f),
+            List<LookPart> parts = new List<LookPart> { Ring("Boundary", 2f, 0.16f, 0.09f),
                 Ring("Inner boundary", 1.82f, 0.13f, 0.075f) };
             parts.AddRange(Petals("Boundary marker ", 8, 0.95f, 0.18f,
                 new Vector3(0.12f, hostile ? 0.22f : 0.17f, 0.06f), hostile, hostile ? 30 : 90));
@@ -153,7 +153,7 @@ namespace HealerLike.Render.Spells.Editor
         // fletching leaves; every part sits on that axis so the spin turns it whole
         public static LookPart[] Dart()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             // In front of the body and to one side, so the body never hides it from the board camera
             Vector3 axis = new Vector3(1.35f, 0, -0.7f);
             parts.Add(Part("Dart blade", Primitive.Leaf, ShapeProfile.Leaf(0.04f, 0.5f), axis + Vector3.up * 0.2f,
@@ -172,7 +172,7 @@ namespace HealerLike.Render.Spells.Editor
         // Volume: a dense clump of many small seeds, each pointing out of the clump
         public static LookPart[] Seeds()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             int count = 13;
             for (int i = 0; i < count; i++)
             {
@@ -190,7 +190,7 @@ namespace HealerLike.Render.Spells.Editor
         // Rate: a tight stack of thin rings, one beat per ring
         public static LookPart[] Cadence()
         {
-            var parts = new LookPart[5];
+            LookPart[] parts = new LookPart[5];
             for (int i = 0; i < parts.Length; i++)
             {
                 parts[i] = Ring("Cadence ring " + i, 2.5f - 0.12f * (i % 2), -0.35f + 0.2f * i, 0.07f);
@@ -203,7 +203,7 @@ namespace HealerLike.Render.Spells.Editor
         // feet, that open and close
         public static LookPart[] Brackets()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             for (int i = 0; i < 2; i++)
             {
                 float side = i == 0 ? 1f : -1f;
@@ -223,7 +223,7 @@ namespace HealerLike.Render.Spells.Editor
         // neighbouring cells
         public static LookPart[] Footring()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             for (int i = 0; i < 8; i++)
             {
                 float turn = i * 45f + 22.5f;
@@ -257,7 +257,7 @@ namespace HealerLike.Render.Spells.Editor
         // the coil, in front and to one side so the body never hides it
         public static LookPart[] Spark()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             Vector3 coil = new Vector3(-1.35f, 0.5f, -0.8f);
             parts.Add(Part("Spark coil", Primitive.Torus, ShapeProfile.Ring(0.16f), coil, new Vector3(1.3f, 0.2f, 1.3f),
                 new Vector3(70, 0, 0)));
@@ -275,7 +275,7 @@ namespace HealerLike.Render.Spells.Editor
         // Echo: one leaf blade struck and two copies of it trailing behind, each smaller and further back
         public static LookPart[] Echo()
         {
-            var parts = new LookPart[3];
+            LookPart[] parts = new LookPart[3];
             for (int i = 0; i < parts.Length; i++)
             {
                 float shrink = 1f - 0.18f * i;
@@ -328,7 +328,7 @@ namespace HealerLike.Render.Spells.Editor
 
         public static LookPart[] Stem()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             for (int i = 0; i < 4; i++)
             {
                 parts.Add(Part("Growth segment " + i, Primitive.CylinderSegment, ShapeProfile.Segment(0.16f, 0.78f),
@@ -358,7 +358,7 @@ namespace HealerLike.Render.Spells.Editor
 
         public static LookPart[] Chips(string id, int count, float radius, float height, float size)
         {
-            var parts = new LookPart[count];
+            LookPart[] parts = new LookPart[count];
             for (int i = 0; i < count; i++)
             {
                 parts[i] = Part(id + i, Primitive.Boulder, Slab(0.6f),
@@ -373,7 +373,7 @@ namespace HealerLike.Render.Spells.Editor
         // around a chipped core
         public static LookPart[] StoneBurst()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             float[] lengths = { 1.7f, 1.2f, 1.55f, 1.05f, 1.6f, 1.3f, 1.15f };
             for (int i = 0; i < lengths.Length; i++)
             {
@@ -393,7 +393,7 @@ namespace HealerLike.Render.Spells.Editor
         // slabs always show and a larger heal adds a course to every stack
         public static LookPart[] StoneRise()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             int[] courses = { 3, 3, 2 };
             for (int course = 0; course < courses.Length; course++)
             {
@@ -414,7 +414,7 @@ namespace HealerLike.Render.Spells.Editor
         // wedges; each stack adds a wedge under its rim
         public static LookPart[] StonePress()
         {
-            var parts = new LookPart[5];
+            LookPart[] parts = new LookPart[5];
             parts[0] = Part("Capstone", Primitive.Boulder, ShapeProfile.Block(0.1f, 0.05f, 0.12f, 0.35f, 0.1f),
                 new Vector3(0, 0.62f, 0), new Vector3(1.7f, 0.32f, 1.45f), new Vector3(0, 21f, 3f));
             for (int i = 1; i < parts.Length; i++)
@@ -436,7 +436,7 @@ namespace HealerLike.Render.Spells.Editor
         // Reactive: a faceted ring at the shoulder round a chipped core, three straight shards snapping out of it
         public static LookPart[] StoneSpark()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             Vector3 coil = new Vector3(-1.35f, 0.5f, -0.8f);
             parts.Add(Part("Spark ring", Primitive.Torus, ShapeProfile.Ring(0.16f, true), coil, new Vector3(1.3f, 0.2f, 1.3f),
                 new Vector3(70, 0, 0)));
@@ -455,7 +455,7 @@ namespace HealerLike.Render.Spells.Editor
         // Echo: one straight shard struck and two copies of it trailing behind, each smaller and further back
         public static LookPart[] StoneEcho()
         {
-            var parts = new LookPart[3];
+            LookPart[] parts = new LookPart[3];
             for (int i = 0; i < parts.Length; i++)
             {
                 float shrink = 1f - 0.18f * i;
@@ -501,7 +501,7 @@ namespace HealerLike.Render.Spells.Editor
         // stone bud (a shard) on top, listed from the ground up so each stack shows one more of them
         public static LookPart[] StoneStem()
         {
-            var parts = new List<LookPart>();
+            List<LookPart> parts = new List<LookPart>();
             for (int i = 0; i < 4; i++)
             {
                 parts.Add(Part("Growth course " + i, Primitive.Boulder, Slab(0.45f), StemFrom(i) + StemLean * 0.5f,

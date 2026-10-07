@@ -139,7 +139,7 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void DetrimentalBuff_WinsOverPositiveUpgrade()
         {
-            var attributes = new Dictionary<AttributeType, Attribute>();
+            Dictionary<AttributeType, Attribute> attributes = new Dictionary<AttributeType, Attribute>();
             Attribute damage = new Attribute(20f) { BaseValue = 10f };
             Attribute speed = new Attribute(1f) { BaseValue = 2f };
             attributes.Add(AttributeType.Damage, damage);

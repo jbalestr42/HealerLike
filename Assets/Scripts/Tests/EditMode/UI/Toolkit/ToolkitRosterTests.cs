@@ -11,31 +11,31 @@ namespace UI.Toolkit
         [Test]
         public void DraggingSecondIdenticalChoiceRetainsBothSlotsWhenGameplayConsumesTheFirst()
         {
-            var root = new GameObject("Identical roster fixture");
+            GameObject root = new GameObject("Identical roster fixture");
             root.SetActive(false);
-            var data = ScriptableObject.CreateInstance<EntityData>();
+            EntityData data = ScriptableObject.CreateInstance<EntityData>();
             try
             {
-                var a = root.AddComponent<SelectEntityButton>(); a.data = data;
-                var b = root.AddComponent<SelectEntityButton>(); b.data = data;
+                SelectEntityButton a = root.AddComponent<SelectEntityButton>(); a.data = data;
+                SelectEntityButton b = root.AddComponent<SelectEntityButton>(); b.data = data;
                 Entity deployed = null;
                 TestHelpers.WithLoggingDisabled(() => deployed = root.AddComponent<Entity>());
                 deployed.data = data;
-                var legacy = root.AddComponent<GameView>();
+                GameView legacy = root.AddComponent<GameView>();
                 TestHelpers.SetPrivateField(legacy, "_entityInventory", root.AddComponent<EntityInventory>());
-                var choices = new List<SelectEntityButton> { a, b };
+                List<SelectEntityButton> choices = new List<SelectEntityButton> { a, b };
                 TestHelpers.SetPrivateField(legacy.entityInventory, "_entityButtons", choices);
-                var entities = root.AddComponent<EntityManager>();
+                EntityManager entities = root.AddComponent<EntityManager>();
                 TestHelpers.SetPrivateField(entities, "_entities", new Dictionary<Entity.EntityType, List<GameObject>>());
-                var context = new ToolkitGameContext { legacy = legacy, entities = entities };
-                var tree = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
-                var view = new ToolkitGameView(tree);
+                ToolkitGameContext context = new ToolkitGameContext { legacy = legacy, entities = entities };
+                TemplateContainer tree = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+                ToolkitGameView view = new ToolkitGameView(tree);
                 try
                 {
-                    var panel = new ToolkitPartyPanel();
+                    ToolkitPartyPanel panel = new ToolkitPartyPanel();
                     panel.Init(context, view, null);
                     panel.Refresh(true);
-                    var cards = tree.Q("party-list").Query<Button>("data-card").ToList();
+                    List<Button> cards = tree.Q("party-list").Query<Button>("data-card").ToList();
                     string[] keys = cards.Select(c => ((ToolkitCardModel)c.userData).key).ToArray();
                     // Exercise the production callback, including its choice bookkeeping.
                     ((ToolkitCardModel)cards[1].userData).deployed(deployed);
@@ -46,7 +46,7 @@ namespace UI.Toolkit
                     {
                         panel.Refresh(true);
                         cards = tree.Q("party-list").Query<Button>("data-card").ToList();
-                        var models = cards.Select(c => (ToolkitCardModel)c.userData).ToArray();
+                        ToolkitCardModel[] models = cards.Select(c => (ToolkitCardModel)c.userData).ToArray();
                         Assert.That(models.Select(m => m.key), Is.EqualTo(keys));
                         Assert.That(models.Length, Is.EqualTo(2));
                         Assert.That(models[0].source, Is.SameAs(data));
@@ -63,16 +63,16 @@ namespace UI.Toolkit
         [Test]
         public void SameDataChoicesKeepDistinctIdentityAndOrderAcrossDeployment()
         {
-            var root = new GameObject("Roster fixture");
-            var data = ScriptableObject.CreateInstance<EntityData>();
+            GameObject root = new GameObject("Roster fixture");
+            EntityData data = ScriptableObject.CreateInstance<EntityData>();
             try
             {
-                var a = root.AddComponent<SelectEntityButton>(); a.data = data;
-                var b = root.AddComponent<SelectEntityButton>(); b.data = data;
+                SelectEntityButton a = root.AddComponent<SelectEntityButton>(); a.data = data;
+                SelectEntityButton b = root.AddComponent<SelectEntityButton>(); b.data = data;
                 Entity deployed = null;
                 TestHelpers.WithLoggingDisabled(() => deployed = root.AddComponent<Entity>());
                 deployed.data = data;
-                var roster = new ToolkitRoster();
+                ToolkitRoster roster = new ToolkitRoster();
                 roster.Sync(new[] { a, b }, new Entity[0]);
                 string first = roster.entries[0].key, second = roster.entries[1].key;
                 Assert.That(first, Is.Not.EqualTo(second));

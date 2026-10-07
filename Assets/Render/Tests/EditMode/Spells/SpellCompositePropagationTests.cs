@@ -37,14 +37,14 @@ namespace HealerLike.Render.Spells
 
         static EffectRecipe Recipe(EffectCount count = EffectCount.Fixed)
         {
-            var parts = new LookPart[4];
+            LookPart[] parts = new LookPart[4];
             for (int i = 0; i < parts.Length; i++)
             {
                 parts[i] = new LookPart { id = "part" + i, primitive = Primitive.Sphere,
                     role = PartRole.Body, size = Vector3.one * 0.1f, position = Vector3.right * i * 0.2f };
             }
 
-            var entry = new ElementEntry { parts = parts, count = count, cycleSeconds = 1f,
+            ElementEntry entry = new ElementEntry { parts = parts, count = count, cycleSeconds = 1f,
                 motion = EffectMotionKind.Orbit, socket = EffectSocket.Body,
                 presentation = new EffectPresentation { avoidHead = false } };
             return new EffectRecipe { entry = entry, element = EffectKey.Orbit,
@@ -80,7 +80,7 @@ namespace HealerLike.Render.Spells
             asset.recipe.additions = new[] { Recipe(EffectCount.Stacks) };
             asset.recipe.additions[0].additions = new[] { Recipe(EffectCount.Charges) };
             looks.buffs[factory] = new SpellLook { recipe = asset };
-            var pool = new StatusPool();
+            StatusPool pool = new StatusPool();
             pool.Init(_host.transform, RenderTestAssets.LoadEffectVocabulary(), looks,
                 RenderTestAssets.LoadMeshes(), RenderTestAssets.LoadLookMaterial());
             try

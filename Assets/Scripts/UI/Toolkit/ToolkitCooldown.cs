@@ -23,7 +23,7 @@ public sealed class ToolkitCooldown : VisualElement
             return;
         }
 
-        var painter = context.painter2D;
+        Painter2D painter = context.painter2D;
         Vector2 center = contentRect.center;
         float radius = Mathf.Min(contentRect.width, contentRect.height) * 0.5f;
         painter.fillColor = new Color(0.02f, 0.08f, 0.08f, 0.72f);

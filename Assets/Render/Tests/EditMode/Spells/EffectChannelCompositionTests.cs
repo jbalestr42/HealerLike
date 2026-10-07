@@ -39,7 +39,7 @@ namespace HealerLike.Render.Spells
 
         static ElementEntry Entry(int count = 1)
         {
-            var parts = new LookPart[count];
+            LookPart[] parts = new LookPart[count];
             for (int i = 0; i < count; i++)
             {
                 parts[i] = new LookPart { id = "part" + i, primitive = Primitive.Sphere,
@@ -86,7 +86,7 @@ namespace HealerLike.Render.Spells
         [Test]
         public void AllChannels_StackInDeclarationOrderEvenOnTheSameSocket()
         {
-            var entries = new ElementEntry[5];
+            ElementEntry[] entries = new ElementEntry[5];
             for (int i = 0; i < entries.Length; i++)
             {
                 Select(i, entries[i] = Entry());

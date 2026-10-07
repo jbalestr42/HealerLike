@@ -22,9 +22,9 @@ namespace HealerLike.Render.Grass
         [Test]
         public void Ring_StateAndMotionShareFrontAndReleaseTogether()
         {
-            var effect = new GroundEffect { shape = GroundShape.Ring, grow = 0.4f, release = 0.2f,
+            GroundEffect effect = new GroundEffect { shape = GroundShape.Ring, grow = 0.4f, release = 0.2f,
                 lifetime = 1f, minBand = 0.1f, band = 0.1f, kick = 20f, light = 1f };
-            var stamps = new GroundStamp[3];
+            GroundStamp[] stamps = new GroundStamp[3];
             Assert.AreEqual(2, effect.Write(stamps, 0, Vector2.zero, Vector2.zero, 4f, 1f, 0.2f, false));
             Assert.AreEqual(GroundStampKind.Front, stamps[0].kind);
             Assert.AreEqual(GroundStampKind.Annulus, stamps[1].kind);
@@ -39,8 +39,8 @@ namespace HealerLike.Render.Grass
         [Test]
         public void StateOnlyRing_WritesWithinAvailableCapacity()
         {
-            var effect = new GroundEffect { shape = GroundShape.Ring, grow = 0.4f, release = 0.2f, ash = 1f };
-            var stamps = new GroundStamp[1];
+            GroundEffect effect = new GroundEffect { shape = GroundShape.Ring, grow = 0.4f, release = 0.2f, ash = 1f };
+            GroundStamp[] stamps = new GroundStamp[1];
             Assert.AreEqual(1, effect.Write(stamps, 0, Vector2.zero, Vector2.zero, 2f, 1f, 0.2f, false));
             Assert.AreEqual(GroundStampKind.Annulus, stamps[0].kind);
             Assert.AreEqual(0, effect.Write(stamps, 1, Vector2.zero, Vector2.zero, 2f, 1f, 0.2f, false));

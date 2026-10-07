@@ -16,7 +16,7 @@ namespace HealerLike.Render.Stage
             Vector2 point = StageInterfaceActions.ScreenPoint(button);
             Vector3 camera = _session.manager.gameCamera.transform.position;
             Rect viewport = _session.actions.ui.normalizedWorldViewport;
-            using (var touch = new StagePresentationTouch(_session.actions))
+            using (StagePresentationTouch touch = new StagePresentationTouch(_session.actions))
             {
                 yield return touch.Frame(TouchPhase.Began, point);
                 yield return Still(touch, point, 0.55f);
@@ -47,7 +47,7 @@ namespace HealerLike.Render.Stage
         {
             yield return _session.actions.BringIntoView(button);
             Vector2 start = StageInterfaceActions.ScreenPoint(button);
-            using (var touch = new StagePresentationTouch(_session.actions))
+            using (StagePresentationTouch touch = new StagePresentationTouch(_session.actions))
             {
                 yield return touch.Frame(TouchPhase.Began, start);
                 yield return touch.Frame(TouchPhase.Moved, start + Vector2.up * 48);
@@ -78,7 +78,7 @@ namespace HealerLike.Render.Stage
         {
             yield return _session.actions.BringIntoView(button);
             Vector2 start = StageInterfaceActions.ScreenPoint(button);
-            using (var touch = new StagePresentationTouch(_session.actions))
+            using (StagePresentationTouch touch = new StagePresentationTouch(_session.actions))
             {
                 yield return touch.Frame(TouchPhase.Began, start);
                 yield return touch.Frame(TouchPhase.Moved, start + Vector2.left * 80);

@@ -81,7 +81,7 @@ namespace HealerLike.Render.Creatures
         public void Reset_RestoresSourceMetadata_AndLiveAnchorReadsReuseAcceptedStorage()
         {
             GrowthStoneVocabulary.Apply(_vocabulary);
-            foreach (var head in _vocabulary.heads.Values)
+            foreach (LookVocabulary.HeadEntry head in _vocabulary.heads.Values)
             {
                 Assert.IsTrue(head.plant.Any(p => p.isSource));
                 Assert.IsTrue(head.stone.Any(p => p.isSource));
@@ -98,7 +98,7 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void Migration_PreservesEveryExistingFieldAndPalette_AndIsIdempotent()
         {
-            foreach (var entry in _vocabulary.heads.Values)
+            foreach (LookVocabulary.HeadEntry entry in _vocabulary.heads.Values)
             {
                 foreach (LookPart[] parts in new[] { entry.plant, entry.stone })
                 {
@@ -109,13 +109,13 @@ namespace HealerLike.Render.Creatures
 
             var before = _vocabulary.heads.ToDictionary(e => e.Key,
                 e => new[] { (LookPart[])e.Value.plant.Clone(), (LookPart[])e.Value.stone.Clone() });
-            var palette = _vocabulary.palette;
+            LookPalette palette = _vocabulary.palette;
             string colours = EditorJsonUtility.ToJson(palette);
             CreatureSourceMigration.Apply(_vocabulary);
             CreatureSourceMigration.Apply(_vocabulary);
             foreach (var entry in _vocabulary.heads)
             {
-                var arrays = new[] { entry.Value.plant, entry.Value.stone };
+                LookPart[][] arrays = new[] { entry.Value.plant, entry.Value.stone };
                 for (int side = 0; side < 2; side++)
                 {
                     for (int i = 0; i < arrays[side].Length; i++)
@@ -139,8 +139,8 @@ namespace HealerLike.Render.Creatures
             _rig = RenderTestAssets.CreateRig(_recipe, _parent.transform, _material);
             _pool = new ArmPool();
             _pool.Init(_rig, _material, RenderTestAssets.LoadMeshes(), RenderTestAssets.LoadDeliveryVocabulary());
-            using var lease = new CastSourceLease(_rig, 0);
-            using var same = new CastSourceLease(_rig, 10);
+            using CastSourceLease lease = new CastSourceLease(_rig, 0);
+            using CastSourceLease same = new CastSourceLease(_rig, 10);
             Assert.AreEqual(lease.sourceId, same.sourceId);
             Assert.IsTrue(_pool.BeginDelivery(17, DeliveryStyle.Direct, null, Vector3.one * 4f));
             string heldId = lease.sourceId;
@@ -182,7 +182,7 @@ namespace HealerLike.Render.Creatures
         {
             _recipe = RenderTestAssets.CreateRecipe();
             _rig = RenderTestAssets.CreateRig(_recipe, _parent.transform, _material);
-            using var lease = new CastSourceLease(_rig);
+            using CastSourceLease lease = new CastSourceLease(_rig);
             Assert.IsTrue(lease.TryGet(out Vector3 point));
             _rig.TryGetAnchors(out EffectAnchors anchors);
             Assert.AreEqual(anchors.castPoint, point);

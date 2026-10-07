@@ -49,8 +49,8 @@ namespace HealerLike.Render.Spells
             try
             {
                 vocabulary.palette = palette;
-                var cell = new EffectCell(EffectOperation.Heal, EffectAspect.Defence);
-                var custom = new EffectCellEntry(EffectKey.Bud, EffectKey.Stalks, true);
+                EffectCell cell = new EffectCell(EffectOperation.Heal, EffectAspect.Defence);
+                EffectCellEntry custom = new EffectCellEntry(EffectKey.Bud, EffectKey.Stalks, true);
                 vocabulary.legacyTable[cell] = custom;
                 SpellPolishVocabulary.Apply(vocabulary);
                 Assert.That(vocabulary.palette, Is.SameAs(palette));

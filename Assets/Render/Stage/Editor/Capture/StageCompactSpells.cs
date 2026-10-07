@@ -35,7 +35,7 @@ namespace HealerLike.Render.Stage
             _s.output.Check(Physics.Raycast(_s.manager.gameCamera.ScreenPointToRay(board), out RaycastHit holdHit,
                 Mathf.Infinity, targeting.GetLayerMask()) && holdHit.collider.gameObject == entity.gameObject,
                 "World hold aims at the actual gameplay collider of the inspected creature");
-            using (var touch = new StagePresentationTouch(_s.actions))
+            using (StagePresentationTouch touch = new StagePresentationTouch(_s.actions))
             {
                 yield return touch.Frame(TouchPhase.Began, board);
                 yield return StageCompactGestures.Still(touch, board, 0.55f);
@@ -53,7 +53,7 @@ namespace HealerLike.Render.Stage
                 "Held world-creature release consumes press without casting targeted spell");
             yield return new StageCompactReview(_s).OutsideDismiss("11b-world-outside-dismissal");
             Vector2 unrelated = StageInterfaceActions.ScreenPoint(_s.actions.root.Q("wave-label"));
-            using (var touch = new StagePresentationTouch(_s.actions))
+            using (StagePresentationTouch touch = new StagePresentationTouch(_s.actions))
             {
                 yield return touch.Frame(TouchPhase.Began, unrelated);
                 yield return touch.Frame(TouchPhase.Moved, board);
@@ -78,7 +78,7 @@ namespace HealerLike.Render.Stage
             yield return _s.Capture("12-cooldown");
             yield return _gestures.Hold(spell, "13-disabled-spell-hold", false);
             // Explicit capture fixture: drain through a public resource consumer, then restore using Refill.
-            var consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
+            ConsumerFactory consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
             consumer.data = new ConsumerData { value = new FlatValue { data = new FlatValueData { value = 10000 } } };
             character.mana.AddResourceModifier(ResourceModifier.Create(consumer, character.gameObject, character.gameObject));
             yield return Wait(0.2f);
@@ -116,7 +116,7 @@ namespace HealerLike.Render.Stage
                     Mathf.Infinity, targeting.GetLayerMask()) && targeting.IsValidTarget(reprojected.collider.gameObject),
                 "Combat target is reprojected against the current camera after contextual viewport change");
             before = character.mana.Value;
-            using (var touch = new StagePresentationTouch(_s.actions))
+            using (StagePresentationTouch touch = new StagePresentationTouch(_s.actions))
             {
                 yield return touch.Frame(TouchPhase.Began, board);
                 Vector2 release = _s.manager.gameCamera.WorldToScreenPoint(entity.GetComponent<Collider>().bounds.center);

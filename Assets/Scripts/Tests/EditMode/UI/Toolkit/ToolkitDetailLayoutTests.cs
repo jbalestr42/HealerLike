@@ -79,10 +79,10 @@ namespace UI.Toolkit
             {
                 ToolkitTheme.Apply(_root, theme);
                 Resize(390f, 844f);
-                var foldout = _root.Q<Foldout>("detail-attributes");
+                Foldout foldout = _root.Q<Foldout>("detail-attributes");
                 foldout.RemoveFromClassList("is-hidden");
                 yield return null; yield return null;
-                var toggle = foldout.Q<Toggle>();
+                Toggle toggle = foldout.Q<Toggle>();
                 Debug.Log("All attributes resolved target: " + toggle.worldBound);
                 Assert.That(toggle.worldBound.height, Is.GreaterThanOrEqualTo(44f));
             }

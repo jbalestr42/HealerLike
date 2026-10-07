@@ -156,7 +156,7 @@ namespace HealerLike.Render.Grammar
         [Test]
         public void Rows_CoverEveryLiveHandlerAsset()
         {
-            var expected = new HashSet<string>();
+            HashSet<string> expected = new HashSet<string>();
             foreach (SpellChannelAssetPinningTests.HandlerRow row in SpellChannelAssetPinningTests.HandlerRows)
             {
                 expected.Add(row.path);
@@ -269,7 +269,7 @@ namespace HealerLike.Render.Grammar
 
         static List<object> GrowingItems()
         {
-            var items = new List<object>();
+            List<object> items = new List<object>();
             foreach (string guid in AssetDatabase.FindAssets("t:ScriptableObject", new[] { "Assets/Data/EntityItems",
                 "Assets/Data/EventItems" }))
             {

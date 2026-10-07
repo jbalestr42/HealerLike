@@ -65,7 +65,7 @@ namespace HealerLike.Render.Spells
         }
         public SpellEffect Get(GameObject target, ABuffHandlerFactory factory)
         {
-            if (_handlers.TryGetValue(new HandlerKey(target, factory), out var keys))
+            if (_handlers.TryGetValue(new HandlerKey(target, factory), out List<StatusKey> keys))
             {
                 foreach (StatusKey key in keys)
                 {
@@ -80,7 +80,7 @@ namespace HealerLike.Render.Spells
         }
         public int Stacks(GameObject target, ABuffHandlerFactory factory)
         {
-            if (_handlers.TryGetValue(new HandlerKey(target, factory), out var keys))
+            if (_handlers.TryGetValue(new HandlerKey(target, factory), out List<StatusKey> keys))
             {
                 foreach (StatusKey key in keys)
                 {
@@ -102,7 +102,7 @@ namespace HealerLike.Render.Spells
             }
 
             HandlerKey handler = new HandlerKey(target, factory);
-            if (!_handlers.TryGetValue(handler, out var keys))
+            if (!_handlers.TryGetValue(handler, out List<StatusKey> keys))
             {
                 if (_vocabulary == null || _looks == null)
                 {
@@ -150,7 +150,7 @@ namespace HealerLike.Render.Spells
         public void Remove(GameObject target, ABuffHandlerFactory factory)
         {
             HandlerKey handler = new HandlerKey(target, factory);
-            if (!_handlers.TryGetValue(handler, out var keys))
+            if (!_handlers.TryGetValue(handler, out List<StatusKey> keys))
             {
                 return;
             }

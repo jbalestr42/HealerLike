@@ -71,7 +71,7 @@ public sealed class ToolkitRoster
             return false;
         }
 
-        foreach (var current in choices)
+        foreach (SelectEntityButton current in choices)
         {
             if (current == choice)
             {

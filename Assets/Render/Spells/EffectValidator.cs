@@ -26,7 +26,7 @@ namespace HealerLike.Render.Spells
             }
 
             var pending = new Stack<(EffectRecipe recipe, bool exit)>();
-            var ancestors = new HashSet<EffectRecipe>();
+            HashSet<EffectRecipe> ancestors = new HashSet<EffectRecipe>();
             foreach (EffectRecipe recipe in recipes)
             {
                 if (pending.Count >= MaxParts)

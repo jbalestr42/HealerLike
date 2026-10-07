@@ -55,7 +55,7 @@ public class CreatureFacingTests : CreatureRigFixture
     [Test]
     public void CombatTarget_OverridesCameraAndRetargetsSmoothlyWithoutRotatingOwner()
     {
-        var facing = new CreatureFacing();
+        CreatureFacing facing = new CreatureFacing();
         _parent.transform.rotation = Quaternion.Euler(0f, 37f, 0f);
         Quaternion owner = _parent.transform.rotation;
         facing.SetForward(Vector3.back);
@@ -80,7 +80,7 @@ public class CreatureFacingTests : CreatureRigFixture
     [Test]
     public void InvalidOrCoincidentTargetsAndTime_NeverPoisonFacing()
     {
-        var facing = new CreatureFacing();
+        CreatureFacing facing = new CreatureFacing();
         facing.SetForward(Vector3.left);
         foreach (Vector3 target in new[] { Vector3.zero, Vector3.up, new Vector3(float.NaN, 0f, 0f),
             new Vector3(float.PositiveInfinity, 0f, 0f), Vector3.one * float.MaxValue })

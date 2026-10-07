@@ -11,9 +11,9 @@ public class ToolkitPartyPanel
 
     public void Refresh(bool canDeploy)
     {
-        var choices = _context.legacy.entityInventory != null
+        IReadOnlyList<SelectEntityButton> choices = _context.legacy.entityInventory != null
             ? LegacyUiReader.AvailableEntities(_context.legacy.entityInventory) : System.Array.Empty<SelectEntityButton>();
-        var entities = new List<Entity>();
+        List<Entity> entities = new List<Entity>();
         if (_context.entities != null && _context.entities.entities != null)
         {
             foreach (GameObject go in _context.entities.GetEntities(Entity.EntityType.Player))
@@ -26,11 +26,11 @@ public class ToolkitPartyPanel
         }
 
         _roster.Sync(choices, entities);
-        var models = new List<ToolkitCardModel>();
+        List<ToolkitCardModel> models = new List<ToolkitCardModel>();
         foreach (ToolkitRoster.Entry entry in _roster.entries)
         {
             Entity entity = entry.entity;
-            var model = new ToolkitCardModel { key = entry.key, iconSource = entity != null ? (object)entity : entry.data,
+            ToolkitCardModel model = new ToolkitCardModel { key = entry.key, iconSource = entity != null ? (object)entity : entry.data,
                 title = entry.data.title, description = entry.data.description,
                 source = entity != null ? (object)entity : entry.data, canDrag = entity == null && canDeploy,
                 isEnabled = true, activate = Inspect, canBeginDrag = () => entry.entity == null && entry.choice != null && _context.IsPreparing(),

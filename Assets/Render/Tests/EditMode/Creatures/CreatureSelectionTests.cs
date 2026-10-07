@@ -55,7 +55,7 @@ namespace HealerLike.Render.Creatures
         [Test]
         public void Highlight_LiftsDarkColoursTowardWhiteWhileKeepingContrastAndSmallColourCue()
         {
-            var selection = new CreatureSelection(true, Color.red, 4f);
+            CreatureSelection selection = new CreatureSelection(true, Color.red, 4f);
             Color dark = selection.Tint(new Color(0.1f, 0.2f, 0.3f, 0.37f));
             Color light = selection.Tint(new Color(0.7f, 0.8f, 0.9f, 0.81f));
             Assert.Greater(dark.r, 0.5f);

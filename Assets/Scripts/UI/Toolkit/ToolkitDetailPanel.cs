@@ -129,7 +129,7 @@ public class ToolkitDetailPanel : IDisposable
     {
         _context.isInspecting = true;
         _inspectedEntity = model.source as Entity;
-        var attributes = _view.root.Q<Foldout>("detail-attributes");
+        Foldout attributes = _view.root.Q<Foldout>("detail-attributes");
         if (attributes != null)
         {
             attributes.value = false;
@@ -137,7 +137,7 @@ public class ToolkitDetailPanel : IDisposable
 
         if (model.source is Entity entity)
         {
-            var selectable = entity.GetComponent<SelectableEntity>();
+            SelectableEntity selectable = entity.GetComponent<SelectableEntity>();
             if (_context.interaction != null && selectable != null)
             {
                 _context.interaction.CancelSelection();
@@ -165,13 +165,13 @@ public class ToolkitDetailPanel : IDisposable
 
     static string GetSummary(Entity entity)
     {
-        var lines = new List<string>();
+        List<string> lines = new List<string>();
         if (entity.health != null)
         {
             lines.Add($"Health: {ToolkitPresentation.Resource(entity.health.Value, entity.health.Max)}");
         }
 
-        var combat = new List<string>();
+        List<string> combat = new List<string>();
         foreach (AttributeType type in new[] { AttributeType.Damage, AttributeType.AttackRate,
             AttributeType.Range, AttributeType.FlatArmor })
         {
@@ -194,7 +194,7 @@ public class ToolkitDetailPanel : IDisposable
 
     static string GetStats(Entity entity)
     {
-        var lines = new List<string>();
+        List<string> lines = new List<string>();
         if (!string.IsNullOrEmpty(entity.data.description))
         {
             lines.Add(entity.data.description);

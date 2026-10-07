@@ -187,7 +187,7 @@ namespace HealerLike.Render.Stage
                 EffectVocabulary vocabulary = RenderAssets.Load<EffectVocabulary>(
                     "Assets/Render/Spells/Data/EffectVocabulary.asset");
                 Material look = RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat");
-                var fixtures = new List<SpellReadabilityPass.Fixture>();
+                List<SpellReadabilityPass.Fixture> fixtures = new List<SpellReadabilityPass.Fixture>();
                 foreach (LookSide target in new[] { LookSide.Plant, LookSide.Stone })
                 {
                     foreach (EffectKey element in SpellPolishRun.CoreElements)
@@ -203,7 +203,7 @@ namespace HealerLike.Render.Stage
                     {
                         string lab = Path.Combine(folder, i + "-" + treatments[i].name + "-lab");
                         Directory.CreateDirectory(lab);
-                        using (var images = new SpellPolishImages(lab))
+                        using (SpellPolishImages images = new SpellPolishImages(lab))
                         {
                             yield return SpellReadabilityPass.Run(_manager, images, vocabulary, look, fixtures);
                             images.WriteReadability();

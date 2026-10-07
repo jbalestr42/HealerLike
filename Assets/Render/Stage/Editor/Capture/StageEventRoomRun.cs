@@ -65,7 +65,7 @@ namespace HealerLike.Render.Stage
         protected override IEnumerator Run()
         {
             bool passed = false;
-            using var errors = new StageCaptureErrors();
+            using StageCaptureErrors errors = new StageCaptureErrors();
             try
             {
                 _session = new StageCaptureSession(_manager, _output);

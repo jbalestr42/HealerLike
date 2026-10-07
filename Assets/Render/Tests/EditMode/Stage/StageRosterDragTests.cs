@@ -33,8 +33,8 @@ namespace HealerLike.Render.Stage
         {
             _fixture.WithInput((input, manager, original) =>
             {
-                var placement = new Placement(_data);
-                using (var drag = new StageRosterDrag(manager, _grid,
+                Placement placement = new Placement(_data);
+                using (StageRosterDrag drag = new StageRosterDrag(manager, _grid,
                     (Vector2 p, out RaycastHit h, int mask) => { h = _fixture.hit; return true; },
                     p => false, () => {}, (data, spawned) => placement))
                 {
@@ -55,8 +55,8 @@ namespace HealerLike.Render.Stage
         {
             _fixture.WithInput((input, manager, original) =>
             {
-                var placement = new Placement(_data);
-                using (var drag = new StageRosterDrag(manager, _grid,
+                Placement placement = new Placement(_data);
+                using (StageRosterDrag drag = new StageRosterDrag(manager, _grid,
                     (Vector2 p, out RaycastHit h, int mask) => { h = _fixture.hit; return overUi || cancel; },
                     p => overUi, () => {}, (data, spawned) => placement))
                 {

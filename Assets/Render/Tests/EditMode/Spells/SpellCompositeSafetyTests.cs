@@ -11,7 +11,7 @@ namespace HealerLike.Render.Spells
         readonly List<GameObject> _objects = new List<GameObject>();
         GameObject Make(string name)
         {
-            var obj = new GameObject(name);
+            GameObject obj = new GameObject(name);
             _objects.Add(obj);
             return obj;
         }
@@ -84,7 +84,7 @@ namespace HealerLike.Render.Spells
             EffectRecipe recipe = Recipe(EffectSocket.Body, parentBillboard);
             recipe.additions = new[] { Recipe(EffectSocket.Feet, childBillboard), Recipe(EffectSocket.AboveHead) };
             SpellEffect effect = Build(recipe);
-            var anchors = new EffectAnchors { bodyCentre = Vector3.up, foot = Vector3.zero,
+            EffectAnchors anchors = new EffectAnchors { bodyCentre = Vector3.up, foot = Vector3.zero,
                 neck = Vector3.up * 1.4f, headCentre = Vector3.up * 1.8f, bodyRadius = 0.4f, headRadius = 0.2f };
             EffectPlacement.Place(effect, effect.transform.parent, anchors);
             SpellEffect[] layers = effect.GetComponentsInChildren<SpellEffect>(true);
