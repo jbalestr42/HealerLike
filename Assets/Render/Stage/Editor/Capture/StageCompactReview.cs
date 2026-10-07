@@ -88,7 +88,7 @@ namespace HealerLike.Render.Stage
             }
             yield return _s.actions.TouchGesture(StageInterfaceActions.ScreenPoint(toggle));
             yield return Wait(0.15f);
-            _s.output.Check(foldout.value && root.Q<Label>("detail-full-stats").text.Contains("Maximum health"),
+            _s.output.Check(foldout.value && root.Q<Label>("detail-full-stats").text.Contains("Max HP"),
                 "Actual All attributes tap expands the complete readable attribute list");
             ScrollView scroll = root.Q<ScrollView>("detail-scroll");
             scroll.scrollOffset = new Vector2(0, foldout.worldBound.yMin - scroll.contentContainer.worldBound.yMin);

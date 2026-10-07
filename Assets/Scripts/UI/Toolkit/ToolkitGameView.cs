@@ -259,6 +259,11 @@ public class ToolkitGameView
 
         _detail = model;
         Show("detail-attributes", model.source is Entity);
+        if (!(model.source is Entity))
+        {
+            _root.Query<VisualElement>(className: "detail-section").ForEach(HideDetailSection);
+        }
+
         SetText("detail-title", model.title);
         SetText("detail-description", model.description);
         VisualElement icon = _root.Q("detail-icon");
@@ -267,6 +272,11 @@ public class ToolkitGameView
             icon.style.backgroundImage = new StyleBackground(GetIcon(model.iconSource, out bool isPortrait));
             icon.EnableInClassList("creature-portrait", isPortrait);
         }
+    }
+
+    static void HideDetailSection(VisualElement section)
+    {
+        section.AddToClassList("is-hidden");
     }
 
     // Destroys the icons this view generated

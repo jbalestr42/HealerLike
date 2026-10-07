@@ -49,7 +49,7 @@ namespace UI.Toolkit
                         Assert.That(summary, Does.Contain("Damage: 12"));
                         Assert.That(summary, Does.Not.Contain("Maximum health").And.Not.Contain("Critical"));
                         Assert.That(root.Q<Label>("detail-full-stats").text,
-                            Does.Contain("Maximum health: 100").And.Contain("Critical resistance: 0"));
+                            Does.Contain("Max HP: <b>100</b>").And.Contain("Critical Resist: <b>0</b>"));
                         Foldout expanded = root.Q<Foldout>("detail-attributes");
                         Assert.That(expanded.value, Is.False);
                         expanded.value = true; details.Refresh();

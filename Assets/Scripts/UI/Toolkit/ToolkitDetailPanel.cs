@@ -12,6 +12,11 @@ public class ToolkitDetailPanel : IDisposable
     bool _hadSelectedEntity = false;
     GameObject _lastWorldSelection;
     Entity _inspectedEntity;
+    // The foldouts are rebuilt a few times a second, the summary every refresh
+    const float SectionPeriod = 0.25f;
+    List<Section> _sections = new List<Section>();
+    Entity _sectionEntity;
+    float _nextSectionTime = 0f;
     VisualElement _actionsHost;
     public VisualElement actionsHost
     {
@@ -32,6 +37,7 @@ public class ToolkitDetailPanel : IDisposable
         _targeting.choices = new List<string>(Enum.GetNames(typeof(TargetBehaviourType)));
         _targeting.SetValueWithoutNotify(_targeting.choices[0]);
         _targeting.RegisterValueChangedCallback(OnTargetingChanged);
+        BuildSections();
     }
 
     public void Dispose()
@@ -43,6 +49,9 @@ public class ToolkitDetailPanel : IDisposable
 
         _targeting = null;
         _actionsHost = null;
+        _sections.Clear();
+        _sectionEntity = null;
+        _nextSectionTime = 0f;
         _lastWorldSelection = null;
         _inspectedEntity = null;
         _hadSelectedEntity = false;
@@ -87,13 +96,15 @@ public class ToolkitDetailPanel : IDisposable
             _hadSelectedEntity = true;
             if (!_context.isInspecting && _context.selectedItem == null)
             {
-                RefreshEntity();
+                RefreshEntity(_context.selectedEntity);
             }
         }
     }
 
+    // Explicit refreshes (selection, equipment change) rebuild the foldouts right away
     public void RefreshEntity()
     {
+        _nextSectionTime = 0f;
         RefreshEntity(_inspectedEntity != null ? _inspectedEntity : _context.selectedEntity);
     }
 
@@ -110,7 +121,7 @@ public class ToolkitDetailPanel : IDisposable
         model.title = entity.data.title;
         model.description = GetSummary(entity);
         _view.ShowDetail(model);
-        _view.SetText("detail-full-stats", GetStats(entity));
+        RefreshSections(entity);
         if (_targeting != null && entity.targetProvider != null)
         {
             _targeting.SetValueWithoutNotify(entity.targetProvider.targetBehaviourType.ToString());
@@ -133,6 +144,11 @@ public class ToolkitDetailPanel : IDisposable
         if (attributes != null)
         {
             attributes.value = false;
+        }
+
+        foreach (Section section in _sections)
+        {
+            section.foldout.value = false;
         }
 
         if (model.source is Entity entity)
@@ -166,9 +182,10 @@ public class ToolkitDetailPanel : IDisposable
     static string GetSummary(Entity entity)
     {
         List<string> lines = new List<string>();
-        if (entity.health != null)
+        string health = ToolkitEntityInfo.GetHealthLine(entity);
+        if (health.Length > 0)
         {
-            lines.Add($"Health: {ToolkitPresentation.Resource(entity.health.Value, entity.health.Max)}");
+            lines.Add(health);
         }
 
         List<string> combat = new List<string>();
@@ -194,24 +211,75 @@ public class ToolkitDetailPanel : IDisposable
 
     static string GetStats(Entity entity)
     {
-        List<string> lines = new List<string>();
-        if (!string.IsNullOrEmpty(entity.data.description))
+        return ToolkitEntityInfo.Join(ToolkitEntityInfo.GetAttributeLines(entity));
+    }
+
+    void BuildSections()
+    {
+        _sections.Clear();
+        AddSection("detail-aiming", "Targeting details", false, ToolkitEntityInfo.GetTargeting);
+        AddSection("detail-skills", "Skills", true, ToolkitEntityInfo.GetSkills);
+        AddSection("detail-items", "Items", true, ToolkitEntityInfo.GetItems);
+        AddSection("detail-effects", "Effects", true, ToolkitEntityInfo.GetEffects);
+    }
+
+    void AddSection(string name, string heading, bool showCount, Func<Entity, ToolkitInfoSection> build)
+    {
+        Foldout foldout = _view.root.Q<Foldout>(name);
+        Label body = _view.root.Q<Label>(name + "-text");
+        if (foldout == null || body == null)
         {
-            lines.Add(entity.data.description);
+            Debug.LogError("[ToolkitDetailPanel] Detail section '" + name + "' is missing.");
+            return;
         }
 
-        if (entity.attributeManager != null)
+        Section section = new Section();
+        section.foldout = foldout;
+        section.body = body;
+        section.heading = heading;
+        section.showCount = showCount;
+        section.build = build;
+        _sections.Add(section);
+    }
+
+    // The summary follows the creature every refresh. The foldouts and the attribute list only
+    // rebuild a few times a second: they join many lines, and nobody reads them faster.
+    void RefreshSections(Entity entity)
+    {
+        if (entity == _sectionEntity && Time.unscaledTime < _nextSectionTime)
         {
-            foreach (AttributeType type in Enum.GetValues(typeof(AttributeType)))
+            return;
+        }
+
+        _sectionEntity = entity;
+        _nextSectionTime = Time.unscaledTime + SectionPeriod;
+        _view.SetText("detail-full-stats", GetStats(entity));
+        foreach (Section section in _sections)
+        {
+            ToolkitInfoSection info = section.build(entity);
+            bool hasContent = info.lines.Count > 0;
+            section.foldout.EnableInClassList("is-hidden", !hasContent);
+            if (!hasContent)
             {
-                if (entity.attributeManager.Has(type))
-                {
-                    lines.Add($"{AttributeLabel(type)}: {entity.attributeManager.Get(type).Value:0.##}");
-                }
+                continue;
+            }
+
+            section.foldout.text = section.showCount ? $"{section.heading} ({info.count})" : section.heading;
+            string text = ToolkitEntityInfo.Join(info.lines);
+            if (section.body.text != text)
+            {
+                section.body.text = text;
             }
         }
+    }
 
-        return string.Join("\n", lines);
+    class Section
+    {
+        public Foldout foldout;
+        public Label body;
+        public string heading;
+        public bool showCount;
+        public Func<Entity, ToolkitInfoSection> build;
     }
 
     public static string AttributeLabel(AttributeType type)

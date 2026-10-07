@@ -14,6 +14,18 @@
             <ui:DropdownField name="detail-targeting" label="Target priority" class="detail-targeting" />
             <ui:Button name="detail-equip-button" text="Select equipment" class="button" />
         </ui:Instance>
+        <ui:Foldout name="detail-aiming" text="Targeting details" value="false" class="detail-attributes detail-section is-hidden">
+            <ui:Label name="detail-aiming-text" class="detail-description" />
+        </ui:Foldout>
+        <ui:Foldout name="detail-skills" text="Skills" value="false" class="detail-attributes detail-section is-hidden">
+            <ui:Label name="detail-skills-text" class="detail-description" />
+        </ui:Foldout>
+        <ui:Foldout name="detail-items" text="Items" value="false" class="detail-attributes detail-section is-hidden">
+            <ui:Label name="detail-items-text" class="detail-description" />
+        </ui:Foldout>
+        <ui:Foldout name="detail-effects" text="Effects" value="false" class="detail-attributes detail-section is-hidden">
+            <ui:Label name="detail-effects-text" class="detail-description" />
+        </ui:Foldout>
         <ui:Foldout name="detail-attributes" text="All attributes" value="false" class="detail-attributes is-hidden">
             <ui:Label name="detail-full-stats" class="detail-description" />
         </ui:Foldout>
