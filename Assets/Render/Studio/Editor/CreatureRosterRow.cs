@@ -46,6 +46,7 @@ namespace HealerLike.Render.Studio.Editor
                 _recipe.hideFlags = HideFlags.HideAndDontSave;
             }
             _preview.side = _channels.side;
+            _preview.bodyScale = ModelScale.Body(_source);
             _preview.Refresh();
             if (_image)
             {

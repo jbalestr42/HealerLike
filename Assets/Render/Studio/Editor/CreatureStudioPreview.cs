@@ -29,6 +29,23 @@ namespace HealerLike.Render.Studio.Editor
         Vector3? _aim;
         string _lastError;
         Bounds? _framingBounds;
+        float _bodyScale = 1f;
+
+        // The cell size multiplier of the entity this preview stands for, see ModelScale; one for a bare recipe
+        public float bodyScale
+        {
+            get { return _bodyScale; }
+            set
+            {
+                float safe = float.IsFinite(value) && value > 0f ? value : 1f;
+                if (_bodyScale != safe)
+                {
+                    _bodyScale = safe;
+                    _isDirty = true;
+                    _camera.Refit();
+                }
+            }
+        }
 
         // A roster supplies one union of its subjects, so each card keeps the same world scale.
         public Bounds? framingBounds
@@ -276,7 +293,7 @@ namespace HealerLike.Render.Studio.Editor
                 return;
             }
 
-            _lastError = _rig.Build(_source, _subject.transform, _scene, _side);
+            _lastError = _rig.Build(_source, _subject.transform, _scene, _side, _bodyScale);
             if (_lastError != null)
             {
                 return;

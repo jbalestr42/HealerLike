@@ -19,7 +19,8 @@ namespace HealerLike.Render.Studio.Editor
         public CreatureRig rig { get { return _rig; } }
 
         // The rig under subject, or the reason there is none; Start poses it at time 0
-        public string Build(CreatureRecipe source, Transform subject, StudioPreviewScene scene, LookSide side)
+        public string Build(CreatureRecipe source, Transform subject, StudioPreviewScene scene, LookSide side,
+            float bodyScale = 1f)
         {
             Destroy();
             string error;
@@ -37,7 +38,7 @@ namespace HealerLike.Render.Studio.Editor
             idle.seed ^= subject.GetEntityId().GetHashCode();
             _working.idle = idle;
             _rig = new CreatureRig();
-            if (!_rig.Init(_working, subject, scene.Shared(side), scene.Body(side), scene.meshes, 1f))
+            if (!_rig.Init(_working, subject, scene.Shared(side), scene.Body(side), scene.meshes, bodyScale))
             {
                 Destroy();
                 return "The creature rig could not be built. Check the recipe diagnostics.";

@@ -160,6 +160,7 @@ namespace HealerLike.Render.Creatures
         {
             if (rig == null && _recipe && _material)
             {
+                // The authored model root scale is the one size signal the rig's own normalisation divides out
                 BuildRig(
                     _recipe,
                     transform,
@@ -167,7 +168,7 @@ namespace HealerLike.Render.Creatures
                     _bodyMaterial,
                     _meshes,
                     _deliveryVocabulary,
-                    StageCalibration.CellSize
+                    StageCalibration.CellSize * ModelScale.Body(_entity.data)
                 );
             }
 

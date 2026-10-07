@@ -55,7 +55,7 @@ namespace HealerLike.Render.Creatures
                     host.material,
                     host.bodyMaterial,
                     host.meshes ? host.meshes : meshes,
-                    cellSize
+                    cellSize * ModelScale.Body(data)
                 )
             )
             {
