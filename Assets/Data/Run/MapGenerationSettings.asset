@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a7542ef3a95ed145ab7352ec730b6a3, type: 3}
   m_Name: MapGenerationSettings
   m_EditorClassIdentifier: HealerLike.Runtime::MapGenerationSettings
-  floorCount: 10
+  floorCount: 15
   columnCount: 3
   pathCount: 6
   startRoomCount: 3
