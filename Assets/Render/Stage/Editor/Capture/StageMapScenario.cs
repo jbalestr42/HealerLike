@@ -77,12 +77,22 @@ namespace HealerLike.Render.Stage
             yield return graph.SelectRoom(MapNodeType.Combat);
             yield return battle.Battle("09b-fixture-second-combat", 3);
             yield return graph.SelectRoom(MapNodeType.Elite);
-            List<WavePatternData> eliteWaves
-                = Object.FindAnyObjectByType<DataManager>().GetWavePatterns(MapNodeType.Elite,
-                _session.ascension.run.currentFloor);
+            // DataManager.GetWavePattern: an Elite room fights its floor's Elite pool, or that floor's Combat pool
+            // when no Elite pool covers it. The authored Elite pool spans floors 5 to 7, past this fixture's floors.
+            DataManager data = Object.FindAnyObjectByType<DataManager>();
+            int eliteFloor = _session.ascension.run.currentFloor;
+            List<WavePatternData> eliteWaves = data.GetWavePatterns(MapNodeType.Elite, eliteFloor);
+            List<WavePatternData> expectedWaves = eliteWaves.Count > 0 ? eliteWaves
+                : data.GetWavePatterns(MapNodeType.Combat, eliteFloor);
             WavePatternData selectedWave = StageMapReadout.Wave(_session.ascension);
-            _session.output.Check(eliteWaves.Count > 0 && eliteWaves.Contains(selectedWave),
-                "Elite room selects an authored Elite wave pool entry without Combat fallback");
+            _session.output.Check(expectedWaves.Count > 0 && expectedWaves.Contains(selectedWave),
+                "Elite room on floor " + eliteFloor + " selects from its " + (eliteWaves.Count > 0 ? "Elite" : "Combat")
+                + " wave pool: " + (selectedWave != null ? selectedWave.name : "none"));
+            if (eliteWaves.Count == 0)
+            {
+                _session.manifest.unobserved.Add("No authored Elite wave pool covers fixture floor " + eliteFloor
+                    + ", so the Elite room fought that floor's Combat waves and the Elite pool was not exercised");
+            }
             yield return graph.PlanningMap();
             yield return battle.Battle("10-fixture-elite", 4);
             yield return graph.Map("11-after-elite", "short-route-fixture", true);
