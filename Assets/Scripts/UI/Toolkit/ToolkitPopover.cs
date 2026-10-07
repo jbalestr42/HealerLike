@@ -30,6 +30,8 @@ public sealed class ToolkitPopover : IDisposable
         isOpen = true;
         _view.OnInspect.Invoke(model);
         _view.Show("detail-panel", true);
+        // The panel precedes the modal layers in the document, so without this the class screen covers it
+        _panel.BringToFront();
         _view.Show("detail-actions", model.source is Entity);
         Place();
     }
@@ -43,9 +45,20 @@ public sealed class ToolkitPopover : IDisposable
         Rect bounds = _hud.worldBound;
         float left = bounds.xMin + _hud.resolvedStyle.paddingLeft;
         float right = bounds.xMax - _hud.resolvedStyle.paddingRight;
-        float top = Mathf.Max(bounds.yMin + _hud.resolvedStyle.paddingTop,
-            _view.root.Q("top-bar").worldBound.yMax + 8);
-        float bottom = _view.root.Q("party-panel").worldBound.yMin - 8;
+        float top = bounds.yMin + _hud.resolvedStyle.paddingTop;
+        VisualElement topBar = _view.root.Q("top-bar");
+        if (IsShown(topBar))
+        {
+            top = Mathf.Max(top, topBar.worldBound.yMax + 8);
+        }
+
+        // The menu hides the party panel, whose bound would read as zero and push the popover off the screen
+        float bottom = bounds.yMax - _hud.resolvedStyle.paddingBottom;
+        VisualElement partyPanel = _view.root.Q("party-panel");
+        if (IsShown(partyPanel))
+        {
+            bottom = partyPanel.worldBound.yMin - 8;
+        }
         float width = Mathf.Min(280, right - left);
         float height = Mathf.Min(240, Mathf.Max(100, bottom - top));
         _panel.style.width = width;
@@ -56,6 +69,17 @@ public sealed class ToolkitPopover : IDisposable
         _panel.style.left = Mathf.Clamp(x, left, Mathf.Max(left, right - width)) - bounds.xMin;
         _panel.style.top = Mathf.Clamp(y, top, Mathf.Max(top, bottom - actual)) - bounds.yMin;
     }
+    static bool IsShown(VisualElement element)
+    {
+        if (element == null || element.resolvedStyle.display == DisplayStyle.None)
+        {
+            return false;
+        }
+
+        Rect bound = element.worldBound;
+        return !float.IsNaN(bound.yMin) && !float.IsNaN(bound.yMax) && bound.height > 0f;
+    }
+
     void Outside(PointerDownEvent evt)
     {
         if (!isOpen || _panel.Contains(evt.target as VisualElement))

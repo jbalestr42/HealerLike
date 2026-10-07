@@ -314,3 +314,52 @@
     -unity-text-align: middle-center;
     margin: 0;
 }
+
+/* The kit of a class card: a chip per skill (its icon) and per unit (its icon and name), each opening its details in
+   the popover. 44px so a thumb can hit one. */
+
+#hud-root.game-ui .class-list .data-card__kit
+{
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-self: stretch;
+    margin-top: 12px;
+}
+
+#hud-root.game-ui .class-list .kit-chip
+{
+    flex-direction: row;
+    align-items: center;
+    margin: 0 8px 8px 0;
+    padding: 4px;
+    border-radius: 14px;
+    background-color: var(--ui-icon-fill);
+}
+
+#hud-root.game-ui .class-list .kit-chip:hover
+{
+    background-color: var(--ui-card-hover);
+}
+
+#hud-root.game-ui .class-list .kit-chip__icon
+{
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+#hud-root.game-ui .class-list .kit-chip__label
+{
+    font-size: 13px;
+    color: var(--ui-ink);
+    margin: 0 8px 0 8px;
+}
+
+#hud-root.game-ui .class-list .data-card__stats
+{
+    font-size: 13px;
+    color: var(--ui-ink);
+    margin-top: 12px;
+    white-space: normal;
+}

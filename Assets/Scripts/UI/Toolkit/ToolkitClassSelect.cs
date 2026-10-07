@@ -229,6 +229,8 @@ public class ToolkitClassSelect
         List<ToolkitCardModel> models = new List<ToolkitCardModel>();
         foreach (CharacterData character in _characters)
         {
+            // Builds, reads and destroys a preview of the class: its real stats and its skill values
+            ToolkitClassKit kit = ToolkitClassKit.Build(character);
             models.Add(new ToolkitCardModel
             {
                 key = character.name,
@@ -237,6 +239,8 @@ public class ToolkitClassSelect
                 title = character.title,
                 description = Role(character),
                 details = MarkDetails(Details(character)),
+                stats = kit.stats,
+                kit = kit.Entries(),
                 status = "Choose " + character.title,
                 activate = OnCardActivated
             });

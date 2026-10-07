@@ -10,6 +10,8 @@ public class ToolkitCard : System.IDisposable
     Label _cost;
     VisualElement _health;
     VisualElement _healthFill;
+    ToolkitKitRow _kit;
+    Label _stats;
     bool _compact;
 
     public void SetCompact()
@@ -72,7 +74,14 @@ public class ToolkitCard : System.IDisposable
 
         // Optional: a template without the details line still makes a working card
         _details = _root.Q<Label>("card-details");
+        _stats = _root.Q<Label>("card-stats");
         _view = view;
+        VisualElement kit = _root.Q("card-kit");
+        if (kit != null)
+        {
+            _kit = new ToolkitKitRow(_view, kit);
+        }
+
         _info.clicked += OnInfoClicked;
         _button.clicked += OnClicked;
         _button.RegisterCallback<PointerEnterEvent>(OnPointerEnter);
@@ -96,6 +105,17 @@ public class ToolkitCard : System.IDisposable
         {
             _details.text = _model.details ?? "";
             _details.style.display = string.IsNullOrEmpty(_model.details) ? DisplayStyle.None : DisplayStyle.Flex;
+        }
+
+        if (_stats != null)
+        {
+            _stats.text = _model.stats ?? "";
+            _stats.style.display = string.IsNullOrEmpty(_model.stats) ? DisplayStyle.None : DisplayStyle.Flex;
+        }
+
+        if (_kit != null)
+        {
+            _kit.Refresh(_model.kit);
         }
 
         _status.text = _model.status;
@@ -129,6 +149,10 @@ public class ToolkitCard : System.IDisposable
         _icon.style.backgroundImage = new StyleBackground(_view.GetIcon(_iconSource, out bool isPortrait));
         _icon.EnableInClassList("creature-portrait", isPortrait);
         _button.EnableInClassList("creature-card", isPortrait);
+        if (_kit != null)
+        {
+            _kit.RefreshIcons();
+        }
     }
 
     public void Dispose()
@@ -149,6 +173,12 @@ public class ToolkitCard : System.IDisposable
             _info.clicked -= OnInfoClicked;
         }
 
+        if (_kit != null)
+        {
+            _kit.Dispose();
+            _kit = null;
+        }
+
         if (_root != null)
         {
             _root.RemoveFromHierarchy();
@@ -156,6 +186,7 @@ public class ToolkitCard : System.IDisposable
 
         _root = null;
         _details = null;
+        _stats = null;
         _button = null;
         _info = null;
         _view = null;
