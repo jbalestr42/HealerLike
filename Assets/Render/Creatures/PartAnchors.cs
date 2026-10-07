@@ -81,12 +81,23 @@ namespace HealerLike.Render.Creatures
             anchors.bodyRadius = Mathf.Max(bodyBounds.extents.x, bodyBounds.extents.z);
             anchors.neck = firstPivot.TransformPoint((neck - parts[0].localPosition) * cellSize);
             int explicitCount = 0;
-            foreach (CreaturePart part in parts) if (part.isSource) explicitCount++;
+            foreach (CreaturePart part in parts)
+            {
+                if (part.isSource)
+                {
+                    explicitCount++;
+                }
+            }
+
             Vector3[] sources = retainedSources ?? new Vector3[explicitCount > 0 ? explicitCount : head >= 0 ? 1 : 0];
             int written = 0;
             for (int i = 0; i < renderers.Count && i < parts.Length; i++)
             {
-                if (!parts[i].isSource) continue;
+                if (!parts[i].isSource)
+                {
+                    continue;
+                }
+
                 Vector3 local = surfacePoints != null ? surfacePoints[i] : CreatureSources.Local(parts[i]);
                 sources[written++] = renderers[i].transform.TransformPoint(local);
             }

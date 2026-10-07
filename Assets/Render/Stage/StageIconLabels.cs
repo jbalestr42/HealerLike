@@ -12,7 +12,11 @@ namespace HealerLike.Render.Stage
 
         public void Update(VisualElement root)
         {
-            if (root == null) return;
+            if (root == null)
+            {
+                return;
+            }
+
             VisualElement hud = root.Q("hud-root");
             hud?.EnableInClassList("render-has-spells", root.Q("spell-list")?.Q<Button>(className: "data-card") != null);
             hud?.EnableInClassList("render-has-creatures", root.Q("party-list")?.Q<Button>(className: "data-card") != null);
@@ -23,7 +27,11 @@ namespace HealerLike.Render.Stage
         void FormatCreature(Button card)
         {
             PlaceLabel(card);
-            if (!(card.userData is ToolkitCardModel model)) return;
+            if (!(card.userData is ToolkitCardModel model))
+            {
+                return;
+            }
+
             string name = model.title ?? "";
             if (!_names.TryGetValue(name, out string readable))
             {
@@ -32,7 +40,10 @@ namespace HealerLike.Render.Stage
                 _names.Add(name, readable);
             }
             Label label = card.Q<Label>("card-title");
-            if (label != null) label.text = readable;
+            if (label != null)
+            {
+                label.text = readable;
+            }
         }
 
         void FormatSpell(Button card) { PlaceLabel(card); }
@@ -41,7 +52,11 @@ namespace HealerLike.Render.Stage
         {
             VisualElement icon = card.Q("card-icon");
             Label label = card.Q<Label>("card-title");
-            if (icon == null || label == null) return;
+            if (icon == null || label == null)
+            {
+                return;
+            }
+
             VisualElement art = icon.Q("render-card-art");
             if (art == null)
             {
@@ -49,13 +64,22 @@ namespace HealerLike.Render.Stage
                 art.AddToClassList("render-card-art");
                 icon.Insert(0, art);
                 ToolkitCooldown cooldown = icon.Q<ToolkitCooldown>();
-                if (cooldown != null) art.Add(cooldown);
+                if (cooldown != null)
+                {
+                    art.Add(cooldown);
+                }
             }
             // Keep the provider-owned grammar icon, including later cache invalidations.
             if (icon.style.backgroundImage.value.texture != null)
+            {
                 art.style.backgroundImage = icon.style.backgroundImage;
+            }
+
             icon.style.backgroundImage = StyleKeyword.None;
-            if (label.parent != icon) icon.Add(label);
+            if (label.parent != icon)
+            {
+                icon.Add(label);
+            }
         }
 
         public void Dispose() { _names.Clear(); }

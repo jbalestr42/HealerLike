@@ -32,7 +32,11 @@ namespace HealerLike.Render.Zones
             {
                 TestHelpers.InvokePrivate(_host, "OnDestroy");
             }
-            if (_recipe != null) Object.DestroyImmediate(_recipe);
+            if (_recipe != null)
+            {
+                Object.DestroyImmediate(_recipe);
+            }
+
             Object.DestroyImmediate(_obstacle);
             Object.DestroyImmediate(_root);
             _ground.Dispose();

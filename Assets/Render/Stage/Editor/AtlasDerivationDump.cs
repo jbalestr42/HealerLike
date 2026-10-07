@@ -227,7 +227,10 @@ namespace HealerLike.Render.Stage
             Debug.Log($"[AtlasDerivationDump] {document.entities.Count} entity-side rows, "
                 + $"{document.handlers.Count} handler-side rows, {document.projectiles.Count} projectiles, "
                 + $"{document.characters.Count} characters written to {directory}");
-            if (Application.isBatchMode) EditorApplication.Exit(0);
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(0);
+            }
         }
 
         public static Document Collect()

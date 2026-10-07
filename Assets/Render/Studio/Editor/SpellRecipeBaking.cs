@@ -16,7 +16,11 @@ namespace HealerLike.Render.Studio.Editor
             { Debug.LogError(error); return; }
             string path = EditorUtility.SaveFilePanelInProject("Bake spell recipe", preset.name + "Recipe",
                 "asset", "Save the whole authored composition", "Assets/Render/Spells/Data");
-            if (string.IsNullOrEmpty(path)) return;
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
             EffectRecipeAsset asset = ScriptableObject.CreateInstance<EffectRecipeAsset>();
             asset.recipe = EffectRecipeCopy.Copy(recipe);
             AssetDatabase.CreateAsset(asset, path);

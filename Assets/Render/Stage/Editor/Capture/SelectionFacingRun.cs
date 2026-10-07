@@ -36,7 +36,11 @@ namespace HealerLike.Render.Stage
                 _session.AttachInput();
                 _manager.SetLandscape(false);
                 yield return _session.Resize(1080, 1920);
-                if (focus) focus.enabled = false;
+                if (focus)
+                {
+                    focus.enabled = false;
+                }
+
                 _output.manifest.interventions.Add(_proof.condition);
                 EntityData data = RenderAssets.Load<EntityData>("Assets/Data/Entities/ChannelingEntity/ChannelingEntity.asset");
                 foreach (Entity.EntityType side in new[] { Entity.EntityType.Player, Entity.EntityType.Computer })
@@ -53,7 +57,10 @@ namespace HealerLike.Render.Stage
                     // Fit a yaw-invariant envelope, so turning cannot clip the same-camera comparison.
                     Bounds bounds = new Bounds(host.rig.root.position, Vector3.zero);
                     foreach (Renderer renderer in host.rig.root.GetComponentsInChildren<Renderer>())
+                    {
                         bounds.Encapsulate(renderer.bounds);
+                    }
+
                     float radius = Mathf.Max(bounds.extents.x, bounds.extents.z) * 1.05f;
                     bounds = new Bounds(new Vector3(point.x, bounds.center.y, point.z),
                         new Vector3(radius * 2f, bounds.size.y, radius * 2f));
@@ -77,7 +84,11 @@ namespace HealerLike.Render.Stage
             finally
             {
                 camera.transform.SetPositionAndRotation(cameraBefore.position, cameraBefore.rotation);
-                if (focus) focus.enabled = focusEnabled;
+                if (focus)
+                {
+                    focus.enabled = focusEnabled;
+                }
+
                 _session?.Dispose();
                 _output.Write(passed);
                 _proof.passed = passed;
@@ -99,8 +110,16 @@ namespace HealerLike.Render.Stage
             Quaternion ownerRotation = entity.transform.rotation;
             foreach (string state in new[] { "idle", "selected", "deselected" })
             {
-                if (state == "selected") source.Select();
-                if (state == "deselected") source.UnSelect();
+                if (state == "selected")
+                {
+                    source.Select();
+                }
+
+                if (state == "deselected")
+                {
+                    source.UnSelect();
+                }
+
                 yield return null;
                 yield return null;
                 var frame = observation.Sample(subject, state, state == "selected");
@@ -126,7 +145,11 @@ namespace HealerLike.Render.Stage
                 {
                     Time.timeScale = 1f;
                     float start = Time.time;
-                    while (Time.time - start < sample - elapsed) yield return null;
+                    while (Time.time - start < sample - elapsed)
+                    {
+                        yield return null;
+                    }
+
                     elapsed += Time.time - start;
                     Time.timeScale = 0f;
                     // Let production LateUpdate finish before reading the pose and held delivery root.
@@ -136,14 +159,24 @@ namespace HealerLike.Render.Stage
                     var frame = control.Sample(subject, turn, elapsed, sample > 0f ? file : null, _manager.gameCamera);
                     _proof.frames.Add(frame);
                     if (sample > 0f)
+                    {
                         yield return _session.Capture(file, "Synthetic target provider control; production live LateUpdate; paused PNG");
-                    if (sample == 1f) _output.Check(frame.targetAngle < 8f, subject + " visibly faces target " + turn);
+                    }
+
+                    if (sample == 1f)
+                    {
+                        _output.Check(frame.targetAngle < 8f, subject + " visibly faces target " + turn);
+                    }
                 }
             }
             control.ClearTarget();
             Time.timeScale = 1f;
             float recovery = Time.time;
-            while (Time.time - recovery < 1f) yield return null;
+            while (Time.time - recovery < 1f)
+            {
+                yield return null;
+            }
+
             Time.timeScale = 0f;
             yield return null;
             _proof.frames.Add(control.Sample(subject, -1, 1f, "facing-" + subject + "-rest", _manager.gameCamera));

@@ -24,7 +24,14 @@ namespace HealerLike.Render.Spells
         {
             Object.DestroyImmediate(_host);
             Object.DestroyImmediate(_source);
-            foreach (Object obj in _created) if (obj) Object.DestroyImmediate(obj);
+            foreach (Object obj in _created)
+            {
+                if (obj)
+                {
+                    Object.DestroyImmediate(obj);
+                }
+            }
+
             _created.Clear();
         }
 
@@ -32,8 +39,11 @@ namespace HealerLike.Render.Spells
         {
             var parts = new LookPart[4];
             for (int i = 0; i < parts.Length; i++)
+            {
                 parts[i] = new LookPart { id = "part" + i, primitive = Primitive.Sphere,
                     role = PartRole.Body, size = Vector3.one * .1f, position = Vector3.right * i * .2f };
+            }
+
             var entry = new ElementEntry { parts = parts, count = count, cycleSeconds = 1f,
                 motion = EffectMotionKind.Orbit, socket = EffectSocket.Body,
                 presentation = new EffectPresentation { avoidHead = false } };
@@ -108,7 +118,9 @@ namespace HealerLike.Render.Spells
             effect.Advance(.1f);
             Vector3 expected = EffectPlacement.Anchors(_source).castPoint;
             foreach (SpellEffect layer in effect.GetComponentsInChildren<SpellEffect>(true))
+            {
                 Assert.That(Vector3.Distance(expected, layer.castOrigin), Is.LessThan(.00001f));
+            }
         }
     }
 }

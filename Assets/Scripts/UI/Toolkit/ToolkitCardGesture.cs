@@ -41,12 +41,19 @@ public sealed class ToolkitCardGesture : IDisposable
 
     void Down(PointerDownEvent evt)
     {
-        if (evt.button != 0 || _card.model == null) return;
+        if (evt.button != 0 || _card.model == null)
+        {
+            return;
+        }
         // Legacy input may synthesize Down from an orphaned Ended sample.
         if (!(_view.canBeginPointer?.Invoke(evt.pointerId) ?? true))
         { evt.StopImmediatePropagation(); return; }
         _pressed = _card.model;
-        if (!_press.Begin(evt.pointerId, evt.position, Time.realtimeSinceStartup, _pressed.canDrag)) return;
+        if (!_press.Begin(evt.pointerId, evt.position, Time.realtimeSinceStartup, _pressed.canDrag))
+        {
+            return;
+        }
+
         _point = _down = evt.position;
         _scroll = _button.GetFirstAncestorOfType<ScrollView>();
         _scrollStart = _scroll != null ? _scroll.scrollOffset : Vector2.zero;
@@ -57,13 +64,21 @@ public sealed class ToolkitCardGesture : IDisposable
 
     void Move(PointerMoveEvent evt)
     {
-        if (evt.pointerId != _press.pointer) return;
+        if (evt.pointerId != _press.pointer)
+        {
+            return;
+        }
+
         _point = evt.position;
         Resolve();
         evt.StopImmediatePropagation();
     }
 
-    void Tick() { if (_press.pointer >= 0) Resolve(); }
+    void Tick() { if (_press.pointer >= 0)
+        {
+            Resolve();
+        }
+    }
 
     void Resolve()
     {
@@ -75,7 +90,10 @@ public sealed class ToolkitCardGesture : IDisposable
             _view.OnInspectRequested.Invoke(_pressed);
         }
         if (owner == ToolkitPress.Owner.Scroll && _scroll != null)
+        {
             _scroll.scrollOffset = _scrollStart + new Vector2(_down.x - _point.x, 0);
+        }
+
         if (owner == ToolkitPress.Owner.Drag)
         {
             if (!_dragging)
@@ -92,17 +110,30 @@ public sealed class ToolkitCardGesture : IDisposable
 
     void Up(PointerUpEvent evt)
     {
-        if (evt.pointerId != _press.pointer) return;
+        if (evt.pointerId != _press.pointer)
+        {
+            return;
+        }
+
         _point = evt.position;
         Resolve();
         var owner = _press.End(evt.pointerId, _point, Time.realtimeSinceStartup);
         if (_dragging)
         {
-            if (_pressed.canBeginDrag?.Invoke() ?? true) _view.rosterDrag?.End(ScreenPoint(_point));
-            else _view.rosterDrag?.Cancel();
+            if (_pressed.canBeginDrag?.Invoke() ?? true)
+            {
+                _view.rosterDrag?.End(ScreenPoint(_point));
+            }
+            else
+            {
+                _view.rosterDrag?.Cancel();
+            }
         }
         _dragging = false;
-        if (_holding && _pressed.source is CharacterSkillSlot) _view.ClosePopover();
+        if (_holding && _pressed.source is CharacterSkillSlot)
+        {
+            _view.ClosePopover();
+        }
         // The captured source must still represent this entry after periodic HUD refreshes.
         if (owner == ToolkitPress.Owner.Tap && _button.worldBound.Contains(_point)
             && _card.model?.key == _pressed.key)
@@ -113,7 +144,11 @@ public sealed class ToolkitCardGesture : IDisposable
 
     Vector2 ScreenPoint(Vector2 point)
     {
-        if (_view.screenPointProvider != null) return _view.screenPointProvider(point);
+        if (_view.screenPointProvider != null)
+        {
+            return _view.screenPointProvider(point);
+        }
+
         Vector2 origin = RuntimePanelUtils.ScreenToPanel(_button.panel, Vector2.zero);
         Vector2 end = RuntimePanelUtils.ScreenToPanel(_button.panel, new Vector2(Screen.width, Screen.height));
         return new Vector2((point.x - origin.x) / (end.x - origin.x) * Screen.width,
@@ -131,8 +166,15 @@ public sealed class ToolkitCardGesture : IDisposable
         // ToolkitGameActions.Update, irrespective of MonoBehaviour update order.
         // Standalone reports Unknown device type; PanelEventHandler sends KeyDown
         // before NavigationCancel, so the stamp also covers synthetic/backend keys.
-        if (Input.GetKeyDown(KeyCode.Escape) || _escapeFrame == Time.frameCount) return;
-        if (_navigationInspect) _view.ClosePopover();
+        if (Input.GetKeyDown(KeyCode.Escape) || _escapeFrame == Time.frameCount)
+        {
+            return;
+        }
+
+        if (_navigationInspect)
+        {
+            _view.ClosePopover();
+        }
         else
         {
             _view.ClosePopover();
@@ -153,24 +195,47 @@ public sealed class ToolkitCardGesture : IDisposable
             _escapeFrame = Time.frameCount;
             return;
         }
-        if (evt.keyCode != KeyCode.I && evt.keyCode != KeyCode.F1) return;
+        if (evt.keyCode != KeyCode.I && evt.keyCode != KeyCode.F1)
+        {
+            return;
+        }
+
         Inspect();
         evt.StopPropagation();
     }
-    void CancelEvent(PointerCancelEvent evt) { if (evt.pointerId == _press.pointer) Cancel(); }
-    void Lost(PointerCaptureOutEvent evt) { if (evt.pointerId == _press.pointer) Cancel(); }
+    void CancelEvent(PointerCancelEvent evt) { if (evt.pointerId == _press.pointer)
+        {
+            Cancel();
+        }
+    }
+    void Lost(PointerCaptureOutEvent evt) { if (evt.pointerId == _press.pointer)
+        {
+            Cancel();
+        }
+    }
     void Detached(DetachFromPanelEvent evt) { Cancel(); }
     void Release(int pointer)
     {
         _timer?.Pause(); _timer = null; _holding = false; _pressed = null;
-        if (pointer >= 0 && _button.HasPointerCapture(pointer)) _button.ReleasePointer(pointer);
+        if (pointer >= 0 && _button.HasPointerCapture(pointer))
+        {
+            _button.ReleasePointer(pointer);
+        }
     }
     public void Cancel()
     {
         int pointer = _press.pointer;
         _press.Cancel();
-        if (_dragging) _view.rosterDrag?.Cancel();
-        if (_holding && _pressed?.source is CharacterSkillSlot) _view.ClosePopover();
+        if (_dragging)
+        {
+            _view.rosterDrag?.Cancel();
+        }
+
+        if (_holding && _pressed?.source is CharacterSkillSlot)
+        {
+            _view.ClosePopover();
+        }
+
         _dragging = false;
         Release(pointer);
     }

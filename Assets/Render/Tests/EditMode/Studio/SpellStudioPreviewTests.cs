@@ -152,8 +152,11 @@ public class SpellStudioPreviewTests
         SpellEffect before = _preview.Sample(_preset, 0.4f);
         bool presence = false;
         foreach (Transform shape in before.shapes)
-            presence |= shape.gameObject.activeSelf && shape.localScale.sqrMagnitude > .001f;
-        Assert.IsTrue(presence);
+            {
+                presence |= shape.gameObject.activeSelf && shape.localScale.sqrMagnitude > .001f;
+            }
+
+            Assert.IsTrue(presence);
 
         SpellEffect after = _preview.Sample(_preset, 1.3f);
         bool isShown = false;

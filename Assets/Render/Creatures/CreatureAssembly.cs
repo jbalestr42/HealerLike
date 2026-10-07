@@ -112,7 +112,11 @@ namespace HealerLike.Render.Creatures
             bool hasHead = false;
             foreach (CreaturePart part in accepted.parts)
             {
-                if (part.isSource) sources++;
+                if (part.isSource)
+                {
+                    sources++;
+                }
+
                 hasHead |= part.role == PartRole.Head || part.role == PartRole.Tip;
             }
             _castSources = new Vector3[sources > 0 ? sources : hasHead ? 1 : 0];

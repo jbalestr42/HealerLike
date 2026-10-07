@@ -46,11 +46,16 @@ namespace HealerLike.Render.Stage
             foreach (VisualElement child in _ui.Children())
             { _hiddenUi.Add((child, child.style.visibility)); child.style.visibility = Visibility.Hidden; }
             foreach (Canvas canvas in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+            {
                 if (canvas.enabled)
                 { _worldCanvases.Add(canvas); canvas.enabled = false; }
+            }
+
             foreach (ARigHost host in Object.FindObjectsByType<ARigHost>(FindObjectsSortMode.None))
+            {
                 if (host.gameObject.activeSelf)
                 { _hidden.Add(host.gameObject); host.gameObject.SetActive(false); }
+            }
         }
 
         public IEnumerator Capture()
@@ -92,7 +97,9 @@ namespace HealerLike.Render.Stage
                         using var source = new CastSourceLease(rig);
                         source.TryGet(out Vector3 start);
                         foreach (Transform partTransform in rig.root.GetComponentsInChildren<Transform>(true))
+                        {
                             partTransform.gameObject.layer = 31;
+                        }
                         // Every outlet is shown as a short ray, labelled diagnostic geometry on this fixture only.
                         foreach (CreaturePart part in recipe.parts.Where(p => p.isSource))
                         {
@@ -148,9 +155,24 @@ namespace HealerLike.Render.Stage
 
         void Clear()
         {
-            foreach (CreatureRig rig in _rigs) rig.Dispose();
-            foreach (Object value in _objects) if (value) Object.Destroy(value);
-            foreach (VisualElement label in _labels) label.RemoveFromHierarchy();
+            foreach (CreatureRig rig in _rigs)
+            {
+                rig.Dispose();
+            }
+
+            foreach (Object value in _objects)
+            {
+                if (value)
+                {
+                    Object.Destroy(value);
+                }
+            }
+
+            foreach (VisualElement label in _labels)
+            {
+                label.RemoveFromHierarchy();
+            }
+
             _rigs.Clear(); _objects.Clear(); _labels.Clear();
         }
 
@@ -160,9 +182,26 @@ namespace HealerLike.Render.Stage
             _manager.gameCamera.cullingMask = _mask;
             _manager.gameCamera.clearFlags = _clear;
             _manager.gameCamera.backgroundColor = _background;
-            foreach (GameObject hidden in _hidden) if (hidden) hidden.SetActive(true);
-            foreach (Canvas canvas in _worldCanvases) if (canvas) canvas.enabled = true;
-            foreach (var entry in _hiddenUi) entry.element.style.visibility = entry.visibility;
+            foreach (GameObject hidden in _hidden)
+            {
+                if (hidden)
+                {
+                    hidden.SetActive(true);
+                }
+            }
+
+            foreach (Canvas canvas in _worldCanvases)
+            {
+                if (canvas)
+                {
+                    canvas.enabled = true;
+                }
+            }
+
+            foreach (var entry in _hiddenUi)
+            {
+                entry.element.style.visibility = entry.visibility;
+            }
         }
     }
 }

@@ -19,7 +19,10 @@ namespace HealerLike.Render.Stage
                     VisualElement.MeasureMode.Exactly, 0, VisualElement.MeasureMode.Undefined);
                 _s.output.Check(measured.y <= label.contentRect.height + 1,
                     "Actual spell name fits its compact label: " + label.text);
-                if (label.text.Length > 12) longNames++;
+                if (label.text.Length > 12)
+                {
+                    longNames++;
+                }
             }
             _s.output.Check(longNames >= 2, "Authored multiword spell names exercise two-line labels");
             ScrollView spells = _s.actions.root.Q<ScrollView>("spell-list");

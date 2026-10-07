@@ -129,7 +129,14 @@ namespace HealerLike.Render.Grammar
         [TearDown]
         public void TearDown()
         {
-            foreach (Object owned in _owned) if (owned) Object.DestroyImmediate(owned);
+            foreach (Object owned in _owned)
+            {
+                if (owned)
+                {
+                    Object.DestroyImmediate(owned);
+                }
+            }
+
             _owned.Clear();
         }
 
@@ -151,7 +158,10 @@ namespace HealerLike.Render.Grammar
         {
             var expected = new HashSet<string>();
             foreach (SpellChannelAssetPinningTests.HandlerRow row in SpellChannelAssetPinningTests.HandlerRows)
+            {
                 expected.Add(row.path);
+            }
+
             CollectionAssert.AreEquivalent(expected, Rows.Keys);
         }
 
@@ -162,7 +172,11 @@ namespace HealerLike.Render.Grammar
             EffectContext context = GrowthContext();
             foreach (SpellChannelAssetPinningTests.HandlerRow row in SpellChannelAssetPinningTests.HandlerRows)
             {
-                if (row.operation != EffectOperation.Boon || row.aspect != EffectAspect.Offence) continue;
+                if (row.operation != EffectOperation.Boon || row.aspect != EffectAspect.Offence)
+                {
+                    continue;
+                }
+
                 ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
                     "Assets/Data/" + row.path + ".asset");
                 Assert.AreNotEqual(EffectKind.Plain, EffectDerivation.Kind(handler, context), row.path);
@@ -218,7 +232,10 @@ namespace HealerLike.Render.Grammar
                 "Assets/Data/CharacterSkills/SoulLink/BuffHandlerFactory.asset");
             Assert.AreEqual(EffectDelivery.Link, EffectDerivation.Channels(handler, true).delivery);
             foreach (EffectChannels layer in EffectDerivation.Layers(handler, true))
+            {
                 Assert.AreEqual(EffectDelivery.Link, layer.delivery);
+            }
+
             ABuffHandlerFactory flat = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
                 "Assets/Data/CharacterSkills/Shield/BuffHandlerFactory.asset");
             Assert.AreEqual(EffectDelivery.Instant, EffectDerivation.Channels(flat, true).delivery);
@@ -236,7 +253,10 @@ namespace HealerLike.Render.Grammar
             Assert.AreEqual(EffectKind.Growth, EffectDerivation.Kind(handler, context), path);
             Assert.AreEqual(EffectKind.Growth, EffectDerivation.Channels(handler, true, context).kind, path);
             foreach (EffectChannels layer in EffectDerivation.Layers(handler, true, context))
+            {
                 Assert.AreEqual(EffectKind.Growth, layer.kind, path);
+            }
+
             Assert.AreNotEqual(EffectKind.Growth, EffectDerivation.Kind(handler, EffectContext.Default), path);
         }
 
@@ -254,7 +274,10 @@ namespace HealerLike.Render.Grammar
                 "Assets/Data/EventItems" }))
             {
                 Object asset = AssetDatabase.LoadAssetAtPath<Object>(AssetDatabase.GUIDToAssetPath(guid));
-                if (asset is IGameDataSource source && source.sourceData is GrowingItemData) items.Add(source.sourceData);
+                if (asset is IGameDataSource source && source.sourceData is GrowingItemData)
+                {
+                    items.Add(source.sourceData);
+                }
             }
             Assert.AreEqual(2, items.Count);
             return items;
@@ -273,7 +296,9 @@ namespace HealerLike.Render.Grammar
             ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
                 "Assets/Data/EntityItems/RageItem/BuffHandlerFactory.asset");
             foreach (EffectChannels layer in EffectDerivation.Layers(handler, true))
+            {
                 Assert.AreEqual(EffectKind.Conditional, layer.kind);
+            }
         }
 
         T Make<T>() where T : ScriptableObject

@@ -68,8 +68,10 @@ namespace HealerLike.Render.Spells
             }
             Assert.IsTrue(EffectCompositionValidator.TryValidateChannels(default, out _));
             foreach (float period in new[] { 0f, -1f, float.NaN, float.PositiveInfinity })
+            {
                 Assert.IsTrue(EffectCompositionValidator.TryValidateChannels(
                     new EffectChannels { periodSeconds = period }, out _));
+            }
         }
     }
 }

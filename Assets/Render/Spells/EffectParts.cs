@@ -169,7 +169,11 @@ namespace HealerLike.Render.Spells
 
         public void Fade(float fade)
         {
-            foreach (var marker in _markerSizes) marker.Key.localScale = marker.Value * fade;
+            foreach (var marker in _markerSizes)
+            {
+                marker.Key.localScale = marker.Value * fade;
+            }
+
             foreach (Transform shape in _shapes)
             {
                 shape.localScale *= fade;
@@ -221,9 +225,16 @@ namespace HealerLike.Render.Spells
 
         static LookPart[] Resolve(LookPart[] parts)
         {
-            if (parts == null || parts.Length == 0) return System.Array.Empty<LookPart>();
+            if (parts == null || parts.Length == 0)
+            {
+                return System.Array.Empty<LookPart>();
+            }
+
             if (FragmentPlacement.TryResolve(parts, CountBand.Many, 0, 0, out LookPart[] resolved, out string error))
+            {
                 return resolved;
+            }
+
             Debug.LogError("[EffectParts] " + error);
             return System.Array.Empty<LookPart>();
         }

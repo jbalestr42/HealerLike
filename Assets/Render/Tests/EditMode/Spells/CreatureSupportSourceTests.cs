@@ -51,7 +51,11 @@ namespace HealerLike.Render.Spells
             Object.DestroyImmediate(_target);
             Object.DestroyImmediate(_recipe);
             Object.DestroyImmediate(_foreignRecipe);
-            foreach (Object value in _created) Object.DestroyImmediate(value);
+            foreach (Object value in _created)
+            {
+                Object.DestroyImmediate(value);
+            }
+
             _created.Clear();
         }
 

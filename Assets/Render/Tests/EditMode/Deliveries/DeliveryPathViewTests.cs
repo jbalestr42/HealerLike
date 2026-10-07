@@ -33,7 +33,11 @@ namespace HealerLike.Render.Deliveries
             }
             finally
             {
-                if (path) path.Dispose();
+                if (path)
+                {
+                    path.Dispose();
+                }
+
                 Object.DestroyImmediate(source);
                 Object.DestroyImmediate(target);
             }

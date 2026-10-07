@@ -42,24 +42,45 @@ namespace HealerLike.Render.Spells
         // Keys are made only from validated recipes, so recursive comparison stays inside the part budget.
         static bool HasPeriodicClock(EffectRecipe recipe)
         {
-            if (recipe.tempo == HealerLike.Render.Grammar.EffectTempo.PerPeriod) return true;
+            if (recipe.tempo == HealerLike.Render.Grammar.EffectTempo.PerPeriod)
+            {
+                return true;
+            }
+
             foreach (EffectRecipe child in recipe.additions ?? Array.Empty<EffectRecipe>())
-                if (child != null && HasPeriodicClock(child)) return true;
+            {
+                if (child != null && HasPeriodicClock(child))
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
 
         static bool SameAdditions(EffectRecipe[] left, EffectRecipe[] right)
         {
             int count = left != null ? left.Length : 0;
-            if (count != (right != null ? right.Length : 0)) return false;
+            if (count != (right != null ? right.Length : 0))
+            {
+                return false;
+            }
+
             for (int i = 0; i < count; i++)
             {
                 EffectRecipe a = left[i], b = right[i];
-                if (ReferenceEquals(a, b)) continue;
+                if (ReferenceEquals(a, b))
+                {
+                    continue;
+                }
+
                 if (a == null || b == null || !ReferenceEquals(a.entry, b.entry) || a.motion != b.motion
                     || a.socket != b.socket || a.family != b.family || a.tempo != b.tempo
                     || a.cycleSeconds != b.cycleSeconds || a.scale != b.scale || a.colour != b.colour
-                    || !SameAdditions(a.additions, b.additions)) return false;
+                    || !SameAdditions(a.additions, b.additions))
+                {
+                    return false;
+                }
             }
             return true;
         }

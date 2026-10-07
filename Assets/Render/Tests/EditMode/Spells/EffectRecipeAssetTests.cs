@@ -105,7 +105,11 @@ namespace HealerLike.Render.Spells
                 root.additions = new[] { child };
                 child.additions = new[] { root };
             }
-            else root.additions = new[] { root };
+            else
+            {
+                root.additions = new[] { root };
+            }
+
             Assert.IsFalse(EffectValidator.TryValidate(root, out string error));
             StringAssert.Contains("cycle", error);
             Assert.IsNull(_asset.InstantiateRecipe());
@@ -146,7 +150,10 @@ namespace HealerLike.Render.Spells
             effect.Advance(0.2f);
             Assert.IsFalse(effect.removalComplete, "A nested child still owns its longer tail.");
             effect.Advance(0.41f);
-            foreach (SpellEffect layer in layers) Assert.IsTrue(layer.removalComplete);
+            foreach (SpellEffect layer in layers)
+            {
+                Assert.IsTrue(layer.removalComplete);
+            }
         }
     }
 }

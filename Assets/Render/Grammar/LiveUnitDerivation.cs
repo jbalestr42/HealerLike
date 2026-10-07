@@ -21,22 +21,32 @@ namespace HealerLike.Render.Grammar
         {
             UnitChannels channels = LookDerivation.Channels(data, side);
             if (TryValue(attributes, AttributeType.HealthMax, out float health))
+            {
                 channels.mass = LookDerivation.Mass(health);
+            }
+
             if (TryValue(attributes, AttributeType.Range, out float range))
+            {
                 channels.reach = range <= LookDerivation.ShortRange ? ReachBand.Short
                     : range <= LookDerivation.MidRange ? ReachBand.Mid : ReachBand.Long;
+            }
+
             ASkillFactory primary = LookDerivation.Primary(data);
             // Both runtime skills use AttackRate as seconds per trigger, despite the attribute's name.
             if ((primary is ShootProjectileSkillFactory || primary is AreaOfEffectSkillFactory)
                 && TryValue(attributes, AttributeType.AttackRate, out float cadence))
+            {
                 channels.stem = LookDerivation.Stem(cadence);
+            }
 
             // Preserve structural accessories such as a second delivery. Free slots express live stat changes.
             if (channels.accessory == AccessoryKind.None)
             {
                 int direction = UpgradeDirection(attributes);
                 if (direction != 0)
+                {
                     channels.accessory = direction > 0 ? AccessoryKind.SmallTorus : AccessoryKind.ConeCrown;
+                }
             }
             return channels;
         }
@@ -47,12 +57,24 @@ namespace HealerLike.Render.Grammar
             foreach (AttributeType type in observedAttributes)
             {
                 if (!attributes.TryGetValue(type, out Attribute attribute) || !float.IsFinite(attribute.Value)
-                    || !float.IsFinite(attribute.BaseValue)) continue;
+                    || !float.IsFinite(attribute.BaseValue))
+                {
+                    continue;
+                }
+
                 float delta = attribute.Value - attribute.BaseValue;
                 float threshold = Mathf.Max(MinimumChange, Mathf.Abs(attribute.BaseValue) * RelativeChange);
-                if (Mathf.Abs(delta) <= threshold) continue;
+                if (Mathf.Abs(delta) <= threshold)
+                {
+                    continue;
+                }
+
                 delta *= EffectDerivation.Polarity(type);
-                if (delta < 0f) return -1;
+                if (delta < 0f)
+                {
+                    return -1;
+                }
+
                 improved = true;
             }
             return improved ? 1 : 0;
@@ -62,7 +84,11 @@ namespace HealerLike.Render.Grammar
             out float value)
         {
             value = 0f;
-            if (!attributes.TryGetValue(type, out Attribute attribute)) return false;
+            if (!attributes.TryGetValue(type, out Attribute attribute))
+            {
+                return false;
+            }
+
             value = attribute.Value;
             return float.IsFinite(value) && value >= 0f;
         }

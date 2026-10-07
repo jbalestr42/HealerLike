@@ -153,8 +153,11 @@ public class SpellEffectTests
         foreach (LookPart part in effect.recipe.entry.stackBeads)
         {
             Transform bead = effect.transform.Find(part.id);
-            if (bead.gameObject.activeSelf) beads++;
-        }
+            if (bead.gameObject.activeSelf)
+                {
+                    beads++;
+                }
+            }
         Assert.AreEqual(3, beads);
     }
 

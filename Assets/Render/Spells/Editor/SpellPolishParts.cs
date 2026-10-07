@@ -47,11 +47,14 @@ namespace HealerLike.Render.Spells.Editor
         {
             var parts = new LookPart[count];
             for (int i = 0; i < count; i++)
+            {
                 parts[i] = Part(id + i, drops ? Primitive.Cone : Primitive.Sphere,
                     ShapeProfile.Bulb(drops ? .8f : 1f, drops ? .72f : .1f),
                     Radial(i, count, radius * (1 + .12f * (i % 2)), height + .12f * (i % 3)),
                     new Vector3(size, size * (drops ? 1.7f : 1.2f), size),
                     Vector3.zero);
+            }
+
             return parts;
         }
 
@@ -92,8 +95,11 @@ namespace HealerLike.Render.Spells.Editor
                 parts.Add(segment);
             }
             for (int i = 0; i < 6; i++)
+            {
                 parts.Add(Part("Travelling pearl " + i, Primitive.Sphere, ShapeProfile.Bulb(),
                     new Vector3(i / 6f, 0, 0), Vector3.one * .14f));
+            }
+
             return parts.ToArray();
         }
 
@@ -117,9 +123,16 @@ namespace HealerLike.Render.Spells.Editor
         {
             var parts = new LookPart[5];
             for (int i = 0; i < parts.Length; i++)
+            {
                 parts[i] = Part("Pressure thorn " + i, Primitive.Cone, ShapeProfile.Shard(.9f, 0),
                     Radial(i, 5, .7f, .3f), new Vector3(.35f, .75f, .35f), new Vector3(0, 0, 180));
-            for (int i = 0; i < parts.Length; i++) parts[i].glow = .8f;
+            }
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                parts[i].glow = .8f;
+            }
+
             return parts;
         }
 
@@ -148,8 +161,11 @@ namespace HealerLike.Render.Spells.Editor
             parts.Add(Part("Dart seed", Primitive.Cone, Seed(), axis + Vector3.up * 1.4f,
                 new Vector3(.38f, .6f, .38f), colour: ColourRole.MushroomCapPale));
             for (int i = 0; i < 2; i++)
+            {
                 parts.Add(Part("Dart fletching " + i, Primitive.Leaf, ShapeProfile.Leaf(.2f, .7f),
                     axis + Vector3.down * .75f, new Vector3(.36f, .75f, .12f), new Vector3(0, 90f * i, i == 0 ? 38f : -38f)));
+            }
+
             return parts.ToArray();
         }
 
@@ -176,7 +192,10 @@ namespace HealerLike.Render.Spells.Editor
         {
             var parts = new LookPart[5];
             for (int i = 0; i < parts.Length; i++)
+            {
                 parts[i] = Ring("Cadence ring " + i, 2.5f - .12f * (i % 2), -.35f + .2f * i, .07f);
+            }
+
             return parts;
         }
 
@@ -192,8 +211,11 @@ namespace HealerLike.Render.Spells.Editor
                     new Vector3(side * 1.3f, .1f, -.2f), new Vector3(.8f, 2.1f, .16f), new Vector3(0, side * 25f, 0)));
             }
             for (int i = 0; i < 3; i++)
+            {
                 parts.Add(Part("Bracket bead " + i, Primitive.Sphere, ShapeProfile.Bulb(), new Vector3(-.5f + .5f * i, -.8f, 0),
                     Vector3.one * .18f));
+            }
+
             return parts.ToArray();
         }
 
@@ -210,8 +232,11 @@ namespace HealerLike.Render.Spells.Editor
                     new Vector3(.3f, .55f, .3f), new Vector3(55, turn, 0)));
             }
             for (int i = 0; i < 4; i++)
+            {
                 parts.Add(Part("Cell tick " + i, Primitive.Leaf, ShapeProfile.Leaf(.05f, .6f), Radial(i, 4, 1.95f, .25f),
                     new Vector3(.3f, .7f, .1f), new Vector3(70, i * 90f, 0)));
+            }
+
             return parts.ToArray();
         }
 
@@ -335,9 +360,12 @@ namespace HealerLike.Render.Spells.Editor
         {
             var parts = new LookPart[count];
             for (int i = 0; i < count; i++)
+            {
                 parts[i] = Part(id + i, Primitive.Boulder, Slab(.6f),
                     Radial(i, count, radius, height + .1f * (i % 2)),
                     new Vector3(size * 1.3f, size * .7f, size), new Vector3(0, i * 47f, 8f * (i % 3 - 1)));
+            }
+
             return parts;
         }
 
@@ -368,6 +396,7 @@ namespace HealerLike.Render.Spells.Editor
             var parts = new List<LookPart>();
             int[] courses = { 3, 3, 2 };
             for (int course = 0; course < courses.Length; course++)
+            {
                 for (int stack = 0; stack < courses[course]; stack++)
                 {
                     Vector3 foot = Radial(stack, 3, 1.6f, -.25f, 18f);
@@ -376,6 +405,8 @@ namespace HealerLike.Render.Spells.Editor
                         foot + Vector3.up * (.3f * course), new Vector3(.62f * shrink, .2f, .5f * shrink),
                         new Vector3(4f * (course - 1), stack * 120f + course * 23f, 6f * (stack - 1))));
                 }
+            }
+
             return parts.ToArray();
         }
 
@@ -387,9 +418,16 @@ namespace HealerLike.Render.Spells.Editor
             parts[0] = Part("Capstone", Primitive.Boulder, ShapeProfile.Block(.1f, .05f, .12f, .35f, .1f),
                 new Vector3(0, .62f, 0), new Vector3(1.7f, .32f, 1.45f), new Vector3(0, 21f, 3f));
             for (int i = 1; i < parts.Length; i++)
+            {
                 parts[i] = Part("Bearing wedge " + i, Primitive.Pyramid, ShapeProfile.Shard(.45f, 0, .5f),
                     Radial(i - 1, 4, .55f, .3f, 45f), new Vector3(.36f, .5f, .3f), new Vector3(0, i * 90f + 45f, 180));
-            for (int i = 0; i < parts.Length; i++) parts[i].glow = .8f;
+            }
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                parts[i].glow = .8f;
+            }
+
             return parts;
         }
 

@@ -217,8 +217,11 @@ public class EnvironmentRidgeTests
             bands, grid, ground, EnvironmentSettings.DefaultSeed);
         Assert.AreEqual(expected.Count, ridge.items.Count);
         Assert.That(Vector3.Distance(oldPosition, ridge.items[0].position), Is.GreaterThan(1f));
-        for (int i = 0; i < expected.Count; i++) Assert.AreEqual(expected[i].position, ridge.items[i].position);
-    }
+        for (int i = 0; i < expected.Count; i++)
+            {
+                Assert.AreEqual(expected[i].position, ridge.items[i].position);
+            }
+        }
 
     [Test]
     public void Init_Camera_BuildsLayoutWithTheGivenMeshes()

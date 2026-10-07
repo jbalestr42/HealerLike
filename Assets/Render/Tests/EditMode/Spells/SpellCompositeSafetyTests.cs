@@ -19,7 +19,14 @@ namespace HealerLike.Render.Spells
         [TearDown]
         public void TearDown()
         {
-            foreach (GameObject obj in _objects) if (obj) Object.DestroyImmediate(obj);
+            foreach (GameObject obj in _objects)
+            {
+                if (obj)
+                {
+                    Object.DestroyImmediate(obj);
+                }
+            }
+
             _objects.Clear();
         }
 

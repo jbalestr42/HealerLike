@@ -47,11 +47,18 @@ namespace HealerLike.Render.Deliveries
 
         public LianaArm GetDeliveryArm(int token)
         {
-            if (!_deliveries.TryGetValue(token, out Delivery delivery)) return null;
+            if (!_deliveries.TryGetValue(token, out Delivery delivery))
+            {
+                return null;
+            }
+
             for (int i = 0; i < armCount; i++)
             {
                 LianaArm arm = _leases.Get(i);
-                if (arm != null && arm.token == delivery.lease) return arm;
+                if (arm != null && arm.token == delivery.lease)
+                {
+                    return arm;
+                }
             }
             return null;
         }

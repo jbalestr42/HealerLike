@@ -107,12 +107,20 @@ namespace HealerLike.Render.Environment
                             float clearanceSquared = 4f * cellSize * cellSize;
                             if ((stoneShoulder.HasValue && (point - stoneShoulder.Value).sqrMagnitude < clearanceSquared)
                                 || (mushroomShoulder.HasValue && (point - mushroomShoulder.Value).sqrMagnitude < clearanceSquared))
+                            {
                                 continue;
+                            }
                         }
                         if (isShoulder)
                         {
-                            if (kind == EnvironmentKind.Monolith) stoneShoulder = point;
-                            else mushroomShoulder = point;
+                            if (kind == EnvironmentKind.Monolith)
+                            {
+                                stoneShoulder = point;
+                            }
+                            else
+                            {
+                                mushroomShoulder = point;
+                            }
                         }
 
                         result.Add(new EnvironmentItem

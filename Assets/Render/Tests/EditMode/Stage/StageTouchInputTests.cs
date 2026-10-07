@@ -42,7 +42,10 @@ namespace HealerLike.Render.Stage
                 var modern = host.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
                 foreach (int id in new[] { pointer, UnityEngine.UIElements.PointerId.penPointerIdBase,
                     UnityEngine.UIElements.PointerId.mousePointerId })
+                {
                     Assert.That(StageTouchInput.CanBeginPointer(modern, id, samples), Is.True);
+                }
+
                 Assert.That(StageTouchInput.CanBeginPointer(null, pointer, samples), Is.True);
             }
             finally { Object.DestroyImmediate(host); }
@@ -88,7 +91,11 @@ namespace HealerLike.Render.Stage
             foreach (string guid in scripts)
             {
                 var script = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.MonoScript>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
-                if (script.GetClass() != typeof(UnityEngine.EventSystems.EventSystem)) continue;
+                if (script.GetClass() != typeof(UnityEngine.EventSystems.EventSystem))
+                {
+                    continue;
+                }
+
                 Assert.That(order.order, Is.LessThan(UnityEditor.MonoImporter.GetExecutionOrder(script)));
                 checkedSystem = true;
             }

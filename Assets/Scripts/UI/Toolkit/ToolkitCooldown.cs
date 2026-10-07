@@ -18,7 +18,11 @@ public sealed class ToolkitCooldown : VisualElement
     }
     void Draw(MeshGenerationContext context)
     {
-        if (_remaining <= 0) return;
+        if (_remaining <= 0)
+        {
+            return;
+        }
+
         var painter = context.painter2D;
         Vector2 center = contentRect.center;
         float radius = Mathf.Min(contentRect.width, contentRect.height) * .5f;

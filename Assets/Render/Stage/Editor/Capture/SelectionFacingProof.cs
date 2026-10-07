@@ -118,7 +118,10 @@ namespace HealerLike.Render.Stage
             _lease.Dispose();
             targets.SetValue(_entity.targetProvider, _previousTargets);
             _entity.targetProvider.isEnabled = _wasEnabled;
-            foreach (GameObject target in _targets) Object.Destroy(target);
+            foreach (GameObject target in _targets)
+            {
+                Object.Destroy(target);
+            }
         }
     }
 }

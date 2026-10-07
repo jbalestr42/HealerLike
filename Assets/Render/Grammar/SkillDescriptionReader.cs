@@ -69,7 +69,10 @@ namespace HealerLike.Render.Grammar
                 // A growing bud announces creation; its clock belongs to the summon skill.
                 description.head = HeadKind.Bud;
                 description.accent = EffectFamily.Boon;
-                if (summon.data != null) description.cadence = summon.data.cooldown;
+                if (summon.data != null)
+                {
+                    description.cadence = summon.data.cooldown;
+                }
             }
             else if (skill is ApplyBuffPeriodicallySkillFactory periodic)
             {
@@ -82,7 +85,10 @@ namespace HealerLike.Render.Grammar
             {
                 // Julien's MarkedStrikeView draws the mark, the arc and the impact; the creature reads only
                 // its clock, one strike per interval plus the delay between mark and strike
-                if (strike.data != null) description.cadence = strike.data.interval + strike.data.delay;
+                if (strike.data != null)
+                {
+                    description.cadence = strike.data.interval + strike.data.delay;
+                }
             }
             else if (skill != null)
             {

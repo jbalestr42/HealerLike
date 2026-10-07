@@ -42,24 +42,44 @@ public class ToolkitGameUI : MonoBehaviour
     IToolkitRosterDrag _rosterDrag;
     System.Func<int, bool> _canBeginPointer;
     public void SetPointerGate(System.Func<int, bool> gate)
-    { _canBeginPointer = gate; if (_view != null) _view.canBeginPointer = gate; }
+    { _canBeginPointer = gate; if (_view != null)
+        {
+            _view.canBeginPointer = gate;
+        }
+    }
     public void SetRosterDrag(IToolkitRosterDrag drag)
-    { _rosterDrag = drag; if (_view != null) _view.rosterDrag = drag; }
+    { _rosterDrag = drag; if (_view != null)
+        {
+            _view.rosterDrag = drag;
+        }
+    }
     public bool acceptsWorldInput => _view != null && !_context.isPaused && !_context.isInventoryOpen
         && _context.IsCurrentView(ViewType.Game);
     public void WorldPointerDown() { _view?.ClosePopover(); }
     public void CancelGestures() { _view?.CancelGestures(); }
     public void InspectEntity(Entity entity, Vector2 screenPoint)
     {
-        if (_view == null || entity == null || _context.isPaused) return;
+        if (_view == null || entity == null || _context.isPaused)
+        {
+            return;
+        }
+
         Vector2 panel = RuntimePanelUtils.ScreenToPanel(_view.root.panel,
             new Vector2(screenPoint.x, Screen.height - screenPoint.y));
         _view.inspectAnchor = new Rect(panel.x - 1, panel.y - 28, 2, 2);
         _view.OnInspectRequested.Invoke(new ToolkitCardModel { source = entity, iconSource = entity,
             title = entity.data.title, description = entity.data.description });
     }
-    void OnApplicationFocus(bool focused) { if (!focused) CancelGestures(); }
-    void OnApplicationPause(bool paused) { if (paused) CancelGestures(); }
+    void OnApplicationFocus(bool focused) { if (!focused)
+        {
+            CancelGestures();
+        }
+    }
+    void OnApplicationPause(bool paused) { if (paused)
+        {
+            CancelGestures();
+        }
+    }
     public IToolkitIconProvider iconProvider
     {
         get { return _iconProvider; }

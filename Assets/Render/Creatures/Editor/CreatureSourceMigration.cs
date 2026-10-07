@@ -12,7 +12,11 @@ namespace HealerLike.Render.Creatures
         public static void Run()
         {
             LookVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<LookVocabulary>(GrowthStoneVocabulary.AssetPath);
-            if (!vocabulary) throw new InvalidOperationException("Missing authored vocabulary");
+            if (!vocabulary)
+            {
+                throw new InvalidOperationException("Missing authored vocabulary");
+            }
+
             Apply(vocabulary);
             EditorUtility.SetDirty(vocabulary);
             AssetDatabase.SaveAssetIfDirty(vocabulary);
@@ -43,9 +47,15 @@ namespace HealerLike.Render.Creatures
                     ? (family == HeadKind.Arch || family == HeadKind.SelfTick ? ShapeAnchor.Bottom : ShapeAnchor.Top)
                     : ShapeAnchor.Center;
                 parts[i] = part;
-                if (source) outlets++;
+                if (source)
+                {
+                    outlets++;
+                }
             }
-            if (outlets == 0) throw new InvalidOperationException("No authored outlet for " + family + "/" + stone);
+            if (outlets == 0)
+            {
+                throw new InvalidOperationException("No authored outlet for " + family + "/" + stone);
+            }
         }
     }
 }

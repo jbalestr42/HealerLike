@@ -44,7 +44,9 @@ namespace HealerLike.Render.Creatures
 
                 if (part.isSource && (!CreatureSources.Valid(part.sourceAnchor)
                     || string.IsNullOrEmpty(part.sourceId) || !sourceIds.Add(part.sourceId)))
+                {
                     return Fail("Invalid or duplicate anatomical source.", out error);
+                }
 
                 Vector3 position = part.localPosition;
                 Vector3 euler = part.localEuler;

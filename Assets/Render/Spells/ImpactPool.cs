@@ -75,7 +75,10 @@ namespace HealerLike.Render.Spells
             {
                 SpellEffect link = ShowLink(EffectPlacement.Anchors(source).castPoint,
                     EffectPlacement.Anchors(target).bodyCentre, recipe.family, false);
-                if (link) link.SetCastSource(source);
+                if (link)
+                {
+                    link.SetCastSource(source);
+                }
             }
 
             EffectPlacement.Place(effect, _parent, EffectPlacement.Anchors(target));

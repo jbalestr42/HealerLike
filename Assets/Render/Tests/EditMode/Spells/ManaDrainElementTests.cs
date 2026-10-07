@@ -22,7 +22,9 @@ namespace HealerLike.Render.Spells
             Assert.AreEqual(EffectOperation.ManaDrain, channels.operation);
             Assert.AreEqual(EffectKey.ManaDown, EffectComposer.Element(RenderTestAssets.LoadEffectVocabulary(), channels));
             foreach (EffectChannels layer in EffectDerivation.Layers(handler, isSameSide))
+            {
                 Assert.AreEqual(EffectKey.ManaDown, EffectComposer.Element(RenderTestAssets.LoadEffectVocabulary(), layer));
+            }
         }
 
         [TestCase(true)]
@@ -37,7 +39,9 @@ namespace HealerLike.Render.Spells
             Assert.AreEqual(EffectOperation.Mana, channels.operation);
             Assert.AreEqual(EffectKey.ManaUp, EffectComposer.Element(RenderTestAssets.LoadEffectVocabulary(), channels));
             foreach (EffectChannels layer in EffectDerivation.Layers(handler, isSameSide))
+            {
                 Assert.AreEqual(EffectKey.ManaUp, EffectComposer.Element(RenderTestAssets.LoadEffectVocabulary(), layer));
+            }
         }
 
         [Test]
@@ -45,12 +49,14 @@ namespace HealerLike.Render.Spells
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
             foreach (EffectAspect aspect in System.Enum.GetValues(typeof(EffectAspect)))
+            {
                 foreach (EffectTempo tempo in System.Enum.GetValues(typeof(EffectTempo)))
                 {
                     Assert.IsTrue(vocabulary.TryGetElement(EffectOperation.ManaDrain, aspect, tempo, out EffectKey element),
                         aspect + "/" + tempo);
                     Assert.AreEqual(EffectKey.ManaDown, element, aspect + "/" + tempo);
                 }
+            }
         }
 
         static ABuffHandlerFactory Load(string path)
@@ -63,7 +69,13 @@ namespace HealerLike.Render.Spells
         static bool HasBuff<T>(ABuffHandlerFactory handler) where T : ABuffFactory
         {
             foreach (ABuffFactory buff in EffectDerivation.Buffs(handler))
-                if (buff is T) return true;
+            {
+                if (buff is T)
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
     }

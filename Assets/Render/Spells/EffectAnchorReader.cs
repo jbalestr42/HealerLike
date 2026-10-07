@@ -39,7 +39,10 @@ namespace HealerLike.Render.Spells
         {
             for (int i = 0; i < points.Length; i++)
             {
-                if (!RenderMath.IsFinite(points[i])) return false;
+                if (!RenderMath.IsFinite(points[i]))
+                {
+                    return false;
+                }
             }
             return true;
         }

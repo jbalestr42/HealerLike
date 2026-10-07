@@ -42,89 +42,169 @@ namespace HealerLike.Render.Spells
         public SpellEffect Get(GameObject target, EffectKey element)
         {
             foreach (var pair in _statuses)
-                if (pair.Key.target == target && pair.Key.element == element) return pair.Value.effect;
+            {
+                if (pair.Key.target == target && pair.Key.element == element)
+                {
+                    return pair.Value.effect;
+                }
+            }
+
             return null;
         }
         public SpellEffect GetShield(GameObject target)
         {
             foreach (var pair in _statuses)
+            {
                 if (pair.Key.target == target && pair.Value.effect?.recipe.presentation?.isShield == true)
+                {
                     return pair.Value.effect;
+                }
+            }
+
             return null;
         }
         public SpellEffect Get(GameObject target, ABuffHandlerFactory factory)
         {
             if (_handlers.TryGetValue(new HandlerKey(target, factory), out var keys))
+            {
                 foreach (StatusKey key in keys)
-                    if (_statuses.TryGetValue(key, out Status status) && status.effect) return status.effect;
+                {
+                    if (_statuses.TryGetValue(key, out Status status) && status.effect)
+                    {
+                        return status.effect;
+                    }
+                }
+            }
+
             return null;
         }
         public int Stacks(GameObject target, ABuffHandlerFactory factory)
         {
             if (_handlers.TryGetValue(new HandlerKey(target, factory), out var keys))
+            {
                 foreach (StatusKey key in keys)
+                {
                     if (_statuses.TryGetValue(key, out Status status) && status.sources.TryGetValue(factory, out int stacks))
+                    {
                         return stacks;
+                    }
+                }
+            }
+
             return 0;
         }
         public void Set(GameObject source, GameObject target, ABuffHandlerFactory factory, int stacks,
             float elapsedSeconds, float durationSeconds)
         {
-            if (target == null || factory == null) return;
+            if (target == null || factory == null)
+            {
+                return;
+            }
+
             HandlerKey handler = new HandlerKey(target, factory);
             if (!_handlers.TryGetValue(handler, out var keys))
             {
-                if (_vocabulary == null || _looks == null) return;
+                if (_vocabulary == null || _looks == null)
+                {
+                    return;
+                }
+
                 keys = new List<StatusKey>();
                 List<EffectRecipe> recipes = _looks.Compose(_vocabulary, factory, source, target);
                 for (int i = 0; i < recipes.Count; i++)
                 {
                     StatusKey key = new StatusKey(target, recipes[i], i, factory);
                     if (!_statuses.TryGetValue(key, out Status status) || !status.effect)
+                    {
                         status = Open(key, recipes[i]);
-                    if (status != null) keys.Add(key);
+                    }
+
+                    if (status != null)
+                    {
+                        keys.Add(key);
+                    }
                 }
-                if (keys.Count == 0) return;
+                if (keys.Count == 0)
+                {
+                    return;
+                }
+
                 _handlers.Add(handler, keys);
             }
             Entity caster = source ? source.GetComponent<Entity>() : null;
             foreach (StatusKey key in keys)
             {
-                if (!_statuses.TryGetValue(key, out Status status) || !status.effect) continue;
+                if (!_statuses.TryGetValue(key, out Status status) || !status.effect)
+                {
+                    continue;
+                }
+
                 status.sources[factory] = stacks;
                 Refresh(status, elapsedSeconds, durationSeconds);
-                if (caster) status.effect.SetSide(caster.entityType);
+                if (caster)
+                {
+                    status.effect.SetSide(caster.entityType);
+                }
             }
         }
         public void Remove(GameObject target, ABuffHandlerFactory factory)
         {
             HandlerKey handler = new HandlerKey(target, factory);
-            if (!_handlers.TryGetValue(handler, out var keys)) return;
+            if (!_handlers.TryGetValue(handler, out var keys))
+            {
+                return;
+            }
+
             _handlers.Remove(handler);
             foreach (StatusKey key in keys)
             {
-                if (!_statuses.TryGetValue(key, out Status status)) continue;
+                if (!_statuses.TryGetValue(key, out Status status))
+                {
+                    continue;
+                }
+
                 status.sources.Remove(factory);
                 if (!Close(key, status) && status.effect)
+                {
                     Refresh(status, status.effect.elapsedSeconds, status.effect.durationSeconds);
+                }
             }
         }
         public void SetCharges(GameObject target, float charges)
         {
             EffectRecipe recipe = EffectComposer.Shield(_vocabulary, charges);
-            if (recipe == null) return;
+            if (recipe == null)
+            {
+                return;
+            }
+
             StatusKey key = new StatusKey(target, recipe);
             _statuses.TryGetValue(key, out Status status);
             if (!float.IsFinite(charges) || charges <= 0)
             {
-                if (status == null) return;
+                if (status == null)
+                {
+                    return;
+                }
+
                 status.charges = 0;
                 if (!Close(key, status) && status.effect)
+                {
                     Refresh(status, status.effect.elapsedSeconds, status.effect.durationSeconds);
+                }
+
                 return;
             }
-            if (status == null || !status.effect) status = Open(key, recipe);
-            if (status == null || status.charges == charges) return;
+            if (status == null || !status.effect)
+            {
+                status = Open(key, recipe);
+            }
+
+            if (status == null || status.charges == charges)
+            {
+                return;
+            }
+
             status.charges = charges;
             Refresh(status, status.effect.elapsedSeconds, float.PositiveInfinity);
         }
@@ -135,32 +215,62 @@ namespace HealerLike.Render.Spells
             {
                 bool lost = pair.Key.target == null || pair.Key.factory == null;
                 foreach (StatusKey key in pair.Value)
+                {
                     lost |= !_statuses.TryGetValue(key, out Status status) || !status.effect;
-                if (lost) _deadHandlers.Add(pair.Key);
+                }
+
+                if (lost)
+                {
+                    _deadHandlers.Add(pair.Key);
+                }
             }
-            foreach (HandlerKey key in _deadHandlers) Remove(key.target, key.factory);
+            foreach (HandlerKey key in _deadHandlers)
+            {
+                Remove(key.target, key.factory);
+            }
+
             _dead.Clear();
             foreach (var pair in _statuses)
             {
-                if (!pair.Key.target || !pair.Value.effect) _dead.Add(pair.Key);
-                else Refit(pair.Key.target, pair.Value);
+                if (!pair.Key.target || !pair.Value.effect)
+                {
+                    _dead.Add(pair.Key);
+                }
+                else
+                {
+                    Refit(pair.Key.target, pair.Value);
+                }
             }
             foreach (StatusKey key in _dead)
             {
-                if (_statuses[key].effect) SpellEffect.Dispose(_statuses[key].effect.gameObject);
+                if (_statuses[key].effect)
+                {
+                    SpellEffect.Dispose(_statuses[key].effect.gameObject);
+                }
+
                 _statuses.Remove(key);
             }
         }
         public void Clear()
         {
             foreach (Status status in _statuses.Values)
-                if (status.effect) SpellEffect.Dispose(status.effect.gameObject);
+            {
+                if (status.effect)
+                {
+                    SpellEffect.Dispose(status.effect.gameObject);
+                }
+            }
+
             _statuses.Clear(); _handlers.Clear();
         }
         Status Open(StatusKey key, EffectRecipe recipe)
         {
             SpellEffect effect = SpellEffect.Create(recipe, _parent, _meshes, _material, key.target);
-            if (!effect) return null;
+            if (!effect)
+            {
+                return null;
+            }
+
             Status status = new Status { effect = effect };
             Refit(key.target, status, true);
             effect.BindGround(_ground, key.target);
@@ -181,7 +291,10 @@ namespace HealerLike.Render.Spells
             }
             CreatureRig rig = host ? host.rig : null;
             if (rig != null && !force && host == status.host && rig == status.rig
-                && rig.revision == status.revision && anchor == status.anchor) return;
+                && rig.revision == status.revision && anchor == status.anchor)
+            {
+                return;
+            }
 
             EffectAnchors anchors = EffectPlacement.Anchors(target);
             EffectAnchors local = anchors;
@@ -202,7 +315,10 @@ namespace HealerLike.Render.Spells
             status.revision = rig != null ? rig.revision : 0;
             status.anchor = anchor;
             status.localAnchors = local;
-            if (changed) EffectPlacement.Place(status.effect, anchor, anchors);
+            if (changed)
+            {
+                EffectPlacement.Place(status.effect, anchor, anchors);
+            }
         }
 
         static bool SameDimensions(EffectAnchors a, EffectAnchors b) =>
@@ -214,14 +330,22 @@ namespace HealerLike.Render.Spells
         static void Refresh(Status status, float elapsedSeconds, float durationSeconds)
         {
             int stacks = 0;
-            foreach (int count in status.sources.Values) stacks += count;
+            foreach (int count in status.sources.Values)
+            {
+                stacks += count;
+            }
+
             SpellEffect effect = status.effect;
             effect.RefreshCount(stacks, status.charges);
             effect.SetStatus(Mathf.Max(1, stacks), elapsedSeconds, durationSeconds);
         }
         bool Close(StatusKey key, Status status)
         {
-            if (status.sources.Count > 0 || status.charges > 0) return false;
+            if (status.sources.Count > 0 || status.charges > 0)
+            {
+                return false;
+            }
+
             _statuses.Remove(key);
             if (status.effect)
             {

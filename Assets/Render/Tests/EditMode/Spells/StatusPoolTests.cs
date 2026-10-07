@@ -128,8 +128,14 @@ public class StatusPoolTests
         Assert.AreEqual(2, orbit.count); // ring silhouette stays stable; stack pearls carry the count
         int beads = 0;
         foreach (LookPart bead in orbit.recipe.entry.stackBeads)
-            if (orbit.transform.Find(bead.id).gameObject.activeSelf) beads++;
-        Assert.AreEqual(2, beads);
+            {
+                if (orbit.transform.Find(bead.id).gameObject.activeSelf)
+                {
+                    beads++;
+                }
+            }
+
+            Assert.AreEqual(2, beads);
 
         _pool.Remove(_target, _factory);
         Assert.AreEqual(1, _pool.count);

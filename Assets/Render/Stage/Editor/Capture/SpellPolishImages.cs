@@ -27,7 +27,11 @@ namespace HealerLike.Render.Stage
             this.folder = folder;
             sheet = new Texture2D(TileWidth * 3, TileHeight * 14, TextureFormat.RGB24, false);
             Color32[] pixels = new Color32[sheet.width * sheet.height];
-            for (int i = 0; i < pixels.Length; i++) pixels[i] = new Color32(20, 28, 28, 255);
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color32(20, 28, 28, 255);
+            }
+
             sheet.SetPixels32(pixels);
         }
 
@@ -42,7 +46,13 @@ namespace HealerLike.Render.Stage
                 Color32[] source = shot.GetPixels32();
                 Color32[] tile = new Color32[TileWidth * 240];
                 for (int y = 0; y < 240; y++)
-                    for (int x = 0; x < TileWidth; x++) tile[y * TileWidth + x] = source[(y * 3) * Width + x * 3];
+                {
+                    for (int x = 0; x < TileWidth; x++)
+                    {
+                        tile[y * TileWidth + x] = source[(y * 3) * Width + x * 3];
+                    }
+                }
+
                 sheet.SetPixels32(left, bottom, TileWidth, 240, tile);
                 LookSheetFont.Draw(sheet, label, left + 8, bottom + TileHeight - 5, 1, Color.white);
                 LookSheetFont.Draw(shot, label + " (FIXTURE)", 18, Height - 18, 2, Color.white);
@@ -55,11 +65,18 @@ namespace HealerLike.Render.Stage
         public void Measure(GroundSimulation simulation, EffectKey element, int moment, float age)
         {
             if (simulation == null || !simulation.isValid)
+            {
                 throw new InvalidOperationException("Spell fixture has no live GPU ground simulation.");
+            }
+
             Color[] motion = StageCaptureTexture.Read(simulation.motion);
             Color[] state = StageCaptureTexture.Read(simulation.state);
             float lean = 0, ash = 0, lowVitality = 0, vitality = 0, lowLight = 0, light = 0, blight = 0;
-            foreach (Color pixel in motion) lean = Mathf.Max(lean, new Vector2(pixel.r, pixel.g).magnitude);
+            foreach (Color pixel in motion)
+            {
+                lean = Mathf.Max(lean, new Vector2(pixel.r, pixel.g).magnitude);
+            }
+
             foreach (Color pixel in state)
             {
                 ash = Mathf.Max(ash, pixel.r);
@@ -71,7 +88,10 @@ namespace HealerLike.Render.Stage
             }
             metrics.Append(element).Append(',').Append(moment + 1);
             foreach (float value in new[] { age, lean, ash, lowVitality, vitality, lowLight, light, blight })
+            {
                 metrics.Append(',').Append(value.ToString("0.00000", CultureInfo.InvariantCulture));
+            }
+
             metrics.AppendLine();
         }
 
@@ -161,7 +181,10 @@ namespace HealerLike.Render.Stage
                     creatureContrast.field[0], creatureContrast.field[1], creatureContrast.field[2],
                     creatureContrast.shapeLuma, creatureContrast.fieldLuma, creatureContrast.lumaDifference,
                     creatureContrast.rgbDistance })
+                {
                     readability.Append(',').Append(value.ToString("0.###", CultureInfo.InvariantCulture));
+                }
+
                 readability.Append(',').Append(stacks).AppendLine();
                 rows.Add(new ReadabilityRow
                 {
@@ -177,8 +200,16 @@ namespace HealerLike.Render.Stage
                 bool isStone = recipe.material == LookSide.Stone;
                 string suffix = (isStone ? "-stone" : "") + (target == LookSide.Stone ? "-on-stone" : "")
                     + (stacks != SpellReadabilityPass.DefaultStacks ? "-" + stacks + "-stack" : "");
-                if (element == EffectKey.ManaUp && target == LookSide.Plant) manaUp = a;
-                if (element == EffectKey.ManaDown && target == LookSide.Plant) manaDown = a;
+                if (element == EffectKey.ManaUp && target == LookSide.Plant)
+                {
+                    manaUp = a;
+                }
+
+                if (element == EffectKey.ManaDown && target == LookSide.Plant)
+                {
+                    manaDown = a;
+                }
+
                 File.WriteAllBytes(Path.Combine(folder, $"{(int)element:D2}-{element}{suffix}-peak.png"), full.EncodeToPNG());
                 if (element == EffectKey.Burst && !isStone)
                 {
@@ -228,7 +259,10 @@ namespace HealerLike.Render.Stage
                 foreach (double value in new double[] { row.firstPixels, row.secondPixels, firstMean[0], firstMean[1],
                     firstMean[2], secondMean[0], secondMean[1], secondMean[2], row.firstLuma, row.secondLuma,
                     row.lumaDifference, row.rgbDistance })
+                {
                     pairs.Append(',').Append(value.ToString("0.###", CultureInfo.InvariantCulture));
+                }
+
                 pairs.AppendLine();
                 File.WriteAllBytes(Path.Combine(folder, $"pair-{first}-{second}.png"), full.EncodeToPNG());
             }
@@ -247,7 +281,11 @@ namespace HealerLike.Render.Stage
             File.WriteAllText(Path.Combine(folder, "readability.csv"), readability.ToString());
             File.WriteAllText(Path.Combine(folder, "pairs.csv"), pairs.ToString());
             File.WriteAllText(Path.Combine(folder, "mana-resolution.txt"), resolved + "\n");
-            if (manaUp == null || manaDown == null) return;
+            if (manaUp == null || manaDown == null)
+            {
+                return;
+            }
+
             Texture2D pair = new Texture2D(PhoneWidth * 2, PhoneHeight, TextureFormat.RGB24, false);
             try
             {
@@ -268,7 +306,10 @@ namespace HealerLike.Render.Stage
 
         static void Show(Renderer[] renderers, bool isShown)
         {
-            foreach (Renderer renderer in renderers) renderer.enabled = isShown;
+            foreach (Renderer renderer in renderers)
+            {
+                renderer.enabled = isShown;
+            }
         }
 
         public void Dispose() { RenderObjects.Release(sheet); }

@@ -13,7 +13,11 @@ namespace HealerLike.Render.Spells
         [TearDown]
         public void TearDown()
         {
-            foreach (GameObject item in objects) Object.DestroyImmediate(item);
+            foreach (GameObject item in objects)
+            {
+                Object.DestroyImmediate(item);
+            }
+
             objects.Clear();
         }
 
@@ -27,7 +31,10 @@ namespace HealerLike.Render.Spells
             SpellEffect effect = host.AddComponent<SpellEffect>();
             effect.Init(recipe, RenderTestAssets.LoadMeshes(), null, LookSide.Plant);
             if (recipe.socket == EffectSocket.Link)
+            {
                 effect.SetEndpoints(Vector3.left, Vector3.right, false);
+            }
+
             return effect;
         }
 
@@ -80,7 +87,11 @@ namespace HealerLike.Render.Spells
             SpellEffect stepped = Build(EffectKey.Beam);
             SpellEffect direct = Build(EffectKey.Beam);
             float time = stepped.lifetime * .5f;
-            for (int i = 0; i < 50; i++) stepped.Advance(time / 50f);
+            for (int i = 0; i < 50; i++)
+            {
+                stepped.Advance(time / 50f);
+            }
+
             direct.Advance(time);
             Assert.That(stepped.shapes[0].localScale.magnitude, Is.GreaterThan(.05f));
             Assert.That(Vector3.Distance(stepped.shapes[0].localScale, direct.shapes[0].localScale),

@@ -18,7 +18,11 @@ namespace HealerLike.Render.Stage
         public static bool[] Changed(Color32[] a, Color32[] b, int threshold = Threshold)
         {
             bool[] changed = new bool[a.Length];
-            for (int i = 0; i < a.Length; i++) changed[i] = IsChanged(a[i], b[i], threshold);
+            for (int i = 0; i < a.Length; i++)
+            {
+                changed[i] = IsChanged(a[i], b[i], threshold);
+            }
+
             return changed;
         }
 
@@ -29,9 +33,16 @@ namespace HealerLike.Render.Stage
             int total = 0, kept = 0;
             for (int i = 0; i < mask.Length; i++)
             {
-                if (!mask[i]) continue;
+                if (!mask[i])
+                {
+                    continue;
+                }
+
                 total++;
-                if (!IsChanged(withEffect[i], withoutEffect[i], threshold)) kept++;
+                if (!IsChanged(withEffect[i], withoutEffect[i], threshold))
+                {
+                    kept++;
+                }
             }
             return total == 0 ? 1.0 : (double)kept / total;
         }
@@ -41,11 +52,17 @@ namespace HealerLike.Render.Stage
         {
             int[] sum = new int[(width + 1) * (height + 1)];
             for (int y = 0; y < height; y++)
+            {
                 for (int x = 0; x < width; x++)
+                {
                     sum[(y + 1) * (width + 1) + x + 1] = (mask[y * width + x] ? 1 : 0) + sum[y * (width + 1) + x + 1]
                         + sum[(y + 1) * (width + 1) + x] - sum[y * (width + 1) + x];
+                }
+            }
+
             bool[] grown = new bool[mask.Length];
             for (int y = 0; y < height; y++)
+            {
                 for (int x = 0; x < width; x++)
                 {
                     int x0 = Mathf.Max(0, x - radius), x1 = Mathf.Min(width, x + radius + 1);
@@ -53,13 +70,19 @@ namespace HealerLike.Render.Stage
                     grown[y * width + x] = sum[y1 * (width + 1) + x1] - sum[y0 * (width + 1) + x1]
                         - sum[y1 * (width + 1) + x0] + sum[y0 * (width + 1) + x0] > 0;
                 }
+            }
+
             return grown;
         }
 
         public static int Count(bool[] mask)
         {
             int count = 0;
-            foreach (bool value in mask) count += value ? 1 : 0;
+            foreach (bool value in mask)
+            {
+                count += value ? 1 : 0;
+            }
+
             return count;
         }
 
@@ -70,13 +93,21 @@ namespace HealerLike.Render.Stage
             int count = 0;
             for (int i = 0; i < pixels.Length; i++)
             {
-                if (!mask[i]) continue;
+                if (!mask[i])
+                {
+                    continue;
+                }
+
                 count++;
                 total[0] += pixels[i].r;
                 total[1] += pixels[i].g;
                 total[2] += pixels[i].b;
             }
-            for (int k = 0; k < 3; k++) total[k] /= Mathf.Max(1, count);
+            for (int k = 0; k < 3; k++)
+            {
+                total[k] /= Mathf.Max(1, count);
+            }
+
             return total;
         }
 

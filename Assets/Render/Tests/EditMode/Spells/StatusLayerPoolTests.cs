@@ -33,7 +33,14 @@ namespace HealerLike.Render.Spells
             _pool.Clear();
             Object.DestroyImmediate(_host);
             Object.DestroyImmediate(_target);
-            foreach (Object obj in _created) if (obj) Object.DestroyImmediate(obj);
+            foreach (Object obj in _created)
+            {
+                if (obj)
+                {
+                    Object.DestroyImmediate(obj);
+                }
+            }
+
             _created.Clear();
         }
 
@@ -150,7 +157,9 @@ namespace HealerLike.Render.Spells
             _pool.Remove(_target, factory);
             effect.Advance(1f);
             foreach (SpellEffect layer in effect.GetComponentsInChildren<SpellEffect>(true))
+            {
                 Assert.IsTrue(layer.removalComplete);
+            }
         }
 
         [Test]

@@ -21,23 +21,38 @@ public sealed class ToolkitRoster
         // Transfer the surviving choice into that vacated slot before clearing the deployed slot.
         foreach (Entry deployed in _entries)
         {
-            if (deployed.entity == null || deployed.choice == null) continue;
+            if (deployed.entity == null || deployed.choice == null)
+            {
+                continue;
+            }
+
             if (Contains(choices, deployed.choice))
             {
                 Entry vacant = _entries.Find(e => e != deployed && e.entity == null
                     && e.data == deployed.data && !Contains(choices, e.choice));
-                if (vacant != null) vacant.choice = deployed.choice;
+                if (vacant != null)
+                {
+                    vacant.choice = deployed.choice;
+                }
             }
             deployed.choice = null;
         }
         foreach (SelectEntityButton choice in choices)
         {
-            if (choice == null || choice.data == null || _entries.Exists(e => e.choice == choice)) continue;
+            if (choice == null || choice.data == null || _entries.Exists(e => e.choice == choice))
+            {
+                continue;
+            }
+
             _entries.Add(new Entry { key = "roster-" + _next++, choice = choice, data = choice.data });
         }
         foreach (Entity entity in entities)
         {
-            if (entity == null || _entries.Exists(e => e.entity == entity)) continue;
+            if (entity == null || _entries.Exists(e => e.entity == entity))
+            {
+                continue;
+            }
+
             Entry entry = _entries.Find(e => e.entity == null && e.data == entity.data && !Contains(choices, e.choice));
             if (entry == null)
             {
@@ -51,8 +66,19 @@ public sealed class ToolkitRoster
     }
     static bool Contains(IReadOnlyList<SelectEntityButton> choices, SelectEntityButton choice)
     {
-        if (choice == null) return false;
-        foreach (var current in choices) if (current == choice) return true;
+        if (choice == null)
+        {
+            return false;
+        }
+
+        foreach (var current in choices)
+        {
+            if (current == choice)
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 }

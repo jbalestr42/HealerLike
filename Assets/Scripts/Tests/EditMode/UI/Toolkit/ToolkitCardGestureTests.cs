@@ -57,7 +57,10 @@ namespace UI.Toolkit
         IEnumerator Hold()
         {
             double end = UnityEditor.EditorApplication.timeSinceStartup + .48;
-            while (UnityEditor.EditorApplication.timeSinceStartup < end) yield return null;
+            while (UnityEditor.EditorApplication.timeSinceStartup < end)
+            {
+                yield return null;
+            }
         }
         [UnityTest]
         public IEnumerator ShortSpellActivatesOnlyOnReleaseExactlyOnce()
@@ -159,37 +162,69 @@ namespace UI.Toolkit
             using (var popover = new ToolkitPopover(_view))
             {
                 _button.Focus();
-                using (var inspect = NavigationCancelEvent.GetPooled()) _button.SendEvent(inspect);
+                using (var inspect = NavigationCancelEvent.GetPooled())
+                {
+                    _button.SendEvent(inspect);
+                }
+
                 Assert.That(popover.isOpen, Is.True);
                 Assert.That(_inspects, Is.EqualTo(1)); Assert.That(_casts, Is.Zero);
-                using (var submit = NavigationSubmitEvent.GetPooled()) _button.SendEvent(submit);
+                using (var submit = NavigationSubmitEvent.GetPooled())
+                {
+                    _button.SendEvent(submit);
+                }
+
                 Assert.That(popover.isOpen, Is.False); Assert.That(_casts, Is.Zero);
                 Bind(true); yield return null;
-                using (var submit = NavigationSubmitEvent.GetPooled()) _button.SendEvent(submit);
+                using (var submit = NavigationSubmitEvent.GetPooled())
+                {
+                    _button.SendEvent(submit);
+                }
+
                 Assert.That(_casts, Is.EqualTo(1));
-                using (var inspect = NavigationCancelEvent.GetPooled()) _button.SendEvent(inspect);
+                using (var inspect = NavigationCancelEvent.GetPooled())
+                {
+                    _button.SendEvent(inspect);
+                }
+
                 Assert.That(popover.isOpen, Is.True);
-                using (var inspect = NavigationCancelEvent.GetPooled()) _button.SendEvent(inspect);
+                using (var inspect = NavigationCancelEvent.GetPooled())
+                {
+                    _button.SendEvent(inspect);
+                }
+
                 Assert.That(popover.isOpen, Is.False); Assert.That(_casts, Is.EqualTo(1));
             }
         }
         void Key(KeyCode key)
         {
             using (var evt = KeyDownEvent.GetPooled(new Event { type = EventType.KeyDown, keyCode = key }))
+            {
                 _button.SendEvent(evt);
+            }
         }
         void NavigationCancel()
         {
-            using (var evt = NavigationCancelEvent.GetPooled()) _button.SendEvent(evt);
+            using (var evt = NavigationCancelEvent.GetPooled())
+            {
+                _button.SendEvent(evt);
+            }
         }
         // Synthetic keys cannot set legacy Input.GetKeyDown. Invoke its existing route
         // once, after or before navigation, without adding a second production key owner.
         void Escape(ToolkitGameActions actions, bool actionsFirst)
         {
             Key(KeyCode.Escape);
-            if (actionsFirst) TestHelpers.InvokePrivate(actions, "OnEscape");
+            if (actionsFirst)
+            {
+                TestHelpers.InvokePrivate(actions, "OnEscape");
+            }
+
             NavigationCancel();
-            if (!actionsFirst) TestHelpers.InvokePrivate(actions, "OnEscape");
+            if (!actionsFirst)
+            {
+                TestHelpers.InvokePrivate(actions, "OnEscape");
+            }
         }
         void WithEscapeRoute(System.Action<ToolkitGameActions, ToolkitGameContext> check)
         {
@@ -218,6 +253,7 @@ namespace UI.Toolkit
             Bind(true); yield return null; yield return null;
             _button.Focus();
             foreach (bool actionsFirst in new[] { false, true })
+            {
                 WithEscapeRoute((actions, context) =>
                 {
                     Escape(actions, actionsFirst);
@@ -225,6 +261,7 @@ namespace UI.Toolkit
                     Assert.That(_view.root.Q("detail-panel").ClassListContains("is-hidden"), Is.True);
                     Assert.That(_inspects, Is.Zero); Assert.That(_casts, Is.Zero);
                 });
+            }
         }
         [UnityTest]
         public IEnumerator KeyboardEscapeClosesNavigationInspectionWithoutPausing()
@@ -254,6 +291,7 @@ namespace UI.Toolkit
             _button.Focus();
             var manager = _owner.AddComponent<InteractionManager>();
             foreach (bool actionsFirst in new[] { false, true })
+            {
                 WithEscapeRoute((actions, context) =>
                 {
                     var targeting = new Targeting();
@@ -265,6 +303,7 @@ namespace UI.Toolkit
                     Assert.That(context.isPaused, Is.False);
                     Assert.That(_inspects, Is.Zero); Assert.That(_casts, Is.Zero);
                 });
+            }
         }
         [UnityTest]
         public IEnumerator KeyboardInspectShortcutsKeepInspectionWithoutActivation()
@@ -272,12 +311,15 @@ namespace UI.Toolkit
             Bind(true); yield return null; yield return null;
             _button.Focus();
             using (var popover = new ToolkitPopover(_view))
+            {
                 foreach (KeyCode key in new[] { KeyCode.I, KeyCode.F1 })
                 {
                     Key(key);
                     Assert.That(popover.isOpen, Is.True); Assert.That(_casts, Is.Zero);
                     _view.ClosePopover();
                 }
+            }
+
             Assert.That(_inspects, Is.EqualTo(2));
         }
         sealed class Targeting : AInteraction
@@ -293,7 +335,7 @@ namespace UI.Toolkit
             public bool Begin(EntityData data, Vector2 point, System.Action<Entity> deployed)
             { begins++; active = true; return true; }
             public void Move(Vector2 point) { }
-            public bool End(Vector2 point) { if (active) ends++; active = false; return true; }
+            public bool End(Vector2 point) { if (active) { ends++; } active = false; return true; }
             public void Cancel() { active = false; }
         }
     }

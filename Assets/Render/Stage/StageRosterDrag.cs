@@ -26,9 +26,17 @@ namespace HealerLike.Render.Stage
 
         public bool Begin(EntityData data, Vector2 point, Action<Entity> deployed)
         {
-            if (active) return false;
+            if (active)
+            {
+                return false;
+            }
+
             Cancel();
-            if (data == null || data.model == null || _grid == null || _interaction == null) return false;
+            if (data == null || data.model == null || _grid == null || _interaction == null)
+            {
+                return false;
+            }
+
             _claim();
             _owned = _create(data, deployed);
             _interaction.SetInteraction(_owned);
@@ -39,7 +47,11 @@ namespace HealerLike.Render.Stage
         public void Move(Vector2 point)
         {
             valid = TryTarget(point, out RaycastHit hit);
-            if (!active) return;
+            if (!active)
+            {
+                return;
+            }
+
             if (valid)
             {
                 target = _grid.GetNearestWalkablePosition(hit.point);
@@ -50,19 +62,37 @@ namespace HealerLike.Render.Stage
         bool TryTarget(Vector2 point, out RaycastHit hit)
         {
             hit = default;
-            if (_owned == null || !ReferenceEquals(_interaction.GetInteraction(), _owned)) return false;
+            if (_owned == null || !ReferenceEquals(_interaction.GetInteraction(), _owned))
+            {
+                return false;
+            }
             // Lift the intended cell, not just its artwork, so preview and release validate the same ray.
             Vector2 lifted = point + Vector2.up * (56f * ToolkitScreenLayout.GetScale(Screen.width, Screen.height,
                 Application.isMobilePlatform));
-            if (!_project(lifted, out hit, _owned.GetLayerMask()) || !_owned.IsValidTarget(hit.collider.gameObject)) return false;
-            if (_grid.cells == null || _grid.cells.Length == 0) return false;
+            if (!_project(lifted, out hit, _owned.GetLayerMask()) || !_owned.IsValidTarget(hit.collider.gameObject))
+            {
+                return false;
+            }
+
+            if (_grid.cells == null || _grid.cells.Length == 0)
+            {
+                return false;
+            }
+
             Vector3 first = _grid.GetCell(0, 0).center;
             Vector3 last = _grid.GetCell(_grid.width - 1, _grid.height - 1).center;
             float half = _grid.size * .5f;
             if (hit.point.x < first.x - half || hit.point.x > last.x + half
-                || hit.point.z < first.z - half || hit.point.z > last.z + half) return false;
+                || hit.point.z < first.z - half || hit.point.z > last.z + half)
+            {
+                return false;
+            }
+
             Vector2Int coord = _grid.GetCoordFromPosition(hit.point);
-            if (!_grid.IsValidCoord(coord)) return false;
+            if (!_grid.IsValidCoord(coord))
+            {
+                return false;
+            }
             // Respect the existing nearest-walkable rule, including occupied-cell snapping.
             Vector3 nearest = _grid.GetNearestWalkablePosition(hit.point);
             return _grid.CanPlaceObject(_grid.GetCoordFromPosition(nearest));
@@ -75,14 +105,21 @@ namespace HealerLike.Render.Stage
                 EntityGridInteraction action = _owned;
                 _owned = null; // Release ownership before invoking gameplay, including reentrant refreshes.
                 StageTouchInput.Activate(action, hit);
-                if (ReferenceEquals(_interaction.GetInteraction(), action)) _interaction.EndInteraction();
+                if (ReferenceEquals(_interaction.GetInteraction(), action))
+                {
+                    _interaction.EndInteraction();
+                }
             }
             Cancel();
             return commit;
         }
         public void Cancel()
         {
-            if (_owned != null && ReferenceEquals(_interaction.GetInteraction(), _owned)) _interaction.CancelInteraction();
+            if (_owned != null && ReferenceEquals(_interaction.GetInteraction(), _owned))
+            {
+                _interaction.CancelInteraction();
+            }
+
             _owned = null; valid = false; _cell?.Dispose(); _cell = null;
         }
         public void Dispose() { Cancel(); }

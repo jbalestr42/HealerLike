@@ -15,12 +15,20 @@ namespace HealerLike.Render.Grammar
             EffectContext context)
         {
             IReadOnlyList<ABuffFactory> buffs = Buffs(handler);
-            if (buffs.Count == 0) return System.Array.Empty<EffectChannels>();
+            if (buffs.Count == 0)
+            {
+                return System.Array.Empty<EffectChannels>();
+            }
+
             var layers = new List<EffectChannels>(buffs.Count);
             bool isGrowth = IsGrowth(handler, context);
             foreach (ABuffFactory buff in buffs)
             {
-                if (!buff) continue;
+                if (!buff)
+                {
+                    continue;
+                }
+
                 EffectFamily family = LayerFamily(buff, isSameSide, IsPeriodic(handler));
                 AttributeGroup group = LayerGroup(buff);
                 layers.Add(new EffectChannels
@@ -46,24 +54,47 @@ namespace HealerLike.Render.Grammar
         static EffectFamily LayerFamily(ABuffFactory buff, bool isSameSide, bool periodic)
         {
             AConsumerFactory consumer = Consumer(buff);
-            if (consumer != null) return ConsumerFamily(consumer, periodic);
+            if (consumer != null)
+            {
+                return ConsumerFamily(consumer, periodic);
+            }
+
             if (TryModifier(buff, out AttributeType type, out float delta) && delta != 0f)
+            {
                 return delta * Polarity(type) > 0f ? EffectFamily.Boon : EffectFamily.Bane;
+            }
+
             return isSameSide ? EffectFamily.Boon : EffectFamily.Bane;
         }
 
         static AttributeGroup LayerGroup(ABuffFactory buff)
         {
-            if (buff is InvincibilityBuffFactory) return AttributeGroup.Prevention;
+            if (buff is InvincibilityBuffFactory)
+            {
+                return AttributeGroup.Prevention;
+            }
+
             return TryModifier(buff, out AttributeType type, out _) && IsDefence(type)
                 ? AttributeGroup.Defence : AttributeGroup.Offence;
         }
 
         static EffectOperation LayerOperation(ABuffFactory buff, EffectFamily family)
         {
-            if (buff is InvincibilityBuffFactory) return EffectOperation.Ward;
-            if (buff is ManaOnRoundEndBuffFactory) return EffectOperation.Mana;
-            if (buff is DrainCharacterManaBuffFactory) return EffectOperation.ManaDrain;
+            if (buff is InvincibilityBuffFactory)
+            {
+                return EffectOperation.Ward;
+            }
+
+            if (buff is ManaOnRoundEndBuffFactory)
+            {
+                return EffectOperation.Mana;
+            }
+
+            if (buff is DrainCharacterManaBuffFactory)
+            {
+                return EffectOperation.ManaDrain;
+            }
+
             switch (family)
             {
                 case EffectFamily.Heal:
@@ -85,10 +116,21 @@ namespace HealerLike.Render.Grammar
 
         static EffectTrigger LayerTrigger(ABuffFactory buff, EffectContext context)
         {
-            if (context.triggers != null && context.triggers.Length > 0) return context.triggers[0];
-            if (buff is DamageAllEntityOnEntityDieBuffFactory) return EffectTrigger.OnDeath;
+            if (context.triggers != null && context.triggers.Length > 0)
+            {
+                return context.triggers[0];
+            }
+
+            if (buff is DamageAllEntityOnEntityDieBuffFactory)
+            {
+                return EffectTrigger.OnDeath;
+            }
+
             if (buff is HealAllEntitiesOnRoundEndBuffFactory || buff is ManaOnRoundEndBuffFactory)
+            {
                 return EffectTrigger.RoundEnd;
+            }
+
             return EffectTrigger.Cast;
         }
     }

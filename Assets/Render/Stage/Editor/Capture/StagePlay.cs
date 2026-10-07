@@ -140,18 +140,65 @@ namespace HealerLike.Render.Stage
         // The run each mode names, the one place a capture registers
         static AStageRun Create(string mode)
         {
-            if (mode == "compact-ui") return new StageCompactRun();
-            if (mode == "selection-facing") return new SelectionFacingRun();
-            if (mode == "spell-icons") return new SpellIconRun();
-            if (mode == "spell-polish") return new SpellPolishRun();
-            if (mode == "spell-readability") return new SpellPolishRun(true);
-            if (mode == "spell-sources") return new SpellSourceRun();
-            if (mode == FieldVariantRun.Mode) return new FieldVariantRun();
-            if (mode == SandboxCaptureRun.BootMode) return new SandboxCaptureRun(false);
-            if (mode == SandboxCaptureRun.MenuMode) return new SandboxCaptureRun(true);
-            if (mode == SandboxCaptureRun.BackMode) return new SandboxCaptureRun(false, true);
-            if (mode == ClassSelectCaptureRun.Mode) return new ClassSelectCaptureRun();
-            if (mode == ClassSelectCaptureRun.BootMode) return new ClassSelectCaptureRun(true);
+            if (mode == "compact-ui")
+            {
+                return new StageCompactRun();
+            }
+
+            if (mode == "selection-facing")
+            {
+                return new SelectionFacingRun();
+            }
+
+            if (mode == "spell-icons")
+            {
+                return new SpellIconRun();
+            }
+
+            if (mode == "spell-polish")
+            {
+                return new SpellPolishRun();
+            }
+
+            if (mode == "spell-readability")
+            {
+                return new SpellPolishRun(true);
+            }
+
+            if (mode == "spell-sources")
+            {
+                return new SpellSourceRun();
+            }
+
+            if (mode == FieldVariantRun.Mode)
+            {
+                return new FieldVariantRun();
+            }
+
+            if (mode == SandboxCaptureRun.BootMode)
+            {
+                return new SandboxCaptureRun(false);
+            }
+
+            if (mode == SandboxCaptureRun.MenuMode)
+            {
+                return new SandboxCaptureRun(true);
+            }
+
+            if (mode == SandboxCaptureRun.BackMode)
+            {
+                return new SandboxCaptureRun(false, true);
+            }
+
+            if (mode == ClassSelectCaptureRun.Mode)
+            {
+                return new ClassSelectCaptureRun();
+            }
+
+            if (mode == ClassSelectCaptureRun.BootMode)
+            {
+                return new ClassSelectCaptureRun(true);
+            }
 
             if (mode == StageEventRoomRun.Mode)
             {

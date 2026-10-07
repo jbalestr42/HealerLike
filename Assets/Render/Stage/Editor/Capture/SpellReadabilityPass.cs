@@ -49,10 +49,18 @@ namespace HealerLike.Render.Stage
             {
                 using (var scene = new GrassLabScene(manager))
                 {
-                    if (!scene.Init()) throw new InvalidOperationException("Could not initialize grass spell fixture.");
+                    if (!scene.Init())
+                    {
+                        throw new InvalidOperationException("Could not initialize grass spell fixture.");
+                    }
+
                     int creature = SpellPolishRun.CreatureIndex(fixture.target);
                     SpellPolishRun.Prepare(manager, scene, creature);
-                    for (int frame = 0; frame < 30; frame++) SpellPolishRun.Tick(scene, step, frame * step);
+                    for (int frame = 0; frame < 30; frame++)
+                    {
+                        SpellPolishRun.Tick(scene, step, frame * step);
+                    }
+
                     EffectRecipe recipe = Compose(vocabulary, fixture.element, fixture.material, fixture.stacks);
                     SpellEffect effect = SpellPolishRun.Build(manager, scene, recipe, material, creature, fixture.target);
                     SpellPolishRun.ShowGround(scene, recipe, Vector3.zero);
@@ -60,7 +68,11 @@ namespace HealerLike.Render.Stage
                     for (int frame = 0; frame <= total; frame++)
                     {
                         float age = frame * step;
-                        if (frame > 0) effect.Advance(step);
+                        if (frame > 0)
+                        {
+                            effect.Advance(step);
+                        }
+
                         SpellPolishRun.Tick(scene, step, .5f + age);
                         if (age >= PeakPhase * recipe.cycleSeconds)
                         {
@@ -77,9 +89,17 @@ namespace HealerLike.Render.Stage
             {
                 using (var scene = new GrassLabScene(manager))
                 {
-                    if (!scene.Init()) throw new InvalidOperationException("Could not initialize grass pair fixture.");
+                    if (!scene.Init())
+                    {
+                        throw new InvalidOperationException("Could not initialize grass pair fixture.");
+                    }
+
                     SpellPolishRun.Prepare(manager, scene, pairCreatures, pairPositions);
-                    for (int frame = 0; frame < 30; frame++) SpellPolishRun.Tick(scene, step, frame * step);
+                    for (int frame = 0; frame < 30; frame++)
+                    {
+                        SpellPolishRun.Tick(scene, step, frame * step);
+                    }
+
                     EffectRecipe firstRecipe = Compose(vocabulary, first, LookSide.Plant);
                     EffectRecipe secondRecipe = Compose(vocabulary, second, LookSide.Plant);
                     SpellEffect firstEffect = SpellPolishRun.Build(manager, scene, firstRecipe, material, pairCreatures[0]);
@@ -91,8 +111,16 @@ namespace HealerLike.Render.Stage
                     float end = Mathf.Max(firstPeak, secondPeak);
                     for (float age = 0f; age < end; age += step)
                     {
-                        if (age >= end - firstPeak) firstEffect.Advance(step);
-                        if (age >= end - secondPeak) secondEffect.Advance(step);
+                        if (age >= end - firstPeak)
+                        {
+                            firstEffect.Advance(step);
+                        }
+
+                        if (age >= end - secondPeak)
+                        {
+                            secondEffect.Advance(step);
+                        }
+
                         SpellPolishRun.Tick(scene, step, .5f + age);
                         yield return null;
                     }

@@ -85,7 +85,11 @@ namespace HealerLike.Render.Stones
             bool head = false;
             for (int i = 0; i < rig.parts.Count; i++)
             {
-                if (!rig.partTransforms[i].gameObject.activeInHierarchy) continue;
+                if (!rig.partTransforms[i].gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
+
                 bool candidateHead = rig.parts[i].role == PartRole.Head;
                 if (selected < 0 || (candidateHead && !head) || (candidateHead == head
                     && rig.partTransforms[i].position.y > rig.partTransforms[selected].position.y))
@@ -101,8 +105,11 @@ namespace HealerLike.Render.Stones
             delivery.travelled += Vector3.Distance(projectilePosition, delivery.previous);
             delivery.previous = projectilePosition;
             if (delivery.source.isExplicit && delivery.source.TryGet(out Vector3 origin))
+            {
                 projectilePosition += (origin - delivery.logicalStart)
                     * (1f - Mathf.Clamp01(delivery.travelled / Mathf.Max(0.001f, delivery.distance)));
+            }
+
             Vector3 travel = projectilePosition - shard.position;
             if (travel.sqrMagnitude > 0.00000001f)
             {

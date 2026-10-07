@@ -43,7 +43,11 @@ namespace HealerLike.Render.Deliveries
         public DeliveryPresentation GetPresentation(DeliveryStyle style)
         {
             if (presentation != null && presentation.TryGetValue(style, out DeliveryPresentation value)
-                && value != null && value.IsValid()) return value;
+                && value != null && value.IsValid())
+            {
+                return value;
+            }
+
             return new DeliveryPresentation();
         }
 

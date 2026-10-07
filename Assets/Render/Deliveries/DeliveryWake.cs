@@ -38,7 +38,10 @@ namespace HealerLike.Render.Deliveries
             }
             Vector3 position = parent.position;
             if (!_hasPosition || Vector3.Distance(position, _lastPosition) > Mathf.Max(0.01f, look.trailBreakDistance))
+            {
                 _renderer.Clear();
+            }
+
             _lastPosition = position;
             _hasPosition = true;
             _renderer.gameObject.SetActive(true);
@@ -53,7 +56,11 @@ namespace HealerLike.Render.Deliveries
         public void Hide()
         {
             _hasPosition = false;
-            if (!_renderer) return;
+            if (!_renderer)
+            {
+                return;
+            }
+
             _renderer.emitting = false;
             _renderer.Clear();
             _renderer.gameObject.SetActive(false);
@@ -61,7 +68,11 @@ namespace HealerLike.Render.Deliveries
 
         public void Dispose()
         {
-            if (_renderer) RenderObjects.Release(_renderer.gameObject);
+            if (_renderer)
+            {
+                RenderObjects.Release(_renderer.gameObject);
+            }
+
             _renderer = null;
             _hasPosition = false;
         }

@@ -29,9 +29,21 @@ namespace HealerLike.Render.Spells
         {
             var recipe = Recipe();
             var parts = new[] { new LookPart() };
-            if (fragment == 0) recipe.entry.stackBeads = parts;
-            if (fragment == 1) recipe.entry.criticalRings = parts;
-            if (fragment == 2) recipe.entry.sideRim = parts;
+            if (fragment == 0)
+            {
+                recipe.entry.stackBeads = parts;
+            }
+
+            if (fragment == 1)
+            {
+                recipe.entry.criticalRings = parts;
+            }
+
+            if (fragment == 2)
+            {
+                recipe.entry.sideRim = parts;
+            }
+
             Assert.IsFalse(EffectValidator.TryValidate(recipe, out string error));
             StringAssert.Contains("valid spell part", error);
         }
@@ -41,16 +53,28 @@ namespace HealerLike.Render.Spells
         {
             var recipe = Recipe();
             recipe.entry.stackBeads = new LookPart[256];
-            for (int i = 0; i < 256; i++) recipe.entry.stackBeads[i] = Part("Bead" + i);
+            for (int i = 0; i < 256; i++)
+            {
+                recipe.entry.stackBeads[i] = Part("Bead" + i);
+            }
+
             Assert.IsFalse(EffectValidator.TryValidate(recipe, out string error));
             StringAssert.Contains("1..256", error);
             recipe.entry.stackBeads = Array.Empty<LookPart>();
             var child = Recipe();
             recipe.additions = new EffectRecipe[255];
-            for (int i = 0; i < 255; i++) recipe.additions[i] = child;
+            for (int i = 0; i < 255; i++)
+            {
+                recipe.additions[i] = child;
+            }
+
             Assert.IsTrue(EffectValidator.TryValidate(recipe, out error), error);
             recipe.additions = new EffectRecipe[256];
-            for (int i = 0; i < 256; i++) recipe.additions[i] = child;
+            for (int i = 0; i < 256; i++)
+            {
+                recipe.additions[i] = child;
+            }
+
             Assert.IsFalse(EffectValidator.TryValidate(recipe, out error));
             StringAssert.Contains("1..256", error);
         }

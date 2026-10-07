@@ -340,7 +340,9 @@ namespace HealerLike.Render.Grammar
             AssertRows((row, handler) =>
             {
                 if (row.path.StartsWith("Entities/") || row.path.StartsWith("EntityItems/"))
+                {
                     Assert.IsNull(PlayerClassContext.Owner(handler, characters), row.path);
+                }
             });
         }
 
@@ -380,10 +382,17 @@ namespace HealerLike.Render.Grammar
         {
             List<string> paths = new List<string>();
             foreach (string guid in AssetDatabase.FindAssets("t:CharacterData", new[] { "Assets/Data" }))
+            {
                 paths.Add(AssetDatabase.GUIDToAssetPath(guid));
+            }
+
             paths.Sort(StringComparer.Ordinal);
             List<CharacterData> characters = new List<CharacterData>();
-            foreach (string path in paths) characters.Add(AssetDatabase.LoadAssetAtPath<CharacterData>(path));
+            foreach (string path in paths)
+            {
+                characters.Add(AssetDatabase.LoadAssetAtPath<CharacterData>(path));
+            }
+
             Assert.AreEqual(3, characters.Count);
             return characters;
         }
@@ -409,14 +418,22 @@ namespace HealerLike.Render.Grammar
         public void HandlerRows_CoverEveryLiveHandlerAsset()
         {
             HashSet<string> expected = new HashSet<string>();
-            foreach (HandlerRow row in HandlerRows) expected.Add("Assets/Data/" + row.path + ".asset");
+            foreach (HandlerRow row in HandlerRows)
+            {
+                expected.Add("Assets/Data/" + row.path + ".asset");
+            }
+
             foreach (string path in AwaitingTreatment)
             {
                 Assert.IsTrue(expected.Add("Assets/Data/" + path + ".asset"), "Pinned and awaiting at once: " + path);
             }
             string[] guids = AssetDatabase.FindAssets("t:ABuffHandlerFactory", new[] { "Assets/Data" });
             HashSet<string> actual = new HashSet<string>();
-            foreach (string guid in guids) actual.Add(AssetDatabase.GUIDToAssetPath(guid));
+            foreach (string guid in guids)
+            {
+                actual.Add(AssetDatabase.GUIDToAssetPath(guid));
+            }
+
             CollectionAssert.AreEquivalent(expected, actual, "Every live BuffHandlerFactory must have a pinned row or be listed as awaiting treatment.");
         }
 
@@ -426,10 +443,17 @@ namespace HealerLike.Render.Grammar
             string[] names = { "BulletSpeed", "ChainLightning", "ChannelingLightning", "CurveBullet",
                 "CurveBullet2", "CurveSphereBullet", "LaserBullet", "MortarShell", "StraightLaserBullet", "SwarmBullet" };
             HashSet<string> expected = new HashSet<string>();
-            foreach (string name in names) expected.Add("Assets/Prefabs/Projectiles/" + name + ".prefab");
+            foreach (string name in names)
+            {
+                expected.Add("Assets/Prefabs/Projectiles/" + name + ".prefab");
+            }
+
             HashSet<string> actual = new HashSet<string>();
             foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefabs/Projectiles" }))
+            {
                 actual.Add(AssetDatabase.GUIDToAssetPath(guid));
+            }
+
             CollectionAssert.AreEquivalent(expected, actual);
         }
 

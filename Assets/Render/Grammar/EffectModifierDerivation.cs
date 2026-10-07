@@ -57,7 +57,11 @@ namespace HealerLike.Render.Grammar
         {
             BaseData data = ModifierData(buff, out delta);
             type = data != null ? data.type : AttributeType.HealthMax;
-            if (data == null || data.modifierType == AttributeModifierType.Override) delta = 0f;
+            if (data == null || data.modifierType == AttributeModifierType.Override)
+            {
+                delta = 0f;
+            }
+
             return data != null;
         }
 
@@ -68,10 +72,16 @@ namespace HealerLike.Render.Grammar
         {
             BaseData data = ModifierData(buff, out float delta);
             if (data == null || data.modifierType == AttributeModifierType.Override || !float.IsFinite(delta))
+            {
                 return 0f;
+            }
+
             if (data.modifierType == AttributeModifierType.Multiply
                 || context.casterBaselines != null && IsDamageFraction(data.type))
+            {
                 return Mathf.Abs(delta);
+            }
+
             return Mathf.Abs(delta) / AttributeReference(context, data.type);
         }
 

@@ -12,9 +12,16 @@ namespace HealerLike.Render.Stage
         public StageCaptureErrors() { Application.logMessageReceived += OnLog; }
         void OnLog(string message, string stack, LogType type)
         {
-            if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert) return;
+            if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert)
+            {
+                return;
+            }
+
             count++;
-            if (messages.Count < 16) messages.Add(message + "\n" + stack);
+            if (messages.Count < 16)
+            {
+                messages.Add(message + "\n" + stack);
+            }
         }
         public void Dispose() { Application.logMessageReceived -= OnLog; }
     }

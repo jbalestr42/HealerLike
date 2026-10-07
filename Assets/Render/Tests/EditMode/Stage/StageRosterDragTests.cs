@@ -61,7 +61,11 @@ namespace HealerLike.Render.Stage
                     p => overUi, () => {}, (data, spawned) => placement))
                 {
                     drag.Begin(_data, Vector2.one, null);
-                    if (cancel) drag.Cancel();
+                    if (cancel)
+                    {
+                        drag.Cancel();
+                    }
+
                     Assert.That(drag.End(Vector2.one), Is.False);
                     Assert.That(placement.clicks, Is.Zero);
                     Assert.That(drag.active, Is.False);

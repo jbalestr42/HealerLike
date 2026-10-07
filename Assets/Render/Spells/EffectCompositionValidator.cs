@@ -9,7 +9,11 @@ namespace HealerLike.Render.Spells
 
         public static bool TryValidate(EffectChannels channels, EffectVocabulary vocabulary, out string error)
         {
-            if (!TryValidateChannels(channels, out error)) return false;
+            if (!TryValidateChannels(channels, out error))
+            {
+                return false;
+            }
+
             if (vocabulary == null || vocabulary.entries == null
                 || !vocabulary.TryGetElement(channels.operation, channels.aspect, channels.tempo, out EffectKey element)
                 || !Enum.IsDefined(typeof(EffectKey), element)

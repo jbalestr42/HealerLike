@@ -113,7 +113,10 @@ namespace HealerLike.Render.Studio
         {
             SpellLook authored = GetOverrideRow();
             if (mode == SpellStudioMode.GameplayHandler && authored?.recipe != null)
+            {
                 return authored.recipe.InstantiateRecipe();
+            }
+
             EffectChannels channels;
             EffectKey resolved;
             if (!TryResolve(out channels, out resolved))

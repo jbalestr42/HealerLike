@@ -60,8 +60,12 @@ public class StoneThrowTests
         Transform shard = _fxObject.GetComponentInChildren<MeshFilter>().transform;
         Assert.AreNotEqual(hidden, shard.position);
         _throw.EndDelivery(1);
-        foreach (Transform part in rig.partTransforms) part.gameObject.SetActive(false);
-        Assert.IsFalse(_throw.BeginDelivery(2, DeliveryStyle.Thrown, _projectile.transform, Vector3.one));
+        foreach (Transform part in rig.partTransforms)
+            {
+                part.gameObject.SetActive(false);
+            }
+
+            Assert.IsFalse(_throw.BeginDelivery(2, DeliveryStyle.Thrown, _projectile.transform, Vector3.one));
     }
 
     [Test]

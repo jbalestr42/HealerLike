@@ -29,7 +29,11 @@ namespace HealerLike.Render.Creatures
             _evolution.Dispose();
             Object.DestroyImmediate(_owner);
             Object.DestroyImmediate(_data);
-            foreach (Object obj in _objects) Object.DestroyImmediate(obj);
+            foreach (Object obj in _objects)
+            {
+                Object.DestroyImmediate(obj);
+            }
+
             _objects.Clear();
         }
 

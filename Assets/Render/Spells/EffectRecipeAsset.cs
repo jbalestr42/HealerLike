@@ -17,7 +17,11 @@ namespace HealerLike.Render.Spells
     {
         public static EffectRecipe Copy(EffectRecipe source)
         {
-            if (source == null) return null;
+            if (source == null)
+            {
+                return null;
+            }
+
             return new EffectRecipe { element = source.element, entry = Entry(source.entry),
                 channels = source.channels, motion = source.motion, socket = source.socket,
                 family = source.family, tempo = source.tempo, cycleSeconds = source.cycleSeconds,
@@ -26,7 +30,11 @@ namespace HealerLike.Render.Spells
         }
         public static ElementEntry Entry(ElementEntry source)
         {
-            if (source == null) return null;
+            if (source == null)
+            {
+                return null;
+            }
+
             return new ElementEntry { parts = Parts(source.parts), stackBeads = Parts(source.stackBeads),
                 criticalRings = Parts(source.criticalRings), sideRim = Parts(source.sideRim),
                 motion = source.motion, socket = source.socket, count = source.count,

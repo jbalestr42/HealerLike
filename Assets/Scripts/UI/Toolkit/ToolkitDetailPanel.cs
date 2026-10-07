@@ -54,7 +54,11 @@ public class ToolkitDetailPanel : IDisposable
         // during the same frame, and a spell inspection must never become creature details.
         if (_context.isInspecting)
         {
-            if (_inspectedEntity != null && _context.selectedItem == null) RefreshEntity(_inspectedEntity);
+            if (_inspectedEntity != null && _context.selectedItem == null)
+            {
+                RefreshEntity(_inspectedEntity);
+            }
+
             return;
         }
         GameObject worldSelection = LegacyUiReader.SelectedObject(_context.legacy);
@@ -126,7 +130,11 @@ public class ToolkitDetailPanel : IDisposable
         _context.isInspecting = true;
         _inspectedEntity = model.source as Entity;
         var attributes = _view.root.Q<Foldout>("detail-attributes");
-        if (attributes != null) attributes.value = false;
+        if (attributes != null)
+        {
+            attributes.value = false;
+        }
+
         if (model.source is Entity entity)
         {
             var selectable = entity.GetComponent<SelectableEntity>();
@@ -139,7 +147,10 @@ public class ToolkitDetailPanel : IDisposable
             _context.selectedItem = null;
             RefreshEntity();
         }
-        else _view.ShowDetail(model);
+        else
+        {
+            _view.ShowDetail(model);
+        }
     }
 
     public void OnInspectEnded()
@@ -156,7 +167,10 @@ public class ToolkitDetailPanel : IDisposable
     {
         var lines = new List<string>();
         if (entity.health != null)
+        {
             lines.Add($"Health: {ToolkitPresentation.Resource(entity.health.Value, entity.health.Max)}");
+        }
+
         var combat = new List<string>();
         foreach (AttributeType type in new[] { AttributeType.Damage, AttributeType.AttackRate,
             AttributeType.Range, AttributeType.FlatArmor })
@@ -164,22 +178,39 @@ public class ToolkitDetailPanel : IDisposable
             if (entity.attributeManager != null && entity.attributeManager.Has(type))
             {
                 float value = entity.attributeManager.Get(type).Value;
-                if (!Mathf.Approximately(value, 0)) combat.Add($"{AttributeLabel(type)}: {value:0.##}");
+                if (!Mathf.Approximately(value, 0))
+                {
+                    combat.Add($"{AttributeLabel(type)}: {value:0.##}");
+                }
             }
         }
         for (int i = 0; i < combat.Count; i += 2)
+        {
             lines.Add(combat[i] + (i + 1 < combat.Count ? " · " + combat[i + 1] : ""));
+        }
+
         return string.Join("\n", lines);
     }
 
     static string GetStats(Entity entity)
     {
         var lines = new List<string>();
-        if (!string.IsNullOrEmpty(entity.data.description)) lines.Add(entity.data.description);
+        if (!string.IsNullOrEmpty(entity.data.description))
+        {
+            lines.Add(entity.data.description);
+        }
+
         if (entity.attributeManager != null)
+        {
             foreach (AttributeType type in Enum.GetValues(typeof(AttributeType)))
+            {
                 if (entity.attributeManager.Has(type))
+                {
                     lines.Add($"{AttributeLabel(type)}: {entity.attributeManager.Get(type).Value:0.##}");
+                }
+            }
+        }
+
         return string.Join("\n", lines);
     }
 

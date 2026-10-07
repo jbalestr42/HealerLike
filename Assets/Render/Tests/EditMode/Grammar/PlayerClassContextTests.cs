@@ -13,7 +13,10 @@ namespace HealerLike.Render.Grammar
         {
             foreach (Object created in _created)
             {
-                if (created) Object.DestroyImmediate(created);
+                if (created)
+                {
+                    Object.DestroyImmediate(created);
+                }
             }
             _created.Clear();
         }

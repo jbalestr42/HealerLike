@@ -38,10 +38,18 @@ namespace HealerLike.Render.Spells
         // Keep a clear peak, then resolve smoothly. Never changes consumer or projectile timing.
         public static float Visibility(EffectPresentation profile, float age, float lifetime, bool held)
         {
-            if (profile == null || !profile.enabled) return 1f;
+            if (profile == null || !profile.enabled)
+            {
+                return 1f;
+            }
+
             float enter = profile.entranceSeconds <= 0 ? 1 : Mathf.SmoothStep(.28f, 1,
                 Mathf.Clamp01(age / profile.entranceSeconds));
-            if (held) return enter;
+            if (held)
+            {
+                return enter;
+            }
+
             float release = Mathf.Min(profile.releaseSeconds, lifetime * .45f);
             return enter * (1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(lifetime - release, lifetime, age)));
         }

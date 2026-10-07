@@ -13,10 +13,17 @@ namespace HealerLike.Render.Grammar
         // than its largest reading, so its look never depends on which other classes happen to exist
         public static CharacterData Owner(ABuffHandlerFactory handler, IEnumerable<CharacterData> characters)
         {
-            if (handler == null || characters == null) return null;
+            if (handler == null || characters == null)
+            {
+                return null;
+            }
+
             foreach (CharacterData character in characters)
             {
-                if (Owns(character, handler)) return character;
+                if (Owns(character, handler))
+                {
+                    return character;
+                }
             }
             return null;
         }
@@ -24,13 +31,24 @@ namespace HealerLike.Render.Grammar
         // The first class listing the skill, same order rule as the handler lookup
         public static CharacterData Owner(CharacterSkillData skill, IEnumerable<CharacterData> characters)
         {
-            if (skill == null || characters == null) return null;
+            if (skill == null || characters == null)
+            {
+                return null;
+            }
+
             foreach (CharacterData character in characters)
             {
-                if (character == null || character.skills == null) continue;
+                if (character == null || character.skills == null)
+                {
+                    continue;
+                }
+
                 foreach (ACharacterSkillFactory factory in character.skills)
                 {
-                    if (factory is IGameDataSource source && ReferenceEquals(source.sourceData, skill)) return character;
+                    if (factory is IGameDataSource source && ReferenceEquals(source.sourceData, skill))
+                    {
+                        return character;
+                    }
                 }
             }
             return null;
@@ -41,9 +59,21 @@ namespace HealerLike.Render.Grammar
         public static CharacterData OwnerOf(object source, IEnumerable<CharacterData> characters)
         {
             source = SpellIconDerivation.Source(source);
-            if (source is Object asset && !asset) return null;
-            if (source is ABuffHandlerFactory handler) return Owner(handler, characters);
-            if (source is CharacterSkillData skill) return Owner(skill, characters);
+            if (source is Object asset && !asset)
+            {
+                return null;
+            }
+
+            if (source is ABuffHandlerFactory handler)
+            {
+                return Owner(handler, characters);
+            }
+
+            if (source is CharacterSkillData skill)
+            {
+                return Owner(skill, characters);
+            }
+
             return null;
         }
 
@@ -53,24 +83,42 @@ namespace HealerLike.Render.Grammar
         public static CharacterData CasterOf(object source, CharacterData caster, IEnumerable<CharacterData> characters)
         {
             source = SpellIconDerivation.Source(source);
-            if (source is Object asset && !asset) return null;
+            if (source is Object asset && !asset)
+            {
+                return null;
+            }
+
             if (caster != null && caster.attributes != null)
             {
-                if (source is CharacterSkillData) return caster;
-                if (source is ABuffHandlerFactory handler && Owns(caster, handler)) return caster;
+                if (source is CharacterSkillData)
+                {
+                    return caster;
+                }
+
+                if (source is ABuffHandlerFactory handler && Owns(caster, handler))
+                {
+                    return caster;
+                }
             }
             return OwnerOf(source, characters);
         }
 
         public static bool Owns(CharacterData character, ABuffHandlerFactory handler)
         {
-            if (character == null || handler == null) return false;
+            if (character == null || handler == null)
+            {
+                return false;
+            }
+
             if (character.skills != null)
             {
                 foreach (ACharacterSkillFactory factory in character.skills)
                 {
                     if (factory is IGameDataSource source && source.sourceData is BuffCharacterSkillData buff
-                        && Contains(buff.buffHandlerFactory, handler)) return true;
+                        && Contains(buff.buffHandlerFactory, handler))
+                    {
+                        return true;
+                    }
                 }
             }
             if (character.items != null)
@@ -78,7 +126,10 @@ namespace HealerLike.Render.Grammar
                 foreach (AItemFactory factory in character.items)
                 {
                     if (factory is ItemFactory item && item.data != null
-                        && (Contains(item.data.buffs, handler) || Contains(item.data.onHitEffects, handler))) return true;
+                        && (Contains(item.data.buffs, handler) || Contains(item.data.onHitEffects, handler)))
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -88,7 +139,11 @@ namespace HealerLike.Render.Grammar
         // Without a class, or a class without stats, the context is returned unchanged
         public static EffectContext With(EffectContext context, CharacterData owner)
         {
-            if (owner == null || owner.attributes == null) return context;
+            if (owner == null || owner.attributes == null)
+            {
+                return context;
+            }
+
             Dictionary<AttributeType, float> baselines = new Dictionary<AttributeType, float>(owner.attributes);
             context.attributeBaselines = baselines;
             context.casterBaselines = baselines;
@@ -125,7 +180,10 @@ namespace HealerLike.Render.Grammar
                 foreach (string path in paths)
                 {
                     CharacterData character = UnityEditor.AssetDatabase.LoadAssetAtPath<CharacterData>(path);
-                    if (character) _projectClasses.Add(character);
+                    if (character)
+                    {
+                        _projectClasses.Add(character);
+                    }
                 }
             }
             return _projectClasses;

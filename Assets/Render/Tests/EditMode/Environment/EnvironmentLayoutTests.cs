@@ -27,8 +27,10 @@ public class EnvironmentLayoutTests
             Assert.IsFalse(EnvironmentLayout.InsideMargin(board, 1f,
                 new Vector2(portrait[i].position.x, portrait[i].position.z)));
             if (portrait[i].kind == EnvironmentKind.Monolith || portrait[i].kind == EnvironmentKind.MushroomTree)
-                Assert.That(portrait[i].position.x, Is.GreaterThanOrEqualTo(board.xMin - 0.001f));
-        }
+                {
+                    Assert.That(portrait[i].position.x, Is.GreaterThanOrEqualTo(board.xMin - 0.001f));
+                }
+            }
     }
 
     [Test]
@@ -67,9 +69,11 @@ public class EnvironmentLayoutTests
             Assert.That(anchor.y, Is.InRange(grid.yMax + 1f, grid.yMax + 3f));
             foreach (EnvironmentItem plant in items.Where(i => i.kind == EnvironmentKind.BladeRosette
                                                                || i.kind == EnvironmentKind.SpiralFern))
-                Assert.That(Vector2.Distance(anchor, new Vector2(plant.position.x, plant.position.z)),
+                {
+                    Assert.That(Vector2.Distance(anchor, new Vector2(plant.position.x, plant.position.z)),
                     Is.GreaterThanOrEqualTo(2f));
-        }
+                }
+            }
     }
 
     [Test]

@@ -66,7 +66,8 @@ namespace HealerLike.Render.Spells
         {
             var result = new System.Collections.Generic.Dictionary<EffectCell, EffectKey>();
             foreach (EffectOperation operation in Enum.GetValues(typeof(EffectOperation)))
-            foreach (EffectAspect aspect in Enum.GetValues(typeof(EffectAspect)))
+            {
+                foreach (EffectAspect aspect in Enum.GetValues(typeof(EffectAspect)))
             {
                 EffectKey key = operation == EffectOperation.Damage ? EffectKey.Burst
                     : operation == EffectOperation.Heal ? EffectKey.Rise
@@ -78,6 +79,8 @@ namespace HealerLike.Render.Spells
                     : aspect == EffectAspect.Offence ? EffectKey.Press : EffectKey.Crack;
                 result[new EffectCell(operation, aspect)] = key;
             }
+            }
+
             return result;
         }
 

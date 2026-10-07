@@ -47,7 +47,11 @@ public class ToolkitCardCollection : IDisposable
 
                 _parent.Add(card.root);
                 card.ShowInfo(false);
-                if (_showInfo) card.SetCompact();
+                if (_showInfo)
+                {
+                    card.SetCompact();
+                }
+
                 _cards.Add(card);
             }
 

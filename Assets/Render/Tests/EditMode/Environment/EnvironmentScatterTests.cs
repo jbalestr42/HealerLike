@@ -104,33 +104,58 @@ public class EnvironmentScatterTests
         scatter.Frame(camera);
         CollectionAssert.AreEqual(positions, PivotPositions(scatter));
         foreach (EnvironmentItem item in scatter.items)
-            Assert.IsFalse(EnvironmentLayout.InsideMargin(board, 1f, new Vector2(item.position.x, item.position.z)));
-        foreach (string name in new[] { "Monolith", "MushroomTree" })
+            {
+                Assert.IsFalse(EnvironmentLayout.InsideMargin(board, 1f, new Vector2(item.position.x, item.position.z)));
+            }
+
+            foreach (string name in new[] { "Monolith", "MushroomTree" })
         {
             Transform landmark = FirstPivot(scatter, name);
             Assert.IsTrue(landmark.gameObject.activeSelf, name);
             Renderer[] renderers = landmark.GetComponentsInChildren<Renderer>();
             Bounds bounds = renderers[0].bounds;
-            foreach (Renderer renderer in renderers) bounds.Encapsulate(renderer.bounds);
-            Vector3 centre = camera.WorldToViewportPoint(bounds.center);
+            foreach (Renderer renderer in renderers)
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+
+                Vector3 centre = camera.WorldToViewportPoint(bounds.center);
             Assert.That(centre.x, Is.InRange(0.01f, 0.99f), name);
             Assert.That(centre.y, Is.InRange(0.5f, EnvironmentFraming.CrownCeiling), name);
         }
         for (int i = 0; i < scatter.items.Count; i++)
         {
             EnvironmentKind kind = scatter.items[i].kind;
-            if (kind != EnvironmentKind.MushroomTree && kind != EnvironmentKind.Monolith) continue;
-            Transform pivot = scatter.root.GetChild(i);
-            if (!pivot.gameObject.activeSelf) continue;
-            Renderer[] renderers = pivot.GetComponentsInChildren<Renderer>();
+            if (kind != EnvironmentKind.MushroomTree && kind != EnvironmentKind.Monolith)
+                {
+                    continue;
+                }
+
+                Transform pivot = scatter.root.GetChild(i);
+            if (!pivot.gameObject.activeSelf)
+                {
+                    continue;
+                }
+
+                Renderer[] renderers = pivot.GetComponentsInChildren<Renderer>();
             Bounds bounds = renderers[0].bounds;
-            foreach (Renderer renderer in renderers) bounds.Encapsulate(renderer.bounds);
-            Vector3 centre = camera.WorldToViewportPoint(bounds.center);
-            if (centre.z <= 0f || centre.x < 0f || centre.x > 1f) continue;
-            for (int corner = 0; corner < 8; corner++)
-                Assert.That(camera.WorldToViewportPoint(RenderMath.Corner(bounds, corner)).y,
+            foreach (Renderer renderer in renderers)
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+
+                Vector3 centre = camera.WorldToViewportPoint(bounds.center);
+            if (centre.z <= 0f || centre.x < 0f || centre.x > 1f)
+                {
+                    continue;
+                }
+
+                for (int corner = 0; corner < 8; corner++)
+                {
+                    Assert.That(camera.WorldToViewportPoint(RenderMath.Corner(bounds, corner)).y,
                     Is.LessThanOrEqualTo(EnvironmentFraming.CrownCeiling + 0.001f));
-        }
+                }
+            }
     }
 
     [Test]

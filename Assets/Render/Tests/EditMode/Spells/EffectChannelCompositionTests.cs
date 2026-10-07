@@ -29,7 +29,11 @@ namespace HealerLike.Render.Spells
         [TearDown]
         public void TearDown()
         {
-            foreach (Object obj in _created) Object.DestroyImmediate(obj);
+            foreach (Object obj in _created)
+            {
+                Object.DestroyImmediate(obj);
+            }
+
             _created.Clear();
         }
 
@@ -37,8 +41,11 @@ namespace HealerLike.Render.Spells
         {
             var parts = new LookPart[count];
             for (int i = 0; i < count; i++)
+            {
                 parts[i] = new LookPart { id = "part" + i, primitive = Primitive.Sphere,
                     role = PartRole.Body, size = Vector3.one * .1f };
+            }
+
             return new ElementEntry { parts = parts, socket = EffectSocket.Feet,
                 motion = EffectMotionKind.Grow, cycleSeconds = .9f };
         }
@@ -80,10 +87,18 @@ namespace HealerLike.Render.Spells
         public void AllChannels_StackInDeclarationOrderEvenOnTheSameSocket()
         {
             var entries = new ElementEntry[5];
-            for (int i = 0; i < entries.Length; i++) Select(i, entries[i] = Entry());
+            for (int i = 0; i < entries.Length; i++)
+            {
+                Select(i, entries[i] = Entry());
+            }
+
             EffectRecipe result = EffectComposer.Compose(_vocabulary, Channels, 1, 0);
             Assert.AreEqual(5, result.additions.Length);
-            for (int i = 0; i < entries.Length; i++) Assert.AreSame(entries[i], result.additions[i].entry);
+            for (int i = 0; i < entries.Length; i++)
+            {
+                Assert.AreSame(entries[i], result.additions[i].entry);
+            }
+
             Assert.IsTrue(EffectValidator.TryValidate(result, out _));
         }
 

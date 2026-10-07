@@ -31,21 +31,36 @@ namespace HealerLike.Render.Stage
                         _s.actions.captureInput.samples = Array.Empty<Touch>();
                         _s.actions.touch.captureTouches = Array.Empty<Touch>();
                     }
-                    else if (interruption == "pause") _s.actions.Submit("pause-button");
+                    else if (interruption == "pause")
+                    {
+                        _s.actions.Submit("pause-button");
+                    }
                     else if (interruption == "synthetic-focus-loss")
                     {
                         _s.actions.touch.SendMessage("OnApplicationFocus", false);
                         _s.actions.ui.SendMessage("OnApplicationFocus", false);
                     }
-                    else _s.actions.ui.enabled = false;
+                    else
+                    {
+                        _s.actions.ui.enabled = false;
+                    }
+
                     yield return Wait(.25f);
                     _s.output.ObserveGameplay(interruption, _s.manager, _s.actions.touch);
                     _s.output.Check(_s.manager.entityManager.GetEntities(Entity.EntityType.Player).Count == before
                         && _s.manager.player.character.mana.Value == mana
                         && _s.interaction.GetInteraction() == null && _s.manager.placement.preview == null,
                         "Interruption clears actual preview, creates no creature and spends no mana: " + interruption);
-                    if (interruption == "pause") _s.actions.Submit("resume-button");
-                    if (interruption == "ui-teardown") _s.actions.ui.enabled = true;
+                    if (interruption == "pause")
+                    {
+                        _s.actions.Submit("resume-button");
+                    }
+
+                    if (interruption == "ui-teardown")
+                    {
+                        _s.actions.ui.enabled = true;
+                    }
+
                     yield return Wait(.25f);
                     yield return touch.Frame(TouchPhase.Ended, destination);
                 }

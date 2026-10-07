@@ -39,9 +39,17 @@ namespace HealerLike.Render.Zones
             Assert.That(_zone.radius, Is.EqualTo(1.8f + 0.08f + TrampleZone.Margin).Within(0.0001f));
             Assert.IsFalse(Disc(out _), "A creature presses as a body, not as a disc.");
             Assert.AreEqual(1, _ground.bodyCount);
-            for (int i = 0; i < 100; i++) _zone.Refresh();
+            for (int i = 0; i < 100; i++)
+            {
+                _zone.Refresh();
+            }
+
             long before = System.GC.GetAllocatedBytesForCurrentThread();
-            for (int i = 0; i < 1000; i++) _zone.Refresh();
+            for (int i = 0; i < 1000; i++)
+            {
+                _zone.Refresh();
+            }
+
             Assert.AreEqual(0, System.GC.GetAllocatedBytesForCurrentThread() - before);
         }
 

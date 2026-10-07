@@ -120,7 +120,11 @@ namespace HealerLike.Render.Spells
             _stacks = visibleStacks;
             _elapsedSeconds = safeElapsed;
             _durationSeconds = duration;
-            foreach (SpellEffect layer in _layers) layer.SetStatus(stacks, elapsed, duration);
+            foreach (SpellEffect layer in _layers)
+            {
+                layer.SetStatus(stacks, elapsed, duration);
+            }
+
             Advance(0f);
         }
 
@@ -137,14 +141,20 @@ namespace HealerLike.Render.Spells
         {
             PruneLayers();
             _parts.ShowSide(side);
-            foreach (SpellEffect layer in _layers) layer.SetSide(side);
+            foreach (SpellEffect layer in _layers)
+            {
+                layer.SetSide(side);
+            }
         }
 
         public void ShowCritical()
         {
             PruneLayers();
             _parts.ShowCritical();
-            foreach (SpellEffect layer in _layers) layer.ShowCritical();
+            foreach (SpellEffect layer in _layers)
+            {
+                layer.ShowCritical();
+            }
         }
 
         public void BeginRemoval()
@@ -153,7 +163,10 @@ namespace HealerLike.Render.Spells
             ReleaseGround();
             _isRemoving = true;
             _removalAge = 0f;
-            foreach (SpellEffect layer in _layers) layer.BeginRemoval();
+            foreach (SpellEffect layer in _layers)
+            {
+                layer.BeginRemoval();
+            }
         }
 
         CastSourceLease _castSource;
@@ -166,7 +179,10 @@ namespace HealerLike.Render.Spells
             PruneLayers();
             _castSource?.Dispose();
             _castSource = source ? CastSourceLease.From(source) : null;
-            foreach (SpellEffect layer in _layers) layer.SetCastSource(source);
+            foreach (SpellEffect layer in _layers)
+            {
+                layer.SetCastSource(source);
+            }
         }
 
         public void SetEndpoints(Vector3 start, Vector3 end, bool isContactThread)
@@ -175,7 +191,11 @@ namespace HealerLike.Render.Spells
             _linkStart = start;
             _linkEnd = end;
             _isContactThread = isContactThread;
-            foreach (SpellEffect layer in _layers) layer.SetEndpoints(start, end, isContactThread);
+            foreach (SpellEffect layer in _layers)
+            {
+                layer.SetEndpoints(start, end, isContactThread);
+            }
+
             Advance(0f);
         }
 
@@ -230,7 +250,10 @@ namespace HealerLike.Render.Spells
             }
 
             if (polished && _isStatus && _recipe.tempo == EffectTempo.PerPeriod)
+            {
                 phase = Mathf.Lerp(_recipe.presentation.idleVisibility * .3f, .94f, phase);
+            }
+
             Pose(phase, time);
             UpdateGround();
             float fade = Visibility();

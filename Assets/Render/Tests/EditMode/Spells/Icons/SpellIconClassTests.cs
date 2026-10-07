@@ -23,7 +23,10 @@ namespace HealerLike.Render.Spells
         [TearDown]
         public void TearDown()
         {
-            if (_caster) Object.DestroyImmediate(_caster);
+            if (_caster)
+            {
+                Object.DestroyImmediate(_caster);
+            }
         }
 
         static T Load<T>(string path) where T : Object

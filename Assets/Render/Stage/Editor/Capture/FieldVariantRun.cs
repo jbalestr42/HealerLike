@@ -134,7 +134,11 @@ namespace HealerLike.Render.Stage
                 _sheet.pipeline = pipeline ? pipeline.name : "none";
                 _sheet.authoredMsaa = msaa;
                 // Every treatment at 2x MSAA, set on the pipeline in memory and restored, never saved
-                if (pipeline) pipeline.msaaSampleCount = 2;
+                if (pipeline)
+                {
+                    pipeline.msaaSampleCount = 2;
+                }
+
                 _sheet.capturedMsaa = pipeline ? pipeline.msaaSampleCount : 0;
                 _sheet.bladeHeightScale = _manager.grass.bladeHeightScale;
                 _session.AttachInput();
@@ -146,7 +150,11 @@ namespace HealerLike.Render.Stage
                 yield return Wait(1f);
                 focus = Object.FindAnyObjectByType<BattleFocus>();
                 focusEnabled = focus && focus.enabled;
-                if (focus) focus.enabled = false;
+                if (focus)
+                {
+                    focus.enabled = false;
+                }
+
                 Time.timeScale = 0f;
                 yield return Wait(0.3f);
                 CreatureBuilder plant = Target(Entity.EntityType.Player);
@@ -181,8 +189,13 @@ namespace HealerLike.Render.Stage
                 Material look = RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat");
                 var fixtures = new List<SpellReadabilityPass.Fixture>();
                 foreach (LookSide target in new[] { LookSide.Plant, LookSide.Stone })
+                {
                     foreach (EffectKey element in SpellPolishRun.CoreElements)
+                    {
                         fixtures.Add(new SpellReadabilityPass.Fixture(element, LookSide.Plant, target));
+                    }
+                }
+
                 for (int i = 0; i < treatments.Length; i++)
                 {
                     FieldTreatment.Snapshot authored = treatments[i].Apply(blade);
@@ -212,7 +225,11 @@ namespace HealerLike.Render.Stage
                     EditorUtility.ClearDirty(pipeline);
                 }
                 EditorUtility.ClearDirty(blade);
-                if (focus) focus.enabled = focusEnabled;
+                if (focus)
+                {
+                    focus.enabled = focusEnabled;
+                }
+
                 _session.Dispose();
                 _output.Write(_sheet.passed);
                 Directory.CreateDirectory(folder);
@@ -250,15 +267,24 @@ namespace HealerLike.Render.Stage
                 effect.Init(recipe, _manager.meshes, RenderAssets.Load<Material>("Assets/Render/Look/Look_Default.mat"),
                     target);
                 if (!host.rig.TryGetAnchors(out EffectAnchors anchors))
+                {
                     throw new InvalidOperationException("Target creature has no effect anchors.");
+                }
+
                 EffectPlacement.Place(effect, null, anchors);
                 EffectPlacement.FaceCamera(effect, _manager.gameCamera);
                 effect.SetSide(caster == LookSide.Plant ? Entity.EntityType.Player : Entity.EntityType.Computer);
                 foreach (Transform part in root.GetComponentsInChildren<Transform>(true))
+                {
                     part.gameObject.layer = host.gameObject.layer;
+                }
+
                 float peak = SpellReadabilityPass.PeakPhase * recipe.cycleSeconds;
                 for (float age = SpellPolishRun.FrameStep; age <= peak; age += SpellPolishRun.FrameStep)
+                {
                     effect.Advance(SpellPolishRun.FrameStep);
+                }
+
                 yield return Wait(0.2f);
                 yield return _session.Capture(name, "Paused real battle, harness Burst at readable peak");
                 record.battle.Add(Measure(host, root, target, caster, record.index == 0 ? name : null));
@@ -319,7 +345,10 @@ namespace HealerLike.Render.Stage
 
         static void Show(Renderer[] renderers, bool isShown)
         {
-            foreach (Renderer renderer in renderers) renderer.enabled = isShown;
+            foreach (Renderer renderer in renderers)
+            {
+                renderer.enabled = isShown;
+            }
         }
     }
 }

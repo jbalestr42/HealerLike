@@ -19,7 +19,11 @@ namespace HealerLike.Render.Creatures
         {
             float dt = float.IsFinite(deltaTime) ? Mathf.Max(0f, deltaTime) : 0f;
             float damping = 1f - Mathf.Exp(-dt * 7f);
-            if (!float.IsFinite(time)) time = 0f;
+            if (!float.IsFinite(time))
+            {
+                time = 0f;
+            }
+
             if (_presentationForward.HasValue
                 && TryHeading(_presentationForward.Value, root, out Quaternion camera))
             {
@@ -39,7 +43,10 @@ namespace HealerLike.Render.Creatures
                 Quaternion rest = _presentationBasis * Quaternion.AngleAxis(Mathf.Sin(time * 0.3f) * 4f, Vector3.up);
                 // First portrait/rest frame follows the camera immediately. Losing a target returns smoothly.
                 _aim = _returningToRest ? Quaternion.Slerp(_aim, rest, damping) : rest;
-                if (Quaternion.Angle(_aim, rest) < 0.05f) _returningToRest = false;
+                if (Quaternion.Angle(_aim, rest) < 0.05f)
+                {
+                    _returningToRest = false;
+                }
             }
             else
             {
@@ -53,11 +60,19 @@ namespace HealerLike.Render.Creatures
         static bool TryHeading(Vector3 direction, Transform root, out Quaternion heading)
         {
             heading = Quaternion.identity;
-            if (!RenderMath.IsFinite(direction)) return false;
+            if (!RenderMath.IsFinite(direction))
+            {
+                return false;
+            }
+
             direction = root.InverseTransformDirection(direction);
             direction.y = 0f;
             float length = direction.sqrMagnitude;
-            if (!float.IsFinite(length) || length < 0.000001f) return false;
+            if (!float.IsFinite(length) || length < 0.000001f)
+            {
+                return false;
+            }
+
             heading = Quaternion.LookRotation(direction);
             return true;
         }

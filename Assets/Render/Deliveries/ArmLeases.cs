@@ -106,7 +106,10 @@ namespace HealerLike.Render.Deliveries
             _sources[slot]?.Dispose();
             _sources[slot] = CreatureSources.HasExplicit(_rig) ? new CastSourceLease(_rig, _sourceSequence++) : null;
             if (_sources[slot] != null && _sources[slot].TryGet(out Vector3 source))
+            {
                 _arms[slot].Tick(0f, source, _rig.armRotation);
+            }
+
             _tokens[slot] = _nextToken;
             _branchRoots[slot] = null;
             _arms[slot].isDeliveryProfile = kind == GestureKind.Heal;
@@ -216,7 +219,11 @@ namespace HealerLike.Render.Deliveries
                 return;
             }
             _isDisposed = true;
-            foreach (CastSourceLease source in _sources) source?.Dispose();
+            foreach (CastSourceLease source in _sources)
+            {
+                source?.Dispose();
+            }
+
             foreach (LianaArm arm in _arms)
             {
                 if (arm != null)
@@ -229,7 +236,11 @@ namespace HealerLike.Render.Deliveries
         {
             for (int i = 0; i < _arms.Length; i++)
             {
-                if (_tokens[i] != token) continue;
+                if (_tokens[i] != token)
+                {
+                    continue;
+                }
+
                 _arms[i]?.Dispose();
                 _arms[i] = null;
                 _sources[i]?.Dispose();

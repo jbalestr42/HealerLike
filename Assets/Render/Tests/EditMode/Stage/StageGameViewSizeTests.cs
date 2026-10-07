@@ -40,7 +40,10 @@ namespace HealerLike.Render.Stage
             {
                 selection.SetValue(window, originalSelection);
                 if ((int)count.Invoke(group, null) > originalCount)
+                {
                     group.GetType().GetMethod("RemoveCustomSize").Invoke(group, new object[] { originalCount });
+                }
+
                 sizesType.GetMethod("SaveToHDD", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                     .Invoke(sizes, null);
             }

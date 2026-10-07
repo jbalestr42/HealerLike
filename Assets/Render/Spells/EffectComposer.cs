@@ -23,15 +23,35 @@ namespace HealerLike.Render.Spells
         {
             EffectOperation operation = channels.operation;
             EffectAspect aspect = channels.aspect;
-            if (operation == EffectOperation.Damage && channels.family != EffectFamily.Damage) operation = ToOperation(channels.family);
-            if (channels.group != AttributeGroup.Offence) aspect = (EffectAspect)channels.group;
+            if (operation == EffectOperation.Damage && channels.family != EffectFamily.Damage)
+            {
+                operation = ToOperation(channels.family);
+            }
+
+            if (channels.group != AttributeGroup.Offence)
+            {
+                aspect = (EffectAspect)channels.group;
+            }
+
             EffectTempo tempo = channels.family == EffectFamily.Rot || channels.family == EffectFamily.Renew
                 ? EffectTempo.PerPeriod : channels.tempo;
             EffectKey element;
             if (vocabulary != null && vocabulary.TryGetKindElement(operation, aspect, channels.kind, channels.material,
-                out element)) return element;
-            if (vocabulary != null && vocabulary.TryGetElement(operation, aspect, tempo, out element)) return element;
-            if (vocabulary != null) return default(EffectKey);
+                out element))
+            {
+                return element;
+            }
+
+            if (vocabulary != null && vocabulary.TryGetElement(operation, aspect, tempo, out element))
+            {
+                return element;
+            }
+
+            if (vocabulary != null)
+            {
+                return default(EffectKey);
+            }
+
             return LegacyElement(operation, aspect, tempo);
         }
 
@@ -51,12 +71,31 @@ namespace HealerLike.Render.Spells
         {
             if (tempo == EffectTempo.PerPeriod)
             {
-                if (operation == EffectOperation.Damage) return EffectKey.Drips;
-                if (operation == EffectOperation.Heal) return EffectKey.Stalks;
+                if (operation == EffectOperation.Damage)
+                {
+                    return EffectKey.Drips;
+                }
+
+                if (operation == EffectOperation.Heal)
+                {
+                    return EffectKey.Stalks;
+                }
             }
-            if (operation == EffectOperation.Ward) return EffectKey.Plates;
-            if (operation == EffectOperation.Mana) return EffectKey.ManaUp;
-            if (operation == EffectOperation.ManaDrain) return EffectKey.ManaDown;
+            if (operation == EffectOperation.Ward)
+            {
+                return EffectKey.Plates;
+            }
+
+            if (operation == EffectOperation.Mana)
+            {
+                return EffectKey.ManaUp;
+            }
+
+            if (operation == EffectOperation.ManaDrain)
+            {
+                return EffectKey.ManaDown;
+            }
+
             return operation == EffectOperation.Damage ? EffectKey.Burst
                 : operation == EffectOperation.Heal ? EffectKey.Rise
                 : operation == EffectOperation.Boon ? (aspect == EffectAspect.Defence ? EffectKey.Plates
@@ -125,11 +164,21 @@ namespace HealerLike.Render.Spells
         public static EffectRecipe Compose(EffectVocabulary vocabulary, EffectChannels channels, int stacks,
                                            float charges)
         {
-            if (vocabulary == null) return null;
+            if (vocabulary == null)
+            {
+                return null;
+            }
+
             if (channels.operation == EffectOperation.Damage && channels.family != EffectFamily.Damage)
+            {
                 channels.operation = ToOperation(channels.family);
+            }
+
             if (channels.aspect == EffectAspect.Offence && channels.group != AttributeGroup.Offence)
+            {
                 channels.aspect = (EffectAspect)channels.group;
+            }
+
             if (!EffectCompositionValidator.TryValidate(channels, vocabulary, out string compositionError))
             {
                 Debug.LogError("[EffectComposer] " + compositionError);
@@ -137,10 +186,17 @@ namespace HealerLike.Render.Spells
             }
             EffectRecipe recipe = Compose(vocabulary, Element(vocabulary, channels), channels.family,
                 channels.tempo, channels.periodSeconds, stacks, charges, 0f, material: channels.material);
-            if (recipe == null) return null;
+            if (recipe == null)
+            {
+                return null;
+            }
+
             recipe.channels = channels;
             if (recipe.presentation != null && recipe.presentation.enabled)
+            {
                 recipe.scale *= vocabulary.MagnitudeScale(channels.magnitude);
+            }
+
             recipe.additions = EffectChannelComposition.Compose(vocabulary, channels, recipe.element, stacks, charges);
             if (!EffectValidator.TryValidate(recipe, out string recipeError))
             {

@@ -21,7 +21,11 @@ public sealed class ToolkitPopover : IDisposable
     }
     public void Open(ToolkitCardModel model)
     {
-        if (model == null) return;
+        if (model == null)
+        {
+            return;
+        }
+
         _anchor = _view.inspectAnchor;
         isOpen = true;
         _view.OnInspect.Invoke(model);
@@ -29,7 +33,11 @@ public sealed class ToolkitPopover : IDisposable
         _view.Show("detail-actions", model.source is Entity);
         Place();
     }
-    void Geometry(GeometryChangedEvent evt) { if (isOpen) Place(); }
+    void Geometry(GeometryChangedEvent evt) { if (isOpen)
+        {
+            Place();
+        }
+    }
     void Place()
     {
         Rect bounds = _hud.worldBound;
@@ -50,12 +58,20 @@ public sealed class ToolkitPopover : IDisposable
     }
     void Outside(PointerDownEvent evt)
     {
-        if (!isOpen || _panel.Contains(evt.target as VisualElement)) return;
+        if (!isOpen || _panel.Contains(evt.target as VisualElement))
+        {
+            return;
+        }
+
         Close();
     }
     public void Close()
     {
-        if (!isOpen) return;
+        if (!isOpen)
+        {
+            return;
+        }
+
         isOpen = false;
         _view.Show("detail-panel", false);
         _view.OnInspectEnded.Invoke();

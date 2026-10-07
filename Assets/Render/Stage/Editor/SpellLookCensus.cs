@@ -19,7 +19,11 @@ namespace HealerLike.Render.Stage
         public static void Write()
         {
             string output = System.Environment.GetEnvironmentVariable("SPELL_CENSUS_OUT");
-            if (string.IsNullOrEmpty(output)) output = "Temp/spell-look-census.tsv";
+            if (string.IsNullOrEmpty(output))
+            {
+                output = "Temp/spell-look-census.tsv";
+            }
+
             EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(VocabularyPath);
             StringBuilder text = new StringBuilder("handler\tchannels\tplant\tstone\n");
             HashSet<string> plantLooks = new HashSet<string>();
@@ -42,7 +46,10 @@ namespace HealerLike.Render.Stage
             text.Append("distinct looks over both materials\t").Append(allLooks.Count).Append('\n');
             File.WriteAllText(output, text.ToString());
             Debug.Log($"[SpellLookCensus] wrote {output}: {plantLooks.Count} plant looks, {allLooks.Count} over both");
-            if (Application.isBatchMode) EditorApplication.Exit(0);
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(0);
+            }
         }
 
         // A class's own skill or item is sized as that class casts it, the atlas's reading; the rest keep the plain one

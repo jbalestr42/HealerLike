@@ -106,7 +106,10 @@ namespace HealerLike.Render.Stage
         static string OwnerName(UnityEngine.Object source, string path)
         {
             if (source is IGameDataSource data && data.sourceData is CharacterSkillData skill && !string.IsNullOrEmpty(skill.name))
+            {
                 return skill.name;
+            }
+
             string folder = path.Substring(0, path.LastIndexOf('/'));
             foreach (string guid in AssetDatabase.FindAssets("t:Object", new[] { folder }))
             {
@@ -114,7 +117,10 @@ namespace HealerLike.Render.Stage
                 if (sibling != path)
                 {
                     UnityEngine.Object asset = AssetDatabase.LoadMainAssetAtPath(sibling);
-                    if (asset != null && !(asset is ABuffHandlerFactory)) return asset.name;
+                    if (asset != null && !(asset is ABuffHandlerFactory))
+                    {
+                        return asset.name;
+                    }
                 }
             }
             return path.Split('/')[2];

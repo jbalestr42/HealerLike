@@ -45,7 +45,11 @@ namespace HealerLike.Render.Creatures
         public void TearDown()
         {
             FreeShot free = _shotObject ? _shotObject.GetComponent<FreeShot>() : null;
-            if (free) TestHelpers.InvokePrivate(free, "OnDestroy");
+            if (free)
+            {
+                TestHelpers.InvokePrivate(free, "OnDestroy");
+            }
+
             _host.Release();
             Object.DestroyImmediate(_effectObject);
             Object.DestroyImmediate(_shotObject);
@@ -94,7 +98,9 @@ namespace HealerLike.Render.Creatures
                 Is.LessThan(.0001f));
             Assert.AreEqual(Vector3.right * 2f, _projectile.transform.position);
             foreach (Renderer renderer in GameObject.Find("FreeShot").GetComponentsInChildren<Renderer>(true))
+            {
                 Assert.IsTrue(renderer.gameObject.activeInHierarchy && renderer.enabled);
+            }
         }
 
         [Test]

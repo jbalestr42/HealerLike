@@ -55,17 +55,28 @@ namespace HealerLike.Render.Environment
             }
             // Scenery outside the visible field retains its authored size.
             if (right < 0f || left > 1f || Top(bounds, anchor, 1f, eye, rotation, fov, aspect) <= CrownCeiling)
+            {
                 return 1f;
+            }
+
             if (EnvironmentForeground.ToViewport(anchor, eye, rotation, fov, aspect).y >= CrownCeiling)
+            {
                 return 0f;
+            }
 
             float low = 0f;
             float high = 1f;
             for (int i = 0; i < 16; i++)
             {
                 float scale = (low + high) * 0.5f;
-                if (Top(bounds, anchor, scale, eye, rotation, fov, aspect) <= CrownCeiling) low = scale;
-                else high = scale;
+                if (Top(bounds, anchor, scale, eye, rotation, fov, aspect) <= CrownCeiling)
+                {
+                    low = scale;
+                }
+                else
+                {
+                    high = scale;
+                }
             }
             // A distant object too small to retain its silhouette can leave the frame to the fog ridge.
             return low >= 0.25f ? low : 0f;

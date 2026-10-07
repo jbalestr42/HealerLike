@@ -15,8 +15,16 @@ public class ToolkitPartyPanel
             ? LegacyUiReader.AvailableEntities(_context.legacy.entityInventory) : System.Array.Empty<SelectEntityButton>();
         var entities = new List<Entity>();
         if (_context.entities != null && _context.entities.entities != null)
+        {
             foreach (GameObject go in _context.entities.GetEntities(Entity.EntityType.Player))
-                if (go != null) entities.Add(go.GetComponent<Entity>());
+            {
+                if (go != null)
+                {
+                    entities.Add(go.GetComponent<Entity>());
+                }
+            }
+        }
+
         _roster.Sync(choices, entities);
         var models = new List<ToolkitCardModel>();
         foreach (ToolkitRoster.Entry entry in _roster.entries)
@@ -28,7 +36,10 @@ public class ToolkitPartyPanel
                 isEnabled = true, activate = Inspect, canBeginDrag = () => entry.entity == null && entry.choice != null && _context.IsPreparing(),
                 deployed = spawned => entry.entity = spawned };
             if (entity != null && entity.health != null)
+            {
                 model.healthFraction = entity.health.Value / Mathf.Max(1, entity.health.Max);
+            }
+
             models.Add(model);
         }
         _view.SetCards("party-list", models);

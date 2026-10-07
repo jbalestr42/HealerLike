@@ -17,7 +17,11 @@ public sealed class ToolkitHudGlyph : VisualElement
         foreach (string kind in new[] { "map", "inventory", "pause" })
         {
             Button button = root.Q<Button>(kind + "-button");
-            if (button == null) continue;
+            if (button == null)
+            {
+                continue;
+            }
+
             button.text = "";
             var surface = new VisualElement { pickingMode = PickingMode.Ignore };
             surface.AddToClassList("hud-icon-surface");

@@ -92,7 +92,11 @@ namespace HealerLike.Render.Deliveries
             {
                 using (CastSourceLease source = CastSourceLease.From(projectile.source, sequence))
                 {
-                    if (source.TryGet(out Vector3 outlet)) launchOrigin = outlet;
+                    if (source.TryGet(out Vector3 outlet))
+                    {
+                        launchOrigin = outlet;
+                    }
+
                     sourceId = source.sourceId;
                 }
             }

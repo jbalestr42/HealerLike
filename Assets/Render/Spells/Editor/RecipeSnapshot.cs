@@ -48,15 +48,28 @@ namespace HealerLike.Render.Spells.Editor
             try
             {
                 string folder = global::System.Environment.GetEnvironmentVariable("RENDER_SNAPSHOT_DIR");
-                if (string.IsNullOrEmpty(folder)) throw new InvalidOperationException("RENDER_SNAPSHOT_DIR is required.");
+                if (string.IsNullOrEmpty(folder))
+                {
+                    throw new InvalidOperationException("RENDER_SNAPSHOT_DIR is required.");
+                }
+
                 Directory.CreateDirectory(folder);
                 EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(VocabularyPath);
-                if (vocabulary == null) throw new InvalidOperationException("Missing " + VocabularyPath);
+                if (vocabulary == null)
+                {
+                    throw new InvalidOperationException("Missing " + VocabularyPath);
+                }
+
                 foreach (EffectKey key in Enum.GetValues(typeof(EffectKey)))
+                {
                     WriteOne(folder, "fixture-" + ((int)key).ToString("D2") + "-" + key, new[] {
                         EffectComposer.Compose(vocabulary, key, Family(key), EffectTempo.Once, 0f, 3, 3, .5f) });
+                }
+
                 foreach (EffectOperation operation in Enum.GetValues(typeof(EffectOperation)))
+                {
                     foreach (EffectAspect aspect in Enum.GetValues(typeof(EffectAspect)))
+                    {
                         foreach (EffectTempo tempo in new[] { EffectTempo.Once, EffectTempo.PerPeriod })
                         {
                             EffectChannels channels = new EffectChannels { operation = operation, aspect = aspect,
@@ -65,9 +78,15 @@ namespace HealerLike.Render.Spells.Editor
                             WriteOne(folder, "cell-" + operation + "-" + aspect + "-" + tempo,
                                 new[] { EffectComposer.Compose(vocabulary, channels, 3, 3) });
                         }
+                    }
+                }
+
                 foreach (EffectPiece piece in Enum.GetValues(typeof(EffectPiece)))
+                {
                     WriteOne(folder, "piece-" + piece, new[] { EffectComposer.Compose(vocabulary,
                         (EffectKey)((int)EffectKey.Beam + (int)piece), EffectFamily.Heal, EffectTempo.Once, 0f, 3, 3, .5f) });
+                }
+
                 WriteSupportComposition(folder, vocabulary);
                 Debug.Log("[RecipeSnapshot] Wrote snapshots to " + folder);
                 EditorApplication.Exit(0);
@@ -83,18 +102,29 @@ namespace HealerLike.Render.Spells.Editor
         {
             Snapshot snapshot = new Snapshot { subject = "support-composition" };
             foreach (EffectFamily family in Enum.GetValues(typeof(EffectFamily)))
+            {
                 snapshot.supportLinks.Add(Copy(EffectComposer.Link(vocabulary, family), 0f));
+            }
 
             SpellLooks looks = AssetDatabase.LoadAssetAtPath<SpellLooks>(
                 "Assets/Render/Spells/Data/SpellLooks.asset");
             var handlers = new HashSet<ABuffHandlerFactory>();
             foreach (ABuffHandlerFactory handler in Resources.FindObjectsOfTypeAll<ABuffHandlerFactory>())
-                if (handler) handlers.Add(handler);
+            {
+                if (handler)
+                {
+                    handlers.Add(handler);
+                }
+            }
+
             foreach (string guid in AssetDatabase.FindAssets("t:BuffHandlerFactory"))
             {
                 ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
                     AssetDatabase.GUIDToAssetPath(guid));
-                if (handler) handlers.Add(handler);
+                if (handler)
+                {
+                    handlers.Add(handler);
+                }
             }
             foreach (ABuffHandlerFactory handler in handlers)
             {
@@ -105,7 +135,11 @@ namespace HealerLike.Render.Spells.Editor
                 List<string> elements = new List<string>();
                 int treeCount = 0;
                 int linkCount = 0;
-                foreach (EffectRecipe recipe in recipes) CountTree(recipe, elements, ref treeCount, ref linkCount);
+                foreach (EffectRecipe recipe in recipes)
+                {
+                    CountTree(recipe, elements, ref treeCount, ref linkCount);
+                }
+
                 snapshot.handlerCompositions.Add(new HandlerComposition
                 {
                     handler = handler != null ? handler.name : "null",
@@ -121,19 +155,35 @@ namespace HealerLike.Render.Spells.Editor
 
         static void CountTree(EffectRecipe recipe, List<string> elements, ref int treeCount, ref int linkCount)
         {
-            if (recipe == null) return;
+            if (recipe == null)
+            {
+                return;
+            }
+
             treeCount++;
             elements.Add(recipe.element + ":" + recipe.socket);
-            if (recipe.socket == EffectSocket.Link) linkCount++;
+            if (recipe.socket == EffectSocket.Link)
+            {
+                linkCount++;
+            }
+
             foreach (EffectRecipe addition in recipe.additions ?? Array.Empty<EffectRecipe>())
+            {
                 CountTree(addition, elements, ref treeCount, ref linkCount);
+            }
         }
 
         static void WriteOne(string folder, string name, IEnumerable<EffectRecipe> source)
         {
             Snapshot snapshot = new Snapshot { subject = name };
             foreach (EffectRecipe recipe in source ?? Enumerable.Empty<EffectRecipe>())
-                if (recipe != null) snapshot.recipes.Add(Copy(recipe, 0f));
+            {
+                if (recipe != null)
+                {
+                    snapshot.recipes.Add(Copy(recipe, 0f));
+                }
+            }
+
             string json = JsonUtility.ToJson(snapshot, true);
             File.WriteAllText(Path.Combine(folder, Safe(name) + ".json"), json, Encoding.UTF8);
         }

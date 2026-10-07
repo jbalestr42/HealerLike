@@ -71,7 +71,11 @@ namespace HealerLike.Render.Creatures
                 Assert.AreEqual(initial + 1, rig.revision);
                 Assert.IsTrue(lease.TryGet(out _));
                 Assert.AreEqual(id, lease.sourceId);
-                for (int i = 0; i < 5; i++) Tick();
+                for (int i = 0; i < 5; i++)
+                {
+                    Tick();
+                }
+
                 Assert.AreEqual(initial + 1, rig.revision);
                 health.BaseValue = 100f;
                 health.Update();

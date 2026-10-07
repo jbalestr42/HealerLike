@@ -21,7 +21,11 @@ namespace HealerLike.Render.Spells
             bool critical, bool isLine)
         {
             // Reject cyclic/over-budget composites atomically before publishing any reaction.
-            if (ground == null || !RenderMath.IsPositive(size) || !EffectValidator.TryValidate(recipe, out _)) return;
+            if (ground == null || !RenderMath.IsPositive(size) || !EffectValidator.TryValidate(recipe, out _))
+            {
+                return;
+            }
+
             var pending = new Stack<EffectRecipe>();
             pending.Push(recipe);
             while (pending.Count > 0)
@@ -32,13 +36,23 @@ namespace HealerLike.Render.Spells
                 {
                     float strength = Mathf.Clamp01(entry.groundStrength * (critical ? 1.35f : 1f));
                     if (isLine && entry.ground.shape == GroundShape.Line)
+                    {
                         ground.Play(entry.ground, from, to, strength);
+                    }
                     else
+                    {
                         ground.Play(entry.ground, to, entry.groundRadius * size, strength);
+                    }
                 }
-                if (current.additions == null) continue;
+                if (current.additions == null)
+                {
+                    continue;
+                }
+
                 for (int i = current.additions.Length - 1; i >= 0; i--)
+                {
                     pending.Push(current.additions[i]);
+                }
             }
         }
     }

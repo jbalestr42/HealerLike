@@ -108,10 +108,18 @@ namespace HealerLike.Render.Deliveries
             {
                 ProjectileContact contact = _contacts[leg];
                 Vector3 end = !_releasing && contact.target ? RenderTargets.Point(contact.target) : contact.position;
-                if (!RenderMath.IsFinite(end)) end = contact.position;
+                if (!RenderMath.IsFinite(end))
+                {
+                    end = contact.position;
+                }
+
                 _contacts[leg] = new ProjectileContact(contact.target, end);
                 Vector3 side = Vector3.Cross(end - start, Vector3.up).normalized;
-                if (side.sqrMagnitude < .001f) side = Vector3.right;
+                if (side.sqrMagnitude < .001f)
+                {
+                    side = Vector3.right;
+                }
+
                 for (int i = 1; i <= _look.segmentsPerLeg; i++)
                 {
                     float t = i / (float)_look.segmentsPerLeg;
@@ -138,7 +146,11 @@ namespace HealerLike.Render.Deliveries
 
         public void Release()
         {
-            if (_releasing) return;
+            if (_releasing)
+            {
+                return;
+            }
+
             _releasing = true;
             _source?.Dispose();
             _source = null;

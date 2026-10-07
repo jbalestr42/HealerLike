@@ -45,10 +45,20 @@ namespace HealerLike.Render.Grammar
 
         static HashSet<ABuffHandlerFactory> GrowthHandlers(Entity holder)
         {
-            if (!holder || holder.items == null) return null;
+            if (!holder || holder.items == null)
+            {
+                return null;
+            }
+
             List<object> data = new List<object>();
             foreach (AItem item in holder.items)
-                if (item is IGameDataSource source) data.Add(source.sourceData);
+            {
+                if (item is IGameDataSource source)
+                {
+                    data.Add(source.sourceData);
+                }
+            }
+
             HashSet<ABuffHandlerFactory> handlers = GrowthHandlers(data);
             return handlers.Count > 0 ? handlers : null;
         }

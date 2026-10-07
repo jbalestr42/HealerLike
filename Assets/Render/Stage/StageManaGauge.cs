@@ -11,12 +11,19 @@ namespace HealerLike.Render.Stage
 
         public void Update(VisualElement root, ResourceAttribute mana)
         {
-            if (root == null) return;
+            if (root == null)
+            {
+                return;
+            }
+
             if (_track == null || !root.Contains(_track))
             {
                 VisualElement section = root.Q("spell-section");
                 Label value = root.Q<Label>("mana-value");
-                if (section == null || value == null) return;
+                if (section == null || value == null)
+                {
+                    return;
+                }
 
                 _track = new VisualElement { name = "render-mana-gauge", pickingMode = PickingMode.Ignore };
                 _fill = new VisualElement { name = "render-mana-fill", pickingMode = PickingMode.Ignore };

@@ -11,7 +11,11 @@ namespace HealerLike.Render.Stage
         {
             DeliveryVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<DeliveryVocabulary>(
                 "Assets/Render/Deliveries/Data/DeliveryVocabulary.asset");
-            if (!vocabulary) throw new System.InvalidOperationException("Missing delivery vocabulary.");
+            if (!vocabulary)
+            {
+                throw new System.InvalidOperationException("Missing delivery vocabulary.");
+            }
+
             Undo.RecordObject(vocabulary, "Author spell deliveries");
             DeliverySpellVocabulary.Apply(vocabulary);
             EditorUtility.SetDirty(vocabulary);

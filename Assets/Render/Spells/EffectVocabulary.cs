@@ -217,12 +217,27 @@ namespace HealerLike.Render.Spells
             {
                 return piece;
             }
-            if (TryGetKindEntry(element, LookSide.Plant, out ElementEntry kindEntry)) return kindEntry;
+            if (TryGetKindEntry(element, LookSide.Plant, out ElementEntry kindEntry))
+            {
+                return kindEntry;
+            }
+
             foreach (var pair in cells ?? new Dictionary<EffectCell, EffectCellEntries>())
             {
-                if (pair.Key.side != LookSide.Plant) continue;
-                if (KeyFor(pair.Key, EffectTempo.Once) == element && pair.Value.once != null) return pair.Value.once;
-                if (KeyFor(pair.Key, EffectTempo.PerPeriod) == element && pair.Value.periodic != null) return pair.Value.periodic;
+                if (pair.Key.side != LookSide.Plant)
+                {
+                    continue;
+                }
+
+                if (KeyFor(pair.Key, EffectTempo.Once) == element && pair.Value.once != null)
+                {
+                    return pair.Value.once;
+                }
+
+                if (KeyFor(pair.Key, EffectTempo.PerPeriod) == element && pair.Value.periodic != null)
+                {
+                    return pair.Value.periodic;
+                }
             }
             Debug.LogError($"[EffectVocabulary] No entry for {element}.");
             return null;
@@ -241,14 +256,21 @@ namespace HealerLike.Render.Spells
             if (material != LookSide.Plant && KindOf(element) != EffectKind.Plain)
             {
                 if (_reportedFallbacks.Add((element, material)))
+                {
                     Debug.Log($"[EffectVocabulary] No {material} entry for {element} yet, drawing its Plant entry.");
+                }
+
                 return GetEntry(element);
             }
             if (material != LookSide.Plant && cells != null)
             {
                 foreach (var pair in cells)
                 {
-                    if (pair.Key.side != material) continue;
+                    if (pair.Key.side != material)
+                    {
+                        continue;
+                    }
+
                     if (KeyFor(pair.Key, EffectTempo.Once) == element && pair.Value.once != null)
                     {
                         drawn = material;
@@ -262,7 +284,9 @@ namespace HealerLike.Render.Spells
                     }
                 }
                 if (_reportedFallbacks.Add((element, material)))
+                {
                     Debug.Log($"[EffectVocabulary] No {material} entry for {element} yet, drawing its Plant entry.");
+                }
             }
             return GetEntry(element);
         }
@@ -276,7 +300,11 @@ namespace HealerLike.Render.Spells
                                       LookSide material, out EffectKey element)
         {
             element = KindKey(kind);
-            if (kind == EffectKind.Plain || kinds == null) return false;
+            if (kind == EffectKind.Plain || kinds == null)
+            {
+                return false;
+            }
+
             return Has(new EffectKindCell(operation, aspect, kind, material))
                 || Has(new EffectKindCell(operation, aspect, kind, LookSide.Plant));
         }
@@ -287,10 +315,18 @@ namespace HealerLike.Render.Spells
         {
             entry = null;
             EffectKind kind = KindOf(element);
-            if (kind == EffectKind.Plain || kinds == null) return false;
+            if (kind == EffectKind.Plain || kinds == null)
+            {
+                return false;
+            }
+
             foreach (var pair in kinds)
             {
-                if (pair.Key.kind != kind || pair.Key.side != side || pair.Value == null) continue;
+                if (pair.Key.kind != kind || pair.Key.side != side || pair.Value == null)
+                {
+                    continue;
+                }
+
                 entry = pair.Value;
                 return true;
             }
@@ -356,8 +392,15 @@ namespace HealerLike.Render.Spells
         {
             if (tempo == EffectTempo.PerPeriod)
             {
-                if (cell.operation == EffectOperation.Damage) return EffectKey.Drips;
-                if (cell.operation == EffectOperation.Heal) return EffectKey.Stalks;
+                if (cell.operation == EffectOperation.Damage)
+                {
+                    return EffectKey.Drips;
+                }
+
+                if (cell.operation == EffectOperation.Heal)
+                {
+                    return EffectKey.Stalks;
+                }
             }
             switch (cell.operation)
             {

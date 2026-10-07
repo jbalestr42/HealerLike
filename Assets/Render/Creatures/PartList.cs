@@ -97,7 +97,11 @@ namespace HealerLike.Render.Creatures
             }
 
             _sourceOccurrences.TryGetValue(id, out int occurrence);
-            if (isSource) _sourceOccurrences[id] = occurrence + 1;
+            if (isSource)
+            {
+                _sourceOccurrences[id] = occurrence + 1;
+            }
+
             _parts.Add(
                 new CreaturePart
                 {

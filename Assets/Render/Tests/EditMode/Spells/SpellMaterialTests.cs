@@ -20,7 +20,14 @@ namespace HealerLike.Render.Spells
         [TearDown]
         public void TearDown()
         {
-            foreach (Object owned in _owned) if (owned) Object.DestroyImmediate(owned);
+            foreach (Object owned in _owned)
+            {
+                if (owned)
+                {
+                    Object.DestroyImmediate(owned);
+                }
+            }
+
             _owned.Clear();
         }
 
@@ -116,6 +123,7 @@ namespace HealerLike.Render.Spells
             {
                 ElementEntry entry = vocabulary.GetEntry(element, LookSide.Stone, out _);
                 foreach (LookPart[] group in new[] { entry.parts, entry.stackBeads, entry.criticalRings, entry.sideRim })
+                {
                     foreach (LookPart part in group)
                     {
                         string name = element + "/" + part.id;
@@ -125,6 +133,7 @@ namespace HealerLike.Render.Spells
                         Assert.AreEqual(0f, part.shape.bend, name + " is straight");
                         Assert.AreEqual(0f, part.shape.bow, name + " is straight");
                     }
+                }
             }
         }
 

@@ -69,7 +69,11 @@ public class ToolkitGameView
     }
 
     void GatePointer(PointerDownEvent evt)
-    { if (!(canBeginPointer?.Invoke(evt.pointerId) ?? true)) evt.StopImmediatePropagation(); }
+    { if (!(canBeginPointer?.Invoke(evt.pointerId) ?? true))
+        {
+            evt.StopImmediatePropagation();
+        }
+    }
 
     public void SetIconProvider(IToolkitIconProvider provider)
     {

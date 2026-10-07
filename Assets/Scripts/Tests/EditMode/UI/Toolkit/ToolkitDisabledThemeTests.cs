@@ -90,8 +90,11 @@ namespace UI.Toolkit
             yield return null;
             AssertColour(_root.Q<Button>("detail-equip-button"), cardColour);
             foreach (string name in new[] { "wave-label", "currency-label" })
+            {
                 Assert.That(_root.Q<Label>(name).resolvedStyle.color, Is.EqualTo(Rgb(248, 247, 223)),
                     "Floating room and coin values retain readable off-white fill in both themes");
+            }
+
             Button pause = _root.Q<Button>("pause-button");
             AssertColour(pause, Color.clear);
             Assert.That(pause.resolvedStyle.width, Is.EqualTo(44).Within(.01));

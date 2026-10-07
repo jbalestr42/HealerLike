@@ -22,7 +22,8 @@ namespace HealerLike.Render.Stage
             Vector2 point = Vector2.zero;
             bool empty = false;
             for (int row = 1; row < 10 && !empty; row++)
-            for (int column = 1; column < 10; column++)
+            {
+                for (int column = 1; column < 10; column++)
             {
                 point = new Vector2((world.x + world.width * column / 10f) * Screen.width,
                     (world.y + world.height * row / 10f) * Screen.height);
@@ -30,6 +31,8 @@ namespace HealerLike.Render.Stage
                     && hit.collider.GetComponentInParent<Entity>() != null;
                 if (!creature && !_s.actions.touch.IsOverInterface(point)) { empty = true; break; }
             }
+            }
+
             _s.output.Check(empty, "Outside dismissal uses an empty battlefield point with no UI or creature hit");
             _s.output.Check(StageInterfaceOutput.IsVisible(_s.actions.root.Q("detail-panel")),
                 "Persistent details are open before outside battlefield tap");
@@ -129,7 +132,10 @@ namespace HealerLike.Render.Stage
             _s.output.Check(ReferenceEquals(spell.focusController.focusedElement, spell),
                 "Keyboard Escape starts with the compact spell card focused");
             using (var key = KeyDownEvent.GetPooled(new Event { type = EventType.KeyDown, keyCode = KeyCode.Escape }))
+            {
                 spell.SendEvent(key);
+            }
+
             int cancellations = 0;
             EventCallback<NavigationCancelEvent> observed = _ => cancellations++;
             root.RegisterCallback(observed);

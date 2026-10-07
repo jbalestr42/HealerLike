@@ -60,7 +60,11 @@ namespace HealerLike.Render.Stage
         public Color Treat(Color color)
         {
             Color.RGBToHSV(color, out float h, out float s, out float v);
-            if (hue >= 0f) h = hue;
+            if (hue >= 0f)
+            {
+                h = hue;
+            }
+
             Color treated = Color.HSVToRGB(h, Mathf.Clamp01(s * saturationScale), Mathf.Clamp01(v * valueScale));
             treated.a = color.a;
             return treated;
@@ -99,7 +103,11 @@ namespace HealerLike.Render.Stage
 
             public void Restore(Material material)
             {
-                if (_authored == null) return;
+                if (_authored == null)
+                {
+                    return;
+                }
+
                 material.CopyPropertiesFromMaterial(_authored);
                 Object.DestroyImmediate(_authored);
                 _authored = null;

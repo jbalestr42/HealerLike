@@ -182,8 +182,12 @@ public class StageDressingTests
             int roots = 0;
             foreach (Renderer renderer in host.rig.root.GetComponentsInChildren<Renderer>())
             {
-                if (renderer.name != "Root" && renderer.name != "RootJoint") continue;
-                Assert.IsTrue(after.Contains(renderer.bounds.min), renderer.name);
+                if (renderer.name != "Root" && renderer.name != "RootJoint")
+                    {
+                        continue;
+                    }
+
+                    Assert.IsTrue(after.Contains(renderer.bounds.min), renderer.name);
                 Assert.IsTrue(after.Contains(renderer.bounds.max), renderer.name);
                 roots++;
             }

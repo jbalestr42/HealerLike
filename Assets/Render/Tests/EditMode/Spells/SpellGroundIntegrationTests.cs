@@ -97,7 +97,11 @@ namespace HealerLike.Render.Spells
             effect.BindGround(_ground, _target);
             Assert.AreEqual(2, _ground.heldCount);
             Assert.Greater(GroundProbe.State(_ground, Vector3.zero).x, 0f);
-            if (end == 0) effect.BeginRemoval();
+            if (end == 0)
+            {
+                effect.BeginRemoval();
+            }
+
             if (end == 1)
             {
                 effect.gameObject.SetActive(false);
@@ -105,7 +109,11 @@ namespace HealerLike.Render.Spells
                 TestHelpers.InvokePrivate(effect, "OnDisable");
                 TestHelpers.InvokePrivate(effect, "OnDisable");
             }
-            if (end == 2) SpellEffect.Dispose(effect.gameObject);
+            if (end == 2)
+            {
+                SpellEffect.Dispose(effect.gameObject);
+            }
+
             if (end == 3)
             {
                 TestHelpers.InvokePrivate(effect, "OnDestroy");
@@ -122,15 +130,21 @@ namespace HealerLike.Render.Spells
             effect.BindGround(_ground, _target);
             Vector4 state = Vector4.zero;
             for (int i = 0; i < 20; i++)
+            {
                 state = GroundState.Step(state, GroundProbe.State(_ground, Vector3.zero), .1f,
                     GroundStateSettings.Default);
+            }
+
             Assert.Greater(state.x, .3f);
             Assert.Greater(state.z, .3f);
             effect.BeginRemoval();
             Assert.AreEqual(0, _ground.heldCount);
             for (int i = 0; i < 200; i++)
+            {
                 state = GroundState.Step(state, GroundProbe.State(_ground, Vector3.zero), .1f,
                     GroundStateSettings.Default);
+            }
+
             Assert.Less(state.magnitude, .001f);
         }
 

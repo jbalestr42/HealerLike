@@ -53,7 +53,11 @@ namespace HealerLike.Render.Stage
             _placement.Tick(_interaction, 0f, 0f);
             CreatureRig rig = _placement.preview.rig;
             Assert.That(_placement.data, Is.SameAs(_data));
-            foreach (Renderer renderer in _legacy.GetComponentsInChildren<Renderer>()) Assert.That(renderer.enabled, Is.False);
+            foreach (Renderer renderer in _legacy.GetComponentsInChildren<Renderer>())
+            {
+                Assert.That(renderer.enabled, Is.False);
+            }
+
             for (int i = 1; i <= 5; i++)
             {
                 _legacy.transform.position = new Vector3(i, 0f, 2f);

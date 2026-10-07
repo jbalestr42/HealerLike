@@ -24,7 +24,11 @@ namespace HealerLike.Render.Stage
         public void Show(bool valid, Vector3 point)
         {
             _host.SetActive(valid);
-            if (!valid) return;
+            if (!valid)
+            {
+                return;
+            }
+
             point.y += .04f;
             _line.SetPositions(new[] { point + new Vector3(-_size, 0, -_size),
                 point + new Vector3(_size, 0, -_size), point + new Vector3(_size, 0, _size),

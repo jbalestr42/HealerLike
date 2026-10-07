@@ -46,7 +46,10 @@ namespace HealerLike.Render.Stage
             var module = EventSystem.current != null ? EventSystem.current.currentInputModule : null;
             Touch[] samples = Input.touches;
 #if UNITY_EDITOR
-            if (captureTouches != null) samples = captureTouches;
+            if (captureTouches != null)
+            {
+                samples = captureTouches;
+            }
 #endif
             return CanBeginPointer(module, pointer, samples);
         }
@@ -55,13 +58,30 @@ namespace HealerLike.Render.Stage
         {
             // Only StandaloneInputModule translates legacy fingerId to Toolkit touch IDs.
             // InputSystem uses TouchControl slots and a separate pen range, with its own lifecycle.
-            if (!(module is StandaloneInputModule)) return true;
-            if (pointer == PointerId.mousePointerId) return samples.Length == 0;
+            if (!(module is StandaloneInputModule))
+            {
+                return true;
+            }
+
+            if (pointer == PointerId.mousePointerId)
+            {
+                return samples.Length == 0;
+            }
+
             if (pointer < PointerId.touchPointerIdBase
-                || pointer >= PointerId.touchPointerIdBase + PointerId.touchPointerCount) return true;
+                || pointer >= PointerId.touchPointerIdBase + PointerId.touchPointerCount)
+            {
+                return true;
+            }
+
             foreach (Touch sample in samples)
+            {
                 if (sample.fingerId == pointer - PointerId.touchPointerIdBase)
+                {
                     return sample.phase == TouchPhase.Began;
+                }
+            }
+
             return false;
         }
 
@@ -94,7 +114,11 @@ namespace HealerLike.Render.Stage
                         : Input.GetMouseButtonUp(0) ? TouchPhase.Ended : TouchPhase.Moved, Input.mousePosition);
                     return;
                 }
-                if (_finger >= 0) _ui?.CancelGestures();
+                if (_finger >= 0)
+                {
+                    _ui?.CancelGestures();
+                }
+
                 CancelDrag();
                 _finger = -1;
                 RestoreMouse();
@@ -141,9 +165,15 @@ namespace HealerLike.Render.Stage
                 _finger = finger;
                 _start = position;
                 _blocked = IsOverInterface(position);
-                if (!_blocked) _ui?.WorldPointerDown();
+                if (!_blocked)
+                {
+                    _ui?.WorldPointerDown();
+                }
+
                 if (!_blocked && Raycast(position, out RaycastHit hit))
+                {
                     _worldPress.Begin(finger, PanelPoint(position), hit, _interaction.GetInteraction() == null);
+                }
             }
 
             if (finger != _finger)
@@ -216,8 +246,16 @@ namespace HealerLike.Render.Stage
             _worldPress.Cancel();
         }
         void CancelDrag() { _worldPress.Cancel(); }
-        void OnApplicationFocus(bool focused) { if (!focused) Interrupt(); }
-        void OnApplicationPause(bool paused) { if (paused) Interrupt(); }
+        void OnApplicationFocus(bool focused) { if (!focused)
+            {
+                Interrupt();
+            }
+        }
+        void OnApplicationPause(bool paused) { if (paused)
+            {
+                Interrupt();
+            }
+        }
         public void Interrupt()
         {
             _ui?.CancelGestures(); _roster?.Cancel(); CancelDrag();
@@ -272,7 +310,10 @@ namespace HealerLike.Render.Stage
                 {
                     Vector2 panelPoint = RuntimePanelUtils.ScreenToPanel(panelRaycaster.panel,
                         new Vector2(screenPoint.x, Screen.height - screenPoint.y));
-                    if (panelRaycaster.panel.Pick(panelPoint) != null) return true;
+                    if (panelRaycaster.panel.Pick(panelPoint) != null)
+                    {
+                        return true;
+                    }
                 }
             }
 

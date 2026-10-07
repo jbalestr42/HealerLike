@@ -79,7 +79,11 @@ namespace HealerLike.Render.Stage
                 yield return Wait(1f);
                 focus = Object.FindAnyObjectByType<BattleFocus>();
                 focusEnabled = focus && focus.enabled;
-                if (focus) focus.enabled = false;
+                if (focus)
+                {
+                    focus.enabled = false;
+                }
+
                 Time.timeScale = 0f;
                 yield return _session.Capture("00-real-battle", "Real battle before proof projectile");
                 Entity source = _manager.entityManager.GetEntities(Entity.EntityType.Player)
@@ -137,21 +141,36 @@ namespace HealerLike.Render.Stage
                 shotObject = null;
                 yield return SpellSourceSupport.Capture(_manager, _session, _proof);
                 using (var fixture = new SpellSourceFixture(_manager, _session))
+                {
                     yield return fixture.Capture();
+                }
+
                 _proof.passed = _proof.projectileStartUnchanged && _proof.stableLease && _proof.samples.Count == 4
                     && _proof.recomposedWhileHeld && _proof.supportHealLinks == 1 && _proof.supportBoonLinks == 1
                     && _proof.supportMaxAttachmentError < 0.0001f;
             }
             finally
             {
-                if (shotObject) Object.Destroy(shotObject);
+                if (shotObject)
+                {
+                    Object.Destroy(shotObject);
+                }
+
                 if (heldHost && original)
                 {
                     Material material = heldHost.rig.partTransforms[0].GetComponent<Renderer>().sharedMaterial;
                     heldHost.rig.Recompose(original, material, material, _manager.meshes);
                 }
-                if (edited) Object.Destroy(edited);
-                if (focus) focus.enabled = focusEnabled;
+                if (edited)
+                {
+                    Object.Destroy(edited);
+                }
+
+                if (focus)
+                {
+                    focus.enabled = focusEnabled;
+                }
+
                 _session.Dispose();
                 _output.Write(_proof.passed);
                 Directory.CreateDirectory(_folder);

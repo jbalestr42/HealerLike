@@ -10,7 +10,10 @@ namespace HealerLike.Render.Creatures
 
         void ObserveEvolution()
         {
-            if (!_derivedRecipe || !_manager || !_manager.creatureLooks) return;
+            if (!_derivedRecipe || !_manager || !_manager.creatureLooks)
+            {
+                return;
+            }
             // Entity publishes this reference after its simulation attributes are initialized.
             // A prefab or EditMode preview can carry an unawakened component; keep its data-derived look.
             _evolution.Init(_entity.data, _entity.entityType, _entity.attributeManager);
@@ -19,10 +22,18 @@ namespace HealerLike.Render.Creatures
         void RefreshEvolution()
         {
             if (!_derivedRecipe || !_manager || !_manager.creatureLooks
-                || !_evolution.TryRead(out UnitChannels channels)) return;
+                || !_evolution.TryRead(out UnitChannels channels))
+            {
+                return;
+            }
+
             SyncGeometry();
             CreatureRecipe next = LookComposer.Compose(channels, _manager.creatureLooks.vocabulary);
-            if (!ApplyRecipe(next, true)) return;
+            if (!ApplyRecipe(next, true))
+            {
+                return;
+            }
+
             _evolution.Accept(channels);
             rig.Heal();
         }
@@ -40,13 +51,21 @@ namespace HealerLike.Render.Creatures
             bool isDerived = _derivedRecipe != null;
             if (isDerived)
             {
-                if (!manager || !manager.creatureLooks) return false;
+                if (!manager || !manager.creatureLooks)
+                {
+                    return false;
+                }
+
                 ObserveEvolution();
                 next = LookComposer.Compose(_evolution.ReadCurrent(), manager.creatureLooks.vocabulary);
             }
 
             bool accepted = ApplyRecipe(next, isDerived);
-            if (accepted && isDerived) _evolution.Accept(_evolution.ReadCurrent());
+            if (accepted && isDerived)
+            {
+                _evolution.Accept(_evolution.ReadCurrent());
+            }
+
             return accepted;
         }
 

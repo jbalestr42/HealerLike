@@ -12,7 +12,11 @@ namespace HealerLike.Render.Stage
         static Color32[] Fill(int count, Color32 colour)
         {
             Color32[] pixels = new Color32[count];
-            for (int i = 0; i < count; i++) pixels[i] = colour;
+            for (int i = 0; i < count; i++)
+            {
+                pixels[i] = colour;
+            }
+
             return pixels;
         }
 

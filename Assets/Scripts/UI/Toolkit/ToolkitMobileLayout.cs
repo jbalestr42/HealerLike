@@ -50,7 +50,11 @@ public class ToolkitMobileLayout : IDisposable
     void ToggleFocus() { _toggleFocus?.Invoke(); }
     void RefreshFocus()
     {
-        if (_view == null) return;
+        if (_view == null)
+        {
+            return;
+        }
+
         _view.Show("focus-button", _toggleFocus != null);
         _view.SetButton("focus-button", _focused ? "Overview" : "Focus battle", !_context.isMenu);
     }

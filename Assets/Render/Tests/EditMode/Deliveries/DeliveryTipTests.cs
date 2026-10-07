@@ -21,8 +21,12 @@ public class DeliveryTipTests
     [TearDown]
     public void TearDown()
     {
-        foreach (DeliveryTip tip in _tips) tip.Release();
-        _tips.Clear();
+        foreach (DeliveryTip tip in _tips)
+            {
+                tip.Release();
+            }
+
+            _tips.Clear();
         Object.DestroyImmediate(_parent);
         Object.DestroyImmediate(_material);
     }

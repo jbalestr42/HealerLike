@@ -38,7 +38,10 @@ namespace HealerLike.Render.Spells
             _pool.Clear();
             Object.DestroyImmediate(_host);
             Object.DestroyImmediate(_target);
-            foreach (Object created in _created) Object.DestroyImmediate(created);
+            foreach (Object created in _created)
+            {
+                Object.DestroyImmediate(created);
+            }
         }
 
         static float Age(SpellEffect effect) => (float)typeof(SpellEffect).GetField("_age",

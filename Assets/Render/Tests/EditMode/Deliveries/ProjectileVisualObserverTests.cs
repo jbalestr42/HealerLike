@@ -111,7 +111,11 @@ namespace HealerLike.Render.Deliveries
             _scene.projectile.OnHit.Invoke(new OnHitData { target = _scene.first });
             _scene.projectile.OnHit.Invoke(new OnHitData { target = _scene.second });
             TipDrop[] drops = Object.FindObjectsByType<TipDrop>();
-            foreach (TipDrop drop in drops) Object.DestroyImmediate(drop.gameObject);
+            foreach (TipDrop drop in drops)
+            {
+                Object.DestroyImmediate(drop.gameObject);
+            }
+
             Assert.AreEqual(1, drops.Length);
         }
     }

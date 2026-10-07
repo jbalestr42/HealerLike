@@ -39,9 +39,15 @@ namespace HealerLike.Render.Creatures
         static System.Collections.IEnumerable Grammar()
         {
             foreach (LookSide side in Enum.GetValues(typeof(LookSide)))
+            {
                 foreach (HeadKind head in Enum.GetValues(typeof(HeadKind)))
+                {
                     foreach (CountBand count in Enum.GetValues(typeof(CountBand)))
+                    {
                         yield return new TestCaseData(side, head, count);
+                    }
+                }
+            }
         }
 
         [TestCaseSource(nameof(Grammar))]
@@ -64,7 +70,10 @@ namespace HealerLike.Render.Creatures
             {
                 Assert.IsTrue(CreatureSources.Resolve(_rig, part.sourceId, out Vector3 point));
                 Assert.IsTrue(RenderMath.IsFinite(point));
-                if (head == HeadKind.Arch) Assert.AreEqual(ShapeAnchor.Bottom, part.sourceAnchor);
+                if (head == HeadKind.Arch)
+                {
+                    Assert.AreEqual(ShapeAnchor.Bottom, part.sourceAnchor);
+                }
             }
         }
 
@@ -90,9 +99,14 @@ namespace HealerLike.Render.Creatures
         public void Migration_PreservesEveryExistingFieldAndPalette_AndIsIdempotent()
         {
             foreach (var entry in _vocabulary.heads.Values)
+            {
                 foreach (LookPart[] parts in new[] { entry.plant, entry.stone })
+                {
                     for (int i = 0; i < parts.Length; i++)
                     { parts[i].isSource = false; parts[i].sourceAnchor = ShapeAnchor.Center; }
+                }
+            }
+
             var before = _vocabulary.heads.ToDictionary(e => e.Key,
                 e => new[] { (LookPart[])e.Value.plant.Clone(), (LookPart[])e.Value.stone.Clone() });
             var palette = _vocabulary.palette;
@@ -103,6 +117,7 @@ namespace HealerLike.Render.Creatures
             {
                 var arrays = new[] { entry.Value.plant, entry.Value.stone };
                 for (int side = 0; side < 2; side++)
+                {
                     for (int i = 0; i < arrays[side].Length; i++)
                     {
                         LookPart part = arrays[side][i];
@@ -110,6 +125,7 @@ namespace HealerLike.Render.Creatures
                         part.sourceAnchor = ShapeAnchor.Center;
                         Assert.AreEqual(JsonUtility.ToJson(before[entry.Key][side][i]), JsonUtility.ToJson(part));
                     }
+                }
             }
             Assert.AreSame(palette, _vocabulary.palette);
             Assert.AreEqual(colours, EditorJsonUtility.ToJson(palette));

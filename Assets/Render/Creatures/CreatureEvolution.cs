@@ -29,10 +29,18 @@ namespace HealerLike.Render.Creatures
         // New item attributes may be added after spawn. Binding discovery is cheap and never builds geometry.
         void RefreshBindings()
         {
-            if (!_manager) return;
+            if (!_manager)
+            {
+                return;
+            }
+
             foreach (AttributeType type in LiveUnitDerivation.observedAttributes)
             {
-                if (_attributes.ContainsKey(type) || !_manager.Has(type)) continue;
+                if (_attributes.ContainsKey(type) || !_manager.Has(type))
+                {
+                    continue;
+                }
+
                 Attribute attribute = _manager.Get(type);
                 _attributes.Add(type, attribute);
                 attribute.AddOnValueChangedListener(OnChanged);
@@ -46,7 +54,11 @@ namespace HealerLike.Render.Creatures
         {
             RefreshBindings();
             channels = _accepted;
-            if (!_dirty || !_data) return false;
+            if (!_dirty || !_data)
+            {
+                return false;
+            }
+
             _dirty = false;
             channels = LiveUnitDerivation.Read(_data, _side, _attributes);
             return !_hasAccepted || !channels.Equals(_accepted);
@@ -68,7 +80,10 @@ namespace HealerLike.Render.Creatures
         public void Dispose()
         {
             foreach (Attribute attribute in _attributes.Values)
+            {
                 attribute.RemoveOnValueChangedListener(OnChanged);
+            }
+
             _attributes.Clear();
             _manager = null;
             _data = null;

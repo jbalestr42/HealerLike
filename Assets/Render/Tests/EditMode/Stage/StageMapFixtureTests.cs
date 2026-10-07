@@ -47,7 +47,9 @@ namespace HealerLike.Render.Stage
                 {
                     Assert.That(map.floors[floor], Is.Not.Empty);
                     foreach (MapNode node in map.floors[floor])
+                    {
                         Assert.That(node.type, Is.EqualTo(expected[floor]), "Floor " + floor);
+                    }
                 }
                 Assert.That(map.boss.type, Is.EqualTo(MapNodeType.Boss));
                 Assert.That(JsonUtility.ToJson(_settings), Is.EqualTo(before));

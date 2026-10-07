@@ -21,25 +21,43 @@ namespace HealerLike.Render.Creatures
             _rig = rig;
             _explicit = rig != null && CreatureSources.HasExplicit(rig);
             sourceId = rig != null ? CreatureSources.Select(rig, sequence) : null;
-            if (_rig != null) _rig.recomposed += OnRecompose;
+            if (_rig != null)
+            {
+                _rig.recomposed += OnRecompose;
+            }
         }
 
         public static CastSourceLease From(GameObject owner, uint sequence = 0)
         {
             ARigHost host = CreatureSources.Host(owner);
-            if (host) host.SyncGeometry();
+            if (host)
+            {
+                host.SyncGeometry();
+            }
+
             CastSourceLease lease = new CastSourceLease(host ? host.rig : null, sequence);
-            if (lease._rig == null) lease._fallback = owner;
+            if (lease._rig == null)
+            {
+                lease._fallback = owner;
+            }
+
             return lease;
         }
 
         public bool TryGet(out Vector3 point)
         {
             point = default;
-            if (_disposed) return false;
+            if (_disposed)
+            {
+                return false;
+            }
+
             if (_explicit)
             {
-                if (CreatureSources.Resolve(_rig, sourceId, out point)) return true;
+                if (CreatureSources.Resolve(_rig, sourceId, out point))
+                {
+                    return true;
+                }
             }
             else if (_rig != null && _rig.root && _rig.root.gameObject.activeInHierarchy
                 && _rig.TryGetAnchors(out EffectAnchors anchors))
@@ -58,13 +76,20 @@ namespace HealerLike.Render.Creatures
 
         void OnRecompose()
         {
-            if (_explicit && !CreatureSources.Resolve(_rig, sourceId, out _)) Dispose();
+            if (_explicit && !CreatureSources.Resolve(_rig, sourceId, out _))
+            {
+                Dispose();
+            }
         }
 
         public void Dispose()
         {
             _disposed = true;
-            if (_rig != null) _rig.recomposed -= OnRecompose;
+            if (_rig != null)
+            {
+                _rig.recomposed -= OnRecompose;
+            }
+
             _rig = null;
             _fallback = null;
         }

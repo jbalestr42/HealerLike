@@ -27,18 +27,28 @@ namespace HealerLike.Render.Spells
         {
             PruneLayers();
             SetCount(EffectComposer.Count(_recipe.entry, Mathf.Max(1, stacks), charges, 0f));
-            foreach (SpellEffect layer in _layers) layer.RefreshCount(stacks, charges);
+            foreach (SpellEffect layer in _layers)
+            {
+                layer.RefreshCount(stacks, charges);
+            }
         }
 
         public void PlaceLayers(EffectAnchors anchors)
         {
             PruneLayers();
-            foreach (SpellEffect layer in _layers) EffectPlacement.Place(layer, transform, anchors);
+            foreach (SpellEffect layer in _layers)
+            {
+                EffectPlacement.Place(layer, transform, anchors);
+            }
         }
         void AdvanceLayers(float delta)
         {
             PruneLayers();
-            foreach (SpellEffect layer in _layers) layer.Advance(delta);
+            foreach (SpellEffect layer in _layers)
+            {
+                layer.Advance(delta);
+            }
+
             PruneLayers();
         }
         float RemovalSeconds() => _recipe?.presentation != null && _recipe.presentation.enabled
@@ -46,7 +56,14 @@ namespace HealerLike.Render.Spells
         bool LayersRemoved()
         {
             PruneLayers();
-            foreach (SpellEffect layer in _layers) if (!layer.removalComplete) return false;
+            foreach (SpellEffect layer in _layers)
+            {
+                if (!layer.removalComplete)
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
         float Visibility() => _isRemoving
@@ -56,7 +73,11 @@ namespace HealerLike.Render.Spells
         {
             PruneLayers();
             float seconds = _recipe != null ? _recipe.cycleSeconds : 0;
-            foreach (SpellEffect layer in _layers) seconds = Mathf.Max(seconds, layer.lifetime);
+            foreach (SpellEffect layer in _layers)
+            {
+                seconds = Mathf.Max(seconds, layer.lifetime);
+            }
+
             return seconds;
         }
     }

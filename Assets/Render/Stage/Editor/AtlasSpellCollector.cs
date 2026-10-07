@@ -38,7 +38,11 @@ namespace HealerLike.Render.Stage
             {
                 EffectKey element = pair.Key;
                 ElementEntry entry = pair.Value;
-                if (entry == null) continue;
+                if (entry == null)
+                {
+                    continue;
+                }
+
                 EffectPresentation p = entry.presentation;
                 document.spellEntries.Add(new SpellEntryRow { element = element.ToString(), motion = entry.motion.ToString(),
                     socket = entry.socket.ToString(), count = entry.count.ToString(), minCount = entry.minCount,
@@ -73,7 +77,11 @@ namespace HealerLike.Render.Stage
                         periodSeconds = EffectDerivation.Period(handler), channels = new SpellChannels(channels),
                         family = channels.family.ToString(), group = channels.group.ToString(), tempo = channels.tempo.ToString(),
                         element = EffectComposer.Element(vocabulary, channels).ToString() };
-                    foreach (EffectChannels layer in EffectDerivation.Layers(handler, same, context)) row.layers.Add(new SpellChannels(layer));
+                    foreach (EffectChannels layer in EffectDerivation.Layers(handler, same, context))
+                    {
+                        row.layers.Add(new SpellChannels(layer));
+                    }
+
                     foreach (ABuffFactory buff in EffectDerivation.Buffs(handler))
                     {
                         AConsumerFactory consumer = EffectDerivation.Consumer(buff);
@@ -93,7 +101,11 @@ namespace HealerLike.Render.Stage
                 ACharacterSkillFactory factory = AssetDatabase.LoadAssetAtPath<ACharacterSkillFactory>(path);
                 // Skills without a target (BalanceLife, DarkPact, RaiseDead) still get a row, with no target side
                 CharacterSkillData data = factory is IGameDataSource source ? source.sourceData as CharacterSkillData : null;
-                if (data == null) continue;
+                if (data == null)
+                {
+                    continue;
+                }
+
                 BaseCharacterSkillData targeted = data as BaseCharacterSkillData;
                 SpellIconDescription description = SpellIconDerivation.Read(data, PlayerClassContext.Owner(data, characters));
                 HealerSkillRow row = new HealerSkillRow { path = path, name = data.name, skillClass = data.GetType().Name,
@@ -107,16 +119,25 @@ namespace HealerLike.Render.Stage
                     {
                         row.handlerPaths.Add(AssetDatabase.GetAssetPath(handler));
                         foreach (EffectChannels layer in EffectDerivation.Layers(handler, description.isSameSide, description.context))
+                        {
                             row.layers.Add(new SpellChannels(layer));
+                        }
                     }
-                    foreach (EffectChannels layer in description.layers) row.layers.Add(new SpellChannels(layer));
+                    foreach (EffectChannels layer in description.layers)
+                    {
+                        row.layers.Add(new SpellChannels(layer));
+                    }
                 }
                 document.healerSkills.Add(row);
             }
         }
 
         static void AddPieces(AtlasDerivationDump.Document document, string kind, IEnumerable<string> keys)
-        { foreach (string key in keys.OrderBy(k => k)) document.spellPieces.Add(new SpellPieceRow { kind = kind, key = key }); }
+        { foreach (string key in keys.OrderBy(k => k))
+            {
+                document.spellPieces.Add(new SpellPieceRow { kind = kind, key = key });
+            }
+        }
         static string FirstFolder(string path) { string[] p = path.Split('/'); return p.Length > 2 ? p[2] : ""; }
         static string OwnerName(string path)
         {
@@ -127,7 +148,11 @@ namespace HealerLike.Render.Stage
         }
         static string AccentHex(EffectVocabulary vocabulary, ElementEntry entry, EffectOperation operation)
         {
-            if (entry == null || vocabulary.palette == null) return "";
+            if (entry == null || vocabulary.palette == null)
+            {
+                return "";
+            }
+
             Color c = vocabulary.palette.Colour(entry.presentation == null ? ColourRole.Accent : entry.presentation.colourRole,
                 operation == EffectOperation.Heal ? EffectFamily.Heal : EffectFamily.Damage);
             return ColorUtility.ToHtmlStringRGBA(c);

@@ -25,11 +25,21 @@ namespace HealerLike.Render.Grammar
         {
             foreach (ABuffFactory buff in Buffs(handler))
             {
-                if (buff is InvincibilityBuffFactory) return EffectOperation.Ward;
+                if (buff is InvincibilityBuffFactory)
+                {
+                    return EffectOperation.Ward;
+                }
                 // Mana restored to the healer: each round, each kill or from an overheal
                 if (buff is ManaOnRoundEndBuffFactory || buff is ManaOnKillBuffFactory
-                    || buff is ManaOnOverhealBuffFactory) return EffectOperation.Mana;
-                if (buff is DrainCharacterManaBuffFactory) return EffectOperation.ManaDrain;
+                    || buff is ManaOnOverhealBuffFactory)
+                {
+                    return EffectOperation.Mana;
+                }
+
+                if (buff is DrainCharacterManaBuffFactory)
+                {
+                    return EffectOperation.ManaDrain;
+                }
             }
             switch (Family(handler, isSameSide))
             {
@@ -69,7 +79,11 @@ namespace HealerLike.Render.Grammar
 
         public static EffectReach Reach(ABuffHandlerFactory handler, int targetCount = 1)
         {
-            if (targetCount <= 1) return EffectReach.Single;
+            if (targetCount <= 1)
+            {
+                return EffectReach.Single;
+            }
+
             return targetCount == int.MaxValue ? EffectReach.All : EffectReach.Group;
         }
 
@@ -81,7 +95,11 @@ namespace HealerLike.Render.Grammar
 
         public static EffectDelivery DeliveryChannel(GameObject projectilePrefab = null)
         {
-            if (projectilePrefab == null) return EffectDelivery.Instant;
+            if (projectilePrefab == null)
+            {
+                return EffectDelivery.Instant;
+            }
+
             switch (Delivery(projectilePrefab))
             {
                 case DeliveryStyle.Direct:
@@ -106,9 +124,15 @@ namespace HealerLike.Render.Grammar
             }
             foreach (ABuffFactory buff in Buffs(handler))
             {
-                if (buff is DamageAllEntityOnEntityDieBuffFactory) return EffectTrigger.OnDeath;
+                if (buff is DamageAllEntityOnEntityDieBuffFactory)
+                {
+                    return EffectTrigger.OnDeath;
+                }
+
                 if (buff is HealAllEntitiesOnRoundEndBuffFactory || buff is ManaOnRoundEndBuffFactory)
+                {
                     return EffectTrigger.RoundEnd;
+                }
             }
             return EffectTrigger.Cast;
         }
@@ -117,9 +141,21 @@ namespace HealerLike.Render.Grammar
 
         public static EffectOrigin Origin(GameObject source)
         {
-            if (source == null) return EffectOrigin.Creature;
-            if (source.GetComponent<Character>() != null) return EffectOrigin.Healer;
-            if (source.GetComponent<Entity>() != null) return EffectOrigin.Creature;
+            if (source == null)
+            {
+                return EffectOrigin.Creature;
+            }
+
+            if (source.GetComponent<Character>() != null)
+            {
+                return EffectOrigin.Healer;
+            }
+
+            if (source.GetComponent<Entity>() != null)
+            {
+                return EffectOrigin.Creature;
+            }
+
             return EffectOrigin.Item;
         }
     }

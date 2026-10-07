@@ -33,7 +33,14 @@ namespace HealerLike.Render.Creatures
 
         public static bool HasExplicit(CreatureRig rig)
         {
-            foreach (CreaturePart part in rig.parts) if (part.isSource) return true;
+            foreach (CreaturePart part in rig.parts)
+            {
+                if (part.isSource)
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -41,24 +48,53 @@ namespace HealerLike.Render.Creatures
         public static string Select(CreatureRig rig, uint sequence)
         {
             int count = 0;
-            foreach (CreaturePart part in rig.parts) if (part.isSource) count++;
-            if (count == 0) return null;
+            foreach (CreaturePart part in rig.parts)
+            {
+                if (part.isSource)
+                {
+                    count++;
+                }
+            }
+
+            if (count == 0)
+            {
+                return null;
+            }
+
             int selected = (int)(sequence % (uint)count);
             foreach (CreaturePart part in rig.parts)
-                if (part.isSource && selected-- == 0) return part.sourceId;
+            {
+                if (part.isSource && selected-- == 0)
+                {
+                    return part.sourceId;
+                }
+            }
+
             return null;
         }
 
         public static bool Resolve(CreatureRig rig, string id, out Vector3 point)
         {
             point = default;
-            if (rig == null || !rig.root || !rig.root.gameObject.activeInHierarchy) return false;
+            if (rig == null || !rig.root || !rig.root.gameObject.activeInHierarchy)
+            {
+                return false;
+            }
+
             for (int i = 0; i < rig.parts.Count; i++)
             {
                 CreaturePart part = rig.parts[i];
-                if (!part.isSource || part.sourceId != id) continue;
+                if (!part.isSource || part.sourceId != id)
+                {
+                    continue;
+                }
+
                 Transform geometry = rig.partTransforms[i];
-                if (!geometry || !geometry.gameObject.activeInHierarchy) return false;
+                if (!geometry || !geometry.gameObject.activeInHierarchy)
+                {
+                    return false;
+                }
+
                 point = geometry.TransformPoint(rig.SourceLocal(i));
                 return RenderMath.IsFinite(point);
             }

@@ -13,32 +13,54 @@ namespace HealerLike.Render.Spells
         {
             PruneLayers();
             ReleaseGround();
-            foreach (SpellEffect layer in _layers) layer.BindGround(ground, target);
-            if (ground == null || _recipe?.entry.ground == null || target == null) return;
+            foreach (SpellEffect layer in _layers)
+            {
+                layer.BindGround(ground, target);
+            }
+
+            if (ground == null || _recipe?.entry.ground == null || target == null)
+            {
+                return;
+            }
+
             _groundTarget = target.transform;
             _groundHandle = ground.Hold(_recipe.entry.ground);
             UpdateGround();
         }
         void UpdateGround()
         {
-            if (_groundHandle == null) return;
+            if (_groundHandle == null)
+            {
+                return;
+            }
+
             if (_groundTarget == null || !_groundTarget.gameObject.activeInHierarchy || !gameObject.activeInHierarchy)
             {
                 _groundHandle.Hide();
                 return;
             }
             if (_recipe.entry.ground.shape == GroundShape.Line)
+            {
                 _groundHandle.ShowLine(_linkStart, _linkEnd, _recipe.entry.groundStrength);
+            }
             else
+            {
                 _groundHandle.Show(_groundTarget.position, _recipe.entry.groundRadius * _recipe.scale,
                     _recipe.entry.groundStrength);
+            }
         }
         void ReleaseGround() { _groundHandle?.Release(); _groundHandle = null; _groundTarget = null; }
         // Composite layers disable their own Update; their parent therefore owns deactivation cleanup too.
         void ReleaseGroundTree()
         {
             ReleaseGround();
-            foreach (SpellEffect layer in _layers) if (layer) layer.ReleaseGroundTree();
+            foreach (SpellEffect layer in _layers)
+            {
+                if (layer)
+                {
+                    layer.ReleaseGroundTree();
+                }
+            }
         }
         void OnDisable() => ReleaseGroundTree();
 
@@ -49,7 +71,13 @@ namespace HealerLike.Render.Spells
             _castSource = null;
             _parts.Dispose();
             ReleaseGround();
-            foreach (SpellEffect layer in _layers) if (layer) layer.ReleaseResourcesTree();
+            foreach (SpellEffect layer in _layers)
+            {
+                if (layer)
+                {
+                    layer.ReleaseResourcesTree();
+                }
+            }
         }
 
         // A new element under the parent; on a unit, its body and stem parts take the unit's side
@@ -90,7 +118,11 @@ namespace HealerLike.Render.Spells
 
             // EditMode previews may never enter Unity's native lifecycle; release ownership explicitly.
             SpellEffect owner = effect.GetComponent<SpellEffect>();
-            if (owner) owner.ReleaseResourcesTree();
+            if (owner)
+            {
+                owner.ReleaseResourcesTree();
+            }
+
             effect.SetActive(false);
             RenderObjects.Release(effect);
         }

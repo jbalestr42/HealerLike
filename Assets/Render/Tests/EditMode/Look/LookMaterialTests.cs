@@ -148,8 +148,12 @@ public class LookMaterialTests
         {
             Color32 pixel = pixels[i];
             bool belongs = shade ? pixel.r > pixel.g : pixel.g > pixel.r && pixel.g > pixel.b;
-            if (!belongs) continue;
-            sum += new Vector2(i % texture.width, i / texture.width);
+            if (!belongs)
+                {
+                    continue;
+                }
+
+                sum += new Vector2(i % texture.width, i / texture.width);
             count++;
         }
         Assert.That(count, Is.GreaterThan(0), shade ? "Shade region" : "Lit region");

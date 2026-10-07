@@ -24,7 +24,14 @@ namespace HealerLike.Render.Spells
         [TearDown]
         public void TearDown()
         {
-            foreach (Object owned in _owned) if (owned) Object.DestroyImmediate(owned);
+            foreach (Object owned in _owned)
+            {
+                if (owned)
+                {
+                    Object.DestroyImmediate(owned);
+                }
+            }
+
             _owned.Clear();
         }
 
@@ -166,17 +173,27 @@ namespace HealerLike.Render.Spells
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
             HashSet<string> awaiting = new HashSet<string>();
             foreach (string path in HealerLike.Render.Grammar.SpellChannelAssetPinningTests.AwaitingTreatment)
+            {
                 awaiting.Add("Assets/Data/" + path + ".asset");
+            }
             // On the holder of its item: a growing item's handler draws its growth
             EffectContext growth = HealerLike.Render.Grammar.EffectKindDerivationTests.GrowthContext();
             foreach (string guid in AssetDatabase.FindAssets("t:ABuffHandlerFactory", new[] { "Assets/Data" }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 // A handler with no look by design is a listed gap, not a vocabulary promise
-                if (awaiting.Contains(path)) continue;
+                if (awaiting.Contains(path))
+                {
+                    continue;
+                }
+
                 EffectChannels channels = EffectDerivation.Channels(
                     AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(path), true, growth);
-                if (channels.operation != EffectOperation.Boon || channels.aspect != EffectAspect.Offence) continue;
+                if (channels.operation != EffectOperation.Boon || channels.aspect != EffectAspect.Offence)
+                {
+                    continue;
+                }
+
                 Assert.AreEqual(EffectVocabulary.KindKey(channels.kind), EffectComposer.Element(vocabulary, channels), path);
             }
         }

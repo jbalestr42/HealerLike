@@ -16,7 +16,11 @@ namespace HealerLike.Render.Spells.Editor
         public static void Author()
         {
             EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(AssetPath);
-            if (vocabulary == null) throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            if (vocabulary == null)
+            {
+                throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            }
+
             Undo.RecordObject(vocabulary, "Author polished spell vocabulary");
             Apply(vocabulary);
             EditorUtility.SetDirty(vocabulary);
@@ -26,7 +30,11 @@ namespace HealerLike.Render.Spells.Editor
 
         public static void Apply(EffectVocabulary vocabulary)
         {
-            if (vocabulary == null) throw new ArgumentNullException(nameof(vocabulary));
+            if (vocabulary == null)
+            {
+                throw new ArgumentNullException(nameof(vocabulary));
+            }
+
             vocabulary.entries[EffectKey.Burst] = Entry(Burst(), EffectMotionKind.Burst,
                 EffectSocket.Body, 1.05f);
             vocabulary.entries[EffectKey.Rise] = Entry(Heal(),
@@ -62,8 +70,11 @@ namespace HealerLike.Render.Spells.Editor
             vocabulary.legacyTable[new EffectCell(EffectOperation.Ward, EffectAspect.Prevention)] =
                 new EffectCellEntry(EffectKey.Bud, EffectKey.Bud, false);
             foreach (EffectAspect aspect in Enum.GetValues(typeof(EffectAspect)))
+            {
                 vocabulary.legacyTable[new EffectCell(EffectOperation.ManaDrain, aspect)] =
                     new EffectCellEntry(EffectKey.ManaDown, EffectKey.ManaDown, false);
+            }
+
             Configure(vocabulary);
             SpellPolishGround.Apply(vocabulary);
             ApplyStone(vocabulary);
@@ -77,20 +88,31 @@ namespace HealerLike.Render.Spells.Editor
         public static void AuthorKinds()
         {
             EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(AssetPath);
-            if (vocabulary == null) throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            if (vocabulary == null)
+            {
+                throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            }
+
             Undo.RecordObject(vocabulary, "Author boon kind entries");
             ApplyKinds(vocabulary);
             EditorUtility.SetDirty(vocabulary);
             AssetDatabase.SaveAssetIfDirty(vocabulary);
             Debug.Log("[SpellPolishVocabulary] Authored the six Plant Boon offence kinds; Stone draws them in Plant.");
-            if (Application.isBatchMode) EditorApplication.Exit(0);
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(0);
+            }
         }
 
         // Six Boon offence kinds in Plant. Stone has none of its own and draws these through the Plant fallback.
         // The Orbit entry lends presentation, ground, beads and rim: kind changes construction and motion only
         public static void ApplyKinds(EffectVocabulary vocabulary)
         {
-            if (vocabulary == null) throw new ArgumentNullException(nameof(vocabulary));
+            if (vocabulary == null)
+            {
+                throw new ArgumentNullException(nameof(vocabulary));
+            }
+
             ElementEntry orbit = vocabulary.entries[EffectKey.Orbit];
             Kind(vocabulary, EffectKind.Projectile, Kind(orbit, "Boon dart", Dart(), EffectMotionKind.Orbit,
                 EffectSocket.Body, 1.6f));
@@ -112,20 +134,31 @@ namespace HealerLike.Render.Spells.Editor
         public static void AuthorEventKinds()
         {
             EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(AssetPath);
-            if (vocabulary == null) throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            if (vocabulary == null)
+            {
+                throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            }
+
             Undo.RecordObject(vocabulary, "Author event kind entries");
             ApplyEventKinds(vocabulary);
             EditorUtility.SetDirty(vocabulary);
             AssetDatabase.SaveAssetIfDirty(vocabulary);
             Debug.Log("[SpellPolishVocabulary] Authored Spark, Echo, Tether, Sprout and Stem; Stone draws them in Plant.");
-            if (Application.isBatchMode) EditorApplication.Exit(0);
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(0);
+            }
         }
 
         // Reactive, Echo, Link, Summon and Growth in Plant, built like the six Boon kinds from the Orbit entry.
         // Growth also refines the Bane defence cell: the Hungering Mask's battle growth costs health
         public static void ApplyEventKinds(EffectVocabulary vocabulary)
         {
-            if (vocabulary == null) throw new ArgumentNullException(nameof(vocabulary));
+            if (vocabulary == null)
+            {
+                throw new ArgumentNullException(nameof(vocabulary));
+            }
+
             ElementEntry orbit = vocabulary.entries[EffectKey.Orbit];
             Kind(vocabulary, EffectKind.Reactive, Kind(orbit, "Reactive spark", Spark(), EffectMotionKind.Burst,
                 EffectSocket.Body, 1.2f));
@@ -147,20 +180,31 @@ namespace HealerLike.Render.Spells.Editor
         public static void AuthorStoneEventKinds()
         {
             EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(AssetPath);
-            if (vocabulary == null) throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            if (vocabulary == null)
+            {
+                throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            }
+
             Undo.RecordObject(vocabulary, "Author stone event kind entries");
             ApplyStoneEventKinds(vocabulary);
             EditorUtility.SetDirty(vocabulary);
             AssetDatabase.SaveAssetIfDirty(vocabulary);
             Debug.Log("[SpellPolishVocabulary] Authored Stone Spark, Echo, Tether, Sprout and Stem.");
-            if (Application.isBatchMode) EditorApplication.Exit(0);
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(0);
+            }
         }
 
         // Each Stone entry keeps its Plant entry's motion, socket, count, clock and presentation; its beads and rims
         // are chips and faceted rings. The Stem's Stone entry also refines the Bane defence cell, as its Plant one does
         public static void ApplyStoneEventKinds(EffectVocabulary vocabulary)
         {
-            if (vocabulary == null) throw new ArgumentNullException(nameof(vocabulary));
+            if (vocabulary == null)
+            {
+                throw new ArgumentNullException(nameof(vocabulary));
+            }
+
             StoneKind(vocabulary, EffectKind.Reactive, "Stone spark", StoneSpark());
             StoneKind(vocabulary, EffectKind.Echo, "Stone echo", StoneEcho());
             StoneKind(vocabulary, EffectKind.Link, "Stone tether", StoneTether());
@@ -174,12 +218,21 @@ namespace HealerLike.Render.Spells.Editor
         {
             ElementEntry plant = vocabulary.entries[EffectVocabulary.KindKey(kind)];
             ElementEntry entry = Stone(plant, label, parts);
-            if (entry.stackBeads.Length > 0) entry.stackBeads = Chips("Stack chip ", 5, 1.42f, -.32f, .2f);
+            if (entry.stackBeads.Length > 0)
+            {
+                entry.stackBeads = Chips("Stack chip ", 5, 1.42f, -.32f, .2f);
+            }
+
             entry.sideRim = Facet(entry.sideRim);
             entry.criticalRings = Facet(entry.criticalRings);
             foreach (LookPart part in entry.parts)
+            {
                 if (!part.shape.IsValid())
+                {
                     Debug.LogError($"[SpellPolishVocabulary] {entry.label}: {part.id} trips a shape profile bound.");
+                }
+            }
+
             vocabulary.kinds[new EffectKindCell(EffectOperation.Boon, EffectAspect.Offence, kind, LookSide.Stone)] = entry;
             return entry;
         }
@@ -191,7 +244,10 @@ namespace HealerLike.Render.Spells.Editor
             for (int i = 0; i < parts.Length; i++)
             {
                 faceted[i] = parts[i];
-                if (parts[i].primitive == Primitive.Torus) faceted[i].shape = ShapeProfile.Ring(parts[i].shape.tubeRatio, true);
+                if (parts[i].primitive == Primitive.Torus)
+                {
+                    faceted[i].shape = ShapeProfile.Ring(parts[i].shape.tubeRatio, true);
+                }
                 else
                 {
                     faceted[i].primitive = Primitive.Boulder;
@@ -204,8 +260,13 @@ namespace HealerLike.Render.Spells.Editor
         static void Kind(EffectVocabulary vocabulary, EffectKind kind, ElementEntry entry)
         {
             foreach (LookPart part in entry.parts)
+            {
                 if (!part.shape.IsValid())
+                {
                     Debug.LogError($"[SpellPolishVocabulary] {entry.label}: {part.id} trips a shape profile bound.");
+                }
+            }
+
             vocabulary.kinds[new EffectKindCell(EffectOperation.Boon, EffectAspect.Offence, kind)] = entry;
             // Like every other element, the Plant entry is also the element's own entry for Studio and previews
             vocabulary.entries[EffectVocabulary.KindKey(kind)] = entry;
@@ -226,7 +287,11 @@ namespace HealerLike.Render.Spells.Editor
         public static void AuthorStone()
         {
             EffectVocabulary vocabulary = AssetDatabase.LoadAssetAtPath<EffectVocabulary>(AssetPath);
-            if (vocabulary == null) throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            if (vocabulary == null)
+            {
+                throw new InvalidOperationException("Missing effect vocabulary: " + AssetPath);
+            }
+
             Undo.RecordObject(vocabulary, "Author stone spell cells");
             ApplyStone(vocabulary);
             EditorUtility.SetDirty(vocabulary);
@@ -237,7 +302,11 @@ namespace HealerLike.Render.Spells.Editor
         // Stone Burst, Rise and Press. Every other element has no Stone cell and draws its Plant entry.
         public static void ApplyStone(EffectVocabulary vocabulary)
         {
-            if (vocabulary == null) throw new ArgumentNullException(nameof(vocabulary));
+            if (vocabulary == null)
+            {
+                throw new ArgumentNullException(nameof(vocabulary));
+            }
+
             ElementEntry burst = Stone(vocabulary.entries[EffectKey.Burst], "Stone burst", StoneBurst());
             burst.criticalRings = new[] { FacetedRing("Critical outer halo", 2.8f, 0, .07f,
                 ColourRole.MushroomCapPale, new Vector3(90, 0, 0)) };
@@ -315,9 +384,15 @@ namespace HealerLike.Render.Spells.Editor
                 entry.stackBeads = Motes("Stack pearl ", 5, 1.42f, -.32f, .18f, false);
                 entry.sideRim = new[] { Ring("Caster signature", 2.65f, -.55f, .06f, ColourRole.Rim) };
                 entry.presentation.releaseSeconds = .45f;
-                if (element == EffectKey.Press) entry.sideRim = Array.Empty<LookPart>();
+                if (element == EffectKey.Press)
+                {
+                    entry.sideRim = Array.Empty<LookPart>();
+                }
+
                 if (element == EffectKey.Drips)
+                {
                     entry.sideRim = new[] { Ring("Caster signature", 1.2f, -.12f, .06f, ColourRole.Rim) };
+                }
             }
         }
     }

@@ -12,7 +12,11 @@ namespace HealerLike.Render.Stage
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 Type type = assembly.GetType("UnityEditor.Search.SearchInit");
-                if (type == null) continue;
+                if (type == null)
+                {
+                    continue;
+                }
+
                 type.GetMethod("IndexationOnStartup", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                     .Invoke(null, null);
                 return;

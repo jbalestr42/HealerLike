@@ -17,7 +17,11 @@ namespace HealerLike.Render.Grammar
         [TearDown]
         public void TearDown()
         {
-            foreach (Object item in _objects) Object.DestroyImmediate(item);
+            foreach (Object item in _objects)
+            {
+                Object.DestroyImmediate(item);
+            }
+
             _objects.Clear();
         }
 

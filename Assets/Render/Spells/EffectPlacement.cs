@@ -44,7 +44,11 @@ namespace HealerLike.Render.Spells
         // Apply once after socket placement. Depth is authored in the effect's body-radius units.
         public static void FaceCamera(SpellEffect effect, Camera camera)
         {
-            if (!effect || !camera) return;
+            if (!effect || !camera)
+            {
+                return;
+            }
+
             SpellEffect[] layers = effect.GetComponentsInChildren<SpellEffect>(true);
             var positions = new Vector3[layers.Length];
             var rotations = new Quaternion[layers.Length];
@@ -73,7 +77,9 @@ namespace HealerLike.Render.Spells
                         scales[i].z / Mathf.Max(.0001f, current.z)));
                 }
                 if (facesCamera)
+                {
                     root.position -= camera.transform.forward * (scales[i].x * layer.recipe.presentation.cameraDepth);
+                }
             }
         }
 

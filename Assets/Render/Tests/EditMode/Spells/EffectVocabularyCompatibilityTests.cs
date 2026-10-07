@@ -12,11 +12,13 @@ namespace HealerLike.Render.Spells
         {
             EffectVocabulary vocabulary = RenderTestAssets.LoadEffectVocabulary();
             foreach (AttributeGroup group in System.Enum.GetValues(typeof(AttributeGroup)))
-            foreach (EffectTempo tempo in System.Enum.GetValues(typeof(EffectTempo)))
+            {
+                foreach (EffectTempo tempo in System.Enum.GetValues(typeof(EffectTempo)))
             {
                 EffectChannels channels = new EffectChannels { family = family, group = group, tempo = tempo };
                 Assert.AreEqual(expected, EffectComposer.Element(channels), $"Legacy {group}/{tempo}");
                 Assert.AreEqual(expected, EffectComposer.Element(vocabulary, channels), $"Asset {group}/{tempo}");
+            }
             }
         }
 
@@ -40,8 +42,10 @@ namespace HealerLike.Render.Spells
                 bool periodic = operation == EffectOperation.Damage || operation == EffectOperation.Heal;
                 Assert.AreEqual(periodic, cell.hasPeriodic);
                 if (periodic)
+                {
                     Assert.AreEqual(operation == EffectOperation.Damage ? EffectKey.Drips : EffectKey.Stalks,
                         cell.periodic);
+                }
             }
         }
     }

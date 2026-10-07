@@ -36,7 +36,10 @@ namespace HealerLike.Render.Stage
                 consumed = true;
                 if (_candidate.CanDrag()) { _drag = _candidate; _drag.StartDrag(_start); }
             }
-            if (_drag != null && hit.collider != null) _drag.Drag(hit);
+            if (_drag != null && hit.collider != null)
+            {
+                _drag.Drag(hit);
+            }
         }
         public void End(RaycastHit hit)
         {

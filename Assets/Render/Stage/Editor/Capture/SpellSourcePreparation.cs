@@ -17,7 +17,11 @@ namespace HealerLike.Render.Stage
             MethodInfo get = database.GetMethod("GetDefaultSearchDatabase",
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             object result = get.Invoke(null, null);
-            if (result == null) throw new InvalidOperationException("Search database initialization failed");
+            if (result == null)
+            {
+                throw new InvalidOperationException("Search database initialization failed");
+            }
+
             Debug.Log("[SpellSourcePreparation] Search database initialized outside Play.");
             EditorApplication.delayCall += () => StagePlay.Enter(mode, seconds);
         }

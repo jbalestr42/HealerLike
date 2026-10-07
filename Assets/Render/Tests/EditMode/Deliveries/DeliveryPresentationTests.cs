@@ -24,7 +24,10 @@ namespace HealerLike.Render.Deliveries
                 DeliveryPresentationPresets.Apply(vocabulary);
                 DeliveryPresentationPresets.Apply(vocabulary);
                 foreach (DeliveryStyle style in System.Enum.GetValues(typeof(DeliveryStyle)))
+                {
                     Assert.IsTrue(vocabulary.presentation.ContainsKey(style), style.ToString());
+                }
+
                 Assert.AreEqual(0.28f, vocabulary.bulletSize);
                 Assert.Greater(vocabulary.GetPresentation(DeliveryStyle.Direct).trailSeconds, 0f);
             }

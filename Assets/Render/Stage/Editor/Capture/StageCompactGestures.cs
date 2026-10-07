@@ -53,7 +53,11 @@ namespace HealerLike.Render.Stage
                 yield return touch.Frame(TouchPhase.Moved, start + Vector2.up * 48);
                 yield return touch.Frame(TouchPhase.Moved, destination);
                 yield return Still(touch, destination, .25f);
-                if (image != null) yield return _session.Capture(image, "Owned roster drag through actual Toolkit pointer events");
+                if (image != null)
+                {
+                    yield return _session.Capture(image, "Owned roster drag through actual Toolkit pointer events");
+                }
+
                 StageRosterDrag roster = _session.actions.touch.roster;
                 bool legal = release == TouchPhase.Ended && roster.valid && !_session.actions.touch.IsOverInterface(destination);
                 Vector3 intended = roster.target;
