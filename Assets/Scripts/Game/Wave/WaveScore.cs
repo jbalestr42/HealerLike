@@ -55,4 +55,15 @@ public class WaveScore
     {
         return measured && fingerprint == currentFingerprint;
     }
+
+    // The threat for a short cell: "-" never measured, "≥" before it when only a lower bound (timed out),
+    // "*" after it when the data changed since the measure
+    public string FormatThreat(string currentFingerprint)
+    {
+        if (!measured)
+        {
+            return "-";
+        }
+        return $"{(timedOut ? "≥" : "")}{threat:0}{(IsUpToDate(currentFingerprint) ? "" : "*")}";
+    }
 }

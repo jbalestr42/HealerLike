@@ -47,6 +47,38 @@ public class WaveScoreTests
         Assert.IsTrue(score.IsUpToDate(measuredFingerprint));
         Assert.IsFalse(score.IsUpToDate(WaveScore.ComputeFingerprint(new[] { "wave", "enemy damage: 4" })));
     }
+
+    [Test]
+    public void FormatThreat_NeverMeasured_IsADash()
+    {
+        Assert.AreEqual("-", new WaveScore { threat = 300f }.FormatThreat(WaveScore.ComputeFingerprint(new[] { "wave" })));
+    }
+
+    [Test]
+    public void FormatThreat_UpToDate_IsTheRoundedThreat()
+    {
+        string fingerprint = WaveScore.ComputeFingerprint(new[] { "wave" });
+        WaveScore score = new WaveScore { threat = 512.6f, fingerprint = fingerprint };
+
+        Assert.AreEqual("513", score.FormatThreat(fingerprint));
+    }
+
+    [Test]
+    public void FormatThreat_TimedOut_IsOnlyALowerBound()
+    {
+        string fingerprint = WaveScore.ComputeFingerprint(new[] { "wave" });
+        WaveScore score = new WaveScore { threat = 400f, timedOut = true, fingerprint = fingerprint };
+
+        Assert.AreEqual("≥400", score.FormatThreat(fingerprint));
+    }
+
+    [Test]
+    public void FormatThreat_DataChangedSinceTheMeasure_IsMarkedOutOfDate()
+    {
+        WaveScore score = new WaveScore { threat = 400f, fingerprint = WaveScore.ComputeFingerprint(new[] { "wave", "enemy damage: 3" }) };
+
+        Assert.AreEqual("400*", score.FormatThreat(WaveScore.ComputeFingerprint(new[] { "wave", "enemy damage: 4" })));
+    }
 }
 
 }
