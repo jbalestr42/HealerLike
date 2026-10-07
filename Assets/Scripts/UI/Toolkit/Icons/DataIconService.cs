@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// The data icons of one view: baked ones come from the catalog, the generated textures are owned here
+// The data icons of one view: the sprite Julien authored on the data first, then the baked ones from the catalog,
+// then a generated texture owned here
 public class DataIconService
 {
     public static readonly string CatalogResourcePath = "UIToolkit/DataIconCatalog";
@@ -14,6 +15,12 @@ public class DataIconService
         if (!_catalog)
         {
             _catalog = Resources.Load<DataIconCatalog>(CatalogResourcePath);
+        }
+
+        Texture2D authored = AuthoredTexture(TryGetAuthoredSprite(data));
+        if (authored)
+        {
+            return authored;
         }
 
         if (_catalog && data is Object)
@@ -50,6 +57,27 @@ public class DataIconService
     public static Sprite TryGetAuthoredSprite(object data)
     {
         return DataIconSource.AuthoredSprite(DataIconSource.Unwrap(data));
+    }
+
+    // The texture of a sprite that is its whole texture. A packed or cropped sprite would show its neighbours, so it
+    // gives nothing and the icon falls through to the catalog.
+    public static Texture2D AuthoredTexture(Sprite sprite)
+    {
+        if (!sprite || sprite.packed)
+        {
+            return null;
+        }
+
+        Texture2D texture = sprite.texture;
+        if (!texture)
+        {
+            return null;
+        }
+
+        Rect rect = sprite.rect;
+        bool isWhole = Mathf.Approximately(rect.x, 0f) && Mathf.Approximately(rect.y, 0f)
+            && Mathf.Approximately(rect.width, texture.width) && Mathf.Approximately(rect.height, texture.height);
+        return isWhole ? texture : null;
     }
 
     public void Clear()

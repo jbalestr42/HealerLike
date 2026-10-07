@@ -39,6 +39,53 @@ namespace UI.Toolkit.Icons
         }
 
         [Test]
+        public void GetIcon_AuthoredSprite_ReturnsItsTextureBeforeTheGeneratedOne()
+        {
+            Texture2D icon = _icons.GetIcon(new CharacterSkillData { icon = _sprite });
+
+            Assert.AreSame(_texture, icon);
+        }
+
+        [Test]
+        public void GetIcon_AuthoredSpriteOnNestedData_ReturnsItsTexture()
+        {
+            FakeIconOwner owner = new FakeIconOwner { data = new FakeIconData { icon = _sprite } };
+
+            Assert.AreSame(_texture, _icons.GetIcon(owner));
+        }
+
+        [Test]
+        public void GetIcon_NoAuthoredSprite_GeneratesAnIcon()
+        {
+            Texture2D icon = _icons.GetIcon(new CharacterSkillData());
+
+            Assert.IsNotNull(icon);
+            Assert.AreNotSame(_texture, icon);
+        }
+
+        [Test]
+        public void GetIcon_CroppedAuthoredSprite_IsNotShownWholeAndFallsThrough()
+        {
+            Sprite cropped = Sprite.Create(_texture, new Rect(0f, 0f, 8f, 8f), new Vector2(0.5f, 0.5f));
+
+            Texture2D icon = _icons.GetIcon(new CharacterSkillData { icon = cropped });
+
+            Object.DestroyImmediate(cropped);
+            Assert.IsNotNull(icon);
+            Assert.AreNotSame(_texture, icon);
+        }
+
+        [Test]
+        public void Clear_AuthoredIcon_IsNotDestroyed()
+        {
+            _icons.GetIcon(new CharacterSkillData { icon = _sprite });
+
+            _icons.Clear();
+
+            Assert.IsTrue(_texture);
+        }
+
+        [Test]
         public void GetIcon_NullData_ReturnsFallbackTexture()
         {
             Texture2D icon = _icons.GetIcon(null);
