@@ -8,7 +8,7 @@ using UiButton = UnityEngine.UI.Button;
 
 namespace HealerLike.Render.Stage
 {
-    // Plays a rest room then an event room of the merged game under the Toolkit HUD, taking Julien's uGUI choices
+    // Plays a rest room then an event room of the merged game under the Toolkit HUD, taking the game's uGUI choices
     // by touch, and reads what each choice changed in the run. Also measures how often the authored map settings
     // draw an event room.
     public sealed class StageEventRoomRun : AStageRun

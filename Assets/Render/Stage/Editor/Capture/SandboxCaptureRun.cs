@@ -11,7 +11,7 @@ using UnityEngine.UIElements;
 
 namespace HealerLike.Render.Stage
 {
-    // Julien's sandbox under the render stage, played through its own uGUI: entity buttons then a board tap place
+    // The game's sandbox under the render stage, played through its own uGUI: entity buttons then a board tap place
     // allies, a wave button brings enemies, Start battle, Pause and Speed are pressed as a player would. Stills of
     // the Game view (with the uGUI overlay) and of the camera alone go to the capture folder, and the time scale
     // each press leaves is logged. It records what happened and does not judge the look.
@@ -177,7 +177,7 @@ namespace HealerLike.Render.Stage
             yield return TimeControls(prefix);
         }
 
-        // The stage's Menu button beside Julien's panel, a Pause press, then Menu: the Toolkit menu must come up at
+        // The stage's Menu button beside the sandbox panel, a Pause press, then Menu: the Toolkit menu must come up at
         // normal time with the sandbox exit gone, and its Start must still open the class screen
         IEnumerator BackToMenu()
         {
@@ -271,7 +271,7 @@ namespace HealerLike.Render.Stage
             Debug.Log($"[SandboxCaptureRun] timeScale {step}: {Time.timeScale.ToString(CultureInfo.InvariantCulture)}");
         }
 
-        // Each unit's button arms Julien's placement, a tap on the board places it, as a click would
+        // Each unit's button arms the sandbox placement, a tap on the board places it, as a click would
         IEnumerator PlaceUnits()
         {
             Bounds board = _manager.board;

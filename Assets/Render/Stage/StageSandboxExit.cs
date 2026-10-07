@@ -5,8 +5,8 @@ using UnityEngine.UIElements;
 
 namespace HealerLike.Render.Stage
 {
-    // Julien's sandbox panel has no way out, so the stage adds one: a Toolkit "Menu" button in the top corner of the
-    // safe area, away from his panel along the bottom, and the Android back gesture (legacy Escape). Both leave for the
+    // The sandbox panel has no way out, so the stage adds one: a Toolkit "Menu" button in the top corner of the
+    // safe area, away from the panel along the bottom, and the Android back gesture (legacy Escape). Both leave for the
     // menu through the stage's own loader, the route the run's "Return to menu" takes, and restore normal time first,
     // since the sandbox pause and slow motion set Time.timeScale and it survives the scene load.
     // Runs before InteractionManager so Escape still cancels an armed placement first, as the sandbox hint says.

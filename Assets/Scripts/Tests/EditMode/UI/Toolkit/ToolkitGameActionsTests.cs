@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 namespace UI.Toolkit
 {
     // The menu's two routes through the host's loader: Start opens the class choice then the expedition, Sandbox opens
-    // Julien's sandbox directly
+    // the game's sandbox directly
     public class ToolkitGameActionsTests
     {
         ToolkitTestPanel _panel;

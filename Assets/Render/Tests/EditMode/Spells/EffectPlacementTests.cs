@@ -169,7 +169,7 @@ public class EffectPlacementTests
         }
     }
 
-    // A buff of each of the five event kinds, as Julien's October handlers carry them
+    // A buff of each of the five event kinds, as the October handlers carry them
     BuffHandlerFactory EventHandler(EffectKey element)
     {
         switch (element)

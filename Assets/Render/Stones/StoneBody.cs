@@ -155,7 +155,7 @@ namespace HealerLike.Render.Stones
             _parts.Hide();
         }
 
-        // After his Update: the health batch his consumers resolved this frame, and where the entity moved to
+        // After the entity's Update: the health batch its consumers resolved this frame, and where the entity moved to
         void LateUpdate()
         {
             _parts.Refresh(_isCollapsed, isActiveAndEnabled);

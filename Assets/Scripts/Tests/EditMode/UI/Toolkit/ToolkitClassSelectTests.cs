@@ -187,7 +187,7 @@ namespace UI.Toolkit
             CollectionAssert.IsEmpty(_chosen);
         }
 
-        // Julien's select card shows the description, skills, starting items and units; the Toolkit card keeps them
+        // The game's select card shows the description, skills, starting items and units; the Toolkit card keeps them
         [Test]
         public void Describe_Druid_ShowsDescriptionSkillsItemsAndUnits()
         {
@@ -216,7 +216,7 @@ namespace UI.Toolkit
             Assert.Greater(druid.entities.Count, 0);
         }
 
-        // The card reads name, one role line, then the kit apart: the role is Julien's description and nothing else
+        // The card reads name, one role line, then the kit apart: the role is the class description and nothing else
         [Test]
         public void Role_Druid_IsItsDescriptionAlone()
         {

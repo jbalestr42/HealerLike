@@ -132,7 +132,7 @@ namespace HealerLike.Render.Stage
             return path == SandboxPath;
         }
 
-        // Julien's sandbox keeps its own uGUI: no Toolkit HUD, which would hide his canvases. It still needs the
+        // The sandbox keeps its own uGUI: no Toolkit HUD, which would hide its canvases. It still needs the
         // preview's input backend on Android and touch delivery for placing entities, as Main gets them, and a way
         // back to the menu, through the same loader as the run's "Return to menu".
         void AttachSandbox(Scene scene)

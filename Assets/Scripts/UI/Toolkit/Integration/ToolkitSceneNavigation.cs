@@ -9,7 +9,7 @@ public static class ToolkitSceneNavigation
     public static readonly string MenuScene = "MenuToolkit";
     public static readonly string GameplayPath = "Assets/Scenes/Toolkit/MainToolkit.unity";
     public static readonly string MenuPath = "Assets/Scenes/Toolkit/MenuToolkit.unity";
-    // Julien's sandbox is not a Toolkit copy, the menu opens his scene itself
+    // The sandbox is not a Toolkit copy, the menu opens the game's scene itself
     public static readonly string SandboxScene = "Sandbox";
     public static readonly string SandboxPath = "Assets/Scenes/Sandbox.unity";
 

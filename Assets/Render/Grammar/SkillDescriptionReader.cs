@@ -83,7 +83,7 @@ namespace HealerLike.Render.Grammar
             }
             else if (skill is MarkedStrikeSkillFactory strike)
             {
-                // Julien's MarkedStrikeView draws the mark, the arc and the impact; the creature reads only
+                // The gameplay MarkedStrikeView draws the mark, the arc and the impact; the creature reads only
                 // its clock, one strike per interval plus the delay between mark and strike
                 if (strike.data != null)
                 {

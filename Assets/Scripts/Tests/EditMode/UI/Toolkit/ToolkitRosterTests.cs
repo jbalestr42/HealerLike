@@ -39,7 +39,7 @@ namespace UI.Toolkit
                     string[] keys = cards.Select(c => ((ToolkitCardModel)c.userData).key).ToArray();
                     // Exercise the production callback, including its choice bookkeeping.
                     ((ToolkitCardModel)cards[1].userData).deployed(deployed);
-                    // Julien consumes the first matching EntityData, even for a drag of the second card.
+                    // The gameplay side consumes the first matching EntityData, even for a drag of the second card.
                     choices.RemoveAt(0);
                     entities.GetEntities(Entity.EntityType.Player).Add(deployed.gameObject);
                     for (int refresh = 0; refresh < 2; refresh++)

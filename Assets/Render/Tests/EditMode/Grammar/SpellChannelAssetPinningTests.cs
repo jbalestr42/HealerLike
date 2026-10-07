@@ -116,7 +116,7 @@ namespace HealerLike.Render.Grammar
             new HandlerRow("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectOperation.Mana,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.RoundEnd),
 
-            // Julien's Cleric, Druid and Warlock content (ade6ad91). A class's own skills and items are sized as it
+            // The Cleric, Druid and Warlock content (ade6ad91). A class's own skills and items are sized as it
             // casts them, at its base stats (Cleric HealPower 25, Druid 20, Warlock 15, no class has HealthMax so a
             // heal reads against 100). Periodic effects are sized per tick, like every creature effect.
             // Curse (Warlock): 0.3 x HealPower damage each second for 6s, 0.3 x 15 = 4.5 per tick, 4.5 / 100 = 0.045
@@ -156,7 +156,7 @@ namespace HealerLike.Render.Grammar
             new HandlerRow("PlayerItems/VerdantItem/BuffHandlerFactory", EffectOperation.Heal,
                 EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
 
-            // Julien's October content (the 2026-10-02 merge): Soul Link, Thick Bark and his items. Pinned from the
+            // The October content (the 2026-10-02 merge): Soul Link, Thick Bark and the new items. Pinned from the
             // derivation at d742ee83 with no live context: an unowned item reads at DefaultHealth=100 and base 1,
             // Soul Link and Thick Bark at their class's base stats
             // Soul Link (Warlock): the split damage is not a modifier, share 0. Kind Link, delivery Link

@@ -72,7 +72,7 @@ public class ToolkitLegacyCanvases
         _raycasters.Clear();
     }
 
-    // Julien's event and rest choice screen has no Toolkit counterpart yet, so it keeps its own canvas:
+    // The game's event and rest choice screen has no Toolkit counterpart yet, so it keeps its own canvas:
     // hiding it would leave those rooms with no way to choose and the run stuck
     void HideScreenCanvases(GameObject root)
     {

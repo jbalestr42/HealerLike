@@ -128,7 +128,7 @@ namespace HealerLike.Render.Spells.Editor
                 EffectSocket.AboveHead, 2.4f));
         }
 
-        // Only the five kinds of Julien's October content: the saved entries, cells and other kinds are read, never
+        // Only the five kinds of the game's October content: the saved entries, cells and other kinds are read, never
         // rewritten
         [MenuItem("Tools/Render/Author Event Kind Entries")]
         public static void AuthorEventKinds()

@@ -221,7 +221,7 @@ namespace HealerLike.Render.Stage
             CollectionAssert.AreEqual(new[] { StageInterface.MenuScene }, _loads);
         }
 
-        // Escape first stops an armed placement, as Julien's sandbox hint says; only the next press leaves
+        // Escape first stops an armed placement, as the sandbox hint says; only the next press leaves
         [Test]
         public void Back_PlacementArmed_LeavesItToTheSandbox()
         {

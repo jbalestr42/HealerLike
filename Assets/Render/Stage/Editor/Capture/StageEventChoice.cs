@@ -9,7 +9,7 @@ using UiButton = UnityEngine.UI.Button;
 
 namespace HealerLike.Render.Stage
 {
-    // Julien's event and rest choices are uGUI buttons on their own overlay canvas, under the live Toolkit HUD.
+    // The game's event and rest choices are uGUI buttons on their own overlay canvas, under the live Toolkit HUD.
     // A choice is taken by the same multi-frame touch as every Toolkit button, read by the StandaloneInputModule;
     // nothing invokes onClick or EventView.Select directly.
     public sealed class StageEventChoice
@@ -102,7 +102,7 @@ namespace HealerLike.Render.Stage
         }
 
         // The seam, before the choice is taken: our HUD is still up with its buttons off, a touch on it changes
-        // nothing on Julien's screen, and the first hit at his button is his button, not our panel
+        // nothing on the choice screen, and the first hit at a choice button is that button, not our panel
         public IEnumerator CheckSeam(string room, UiButton target)
         {
             AscensionGameType ascension = Object.FindAnyObjectByType<AscensionGameType>();
@@ -143,7 +143,7 @@ namespace HealerLike.Render.Stage
             yield return CheckLiveCards(room, before, state);
         }
 
-        // The spell and roster cards stay enabled under his screen: a tap on a spell and a drag of a unit onto
+        // The spell and roster cards stay enabled under the choice screen: a tap on a spell and a drag of a unit onto
         // the field must still do nothing while a choice is open
         IEnumerator CheckLiveCards(string room, List<UiButton> before, AscensionGameType.State state)
         {

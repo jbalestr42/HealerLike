@@ -52,7 +52,7 @@ public class ToolkitClassSelect
         return offered;
     }
 
-    // The whole card text as plain lines: Julien's select card content (description, skills, starting items,
+    // The whole card text as plain lines: the game's select card content (description, skills, starting items,
     // deployable units)
     public static string Describe(CharacterData character)
     {
@@ -72,7 +72,7 @@ public class ToolkitClassSelect
         return string.Join("\n", lines);
     }
 
-    // The card's lead line under the class name: what the class plays like, Julien's description
+    // The card's lead line under the class name: what the class plays like, its description
     public static string Role(CharacterData character)
     {
         return CharacterCardText.GetDescription(character);
@@ -164,7 +164,7 @@ public class ToolkitClassSelect
         return string.Join(", ", names);
     }
 
-    // The units the class starts with on one line, the same list Julien's select panel labels
+    // The units the class starts with on one line, the same list the game's select panel labels
     public static string UnitTitles(CharacterData character)
     {
         List<string> titles = new List<string>();

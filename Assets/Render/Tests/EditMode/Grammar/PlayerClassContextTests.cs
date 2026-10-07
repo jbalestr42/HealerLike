@@ -61,7 +61,7 @@ namespace HealerLike.Render.Grammar
             return item;
         }
 
-        // A heal scaled by the caster's HealPower, as Julien's class heals are authored
+        // A heal scaled by the caster's HealPower, as the game's class heals are authored
         ConsumerFactory HealPowerConsumer(float multiplier)
         {
             ConsumerFactory consumer = Create<ConsumerFactory>();

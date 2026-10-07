@@ -45,7 +45,7 @@ namespace HealerLike.Render.Stage
                 settings.startRoomCount = 3;
                 settings.maxRoomsPerFloor = 0;
                 // Every floor fixed, so the route is combat, treasure, combat, elite, rest whatever the paths.
-                // Floor 2 is no type's fixed floor and no type has weight, so it takes Julien's combat fallback.
+                // Floor 2 is no type's fixed floor and no type has weight, so it takes the map's combat fallback.
                 // No event room: the capture has no event screen to walk through yet
                 settings.roomTypes = new List<RoomTypeSettings>
                 {

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// The header presents Julien's room progress and delegates encounter controls to his HUD.
+// The header presents the game's room progress and delegates encounter controls to its HUD.
 public class ToolkitEncounterBar
 {
     ToolkitGameContext _context;

@@ -158,7 +158,7 @@ namespace UI.Toolkit
             Assert.AreEqual(1, source.items.Count);
         }
 
-        // An entity item is equipped once whatever its slot (Julien's ade6ad91 dropped the slot strength)
+        // An entity item is equipped once whatever its slot (ade6ad91 dropped the slot strength)
         [TestCase(0)]
         [TestCase(1)]
         [TestCase(2)]
