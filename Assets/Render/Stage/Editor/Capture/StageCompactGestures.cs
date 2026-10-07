@@ -43,16 +43,25 @@ namespace HealerLike.Render.Stage
             Vector2 projected = _session.manager.gameCamera.WorldToScreenPoint(world);
             return projected - Vector2.up * (56 * ToolkitScreenLayout.GetScale(Screen.width, Screen.height, false));
         }
-        public IEnumerator Drag(Button button, Vector2 destination, string image, TouchPhase release = TouchPhase.Ended)
+        // The finger goes down on start, moves up past the tap slop so the press resolves to a roster drag, then
+        // travels to destination and rests there. It stays down: the caller owns the release.
+        public IEnumerator Pull(StagePresentationTouch touch, Vector2 start, Vector2 destination)
+        {
+            yield return touch.Frame(TouchPhase.Began, start);
+            yield return touch.Frame(TouchPhase.Moved, start + Vector2.up * 48);
+            yield return touch.Frame(TouchPhase.Moved, destination);
+            yield return Still(touch, destination, 0.25f);
+        }
+        // held runs while the finger is down over destination, before the release, for checks on the live drag
+        public IEnumerator Drag(Button button, Vector2 destination, string image, TouchPhase release = TouchPhase.Ended,
+            Action held = null)
         {
             yield return _session.actions.BringIntoView(button);
             Vector2 start = StageInterfaceActions.ScreenPoint(button);
             using (StagePresentationTouch touch = new StagePresentationTouch(_session.actions))
             {
-                yield return touch.Frame(TouchPhase.Began, start);
-                yield return touch.Frame(TouchPhase.Moved, start + Vector2.up * 48);
-                yield return touch.Frame(TouchPhase.Moved, destination);
-                yield return Still(touch, destination, 0.25f);
+                yield return Pull(touch, start, destination);
+                held?.Invoke();
                 if (image != null)
                 {
                     yield return _session.Capture(image, "Owned roster drag through actual Toolkit pointer events");

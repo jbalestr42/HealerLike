@@ -41,8 +41,10 @@ namespace HealerLike.Render.Stage
                 _output.Check(_session.actions.legacyModuleReadTouches, "Actual input module consumed synthetic touch frames");
                 _output.Check(root.Q("party-panel").worldBound.yMax <= root.Q("command-dock").worldBound.yMin + 1,
                     "Party is immediately above spells");
-                _output.Check(root.Q("command-dock").worldBound.height + root.Q("party-panel").worldBound.height <= 180,
-                    "Both compact rows occupy at most 180 logical pixels");
+                float partyHeight = root.Q("party-panel").worldBound.height;
+                float dockHeight = root.Q("command-dock").worldBound.height;
+                _output.Check(StageCompactBudget.Fits(partyHeight, dockHeight),
+                    StageCompactBudget.Describe(partyHeight, dockHeight));
                 _output.Check(root.Q("mana-value").worldBound.xMax <= root.Q("hud-root").worldBound.xMax - 7,
                     "Global mana stays fixed inside the safe row width");
                 yield return new StageCompactLayout(_session).Check();

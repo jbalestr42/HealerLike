@@ -25,17 +25,25 @@ namespace HealerLike.Render.Stage
         public IEnumerator Navigation()
         {
             yield return Wait(0.3f);
-            yield return _placement.Select(0);
-            Transform preview = _session.manager.placement.preview.rig.root;
+            Transform preview;
             StageInterface attachment = _session.manager.GetComponent<StageInterface>();
             CreaturePortraits portraits = attachment.portraits;
-            Texture2D texture = portraits.GetCreatureIcon(_placement.selectedData, Entity.EntityType.Player);
-            _session.actions.Submit("pause-button");
-            yield return Wait(0.2f);
-            _session.actions.Submit("menu-button");
-            yield return Wait(1f);
-            _output.Check(preview == null && portraits.isDisposed && texture == null,
-                "Scene exit disposes placement preview and portrait textures");
+            Texture2D texture;
+            // The preview lives only while a roster drag holds the finger, which stays down through the scene exit
+            using (StagePresentationTouch finger = new StagePresentationTouch(_session.actions))
+            {
+                yield return _placement.Grab(finger, 0,
+                    _session.manager.player.grid.GetNearestWalkablePosition(Vector3.left * 2f));
+                preview = _session.manager.placement.preview.rig.root;
+                texture = portraits.GetCreatureIcon(_placement.selectedData, Entity.EntityType.Player);
+                _session.actions.Submit("pause-button");
+                yield return Wait(0.2f);
+                _session.actions.Submit("menu-button");
+                yield return Wait(1f);
+                _output.Check(preview == null && portraits.isDisposed && texture == null,
+                    "Scene exit disposes placement preview and portrait textures");
+            }
+
             _output.Check(_portraits.PortraitCameras().Count == 0,
                 "Scene exit destroys every owned portrait capture camera");
             _session.mapFixture.Dispose();

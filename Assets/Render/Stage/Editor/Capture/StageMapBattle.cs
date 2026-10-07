@@ -35,34 +35,30 @@ namespace HealerLike.Render.Stage
                 Vector3.left * 4f + Vector3.back * 3f,
                 Vector3.left * 3f + Vector3.forward * 4f
             };
+            StageCompactGestures gestures = new StageCompactGestures(_session);
             for (int i = 0; i < offsets.Length
                 && _session.manager.entityManager.GetEntities(Entity.EntityType.Player).Count < desiredAllies; i++)
             {
-                yield return _session.actions.PointerTap("party-button");
-                yield return Wait(0.2f);
-                List<Button> cards
-                    = _session.actions.Cards("party-list").FindAll(button => button.enabledInHierarchy
-                    && button.Q<Label>("card-status").text == "Deploy");
+                // The roster row is always visible. A card deploys only through a held drag onto the board.
+                List<Button> cards = StageRosterCards.Deployable(_session.actions);
                 if (cards.Count == 0)
                 {
-                    yield return _session.actions.PointerTap("party-close-button");
                     break;
                 }
 
-                yield return _session.actions.SelectCardByTouch(cards[Mathf.Min(i, cards.Count - 1)]);
-                yield return Wait(0.15f);
                 int before = _session.manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
                 Vector3 point = _session.manager.player.grid.GetNearestWalkablePosition(offsets[i]);
                 Vector3 screen = _session.manager.gameCamera.WorldToScreenPoint(point);
+                Vector2 drop = gestures.DropPoint(point);
                 _session.output.Check(screen.z > 0f
                     && _session.actions.ui.normalizedWorldViewport.Contains(new Vector2(screen.x / Screen.width,
-                    screen.y / Screen.height)) && !_session.actions.touch.IsOverInterface(screen),
-                    "Deployment aims inside the visible battlefield clear of UI");
-                yield return _session.actions.TouchGesture(screen);
+                    screen.y / Screen.height)) && !_session.actions.touch.IsOverInterface(drop),
+                    "Deployment drops inside the visible battlefield clear of UI: cell " + screen + ", finger " + drop);
+                yield return gestures.Drag(cards[Mathf.Min(i, cards.Count - 1)], drop, null);
                 yield return Wait(0.4f);
                 _session.output.Check(
                     _session.manager.entityManager.GetEntities(Entity.EntityType.Player).Count == before + 1,
-                        "Ordinary Toolkit party and board touches deploy fixture ally " + i);
+                        "Held roster drag deploys fixture ally " + i);
             }
 
             _session.output.Check(

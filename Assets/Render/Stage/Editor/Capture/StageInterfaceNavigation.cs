@@ -17,12 +17,10 @@ namespace HealerLike.Render.Stage
         public IEnumerator LandscapeControls()
         {
             yield return _session.Resize(844, 390);
-            _session.actions.Submit("party-button");
+            // The roster row is always on screen now: no drawer to open or close
             yield return Wait(0.3f);
             yield return _session.Capture("09b-landscape-party");
-            _session.actions.Submit("party-close-button");
-            yield return Wait(0.2f);
-            _session.actions.Submit("detail-button");
+            yield return _session.actions.SelectCardByTouch(_session.actions.Cards("party-list")[0]);
             yield return Wait(0.3f);
             yield return _session.Capture("09c-landscape-details");
             _session.actions.Submit("detail-close-button");

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
@@ -161,28 +162,38 @@ namespace HealerLike.Render.Stage
 
         public IEnumerator PlacementBlocksMap()
         {
-            yield return _session.actions.PointerTap("party-button");
-            yield return Wait(0.2f);
-            yield return _session.actions.SelectCardByTouch(_session.actions.Cards("party-list")[0]);
-            yield return Wait(0.2f);
+            // The roster row is always visible and a tap on a card only inspects it. Placement is a held drag, and the
+            // map button is checked while that one finger is down. A second touch on the disabled button is not made:
+            // StagePresentationTouch carries a single finger.
+            StageCompactGestures gestures = new StageCompactGestures(_session);
+            List<Button> cards = StageRosterCards.Deployable(_session.actions);
+            _session.output.Check(cards.Count > 0, "A deployable roster card exists for the placement check");
+            Button card = cards[0];
+            yield return _session.actions.BringIntoView(card);
             InteractionManager interaction = Object.FindAnyObjectByType<InteractionManager>();
-            _session.output.Check(interaction.GetInteraction() is EntityGridInteraction
-                && _session.manager.placement.preview != null,
-                "Party touch begins creature placement with the generated preview");
             Button map = _session.actions.root.Q<Button>("map-button");
-            _session.output.Check(!map.enabledInHierarchy, "Map inspection is disabled during active placement");
             ISelectable selected = StageMapReadout.Selected(interaction);
             int entities = Object.FindObjectsByType<Entity>().Length;
-            yield return _session.actions.TouchGesture(StageInterfaceActions.ScreenPoint(map));
-            _session.output.Check(!StageInterfaceOutput.IsVisible(_session.actions.root.Q("map-panel"))
-                && Object.FindObjectsByType<Entity>().Length == entities,
-                "Touching unavailable Map neither opens a modal nor deploys through the HUD");
-            _session.output.Check(ReferenceEquals(StageMapReadout.Selected(interaction), selected),
-                "Touching unavailable Map preserves the actual battlefield selection");
-            yield return _session.actions.PointerTap("cancel-button");
+            Vector2 aim = gestures.DropPoint(_session.manager.player.grid.GetNearestWalkablePosition(Vector3.left * 2f));
+            using (StagePresentationTouch finger = new StagePresentationTouch(_session.actions))
+            {
+                yield return gestures.Pull(finger, StageInterfaceActions.ScreenPoint(card), aim);
+                _session.output.Check(interaction.GetInteraction() is EntityGridInteraction
+                    && _session.manager.placement.preview != null,
+                    "Held roster drag begins creature placement with the generated preview");
+                _session.output.Check(!map.enabledInHierarchy, "Map inspection is disabled during active placement");
+                _session.output.Check(!StageInterfaceOutput.IsVisible(_session.actions.root.Q("map-panel"))
+                    && Object.FindObjectsByType<Entity>().Length == entities,
+                    "A held placement neither opens the map modal nor deploys");
+                yield return finger.Frame(TouchPhase.Canceled, aim);
+            }
+
             yield return Wait(0.2f);
             _session.output.Check(interaction.GetInteraction() == null && _session.manager.placement.preview == null,
-                "Cancel releases creature placement before map inspection");
+                "Cancelling the held drag releases creature placement before map inspection");
+            _session.output.Check(ReferenceEquals(StageMapReadout.Selected(interaction), selected),
+                "A cancelled drag preserves the actual battlefield selection");
+            _session.output.Check(map.enabledInHierarchy, "Map inspection is available again after placement ends");
         }
 
         static bool Contains(Rect outer, Rect inner)

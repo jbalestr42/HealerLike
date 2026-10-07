@@ -25,6 +25,26 @@ namespace HealerLike.Render.Stage
             }
         }
 
+        // Allies below full health when asked, among those observed
+        public int CountInjured()
+        {
+            int injured = 0;
+            foreach (ResourceAttribute health in _health)
+            {
+                if (health != null && IsInjured(health.Value, health.Max))
+                {
+                    injured++;
+                }
+            }
+
+            return injured;
+        }
+
+        public static bool IsInjured(float value, float max)
+        {
+            return max - value > 0.01f;
+        }
+
         void OnConsumer(GameObject owner, ResourceModifier modifier, ConsumerResult result)
         {
             float value = result.value;

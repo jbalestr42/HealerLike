@@ -24,7 +24,7 @@ namespace HealerLike.Render.Stage
             StageInterface attachment = _session.manager.GetComponent<StageInterface>();
             _output.Check(attachment.portraits != null && ReferenceEquals(_session.actions.ui.iconProvider,
                 attachment.icons), "Toolkit has the Render-owned creature portrait provider");
-            yield return _session.actions.PointerTap("party-button");
+            // The roster row is always visible: there is no drawer to open
             yield return Wait(0.2f);
             List<Button> cards = _session.actions.Cards("party-list");
             _output.Check(cards.Count > 0, "Party has actual creature cards");
@@ -33,8 +33,8 @@ namespace HealerLike.Render.Stage
             _output.Check(icon.ClassListContains("creature-portrait") && cardPortrait != null
                 && cardPortrait.name.StartsWith("Creature Portrait ") && cardPortrait.width == 256
                 && cardPortrait.height == 256, "Party card shows the 256px creature screenshot");
+            // The party panel sets no status text any more, so only the title is a label the card must show
             CheckPartyLabel(cards[0], "card-title", prefix);
-            CheckPartyLabel(cards[0], "card-status", prefix);
             _output.ExportPortrait(cardPortrait, prefix + "-cached-portrait");
             List<Camera> portraitCameras = PortraitCameras();
             _output.Check(portraitCameras.Count == 1,
@@ -51,7 +51,8 @@ namespace HealerLike.Render.Stage
                 && CardImage(icon) == cardPortrait,
                 "Repeated UI refresh reuses the captured texture");
             yield return _session.Capture(prefix + "-party");
-            yield return _session.actions.SelectCardByTouch(cards[0].parent.Q<Button>("card-info"));
+            // The info button is hidden on every card; a tap on the card itself opens the details popover
+            yield return _session.actions.SelectCardByTouch(cards[0]);
             yield return Wait(0.25f);
             VisualElement detail = _session.actions.root.Q("detail-icon");
             _output.Check(detail != null && detail.ClassListContains("creature-portrait")

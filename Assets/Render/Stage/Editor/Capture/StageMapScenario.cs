@@ -86,13 +86,7 @@ namespace HealerLike.Render.Stage
             yield return graph.PlanningMap();
             yield return battle.Battle("10-fixture-elite", 4);
             yield return graph.Map("11-after-elite", "short-route-fixture", true);
-            using (StageRestObservation rest = new StageRestObservation(_session))
-            {
-                yield return graph.SelectRoom(MapNodeType.Rest);
-                yield return StageMapActions.WaitForSelection(_session.actions);
-                _session.output.Check(_session.manifest.restHealingEvents > 0,
-                    "Rest enters the original resource consumer flow for surviving allies");
-            }
+            yield return RestRoom(graph);
 
             yield return graph.Map("12-after-rest", "short-route-fixture", true);
             yield return _session.Resize(844, 390);
@@ -123,6 +117,52 @@ namespace HealerLike.Render.Stage
                 + "not exercised");
             _session.manifest.unobserved.Add("The full authored ten-floor run is shown but not played to its boss; "
                 + "special-room progression uses the labelled five-floor generation fixture");
+        }
+
+        // Entering a rest room restores mana, then parks the run on Julien's choice screen (Heal, or Resurrect when
+        // someone is dead). The map comes back only after a choice, and the heal lands only on Heal.
+        IEnumerator RestRoom(StageMapGraphProof graph)
+        {
+            StageEventChoice choice = new StageEventChoice(_session, new StageEventRoomRun.Manifest());
+            ResourceAttribute mana = _session.manager.player.character.mana;
+            using (StageRestObservation rest = new StageRestObservation(_session))
+            {
+                float manaBefore = mana.Value;
+                int healingBefore = _session.manifest.restHealingEvents;
+                int injured = rest.CountInjured();
+                yield return graph.SelectRoom(MapNodeType.Rest);
+                yield return choice.WaitForChoices("Rest");
+                _session.output.Check(LegacyUiReader.AscensionState(_session.ascension)
+                    == AscensionGameType.State.Rest && !StageInterfaceOutput.IsVisible(
+                    _session.actions.root.Q("map-panel")), "Entering the rest room waits on Julien's choice screen "
+                    + "and the map has not come back");
+                _session.output.Check(_session.manifest.restHealingEvents == healingBefore,
+                    "No ally healing has happened before the Heal choice: " + (_session.manifest.restHealingEvents
+                    - healingBefore) + " events");
+                // A proportional restore cannot move a full pool, so the check is not-less rather than more
+                _session.output.Check(mana.Value >= manaBefore, "Entering the rest room does not lower mana: "
+                    + manaBefore + " -> " + mana.Value);
+                if (mana.Value <= manaBefore)
+                {
+                    _session.manifest.unobserved.Add("The rest mana restore was not observed to raise mana (" + manaBefore
+                        + " -> " + mana.Value + " of " + mana.Max + "); a full pool does not move");
+                }
+
+                yield return _session.Capture("11b-rest-choices");
+                yield return choice.Tap(choice.Choice("Heal"));
+                yield return StageMapActions.WaitForSelection(_session.actions);
+                if (injured > 0)
+                {
+                    _session.output.Check(_session.manifest.restHealingEvents > healingBefore,
+                        "The Heal choice enters the original resource consumer flow for " + injured
+                        + " injured surviving allies");
+                }
+                else
+                {
+                    _session.manifest.unobserved.Add("The rest heal was not observed: every surviving ally was already "
+                        + "at full health, or none survived, when the rest room was entered");
+                }
+            }
         }
     }
 }

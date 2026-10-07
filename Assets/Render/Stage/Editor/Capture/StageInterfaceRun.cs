@@ -61,14 +61,17 @@ namespace HealerLike.Render.Stage
                 yield return StageMapActions.SelectFirst(_session.actions, true);
                 yield return _session.Resize(1080, 1920);
                 _output.manifest.checks.Add("First map room selected through actual multi-frame Toolkit touch input");
-                yield return _session.actions.PointerTap("party-button");
+                // The roster row is always on screen: there is no party drawer to open
                 yield return Wait(0.3f);
                 yield return _session.Capture("02-party");
                 List<Button> cards = _session.actions.Cards("party-list");
-                _output.Check(cards.Count > 0, "Party has deploy choices");
-                yield return _session.actions.SelectCard(cards[0].parent.Q<Button>("card-info"));
+                _output.Check(StageRosterCards.Deployable(cards).Count > 0, "Party has deploy choices");
+                // The card's info button is hidden; a tap on the card itself opens its details
+                yield return _session.actions.SelectCardByTouch(cards[0]);
                 yield return Wait(0.3f);
-                _output.Check(_session.interaction.GetInteraction() == null, "Info opens details without deploying");
+                _output.Check(_session.interaction.GetInteraction() == null
+                    && StageInterfaceOutput.IsVisible(_session.actions.root.Q("detail-panel")),
+                    "A tap on a roster card opens details without deploying");
                 yield return _session.Capture("03-details");
                 yield return _session.Resize(1440, 900);
                 Button desktopCard = _session.actions.Cards("party-list")[0];
@@ -83,19 +86,13 @@ namespace HealerLike.Render.Stage
                 yield return _session.Capture("03b-desktop-details",
                     "Programmatic focus through the real Toolkit FocusIn callback; no OS keyboard input");
                 yield return _session.Resize(1080, 1920);
-                _session.actions.Submit("detail-button");
-                yield return Wait(0.2f);
-                _session.actions.Submit("detail-close-button");
-                yield return Wait(0.2f);
-                _session.actions.Submit("party-button");
-                yield return Wait(0.2f);
-                yield return _session.actions.SelectCardByTouch(_session.actions.Cards("party-list")[0]);
-                yield return Wait(0.3f);
-                _output.Check(_session.interaction.GetInteraction() != null, "Toolkit party card begins deployment");
-                yield return _session.Capture("04-targeting");
-                yield return _session.actions.PointerTap("cancel-button");
-                yield return Wait(0.2f);
-                _output.Check(_session.interaction.GetInteraction() == null, "Touch cancel ends deployment");
+                if (StageInterfaceOutput.IsVisible(_session.actions.root.Q("detail-panel")))
+                {
+                    _session.actions.Submit("detail-close-button");
+                    yield return Wait(0.2f);
+                }
+
+                yield return deployment.Targeting(Vector3.left * 2f);
                 yield return deployment.Deploy(0, Vector3.left * 2f);
                 yield return deployment.Deploy(1, Vector3.left * 3f + Vector3.back);
                 _output.manifest.checks.Add("Deployment uses multi-frame StandaloneInputModule and "

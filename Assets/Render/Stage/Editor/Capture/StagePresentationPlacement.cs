@@ -14,6 +14,7 @@ namespace HealerLike.Render.Stage
         readonly StageCaptureSession _session;
         readonly StagePresentationOutput _output;
         readonly StagePresentationGrowth _growth;
+        readonly StageCompactGestures _gestures;
         EntityData _selectedData;
         public EntityData selectedData
         {
@@ -29,23 +30,22 @@ namespace HealerLike.Render.Stage
             _session = session;
             _output = output;
             _growth = growth;
+            _gestures = new StageCompactGestures(session);
         }
 
-        public IEnumerator Select(int index)
+        // Starts a roster drag from deployable card index and leaves the finger down over cell. A tap on the card only
+        // opens its details, so a placement preview exists only while the drag owner holds the finger.
+        public IEnumerator Grab(StagePresentationTouch finger, int index, Vector3 cell)
         {
-            if (!StageInterfaceOutput.IsVisible(_session.actions.root.Q("party-panel")))
-            {
-                yield return _session.actions.PointerTap("party-button");
-            }
-
             yield return Wait(0.15f);
-            List<Button> cards = _session.actions.Cards("party-list").FindAll(card => card.enabledInHierarchy
-                && card.Q<Label>("card-status").text == "Deploy");
+            List<Button> cards = StageRosterCards.Deployable(_session.actions);
             _output.Check(cards.Count > index, "Requested deploy card exists: " + index);
-            yield return _session.actions.SelectCardByTouch(cards[index]);
+            yield return _session.actions.BringIntoView(cards[index]);
+            yield return _gestures.Pull(finger, StageInterfaceActions.ScreenPoint(cards[index]),
+                _gestures.DropPoint(cell));
             yield return null;
             _output.Check(_session.interaction.GetInteraction() is EntityGridInteraction,
-                "Toolkit touch starts the real grid interaction");
+                "Held roster drag starts the real grid interaction");
             _output.Check(_session.manager.placement.preview != null
                 && _session.manager.placement.preview.rig != null,
                 "Grid interaction has its generated cosmetic preview");
@@ -66,16 +66,16 @@ namespace HealerLike.Render.Stage
         {
             int entities = EntityCount();
             string grid = GridSnapshot();
-            yield return Select(0);
-            CreaturePreview preview = _session.manager.placement.preview;
-            Transform firstRoot = preview.rig.root;
             Vector3 point = _session.manager.player.grid.GetNearestWalkablePosition(Vector3.left * 2f);
+            CreaturePreview preview;
+            Transform firstRoot;
             using (StagePresentationTouch finger = new StagePresentationTouch(_session.actions))
             {
-                yield return finger.Frame(TouchPhase.Began, _session.manager.gameCamera.WorldToScreenPoint(point));
-                yield return finger.Frame(TouchPhase.Stationary, _session.manager.gameCamera.WorldToScreenPoint(point));
+                yield return Grab(finger, 0, point);
+                preview = _session.manager.placement.preview;
+                firstRoot = preview.rig.root;
                 _output.Check(Vector3.Distance(preview.rig.root.position, point) < 0.05f,
-                    "Held first board touch positions generated preview before release");
+                    "Held roster drag positions generated preview before release");
                 _output.Check(EntityCount() == entities && GridSnapshot() == grid,
                     "Preview creates no gameplay entity and changes no grid occupancy");
                 yield return Wait(CreatureAppearance.Duration + 0.15f);
@@ -83,8 +83,8 @@ namespace HealerLike.Render.Stage
                     "Placement appearance reaches its grown pose while finger remains held");
                 float elapsed = preview.rig.appearanceElapsed;
                 Vector3 moved = _session.manager.player.grid.GetNearestWalkablePosition(point + Vector3.forward * 2f);
-                yield return finger.Frame(TouchPhase.Moved, _session.manager.gameCamera.WorldToScreenPoint(moved));
-                yield return finger.Frame(TouchPhase.Stationary, _session.manager.gameCamera.WorldToScreenPoint(moved));
+                yield return finger.Frame(TouchPhase.Moved, _gestures.DropPoint(moved));
+                yield return finger.Frame(TouchPhase.Stationary, _gestures.DropPoint(moved));
                 _output.Check(ReferenceEquals(preview, _session.manager.placement.preview)
                     && preview.rig.appearanceElapsed >= elapsed && !preview.rig.isAppearing,
                     "Moving placement reuses the grown rig without replaying appearance");
@@ -93,36 +93,52 @@ namespace HealerLike.Render.Stage
                 _output.Check(EntityCount() == entities && GridSnapshot() == grid,
                     "Moving cosmetic preview still leaves entity count and occupancy unchanged");
                 yield return _session.Capture("03-held-placement");
-                yield return finger.Frame(TouchPhase.Canceled, _session.manager.gameCamera.WorldToScreenPoint(moved));
+                yield return finger.Frame(TouchPhase.Canceled, _gestures.DropPoint(moved));
             }
 
+            // The cancel button needs a second finger while the drag is down, so the input system's own
+            // cancellation ends this placement
             yield return null;
-            yield return _session.actions.PointerTap("cancel-button");
             yield return Wait(0.2f);
             _output.Check(_session.interaction.GetInteraction() == null
                 && _session.manager.placement.preview == null && firstRoot == null,
-                "Cancel destroys generated preview and ends interaction");
+                "Cancelled drag destroys generated preview and ends interaction");
             _output.Check(EntityCount() == entities && GridSnapshot() == grid,
                 "Cancelled placement leaves gameplay unchanged");
-            yield return Select(0);
-            CreaturePreview replaced = _session.manager.placement.preview;
-            Transform replacedRoot = replaced.rig.root;
-            EntityData previous = _selectedData;
-            yield return Select(1);
-            yield return null;
-            _output.Check(_selectedData != previous && !ReferenceEquals(replaced,
-                _session.manager.placement.preview) && replacedRoot == null,
-                "Selecting another creature disposes the former preview");
-            _output.Check(EntityCount() == entities && GridSnapshot() == grid, "Selection switch is cosmetic only");
-            point = _session.manager.player.grid.GetNearestWalkablePosition(Vector3.left * 2f);
-            yield return Wait(CreatureAppearance.Duration + 0.1f);
-            CreatureRig grown = _session.manager.placement.preview.rig;
-            yield return LivePlacement(point, grown, entities);
+            // One finger owns one drag, so switching creature is a cancelled drag of the first and a drag of the second
+            CreaturePreview replaced;
+            Transform replacedRoot;
+            EntityData previous;
+            using (StagePresentationTouch first = new StagePresentationTouch(_session.actions))
+            {
+                yield return Grab(first, 0, point);
+                replaced = _session.manager.placement.preview;
+                replacedRoot = replaced.rig.root;
+                previous = _selectedData;
+                yield return first.Frame(TouchPhase.Canceled, _gestures.DropPoint(point));
+            }
+
+            yield return Wait(0.2f);
+            CreatureRig grown;
+            using (StagePresentationTouch second = new StagePresentationTouch(_session.actions))
+            {
+                yield return Grab(second, 1, point);
+                yield return null;
+                _output.Check(_selectedData != previous && !ReferenceEquals(replaced,
+                    _session.manager.placement.preview) && replacedRoot == null,
+                    "Dragging another creature disposes the former preview");
+                _output.Check(EntityCount() == entities && GridSnapshot() == grid, "Selection switch is cosmetic only");
+                yield return Wait(CreatureAppearance.Duration + 0.1f);
+                grown = _session.manager.placement.preview.rig;
+                yield return LivePlacement(second, point, grown, entities);
+            }
+
             yield return null;
             _output.Check(_session.interaction.enabled, "Legacy mouse adapter restored after held touch ends");
         }
 
-        public IEnumerator LivePlacement(Vector3 point, CreatureRig grown, int entities)
+        // The finger is the caller's, already down over the cell, and is released here
+        public IEnumerator LivePlacement(StagePresentationTouch finger, Vector3 point, CreatureRig grown, int entities)
         {
             BattleFocus focus = _session.manager.GetComponentInChildren<BattleFocus>();
             bool wasEnabled = focus.enabled;
@@ -135,18 +151,14 @@ namespace HealerLike.Render.Stage
                 _output.manifest.interventions.Add("Plant appearance camera fitted once to the fully grown "
                     + "placement bounds; live creature spawned by the real held touch release");
                 yield return null;
-                // The camera is fixed before the gesture starts, so the tap threshold measures finger motion only.
-                using (StagePresentationTouch finger = new StagePresentationTouch(_session.actions))
-                {
-                    Vector2 screen = camera.WorldToScreenPoint(point);
-                    yield return finger.Frame(TouchPhase.Began, screen);
-                    yield return finger.Frame(TouchPhase.Stationary, screen);
-                    yield return Wait(0.16f);
-                    yield return finger.Frame(TouchPhase.Ended, screen);
-                }
-
+                // The fit moved the camera under the held finger, so the finger is re-aimed at the cell before it lifts.
+                Vector2 aim = _gestures.DropPoint(point);
+                yield return finger.Frame(TouchPhase.Moved, aim);
+                yield return finger.Frame(TouchPhase.Stationary, aim);
+                yield return Wait(0.16f);
+                yield return finger.Frame(TouchPhase.Ended, aim);
                 _output.Check(EntityCount() == entities + 1,
-                    "First held world touch places exactly one gameplay entity");
+                    "The held roster drag places exactly one gameplay entity on release");
                 List<GameObject> allies = _session.manager.entityManager.GetEntities(Entity.EntityType.Player);
                 GameObject placed = allies[allies.Count - 1];
                 yield return _growth.Appearance(placed, "plant", AssetDatabase.GetAssetPath(_selectedData));
