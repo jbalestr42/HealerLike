@@ -102,10 +102,17 @@ namespace HealerLike.Render.Stage
             yield return _session.Resize(844, 390);
             yield return graph.Map("13-boss-landscape", "short-route-fixture", true);
             yield return graph.SelectRoom(MapNodeType.Boss);
+            _session.output.Check(!_session.ascension.IsOver() && LegacyUiReader.AscensionState(_session.ascension)
+                != AscensionGameType.State.GameOver, "Entering the boss room starts a fight rather than ending the run");
+            yield return battle.Boss("13b-boss");
             _session.output.Check(_session.ascension.IsOver() && _session.ascension.run.visitedNodes.Count == 6,
-                "Original boss placeholder ends the run after all six selected fixture rooms");
-            _session.output.Check(!StageInterfaceOutput.IsVisible(_session.actions.root.Q("map-panel")),
-                "Completed run closes map overlay");
+                "Beating the boss wins the run after all six selected fixture rooms");
+            _session.output.Check(!StageInterfaceOutput.IsVisible(_session.actions.root.Q("map-panel"))
+                && StageInterfaceOutput.IsVisible(_session.actions.root.Q("gameover-panel")),
+                "Completed run closes map overlay and shows the end of the journey");
+            // Recorded, not checked: our panel keeps its authored defeat title, his GameOverView says Victory!
+            _session.manifest.unobserved.Add("Toolkit end title after a won run: \""
+                + _session.actions.root.Q<Label>("gameover-title").text + "\"");
             yield return _session.Capture("14-run-complete");
             _session.output.Check(_session.actions.legacyModuleReadTouches,
                 "Selected StandaloneInputModule consumed the map's synthetic touch samples");

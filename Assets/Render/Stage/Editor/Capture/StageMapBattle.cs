@@ -68,6 +68,18 @@ namespace HealerLike.Render.Stage
 
         public IEnumerator Battle(string prefix, int rewards)
         {
+            yield return Fight(prefix, false);
+            yield return Reward(prefix + "-reward", rewards);
+        }
+
+        // The boss room is a fight since 2026-09-30: beating it wins the run through his game-over view, no reward
+        public IEnumerator Boss(string prefix)
+        {
+            yield return Fight(prefix, true);
+        }
+
+        IEnumerator Fight(string prefix, bool boss)
+        {
             BattleEvidence evidence = new BattleEvidence
             {
                 floor = _session.ascension.run.currentFloor,
@@ -89,15 +101,21 @@ namespace HealerLike.Render.Stage
             _session.output.Check(_session.manifest.battlesStarted == starts + 1,
                 "One battle button touch dispatches one battle start");
             yield return _session.Capture(prefix + "-battle");
-            float deadline = Time.realtimeSinceStartup + 120f;
+            float seconds = boss ? 180f : 120f;
+            float deadline = Time.realtimeSinceStartup + seconds;
             float nextHeal = 0f;
             float nextDamage = battleStarted + 6f;
-            while (!StageInterfaceOutput.IsVisible(_session.actions.root.Q("upgrade-panel")))
+            while (boss ? !_session.ascension.IsOver()
+                : !StageInterfaceOutput.IsVisible(_session.actions.root.Q("upgrade-panel")))
             {
-                _session.output.Check(!StageInterfaceOutput.IsVisible(_session.actions.root.Q("gameover-panel")),
+                // A won boss fight shows the game-over panel too, so the boss survives on the run state instead
+                _session.output.Check(boss ? LegacyUiReader.AscensionState(_session.ascension)
+                    != AscensionGameType.State.GameOver
+                    : !StageInterfaceOutput.IsVisible(_session.actions.root.Q("gameover-panel")),
                     "Party survives " + prefix);
                 _session.output.Check(Time.realtimeSinceStartup < deadline,
-                    "Natural battle reaches reward within 120 seconds: " + prefix);
+                    "Natural battle " + (boss ? "ends the run" : "reaches reward") + " within " + seconds
+                    + " seconds: " + prefix);
                 if (Time.realtimeSinceStartup >= nextHeal)
                 {
                     nextHeal = Time.realtimeSinceStartup + 0.4f;
@@ -117,8 +135,6 @@ namespace HealerLike.Render.Stage
 
                 yield return Wait(0.1f);
             }
-
-            yield return Reward(prefix + "-reward", rewards);
         }
 
         public IEnumerator Reward(string name, int expectedChoices)
