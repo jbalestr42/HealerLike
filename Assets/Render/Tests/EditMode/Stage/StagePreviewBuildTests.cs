@@ -32,10 +32,10 @@ namespace HealerLike.Render.Stage
         }
     
         [Test]
-        public void AndroidVersion_Is0113Code14()
+        public void AndroidVersion_Is0114Code15()
         {
-            Assert.That(StagePreviewBuild.AndroidVersion, Is.EqualTo("0.1.13"));
-            Assert.That(StagePreviewBuild.AndroidVersionCode, Is.EqualTo(14));
+            Assert.That(StagePreviewBuild.AndroidVersion, Is.EqualTo("0.1.14"));
+            Assert.That(StagePreviewBuild.AndroidVersionCode, Is.EqualTo(15));
         }
 
         [Test]

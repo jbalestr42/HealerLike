@@ -11,8 +11,8 @@ namespace HealerLike.Render.Stage
     // A failure logs and exits with code 1, the non-zero exit code a batchmode run reads.
     public static class StagePreviewBuild
     {
-        public static readonly string AndroidVersion = "0.1.13";
-        public static readonly int AndroidVersionCode = 14;
+        public static readonly string AndroidVersion = "0.1.14";
+        public static readonly int AndroidVersionCode = 15;
 
         // The Android preview is a development player until the device question is answered, so Unity logs more of
         // what it does at startup. RENDER_ANDROID_RELEASE=1 builds the same APK as a release player.
