@@ -10,13 +10,14 @@ public class ToolkitMobileLayout : IDisposable
     ToolkitPopover _popover;
     Action _toggleFocus;
     bool _focused;
+    bool _wasMenu;
     public Rect normalizedWorldViewport => _view == null || _view.root.panel == null
         ? new Rect(0.04f, 0.24f, 0.92f, 0.64f)
         : ToolkitScreenLayout.GetViewport(_view.root.Q("world-space").worldBound, _view.root.worldBound);
 
     public void Init(ToolkitGameView view, ToolkitGameContext context, UIDocument document)
     {
-        Dispose(); _view = view; _context = context;
+        Dispose(); _view = view; _context = context; _wasMenu = false;
         _safeArea = new ToolkitSafeArea(view.root, document);
         _popover = new ToolkitPopover(view);
         view.AddClickListener("cancel-button", CancelInteraction);
@@ -34,7 +35,13 @@ public class ToolkitMobileLayout : IDisposable
     {
         bool blocked = _context.isMenu || _context.isPaused || _context.isInventoryOpen || _context.isSheetOpen
             || (_context.ui != null && !_context.IsCurrentView(ViewType.Game));
-        if (blocked) { _view.CancelGestures(); CloseDrawers(); }
+        if (blocked) { _view.CancelGestures(); }
+        // A modal over the game closes the popover for as long as it is open. The menu closes it once, as it opens:
+        // after that the popover is the class screen's own (its kit chips), and closing it every refresh hid it the
+        // frame after it opened.
+        bool isMenuOnly = _context.isMenu && !_context.isPaused && !_context.isInventoryOpen && !_context.isSheetOpen;
+        if (blocked && (!isMenuOnly || !_wasMenu)) { CloseDrawers(); }
+        _wasMenu = _context.isMenu;
         _view.Show("cancel-button", _context.hasInteraction && !blocked);
         _view.SetButton("pause-button", null, !_context.isMenu
             && (_context.ui == null || _context.IsCurrentView(ViewType.Game)));

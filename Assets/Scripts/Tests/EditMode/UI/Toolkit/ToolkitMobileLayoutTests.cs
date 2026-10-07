@@ -79,6 +79,44 @@ namespace UI.Toolkit
             Assert.IsTrue(_root.Q("detail-panel").ClassListContains("is-hidden"));
         }
 
+        // The class screen's kit chips open the popover on the menu; the menu's refresh must not close it again
+        [Test]
+        public void Refresh_MenuPopoverOpenedAfterEntering_StaysOpen()
+        {
+            _context.isMenu = true;
+            _layout.Refresh();
+            _view.OnInspectRequested.Invoke(new ToolkitCardModel { title = "Heal" });
+
+            _layout.Refresh();
+            _layout.Refresh();
+
+            Assert.IsFalse(_root.Q("detail-panel").ClassListContains("is-hidden"));
+        }
+
+        [Test]
+        public void Refresh_EnteringTheMenu_ClosesAPopoverLeftOpen()
+        {
+            _view.OnInspectRequested.Invoke(new ToolkitCardModel());
+            _context.isMenu = true;
+
+            _layout.Refresh();
+
+            Assert.IsTrue(_root.Q("detail-panel").ClassListContains("is-hidden"));
+        }
+
+        [Test]
+        public void Refresh_PausedOverTheMenu_StillClosesThePopover()
+        {
+            _context.isMenu = true;
+            _layout.Refresh();
+            _view.OnInspectRequested.Invoke(new ToolkitCardModel());
+            _context.isPaused = true;
+
+            _layout.Refresh();
+
+            Assert.IsTrue(_root.Q("detail-panel").ClassListContains("is-hidden"));
+        }
+
         [Test]
         public void ClosePopover_ClosesLocalReadingSurface()
         {

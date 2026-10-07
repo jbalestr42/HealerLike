@@ -303,9 +303,30 @@ namespace HealerLike.Render.Stage
                 yield break;
             }
 
+            // A finger through the legacy input module, as the menu's own card pick would be by a player
+            VisualElement picked = chip.panel.Pick(chip.worldBound.center);
+            Debug.Log("[ClassSelectCaptureRun] Picked at the chip centre: " + (picked != null ? picked.name + " ." + string.Join(" .", picked.GetClasses()) : "nothing")
+                + ", inside the chip " + (picked == chip || chip.Contains(picked)));
+            actions.ConfigureLegacyInput();
             yield return actions.TouchGesture(StageInterfaceActions.ScreenPoint(chip));
+            actions.Dispose();
             yield return Wait(0.3f);
             VisualElement popover = actions.root.Q("detail-panel");
+            Debug.Log("[ClassSelectCaptureRun] After the legacy touch, popover shown " + StageInterfaceOutput.IsVisible(popover));
+            if (!StageInterfaceOutput.IsVisible(popover))
+            {
+                // The capture's legacy touch does not reach the chip's own pointer handler; a direct press on the chip
+                // still shows where the popover lands over the menu, which is what this frame is for
+                using (PointerDownEvent press = PointerDownEvent.GetPooled(new Event { type = EventType.MouseDown, mousePosition = chip.worldBound.center, button = 0 }))
+                {
+                    press.target = chip;
+                    chip.SendEvent(press);
+                }
+
+                yield return Wait(0.3f);
+                Debug.Log("[ClassSelectCaptureRun] After a direct press on the chip, popover shown " + StageInterfaceOutput.IsVisible(popover));
+            }
+
             Rect bound = popover.worldBound;
             Rect screen = actions.root.worldBound;
             Debug.Log("[ClassSelectCaptureRun] Kit popover '" + actions.root.Q<Label>("detail-title").text + "' shown "
