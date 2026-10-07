@@ -29,7 +29,7 @@ MonoBehaviour:
     weight: 0.16
     canFollowItself: 1
   - type: 3
-    fixedFloors: 09000000i
+    fixedFloors: 0e000000i
     firstFloor: 5
     weight: 0.12
     canFollowItself: 0
