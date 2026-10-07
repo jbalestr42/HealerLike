@@ -106,6 +106,10 @@
     --ui-map-glyph-size: 24px;
     --ui-glyph-gap: 1px;
     --ui-text-micro: 9px;
+    --ui-map-subtitle-lift: -7px;
+    --ui-map-subtitle-inset: -4px;
+    --ui-map-subtitle-height: 14px;
+    --ui-radius-pill: 7px;
     --ui-tracking-map-state: 0.5px;
     --ui-map-mobile-key-gap: 9px;
     --map-floor-height: 112;

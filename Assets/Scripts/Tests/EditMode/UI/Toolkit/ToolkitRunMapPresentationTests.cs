@@ -84,6 +84,7 @@ namespace UI.Toolkit
         [TestCase(MapNodeType.Treasure)]
         [TestCase(MapNodeType.Rest)]
         [TestCase(MapNodeType.Boss)]
+        [TestCase(MapNodeType.Event)]
         public void EveryRoomType_HasAnExplanation(MapNodeType type)
         {
             Assert.IsNotEmpty(ToolkitRunMapPresentation.Description(type));

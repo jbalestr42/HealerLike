@@ -70,15 +70,7 @@ public class ToolkitMapGlyph : IDisposable
                 p.Stroke();
                 break;
             case MapNodeType.Event:
-                p.BeginPath();
-                p.MoveTo(Point(7, 8));
-                p.LineTo(Point(9, 4));
-                p.LineTo(Point(15, 4));
-                p.LineTo(Point(17, 8));
-                p.LineTo(Point(12, 12));
-                p.LineTo(Point(12, 15));
-                p.Stroke();
-                Stroke(p, 12, 19, 12, 20);
+                DrawQuestionMark(p);
                 break;
             case MapNodeType.Combat:
             case MapNodeType.Elite:
@@ -106,5 +98,22 @@ public class ToolkitMapGlyph : IDisposable
         p.MoveTo(Point(x1, y1));
         p.LineTo(Point(x2, y2));
         p.Stroke();
+    }
+
+    // One stroked path: an arc over the top, then a curve that leaves the arc along its tangent and lands in the
+    // stem. The dot is a filled circle, not a one-unit line.
+    void DrawQuestionMark(Painter2D p)
+    {
+        float unit = Mathf.Min(_surface.contentRect.width, _surface.contentRect.height) / 24f;
+        p.lineCap = LineCap.Round;
+        p.lineJoin = LineJoin.Round;
+        p.BeginPath();
+        p.Arc(Point(12f, 8.5f), 4.5f * unit, 180f, 405f);
+        p.BezierCurveTo(Point(14.1f, 12.8f), Point(12f, 13.4f), Point(12f, 15.5f));
+        p.Stroke();
+        p.fillColor = p.strokeColor;
+        p.BeginPath();
+        p.Arc(Point(12f, 19.6f), 1.1f * unit, 0f, 360f);
+        p.Fill();
     }
 }

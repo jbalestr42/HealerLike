@@ -28,8 +28,12 @@
     --ui-room-border: rgb(50, 56, 72);
     --ui-room-fill: rgb(23, 27, 37);
     --ui-room-ink: rgb(122, 136, 174);
-    --ui-room-elite: rgb(136, 160, 220);
-    --ui-room-boss: rgb(153, 171, 218);
+    --ui-room-combat: rgb(104, 150, 240);
+    --ui-room-elite: rgb(240, 120, 128);
+    --ui-room-event: rgb(100, 216, 230);
+    --ui-room-treasure: rgb(228, 184, 100);
+    --ui-room-rest: rgb(120, 210, 130);
+    --ui-room-boss: rgb(206, 132, 236);
     --ui-room-available-fill: rgb(45, 51, 68);
     --ui-room-available-ink: rgb(169, 189, 241);
     --ui-room-available-hover: rgb(57, 66, 88);

@@ -13,6 +13,7 @@ public class ToolkitDesignPreview : EditorWindow
         "detail",
         "inventory",
         "map",
+        "map-midrun",
         "upgrade",
         "pause",
         "gameover",
@@ -30,6 +31,7 @@ public class ToolkitDesignPreview : EditorWindow
     ToolkitGameView _view;
     ToolkitMapGraph _mapGraph;
     RunState _mapRun;
+    readonly System.Collections.Generic.List<EntityData> _previewAllies = new System.Collections.Generic.List<EntityData>();
 
     [MenuItem("Tools/UI Toolkit/Design Preview")]
     public static void Open()
@@ -106,6 +108,11 @@ public class ToolkitDesignPreview : EditorWindow
         if (settings != null)
         {
             _mapRun = new RunState(MapGenerator.Generate(settings, 65));
+            if (_state == "map-midrun")
+            {
+                AdvanceMapRun(_mapRun, 3);
+                AddPreviewFallenAllies(_mapRun, 2);
+            }
             _mapGraph = new ToolkitMapGraph(_preview.Q<ScrollView>("map-scroll"), null);
         }
 
@@ -126,6 +133,30 @@ public class ToolkitDesignPreview : EditorWindow
         }
 
         toolbar.Add(menu);
+    }
+
+    static void AdvanceMapRun(RunState run, int rooms)
+    {
+        for (int i = 0; i < rooms; i++)
+        {
+            System.Collections.Generic.IReadOnlyList<MapNode> available = run.GetAvailableNodes();
+            if (available.Count == 0)
+            {
+                return;
+            }
+
+            run.TravelTo(available[0]);
+        }
+    }
+
+    void AddPreviewFallenAllies(RunState run, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            EntityData ally = ScriptableObject.CreateInstance<EntityData>();
+            _previewAllies.Add(ally);
+            run.AddDeadAlly(ally);
+        }
     }
 
     void ApplyViewport()
@@ -170,9 +201,10 @@ public class ToolkitDesignPreview : EditorWindow
 
     void ShowState()
     {
+        string panelState = _state == "map-midrun" ? "map" : _state;
         if (_mapGraph != null)
         {
-            if (_state == "map")
+            if (panelState == "map")
             {
                 _mapGraph.Display(_mapRun, false);
             }
@@ -184,7 +216,7 @@ public class ToolkitDesignPreview : EditorWindow
 
         foreach (string panel in modalPanels)
         {
-            _view.Show(panel + "-panel", panel == _state);
+            _view.Show(panel + "-panel", panel == panelState);
         }
 
         VisualElement hud = _preview.Q("hud-root");
@@ -229,6 +261,12 @@ public class ToolkitDesignPreview : EditorWindow
         }
 
         _mapRun = null;
+        foreach (EntityData ally in _previewAllies)
+        {
+            DestroyImmediate(ally);
+        }
+
+        _previewAllies.Clear();
     }
 
     void OnInspectRequested(ToolkitCardModel model)

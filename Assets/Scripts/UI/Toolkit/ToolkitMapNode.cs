@@ -6,6 +6,7 @@ public class ToolkitMapNode : IDisposable
     readonly Action<MapNode> _select;
     ToolkitMapGlyph _glyph;
     Label _state;
+    Label _subtitle;
     public MapNode node { get; private set; }
     public Button button { get; private set; }
 
@@ -17,6 +18,7 @@ public class ToolkitMapNode : IDisposable
             !ToolkitTemplates.TryClone(template, "map-node", out Button root)
             || !ToolkitTemplates.Require(root, "map-label", out Label label)
             || !ToolkitTemplates.Require(root, "map-state", out _state)
+            || !ToolkitTemplates.Require(root, "map-subtitle", out _subtitle)
             || !ToolkitTemplates.Require(root, "map-glyph", out VisualElement glyph)
         )
         {
@@ -35,7 +37,7 @@ public class ToolkitMapNode : IDisposable
         button.clicked += Activate;
     }
 
-    public void Display(MapNodeState state, bool canSelect)
+    public void Display(MapNodeState state, bool canSelect, int fallenAllies)
     {
         button.EnableInClassList("is-available", state == MapNodeState.Available);
         button.EnableInClassList("is-current", state == MapNodeState.Current);
@@ -43,6 +45,9 @@ public class ToolkitMapNode : IDisposable
         button.EnableInClassList("is-locked", state == MapNodeState.Locked);
         button.SetEnabled(canSelect && state == MapNodeState.Available);
         _state.text = ToolkitRunMapPresentation.StateLabel(state);
+        string subtitle = ToolkitRunMapPresentation.SubtitleText(node.type, state, fallenAllies);
+        _subtitle.text = subtitle;
+        _subtitle.EnableInClassList("is-hidden", subtitle.Length == 0);
     }
 
     void Activate()

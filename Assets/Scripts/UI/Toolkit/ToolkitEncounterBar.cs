@@ -87,6 +87,9 @@ public class ToolkitEncounterBar
         }
     }
 
+    // The views that replace the battle text in the header, in the order they are checked
+    static readonly ViewType[] PhaseViews = { ViewType.Map, ViewType.Upgrade, ViewType.Event };
+
     string GetRoomText()
     {
         if (_context.ascension == null)
@@ -94,29 +97,56 @@ public class ToolkitEncounterBar
             return "Expedition";
         }
 
-        RunState run = _context.ascension.run;
+        return RoomText(_context.ascension.run);
+    }
+
+    public static string RoomText(RunState run)
+    {
         return run == null || run.currentNode == null
             ? "Choose your route"
-            : $"Room {run.currentFloor + 1}";
+            : $"Room {run.currentFloor + 1} · {MapView.GetNodeLabel(run.currentNode.type)}";
+    }
+
+    ViewType GetCurrentPhaseView()
+    {
+        foreach (ViewType view in PhaseViews)
+        {
+            if (_context.IsCurrentView(view))
+            {
+                return view;
+            }
+        }
+
+        return ViewType.Game;
     }
 
     string GetPhaseText(bool isStart, bool isPreparing)
     {
+        RunState run = _context.ascension != null ? _context.ascension.run : null;
+        return PhaseText(GetCurrentPhaseView(), isStart, isPreparing, run != null && run.isOnBoss);
+    }
+
+    public static string PhaseText(ViewType view, bool isStart, bool isPreparing, bool isOnBoss)
+    {
         if (isStart)
         {
-            return _context.ascension != null && _context.ascension.run != null && _context.ascension.run.isOnBoss
-                ? "SUMMIT REACHED"
-                : "READY";
+            return isOnBoss ? "SUMMIT REACHED" : "READY";
         }
 
-        if (_context.IsCurrentView(ViewType.Map))
+        if (view == ViewType.Map)
         {
             return "EXPEDITION MAP";
         }
 
-        if (_context.IsCurrentView(ViewType.Upgrade))
+        if (view == ViewType.Upgrade)
         {
             return "CHOOSE A REWARD";
+        }
+
+        // Event rooms and the rest room share this view, so the text names neither; the room text beside it does
+        if (view == ViewType.Event)
+        {
+            return "MAKE A CHOICE";
         }
 
         return isPreparing ? "PREPARATION" : "IN BATTLE";

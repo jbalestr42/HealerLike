@@ -41,6 +41,11 @@
     color: var(--ui-muted);
 }
 
+.map-node.room-combat .map-node__glyph
+{
+    color: var(--ui-room-combat);
+}
+
 .map-node.room-elite .map-node__glyph
 {
     color: var(--ui-room-elite);
@@ -48,17 +53,48 @@
 
 .map-node.room-treasure .map-node__glyph
 {
-    color: var(--ui-gold);
+    color: var(--ui-room-treasure);
 }
 
 .map-node.room-rest .map-node__glyph
 {
-    color: var(--ui-accent);
+    color: var(--ui-room-rest);
+}
+
+.map-node.room-event .map-node__glyph
+{
+    color: var(--ui-room-event);
 }
 
 .map-node.room-boss .map-node__glyph
 {
     color: var(--ui-room-boss);
+}
+
+/* Not in the node's flow: the node has about 7px of vertical room left, the flag needs 14. It straddles the top
+   right corner, away from the top centre where the paths arrive. */
+.map-node__subtitle
+{
+    position: absolute;
+    top: var(--ui-map-subtitle-lift);
+    right: var(--ui-map-subtitle-inset);
+    height: var(--ui-map-subtitle-height);
+    margin: 0;
+    padding: 0 var(--ui-space-xs);
+    border-width: var(--ui-border-width);
+    border-color: var(--ui-room-rest);
+    border-radius: var(--ui-radius-pill);
+    background-color: var(--ui-map-fill);
+    color: var(--ui-room-rest);
+    font-size: var(--ui-text-micro);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}
+
+.map-node__subtitle.is-hidden
+{
+    display: none;
 }
 
 .map-node:disabled
@@ -110,6 +146,11 @@
 }
 
 .map-node.is-locked .map-node__glyph
+{
+    opacity: 0.65;
+}
+
+.map-node.is-visited .map-node__glyph
 {
     opacity: 0.65;
 }

@@ -96,6 +96,19 @@ public static class ToolkitRunMapPresentation
         }
     }
 
+    // What a room says about itself beyond its name. Only a rest room still ahead has something to say, and only
+    // when someone can be brought back; a visited or current rest room has already made its choice.
+    public static string SubtitleText(MapNodeType type, MapNodeState state, int fallenAllies)
+    {
+        bool isAhead = state == MapNodeState.Locked || state == MapNodeState.Available;
+        if (type != MapNodeType.Rest || !isAhead || fallenAllies <= 0)
+        {
+            return string.Empty;
+        }
+
+        return $"{fallenAllies} FALLEN";
+    }
+
     public static string Description(MapNodeType type)
     {
         switch (type)

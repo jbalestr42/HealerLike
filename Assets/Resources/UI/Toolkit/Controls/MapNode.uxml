@@ -3,5 +3,6 @@
         <ui:VisualElement name="map-glyph" class="map-node__glyph" picking-mode="Ignore" />
         <ui:Label name="map-label" text="Combat" class="map-node__label" picking-mode="Ignore" />
         <ui:Label name="map-state" text="AVAILABLE" class="map-node__state" picking-mode="Ignore" />
+        <ui:Label name="map-subtitle" text="" class="map-node__subtitle is-hidden" picking-mode="Ignore" />
     </ui:Button>
 </ui:UXML>

@@ -15,6 +15,7 @@ public class ToolkitMapGraph : IDisposable
     MapNode _current;
     RunMap _map;
     bool _canSelect;
+    int _fallenAllies;
     bool _visible;
     bool _disposed;
     float _width;
@@ -65,11 +66,14 @@ public class ToolkitMapGraph : IDisposable
         bool topologyChanged = !ReferenceEquals(_map, run.map);
         bool progressChanged = !ReferenceEquals(_run, run) || _current != run.currentNode;
         bool modeChanged = _canSelect != canSelect;
+        // An ally can die in the current room, so the map reopens on the same node with a different count
+        bool alliesChanged = _fallenAllies != run.deadAllies.Count;
         bool opened = !_visible;
         _run = run;
         _map = run.map;
         _current = run.currentNode;
         _canSelect = canSelect;
+        _fallenAllies = run.deadAllies.Count;
         _visible = true;
         if (topologyChanged)
         {
@@ -81,7 +85,7 @@ public class ToolkitMapGraph : IDisposable
             return;
         }
 
-        if (topologyChanged || progressChanged || modeChanged)
+        if (topologyChanged || progressChanged || modeChanged || alliesChanged)
         {
             RefreshStates();
         }
@@ -133,7 +137,7 @@ public class ToolkitMapGraph : IDisposable
     {
         foreach (ToolkitMapNode room in _rooms)
         {
-            room.Display(_run.GetNodeState(room.node), _canSelect);
+            room.Display(_run.GetNodeState(room.node), _canSelect, _fallenAllies);
         }
 
         _connections.Display(_run, _width, _metrics);
