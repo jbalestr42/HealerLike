@@ -282,7 +282,7 @@ public class ToolkitGameUI : MonoBehaviour
         _sheetPanel.Refresh();
         if (_context.isMenu)
         {
-            _encounterBar.RefreshMenu();
+            _encounterBar.RefreshMenu(_mobileLayout.isPopoverOpen);
             return;
         }
 

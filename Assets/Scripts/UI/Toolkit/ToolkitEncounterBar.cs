@@ -13,7 +13,8 @@ public class ToolkitEncounterBar
         _view = view;
     }
 
-    public void RefreshMenu()
+    // isPopoverOpen: the class screen's kit popover is the only detail the menu shows, so it keeps the panel up
+    public void RefreshMenu(bool isPopoverOpen = false)
     {
         AddClass(_view.root.Q("hud-root"), "is-menu");
         AddClass(_view.root.Q(className: "speed-controls"), "is-hidden");
@@ -24,7 +25,7 @@ public class ToolkitEncounterBar
         _view.Show("mark-entity-toggle", false);
         _view.Show("currency-label", false);
         _view.Show("party-panel", false);
-        _view.Show("detail-panel", false);
+        _view.Show("detail-panel", isPopoverOpen);
         _view.Show("wave-button", false);
         _view.Show("start-button", true);
         _view.Show("sandbox-button", true);

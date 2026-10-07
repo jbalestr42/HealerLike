@@ -50,6 +50,7 @@ public class ToolkitMobileLayout : IDisposable
     }
     public void SetBattleFocus(bool focused, Action toggle)
     { _focused = focused; _toggleFocus = toggle; RefreshFocus(); }
+    public bool isPopoverOpen => _popover != null && _popover.isOpen;
     public bool CloseDrawers()
     { bool open = _popover != null && _popover.isOpen; _popover?.Close(); return open; }
     void CancelInteraction()
