@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 
 namespace UI.Toolkit
@@ -171,6 +173,56 @@ namespace UI.Toolkit
             _panel.Refresh();
 
             CollectionAssert.AreEqual(new[] { "Ward" }, CardTitles());
+        }
+
+        [Test]
+        public void ChoicesWithNoCard_LogAnErrorNamingTheirComponents()
+        {
+            GameObject unknown = new GameObject("Unknown reward", typeof(RectTransform));
+            unknown.SetActive(false);
+            _objects.Add(unknown);
+            unknown.AddComponent<CanvasGroup>();
+            unknown.AddComponent<UnityEngine.UI.Image>();
+            _choices.Add(unknown);
+            LogAssert.Expect(LogType.Error, new Regex(@"ToolkitRewardPanel.*1 choice.*Unknown reward \[Image\]"));
+
+            _panel.Refresh();
+
+            Assert.IsEmpty(Cards());
+        }
+
+        [Test]
+        public void ChoicesWithNoCard_AreReportedOncePerScreen()
+        {
+            _choices.Add(CreateChoice<SelectItemUpgradeButton>("_item", null, _objects));
+            _choices.Add(CreateChoice<SelectPlayerItemUpgradeButton>("_item", null, _objects));
+            LogAssert.Expect(LogType.Error, new Regex("2 choice.*SelectItemUpgradeButton.*SelectPlayerItemUpgradeButton"));
+
+            _panel.Refresh();
+            _panel.Refresh();
+
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [Test]
+        public void EmptyChoiceList_IsNotAnError()
+        {
+            _panel.Refresh();
+
+            Assert.IsEmpty(Cards());
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [Test]
+        public void SomeChoicesDrawn_IsNotAnError()
+        {
+            _choices.Add(CreateChoice<SelectItemUpgradeButton>("_item", null, _objects));
+            _choices.Add(CreateChoice<SelectItemUpgradeButton>("_item", CreateItem("Ward"), _objects));
+
+            _panel.Refresh();
+
+            CollectionAssert.AreEqual(new[] { "Ward" }, CardTitles());
+            LogAssert.NoUnexpectedReceived();
         }
 
         [Test]

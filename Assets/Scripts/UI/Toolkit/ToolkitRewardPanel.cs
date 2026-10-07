@@ -7,6 +7,7 @@ public class ToolkitRewardPanel
     ToolkitGameUI _gameUI;
     ToolkitGameContext _context;
     ToolkitGameView _view;
+    bool _reportedEmpty;
 
     public void Init(ToolkitGameUI gameUI, ToolkitGameContext context, ToolkitGameView view)
     {
@@ -19,11 +20,53 @@ public class ToolkitRewardPanel
     {
         if (LegacyUiReader.CurrentView(_context.ui) != ViewType.Upgrade)
         {
+            _reportedEmpty = false;
             return;
         }
 
         UpgradeView upgradeView = _context.ui.GetView<UpgradeView>(ViewType.Upgrade);
-        _view.SetCards("upgrade-list", BuildModels(LegacyUiReader.UpgradeChoices(upgradeView)));
+        IReadOnlyList<GameObject> choices = LegacyUiReader.UpgradeChoices(upgradeView);
+        List<ToolkitCardModel> models = BuildModels(choices);
+        ReportUndrawnChoices(choices, models);
+        _view.SetCards("upgrade-list", models);
+    }
+
+    // The reward screen has no close button: only a choice ends it, so choices with no card stall the run.
+    // Reported once per screen, a kind of choice this panel does not know turns red in the tests
+    void ReportUndrawnChoices(IReadOnlyList<GameObject> choices, List<ToolkitCardModel> models)
+    {
+        if (models.Count > 0)
+        {
+            _reportedEmpty = false;
+            return;
+        }
+
+        List<string> kinds = new List<string>();
+        foreach (GameObject choiceGo in choices)
+        {
+            if (choiceGo != null)
+            {
+                List<string> components = new List<string>();
+                foreach (MonoBehaviour component in choiceGo.GetComponents<MonoBehaviour>())
+                {
+                    if (component != null)
+                    {
+                        components.Add(component.GetType().Name);
+                    }
+                }
+
+                kinds.Add($"{choiceGo.name} [{string.Join(", ", components)}]");
+            }
+        }
+
+        if (kinds.Count == 0 || _reportedEmpty)
+        {
+            return;
+        }
+
+        _reportedEmpty = true;
+        Debug.LogError($"[ToolkitRewardPanel] The reward view offers {kinds.Count} choice(s) and none became a card, "
+            + $"the run cannot leave the reward screen: {string.Join("; ", kinds)}");
     }
 
     // One card per choice of the legacy view: an item for the party, an upgrade for the healer, or a new unit
