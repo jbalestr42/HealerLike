@@ -30,7 +30,8 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 388674238279057408
-      type: {class: FlatValue, ns: , asm: Assembly-CSharp}
+      type: {class: AttributeValue, ns: , asm: Assembly-CSharp}
       data:
         data:
-          value: -10
+          type: 0
+          multiplier: -0.15
