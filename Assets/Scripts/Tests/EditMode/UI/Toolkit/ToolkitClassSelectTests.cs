@@ -187,9 +187,10 @@ namespace UI.Toolkit
             CollectionAssert.IsEmpty(_chosen);
         }
 
-        // The game's select card shows the description, skills, starting items and units; the Toolkit card keeps them
+        // The game's select card shows the description, skills, starting items and units; the Toolkit card keeps them,
+        // the description and items as text, the skills and units as kit chips rather than a second time as text
         [Test]
-        public void Describe_Druid_ShowsDescriptionSkillsItemsAndUnits()
+        public void Describe_Druid_ShowsDescriptionAndItemsAndLeavesSkillsAndUnitsToTheKit()
         {
             CharacterData druid = AssetDatabase.LoadAssetAtPath<CharacterData>(DruidPath);
             Assert.IsNotNull(druid, DruidPath);
@@ -197,20 +198,27 @@ namespace UI.Toolkit
             string text = ToolkitClassSelect.Describe(druid);
 
             StringAssert.StartsWith(druid.text, text);
-            foreach (ACharacterSkillFactory skill in druid.skills)
-            {
-                StringAssert.Contains(skill.Create().GetData().name, text);
-            }
-
             foreach (AItemFactory item in druid.items)
             {
                 StringAssert.Contains(item.title, text);
             }
 
-            StringAssert.Contains("Units: ", text);
+            StringAssert.DoesNotContain("Skills: ", text);
+            StringAssert.DoesNotContain("Units: ", text);
+            List<string> kit = new List<string>();
+            foreach (ToolkitKitEntry entry in ToolkitClassKit.Build(druid).Entries())
+            {
+                kit.Add(entry.iconSource is CharacterSkillData data ? data.name : entry.title);
+            }
+
+            foreach (ACharacterSkillFactory skill in druid.skills)
+            {
+                CollectionAssert.Contains(kit, skill.Create().GetData().name);
+            }
+
             foreach (EntityData unit in druid.entities)
             {
-                StringAssert.Contains(unit.title, text);
+                CollectionAssert.Contains(kit, unit.title);
             }
 
             Assert.Greater(druid.entities.Count, 0);
@@ -225,32 +233,23 @@ namespace UI.Toolkit
             Assert.AreEqual(druid.text, ToolkitClassSelect.Role(druid));
         }
 
+        // The skills and units are the card's kit chips, so the text block only carries the starting items
         [Test]
-        public void Details_Druid_GivesSkillsStartingItemsAndUnitsOneLineEach()
+        public void Details_Druid_GivesTheStartingItemsOnOneLineAndNoSkillOrUnitLine()
         {
             CharacterData druid = AssetDatabase.LoadAssetAtPath<CharacterData>(DruidPath);
 
             string[] lines = ToolkitClassSelect.Details(druid).Split('\n');
 
-            Assert.AreEqual(3, lines.Length, string.Join(" | ", lines));
-            StringAssert.StartsWith("Skills: ", lines[0]);
-            foreach (ACharacterSkillFactory skill in druid.skills)
-            {
-                StringAssert.Contains(skill.Create().GetData().name, lines[0]);
-            }
-
-            StringAssert.DoesNotContain("- ", lines[0], "Julien's list markers are not carried onto the one line.");
-            StringAssert.StartsWith("Starts with: ", lines[1]);
+            Assert.AreEqual(1, lines.Length, string.Join(" | ", lines));
+            StringAssert.StartsWith("Starts with: ", lines[0]);
             foreach (AItemFactory item in druid.items)
             {
-                StringAssert.Contains(item.title + " (" + item.GetItem().description + ")", lines[1]);
+                StringAssert.Contains(item.title + " (" + item.GetItem().description + ")", lines[0]);
             }
 
-            StringAssert.StartsWith("Units: ", lines[2]);
-            foreach (EntityData unit in druid.entities)
-            {
-                StringAssert.Contains(unit.title, lines[2]);
-            }
+            StringAssert.DoesNotContain("Skills: ", ToolkitClassSelect.Details(druid));
+            StringAssert.DoesNotContain("Units: ", ToolkitClassSelect.Details(druid));
             StringAssert.DoesNotContain(druid.text, ToolkitClassSelect.Details(druid), "The role is not repeated.");
         }
 

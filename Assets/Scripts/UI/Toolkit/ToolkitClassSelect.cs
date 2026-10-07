@@ -52,8 +52,8 @@ public class ToolkitClassSelect
         return offered;
     }
 
-    // The whole card text as plain lines: the game's select card content (description, skills, starting items,
-    // deployable units)
+    // The card's text as plain lines: the description and the starting items. Skills and units are the card's icon
+    // chips, not text.
     public static string Describe(CharacterData character)
     {
         List<string> lines = new List<string>();
@@ -78,16 +78,11 @@ public class ToolkitClassSelect
         return CharacterCardText.GetDescription(character);
     }
 
-    // The kit in the card's lighter block, one line each: skills, starting items with their effect, units
+    // The card's lighter block: the starting items with their effect. The skills and units are not repeated here,
+    // the card's kit chips show them with their icons and open their details.
     public static string Details(CharacterData character)
     {
         List<string> lines = new List<string>();
-        string skills = SkillNames(character);
-        if (!string.IsNullOrEmpty(skills))
-        {
-            lines.Add("Skills: " + skills);
-        }
-
         List<string> items = new List<string>();
         if (character.items != null)
         {
@@ -104,12 +99,6 @@ public class ToolkitClassSelect
         if (items.Count > 0)
         {
             lines.Add("Starts with: " + string.Join(", ", items));
-        }
-
-        string units = UnitTitles(character);
-        if (!string.IsNullOrEmpty(units))
-        {
-            lines.Add("Units: " + units);
         }
 
         return string.Join("\n", lines);
