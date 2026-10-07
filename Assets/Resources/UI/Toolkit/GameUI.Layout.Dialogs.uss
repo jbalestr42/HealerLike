@@ -161,3 +161,14 @@
     flex-shrink: 0;
     margin-top: var(--ui-space-md);
 }
+
+.sheet-dialog
+{
+    min-height: var(--ui-dialog-min-height);
+}
+
+.sheet-text
+{
+    white-space: normal;
+    font-size: var(--ui-text-body);
+}

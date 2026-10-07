@@ -32,7 +32,7 @@ public class ToolkitMobileLayout : IDisposable
     public void Resize(float width, float height) { ToolkitResponsiveLayout.Apply(_view, width, height); }
     public void Refresh()
     {
-        bool blocked = _context.isMenu || _context.isPaused || _context.isInventoryOpen
+        bool blocked = _context.isMenu || _context.isPaused || _context.isInventoryOpen || _context.isSheetOpen
             || (_context.ui != null && !_context.IsCurrentView(ViewType.Game));
         if (blocked) { _view.CancelGestures(); CloseDrawers(); }
         _view.Show("cancel-button", _context.hasInteraction && !blocked);

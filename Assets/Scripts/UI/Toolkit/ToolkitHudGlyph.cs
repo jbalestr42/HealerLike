@@ -14,7 +14,7 @@ public sealed class ToolkitHudGlyph : VisualElement
     }
     public static void Attach(VisualElement root)
     {
-        foreach (string kind in new[] { "map", "inventory", "pause" })
+        foreach (string kind in new[] { "map", "inventory", "pause", "sheet" })
         {
             Button button = root.Q<Button>(kind + "-button");
             if (button == null)
@@ -40,6 +40,11 @@ public sealed class ToolkitHudGlyph : VisualElement
             p.LineTo(new Vector2(20, 20)); p.LineTo(new Vector2(2, 20)); p.ClosePath(); p.Stroke();
             p.BeginPath(); p.MoveTo(new Vector2(8, 10)); p.LineTo(new Vector2(8, 5));
             p.Arc(new Vector2(11, 5), 3, 180, 360); p.LineTo(new Vector2(14, 10)); p.Stroke();
+        }
+        else if (_kind == "sheet")
+        {
+            p.BeginPath(); p.Arc(new Vector2(11, 7), 4, 0, 360); p.Stroke();
+            p.BeginPath(); p.Arc(new Vector2(11, 21), 8, 180, 360); p.Stroke();
         }
         else
         {

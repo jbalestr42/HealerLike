@@ -11,6 +11,8 @@ public class ToolkitCardModel
     public string details;
     public string status;
     public bool isEnabled = true;
+    // An item with the Cursed tag: the card is outlined, as PlayerItemIcon outlines its icon
+    public bool isCursed;
     public bool canDrag;
     public System.Func<bool> canBeginDrag;
     public ToolkitSpellState spell;

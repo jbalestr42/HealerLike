@@ -6,6 +6,7 @@
     <ui:Template name="DetailPanel" src="Screens/DetailPanel.uxml" />
     <ui:Template name="CommandDock" src="Screens/CommandDock.uxml" />
     <ui:Template name="InventoryScreen" src="Screens/InventoryScreen.uxml" />
+    <ui:Template name="SheetScreen" src="Screens/SheetScreen.uxml" />
     <ui:Template name="MapScreen" src="Screens/MapScreen.uxml" />
     <ui:Template name="RewardScreen" src="Screens/RewardScreen.uxml" />
     <ui:Template name="PauseScreen" src="Screens/PauseScreen.uxml" />
@@ -25,6 +26,7 @@
         <ui:Instance template="CommandDock" name="command-dock" class="command-dock" picking-mode="Ignore" />
         <ui:Instance template="DetailPanel" name="detail-panel" class="detail-panel surface is-hidden" picking-mode="Position" />
         <ui:Instance template="InventoryScreen" name="inventory-panel" class="modal-layer is-hidden" picking-mode="Position" />
+        <ui:Instance template="SheetScreen" name="sheet-panel" class="modal-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="MapScreen" name="map-panel" class="modal-layer map-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="RewardScreen" name="upgrade-panel" class="modal-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="PauseScreen" name="pause-panel" class="modal-layer is-hidden" picking-mode="Position" />

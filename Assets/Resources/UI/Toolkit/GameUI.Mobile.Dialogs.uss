@@ -136,3 +136,8 @@
     -unity-background-image-tint-color: var(--ui-accent);
     opacity: 1;
 }
+
+.is-mobile .sheet-text
+{
+    font-size: var(--ui-text-mobile-body);
+}

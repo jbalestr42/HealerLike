@@ -3,6 +3,7 @@
 .game-ui
 {
     --ui-ink: rgb(229, 235, 228);
+    --ui-cursed: rgb(176, 125, 255);
     --ui-muted: rgb(151, 173, 165);
     --ui-accent: rgb(189, 218, 156);
     --ui-gold: rgb(233, 202, 135);

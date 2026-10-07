@@ -2,6 +2,8 @@
 public class ToolkitItemEntry
 {
     public AItem item;
+    // Null for a starting item: it lives in Character.items, in no inventory handler
     public InventoryHandler owner;
     public string location;
+    public bool isInnate;
 }

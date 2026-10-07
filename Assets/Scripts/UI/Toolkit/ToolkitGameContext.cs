@@ -11,6 +11,7 @@ public class ToolkitGameContext
     public bool isMenu = false;
     public bool isPaused = false;
     public bool isInventoryOpen = false;
+    public bool isSheetOpen = false;
     public bool isInspecting = false;
     public Entity selectedEntity;
     public AItem selectedItem;

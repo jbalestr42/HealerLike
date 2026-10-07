@@ -37,6 +37,7 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitMapPanel _mapPanel = new ToolkitMapPanel();
     ToolkitDetailPanel _detailPanel = new ToolkitDetailPanel();
     ToolkitInventoryPanel _inventoryPanel = new ToolkitInventoryPanel();
+    ToolkitSheetPanel _sheetPanel = new ToolkitSheetPanel();
     ToolkitMobileLayout _mobileLayout = new ToolkitMobileLayout();
     IToolkitIconProvider _iconProvider;
     IToolkitRosterDrag _rosterDrag;
@@ -54,7 +55,7 @@ public class ToolkitGameUI : MonoBehaviour
         }
     }
     public bool acceptsWorldInput => _view != null && !_context.isPaused && !_context.isInventoryOpen
-        && _context.IsCurrentView(ViewType.Game);
+        && !_context.isSheetOpen && _context.IsCurrentView(ViewType.Game);
     public void WorldPointerDown() { _view?.ClosePopover(); }
     public void CancelGestures() { _view?.CancelGestures(); }
     public void InspectEntity(Entity entity, Vector2 screenPoint)
@@ -211,6 +212,7 @@ public class ToolkitGameUI : MonoBehaviour
         _encounterBar.Init(_context, _view);
         _detailPanel.Init(_context, _view);
         _inventoryPanel.Init(this, _context, _view, _detailPanel);
+        _sheetPanel.Init(_context, _view, Refresh);
         _partyPanel.Init(_context, _view, _detailPanel);
         _spellBar.Init(_context, _view);
         _rewardPanel.Init(this, _context, _view);
@@ -277,6 +279,7 @@ public class ToolkitGameUI : MonoBehaviour
         _view.Show("inventory-panel", _context.isInventoryOpen && !_context.isPaused);
         _view.Show("upgrade-panel", _context.IsCurrentView(ViewType.Upgrade));
         _view.Show("gameover-panel", _context.IsCurrentView(ViewType.GameOver));
+        _sheetPanel.Refresh();
         if (_context.isMenu)
         {
             _encounterBar.RefreshMenu();
@@ -321,6 +324,7 @@ public class ToolkitGameUI : MonoBehaviour
         _timeControls.Dispose();
         _mobileLayout.Dispose();
         _inventoryPanel.Dispose();
+        _sheetPanel.Dispose();
         _detailPanel.Dispose();
         _mapPanel.Dispose();
         if (_view != null)

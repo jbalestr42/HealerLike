@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -269,6 +270,37 @@ namespace UI.Toolkit
             ToolkitTestPanel.Submit(_view.root.Q<Button>("sandbox-button"));
 
             CollectionAssert.IsEmpty(_loads);
+        }
+
+        void PressEscape()
+        {
+            typeof(ToolkitGameActions)
+                .GetMethod("OnEscape", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(_actions, null);
+        }
+
+        [Test]
+        public void OnEscape_SheetOpen_ClosesTheSheetAndNothingElse()
+        {
+            _context.isSheetOpen = true;
+            _context.isInventoryOpen = true;
+            float scale = Time.timeScale;
+
+            PressEscape();
+
+            Assert.IsFalse(_context.isSheetOpen);
+            Assert.IsTrue(_context.isInventoryOpen);
+            Assert.AreEqual(scale, Time.timeScale);
+        }
+
+        [Test]
+        public void OnEscape_SheetClosedInventoryOpen_ClosesTheInventory()
+        {
+            _context.isInventoryOpen = true;
+
+            PressEscape();
+
+            Assert.IsFalse(_context.isInventoryOpen);
         }
     }
 }

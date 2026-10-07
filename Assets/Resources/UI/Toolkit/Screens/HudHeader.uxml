@@ -3,6 +3,7 @@
     <ui:Label name="currency-label" class="currency" />
     <ui:VisualElement class="toolbar-space" picking-mode="Ignore" />
     <ui:Button name="map-button" text="Map" tooltip="Expedition map" class="button hud-icon is-hidden" />
+    <ui:Button name="sheet-button" text="Sheet" tooltip="Healer sheet: mana, stats, items and effects" class="button hud-icon is-hidden" />
     <ui:Button name="inventory-button" text="Bag" tooltip="Inventory and equipment" class="button hud-icon" />
     <ui:Button name="pause-button" text="II" tooltip="Pause" class="button hud-icon" />
 </ui:UXML>

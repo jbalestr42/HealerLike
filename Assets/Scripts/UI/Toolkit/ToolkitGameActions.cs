@@ -152,6 +152,12 @@ public class ToolkitGameActions : IDisposable
             return;
         }
 
+        if (_context.isSheetOpen)
+        {
+            _context.isSheetOpen = false;
+            return;
+        }
+
         if (_context.isInventoryOpen)
         {
             _context.isInventoryOpen = false;

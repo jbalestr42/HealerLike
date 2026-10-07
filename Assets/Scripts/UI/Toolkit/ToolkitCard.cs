@@ -103,6 +103,7 @@ public class ToolkitCard : System.IDisposable
         _info.tooltip = "Inspect " + _model.title;
         _button.SetEnabled(_compact || _model.isEnabled);
         _button.EnableInClassList("is-disabled", !_compact && !_model.isEnabled);
+        _button.EnableInClassList("data-card--cursed", _model.isCursed);
         if (_compact)
         {
             bool spell = model.source is CharacterSkillSlot;
