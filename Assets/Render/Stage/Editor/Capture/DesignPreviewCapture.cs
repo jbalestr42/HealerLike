@@ -30,6 +30,7 @@ namespace HealerLike.Render.Stage
         static StageGameViewSize _size;
         static int _frame;
         static string _shot;
+        static string _topShot;
 
         static DesignPreviewCapture()
         {
@@ -97,6 +98,13 @@ namespace HealerLike.Render.Stage
                     return;
                 }
 
+                // The plain map after the mid-run one: the same rest rooms with nobody fallen
+                if (SessionState.GetInt(codeKey, 1) == 0 && state == "map-midrun")
+                {
+                    Enter("map", 0);
+                    return;
+                }
+
                 int code = SessionState.GetInt(codeKey, 1);
                 SessionState.SetString(stateKey, "");
                 EditorApplication.Exit(code);
@@ -128,9 +136,13 @@ namespace HealerLike.Render.Stage
             _size = new StageGameViewSize((int)(width * scale), (int)(height * scale));
             _frame = 0;
             _shot = Path.Combine(Folder, state + "-" + themes[themeIndex] + ".png");
-            if (File.Exists(_shot))
+            _topShot = Path.Combine(Folder, state + "-" + themes[themeIndex] + "-top.png");
+            foreach (string shot in new[] { _shot, _topShot })
             {
-                File.Delete(_shot);
+                if (File.Exists(shot))
+                {
+                    File.Delete(shot);
+                }
             }
 
             Debug.Log("[DesignPreviewCapture] " + state + " in " + themes[themeIndex] + " theme "
@@ -166,10 +178,23 @@ namespace HealerLike.Render.Stage
             {
                 ScreenCapture.CaptureScreenshot(_shot);
             }
-            else if (_frame > 30 && File.Exists(_shot))
+            else if (_frame > 30 && _frame < 1000 && File.Exists(_shot))
             {
                 WriteReadout(state);
                 Debug.Log("[DesignPreviewCapture] Wrote " + _shot);
+                // The graph opens on the current room; the top floors, where elites and the boss sit, need a scroll
+                ScrollView scroll = UnityEngine.Object.FindAnyObjectByType<UIDocument>().rootVisualElement
+                    .Q<ScrollView>("map-scroll");
+                scroll.scrollOffset = Vector2.zero;
+                _frame = 1000;
+            }
+            else if (_frame == 1030)
+            {
+                ScreenCapture.CaptureScreenshot(_topShot);
+            }
+            else if (_frame > 1030 && File.Exists(_topShot))
+            {
+                Debug.Log("[DesignPreviewCapture] Wrote " + _topShot);
                 _shot = null;
                 SessionState.SetInt(codeKey, 0);
                 EditorApplication.isPlaying = false;
@@ -180,7 +205,7 @@ namespace HealerLike.Render.Stage
         static void WriteReadout(string state)
         {
             UIDocument document = UnityEngine.Object.FindAnyObjectByType<UIDocument>();
-            StringBuilder lines = new StringBuilder("room\tstate\tglyph\tsubtitle\tsubtitleShown\tbounds\n");
+            StringBuilder lines = new StringBuilder("room\tstate\tglyph\tsubtitle\tsubtitleShown\tsubtitleStyle\tbounds\n");
             document.rootVisualElement.Query<Button>(className: "map-node").ForEach(node =>
             {
                 string room = "";
@@ -202,9 +227,19 @@ namespace HealerLike.Render.Stage
                 lines.AppendLine(room + "\t" + nodeState.Trim() + "\t" + glyph.r + "," + glyph.g + "," + glyph.b
                     + "\t" + (subtitle != null ? subtitle.text : "MISSING") + "\t"
                     + (subtitle != null && subtitle.resolvedStyle.display == DisplayStyle.Flex) + "\t"
+                    + (subtitle != null ? SubtitleStyle(subtitle) : "") + "\t"
                     + node.worldBound);
             });
             File.WriteAllText(Path.ChangeExtension(_shot, ".tsv"), lines.ToString());
+        }
+
+        // Whether the subtitle rule reached the label: an unstyled label resolves to the flow defaults
+        static string SubtitleStyle(Label subtitle)
+        {
+            IResolvedStyle style = subtitle.resolvedStyle;
+            return style.position + " top " + style.top + " right " + style.right + " font " + style.fontSize
+                + " bg " + (Color32)style.backgroundColor + " classes " + string.Join(" ", subtitle.GetClasses())
+                + " bounds " + subtitle.worldBound;
         }
 
         static void Release()
