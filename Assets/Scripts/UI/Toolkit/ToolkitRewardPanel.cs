@@ -22,48 +22,88 @@ public class ToolkitRewardPanel
             return;
         }
 
-        List<ToolkitCardModel> models = new List<ToolkitCardModel>();
         UpgradeView upgradeView = _context.ui.GetView<UpgradeView>(ViewType.Upgrade);
-        foreach (GameObject choiceGo in LegacyUiReader.UpgradeChoices(upgradeView))
+        _view.SetCards("upgrade-list", BuildModels(LegacyUiReader.UpgradeChoices(upgradeView)));
+    }
+
+    // One card per choice of the legacy view: an item for the party, an upgrade for the healer, or a new unit
+    public List<ToolkitCardModel> BuildModels(IReadOnlyList<GameObject> choices)
+    {
+        List<ToolkitCardModel> models = new List<ToolkitCardModel>();
+        foreach (GameObject choiceGo in choices)
         {
             if (choiceGo == null)
             {
                 continue;
             }
 
-            SelectItemUpgradeButton entityChoice = choiceGo.GetComponent<SelectItemUpgradeButton>();
-            SelectPlayerItemUpgradeButton playerChoice = choiceGo.GetComponent<SelectPlayerItemUpgradeButton>();
-            AItem item = entityChoice != null ? LegacyUiReader.Item(entityChoice) : LegacyUiReader.Item(playerChoice);
-            if (item == null)
+            ToolkitCardModel model = BuildModel(choiceGo);
+            if (model == null)
             {
                 continue;
-            }
-
-            ToolkitCardModel model = new ToolkitCardModel();
-            model.iconSource = item;
-            model.title = item.title;
-            model.description = LegacyUiReader.ItemDescription(item);
-            if (entityChoice != null)
-            {
-                model.status = "Party equipment · Choose reward";
-                model.source = entityChoice;
-            }
-            else
-            {
-                model.status = "Healer upgrade · Choose reward";
-                model.source = playerChoice;
             }
 
             model.activate = OnRewardActivated;
             models.Add(model);
         }
 
-        _view.SetCards("upgrade-list", models);
+        return models;
+    }
+
+    static ToolkitCardModel BuildModel(GameObject choiceGo)
+    {
+        SelectEntityUpgradeButton unitChoice = choiceGo.GetComponent<SelectEntityUpgradeButton>();
+        if (unitChoice != null)
+        {
+            // Reward-only units, tagged for rewards but outside the character's roster, come through the same button
+            EntityData entity = LegacyUiReader.Unit(unitChoice);
+            if (entity == null)
+            {
+                return null;
+            }
+
+            ToolkitCardModel unitModel = new ToolkitCardModel();
+            unitModel.iconSource = entity;
+            unitModel.title = SelectEntityUpgradeButton.GetTitle(entity);
+            unitModel.description = CharacterCardText.GetUnitDetails(entity);
+            unitModel.status = "New unit · Choose reward";
+            unitModel.source = unitChoice;
+            return unitModel;
+        }
+
+        SelectItemUpgradeButton entityChoice = choiceGo.GetComponent<SelectItemUpgradeButton>();
+        SelectPlayerItemUpgradeButton playerChoice = choiceGo.GetComponent<SelectPlayerItemUpgradeButton>();
+        AItem item = entityChoice != null ? LegacyUiReader.Item(entityChoice) : LegacyUiReader.Item(playerChoice);
+        if (item == null)
+        {
+            return null;
+        }
+
+        ToolkitCardModel model = new ToolkitCardModel();
+        model.iconSource = item;
+        model.title = item.title;
+        model.description = LegacyUiReader.ItemDescription(item);
+        if (entityChoice != null)
+        {
+            model.status = "Party equipment · Choose reward";
+            model.source = entityChoice;
+        }
+        else
+        {
+            model.status = "Healer upgrade · Choose reward";
+            model.source = playerChoice;
+        }
+
+        return model;
     }
 
     void OnRewardActivated(ToolkitCardModel model)
     {
-        if (model.source is SelectItemUpgradeButton)
+        if (model.source is SelectEntityUpgradeButton)
+        {
+            ((SelectEntityUpgradeButton)model.source).SelectUpgrade();
+        }
+        else if (model.source is SelectItemUpgradeButton)
         {
             ((SelectItemUpgradeButton)model.source).SelectUpgrade();
         }

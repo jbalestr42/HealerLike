@@ -76,6 +76,11 @@ public static class LegacyUiReader
         return source != null ? source.item : null;
     }
 
+    public static EntityData Unit(SelectEntityUpgradeButton source)
+    {
+        return source != null ? source.entity : null;
+    }
+
     public static bool CanUse(CharacterSkillSlot source)
     {
         UseCharacterSkillButton presentation = SkillButton(source);
