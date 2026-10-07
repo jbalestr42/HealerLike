@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -97,6 +98,44 @@ namespace HealerLike.Render.Stage
             yield return _s.actions.TouchGesture(StageInterfaceActions.ScreenPoint(toggle));
             root.Q<ScrollView>("detail-scroll").scrollOffset = Vector2.zero;
             yield return Wait(0.15f);
+            yield return Sections(root);
+        }
+
+        // His targeting, skills, items and effects foldouts, opened together and captured from the first one shown
+        IEnumerator Sections(VisualElement root)
+        {
+            List<Foldout> shown = new List<Foldout>();
+            foreach (string name in new[] { "detail-aiming", "detail-skills", "detail-items", "detail-effects" })
+            {
+                Foldout section = root.Q<Foldout>(name);
+                string text = root.Q<Label>(name + "-text").text;
+                bool isShown = StageInterfaceOutput.IsVisible(section);
+                Debug.Log("[StageCompactReview] " + name + " shown " + isShown + ", heading '" + section.text
+                    + "', " + (text ?? "").Length + " characters: " + (text ?? "").Replace("\n", " | "));
+                if (isShown)
+                {
+                    section.value = true;
+                    shown.Add(section);
+                }
+            }
+
+            _s.output.Check(shown.Count > 0 && root.Q<Label>(shown[0].name + "-text").text.Length > 0,
+                "At least one of his detail sections is shown with text: " + shown.Count + " shown");
+            if (shown.Count > 0)
+            {
+                ScrollView scroll = root.Q<ScrollView>("detail-scroll");
+                yield return Wait(0.15f);
+                scroll.scrollOffset = new Vector2(0, shown[0].worldBound.yMin - scroll.contentContainer.worldBound.yMin);
+                yield return Wait(0.15f);
+                yield return _s.Capture("07d-detail-sections");
+                foreach (Foldout section in shown)
+                {
+                    section.value = false;
+                }
+
+                scroll.scrollOffset = Vector2.zero;
+                yield return Wait(0.15f);
+            }
         }
 
         public IEnumerator ControllerInspect(Button spell)

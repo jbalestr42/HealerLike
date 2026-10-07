@@ -273,12 +273,54 @@ namespace HealerLike.Render.Stage
                 + (CharacterSelection.selected != null ? CharacterSelection.selected.title : "null")
                 + ", cards " + string.Join(", ", Titles(actions.root.Q(ToolkitClassSelect.ListName))));
             yield return CaptureScreen("class-01-screen");
+            yield return KitPopover(actions);
             List<Button> cards = actions.root.Q(ToolkitClassSelect.ListName).Query<Button>("data-card").ToList();
             if (cards.Count > 0)
             {
                 yield return actions.BringIntoView(cards[cards.Count - 1]);
                 yield return Wait(0.3f);
                 yield return CaptureScreen("class-02-screen-end");
+            }
+        }
+
+        // A touch on the first card's first kit chip opens its details in the popover, over the class screen
+        IEnumerator KitPopover(StageInterfaceActions actions)
+        {
+            VisualElement list = actions.root.Q(ToolkitClassSelect.ListName);
+            foreach (Button card in list.Query<Button>("data-card").ToList())
+            {
+                ToolkitCardModel model = card.userData as ToolkitCardModel;
+                Debug.Log("[ClassSelectCaptureRun] Card " + (model != null ? model.title : "?") + ": "
+                    + card.Query(className: ToolkitKitRow.ChipClass).ToList().Count + " kit chips, stats '"
+                    + (card.Q<Label>("card-stats")?.text ?? "").Replace("\n", " | ") + "', details '"
+                    + (card.Q<Label>("card-details")?.text ?? "").Replace("\n", " | ") + "'");
+            }
+
+            VisualElement chip = list.Q(className: ToolkitKitRow.ChipClass);
+            if (chip == null)
+            {
+                _problems.Add("The class cards show no kit chip.");
+                yield break;
+            }
+
+            yield return actions.TouchGesture(StageInterfaceActions.ScreenPoint(chip));
+            yield return Wait(0.3f);
+            VisualElement popover = actions.root.Q("detail-panel");
+            Rect bound = popover.worldBound;
+            Rect screen = actions.root.worldBound;
+            Debug.Log("[ClassSelectCaptureRun] Kit popover '" + actions.root.Q<Label>("detail-title").text + "' shown "
+                + StageInterfaceOutput.IsVisible(popover) + " at " + bound + " in " + screen + ", last child of its parent "
+                + (popover.parent != null && popover.parent.IndexOf(popover) == popover.parent.childCount - 1));
+            if (!StageInterfaceOutput.IsVisible(popover) || bound.yMin < screen.yMin || bound.yMax > screen.yMax)
+            {
+                _problems.Add("The kit chip's popover is not whole on the class screen: " + bound + " in " + screen);
+            }
+
+            yield return CaptureScreen("class-01b-kit-popover");
+            if (StageInterfaceOutput.IsVisible(popover))
+            {
+                actions.Submit("detail-close-button");
+                yield return Wait(0.3f);
             }
         }
 

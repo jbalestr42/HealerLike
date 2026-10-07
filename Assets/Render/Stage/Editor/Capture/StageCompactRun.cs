@@ -102,6 +102,7 @@ namespace HealerLike.Render.Stage
                 yield return _session.Capture("08-equipment");
                 yield return _session.actions.PointerTap("inventory-close-button");
                 yield return Wait(0.2f);
+                yield return HealerSheet(root);
                 yield return _session.actions.PointerTap("map-button");
                 yield return Wait(0.2f);
                 yield return _session.Capture("09-map");
@@ -132,6 +133,22 @@ namespace HealerLike.Render.Stage
                 passed = true;
             }
             finally { _session?.Dispose(); _output.Write(passed); StagePlay.Finish(this, passed); }
+        }
+
+        // His CharacterInfoPanel text in our sheet dialog, opened from the header and closed by its own button
+        IEnumerator HealerSheet(VisualElement root)
+        {
+            _output.Check(StageInterfaceOutput.IsVisible(root.Q("sheet-button")), "The header offers the healer sheet in a run");
+            yield return _session.actions.PointerTap("sheet-button");
+            yield return Wait(0.3f);
+            string text = root.Q<Label>("sheet-text").text ?? "";
+            Debug.Log("[StageCompactRun] Healer sheet text, " + text.Length + " characters: " + text.Replace("\n", " | "));
+            _output.Check(StageInterfaceOutput.IsVisible(root.Q("sheet-panel")) && text.Length > 0 && !text.Contains("<size=+"),
+                "Actual sheet tap opens his character text with its relative sizes resolved");
+            yield return _session.Capture("08b-healer-sheet");
+            yield return _session.actions.PointerTap("sheet-close-button");
+            yield return Wait(0.2f);
+            _output.Check(!StageInterfaceOutput.IsVisible(root.Q("sheet-panel")), "Actual sheet close button closes it");
         }
     }
 }
