@@ -74,9 +74,9 @@ public class ClericDataTests
         return validator.data.consumer.data.value.GetValue(null);
     }
 
-    // Strong heals the Cleric must pay for: 120% Heal Power for 8 mana, 60% on every ally for 15 mana
-    [TestCase("Heal", 1.2f, 8f)]
-    [TestCase("Heal Group", 0.6f, 15f)]
+    // Small heals the Cleric casts often: 80% Heal Power for 8 mana, 40% on every ally for 15 mana
+    [TestCase("Heal", 0.8f, 8f)]
+    [TestCase("Heal Group", 0.4f, 15f)]
     public void Heal_HealsTheRatioOfTheHealPower_ForItsCost(string name, float multiplier, float cost)
     {
         ApplyConsumerCharacterSkillFactory heal = GetSkill<ApplyConsumerCharacterSkillFactory>(name);
