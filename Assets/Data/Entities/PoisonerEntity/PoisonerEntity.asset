@@ -59,7 +59,7 @@ MonoBehaviour:
       Data: 1
     - Name: $v
       Entry: 4
-      Data: 1.5
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
@@ -100,7 +100,7 @@ MonoBehaviour:
   - key: 0
     value: 120
   - key: 1
-    value: 1.5
+    value: 1
   - key: 2
     value: 1
   - key: 3

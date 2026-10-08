@@ -46,7 +46,16 @@ public class StaticEventBuff : ABuff<FakeBuffData>
     public override void Remove(GameObject source, GameObject target) => OnEvent.RemoveListener(OnEventInvoked);
 }
 
+// Records the source each Instant() is given
+public class SourceRecordingBuff : ABuff<List<GameObject>>
+{
+    public override void Instant(GameObject source, GameObject target) => data.Add(source);
+    public override void Add(GameObject source, GameObject target) { }
+    public override void Remove(GameObject source, GameObject target) { }
+}
+
 public class FakeBuffFactory : BuffFactory<FakeBuff, FakeBuffData> { }
+public class SourceRecordingBuffFactory : BuffFactory<SourceRecordingBuff, List<GameObject>> { }
 public class StaticEventBuffFactory : BuffFactory<StaticEventBuff, FakeBuffData> { }
 public class HandlerRecordingBuffFactory : BuffFactory<HandlerRecordingBuff, List<ABuffHandler>> { }
 public class FakeStackableBuffFactory : BuffFactory<FakeStackableBuff, FakeBuffData> { }
@@ -301,6 +310,124 @@ public class BuffManagerTests
         _buffManager.ForceUpdate();
 
         CollectionAssert.AreEqual(new[] { "Add", "Add" }, _data.log);
+        Object.DestroyImmediate(otherSource);
+    }
+
+    ABuffHandlerFactory CreateSharedHandlerFactory(int maxStacks = 0)
+    {
+        ABuffHandlerFactory handlerFactory = CreateStackableHandlerFactory(maxStacks);
+        ((BuffHandlerFactory)handlerFactory).data.stackAcrossSources = true;
+        return handlerFactory;
+    }
+
+    [Test]
+    public void StackAcrossSources_TwoSources_StackTheSameBuff()
+    {
+        ABuffHandlerFactory handlerFactory = CreateSharedHandlerFactory();
+        GameObject otherSource = new GameObject("OtherSource");
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+        _buffManager.AddHandler(handlerFactory, otherSource, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add", "Stack" }, _data.log);
+        Assert.AreEqual(1, _buffManager.GetActiveHandlers().Count);
+        Object.DestroyImmediate(otherSource);
+    }
+
+    [Test]
+    public void StackAcrossSources_MaxStacks_CountsEverySource()
+    {
+        ABuffHandlerFactory handlerFactory = CreateSharedHandlerFactory(maxStacks: 1);
+        GameObject otherSource = new GameObject("OtherSource");
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, otherSource, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
+        Object.DestroyImmediate(otherSource);
+    }
+
+    [Test]
+    public void StackAcrossSources_RemoveHandlerFromOneSource_UnstacksTheSharedBuff()
+    {
+        ABuffHandlerFactory handlerFactory = CreateSharedHandlerFactory();
+        GameObject otherSource = new GameObject("OtherSource");
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, otherSource, _target);
+        _buffManager.ForceUpdate();
+
+        _buffManager.RemoveHandler(handlerFactory, otherSource, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add", "Stack", "Unstack" }, _data.log);
+        Assert.AreEqual(1, _buffManager.GetActiveHandlers().Count);
+        Object.DestroyImmediate(otherSource);
+    }
+
+    [Test]
+    public void StackAcrossSources_SourceDestroyed_KeepsTheHandlerAndItsBuff()
+    {
+        ABuffHandlerFactory handlerFactory = CreateSharedHandlerFactory();
+        GameObject otherSource = new GameObject("OtherSource");
+        _buffManager.AddHandler(handlerFactory, otherSource, _target);
+        _buffManager.ForceUpdate();
+
+        Object.DestroyImmediate(otherSource);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
+        Assert.AreEqual(1, _buffManager.GetActiveHandlers().Count);
+    }
+
+    [Test]
+    public void StackAcrossSources_SourceDestroyed_HandlerStillEndsWithItsDuration()
+    {
+        ABuffHandlerFactory handlerFactory = CreateSharedHandlerFactory();
+        GameObject otherSource = new GameObject("OtherSource");
+        _buffManager.AddHandler(handlerFactory, otherSource, _target);
+        _buffManager.ForceUpdate();
+        Object.DestroyImmediate(otherSource);
+
+        _buffManager.GetActiveHandlers()[0].buffHandler.Update(1000f);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add", "Remove" }, _data.log);
+        Assert.IsEmpty(_buffManager.GetActiveHandlers());
+    }
+
+    [Test]
+    public void StackAcrossSources_Instant_GetsTheLastSourceAsItsSource()
+    {
+        SourceRecordingBuffFactory buffFactory = CreateTracked<SourceRecordingBuffFactory>();
+        buffFactory.data = new List<GameObject>();
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Instant);
+        ((BuffHandlerFactory)handlerFactory).data.stackAcrossSources = true;
+        GameObject otherSource = new GameObject("OtherSource");
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, otherSource, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { otherSource, otherSource }, buffFactory.data);
+        Object.DestroyImmediate(otherSource);
+    }
+
+    [Test]
+    public void Instant_WithoutStackAcrossSources_GetsItsOwnSource()
+    {
+        SourceRecordingBuffFactory buffFactory = CreateTracked<SourceRecordingBuffFactory>();
+        buffFactory.data = new List<GameObject>();
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Instant);
+        GameObject otherSource = new GameObject("OtherSource");
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.AddHandler(handlerFactory, otherSource, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEquivalent(new[] { _source, otherSource }, buffFactory.data);
         Object.DestroyImmediate(otherSource);
     }
 
