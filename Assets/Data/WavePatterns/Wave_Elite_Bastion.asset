@@ -18,7 +18,8 @@ MonoBehaviour:
     ReferencedUnityObjects:
     - {fileID: 11400000, guid: 26dbd27e829bb32408f456f507d1393f, type: 2}
     - {fileID: 11400000, guid: b14f20f6db94a1942b867df24115570f, type: 2}
-    - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
+    - {fileID: 11400000, guid: 16f92a7dacfc6af4fac5c774dec0ead7, type: 2}
+    - {fileID: 11400000, guid: ba0fe6b69cd947f28df0529b0e2fff3f, type: 2}
     - {fileID: 11400000, guid: 1e4ddcb10b35d0e4fbd04e3cc6af63d5, type: 2}
     SerializedBytesString: 
     Prefab: {fileID: 0}
@@ -30,10 +31,10 @@ MonoBehaviour:
       Data: 0|EntitySlot[,], HealerLike.Runtime
     - Name: 
       Entry: 12
-      Data: 6
+      Data: 9
     - Name: ranks
       Entry: 1
-      Data: 2|3
+      Data: 3|3
     - Name: 
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
@@ -56,8 +57,8 @@ MonoBehaviour:
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
-      Entry: 10
-      Data: 0
+      Entry: 6
+      Data: 
     - Name: 
       Entry: 8
       Data: 
@@ -89,12 +90,39 @@ MonoBehaviour:
       Entry: 8
       Data: 
     - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 6
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 10
+      Data: 4
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 6
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
       Entry: 13
       Data: 
     - Name: 
       Entry: 8
       Data: 
-  width: 2
+  width: 3
   height: 3
   score:
     dps: 7.8842587

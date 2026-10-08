@@ -153,6 +153,39 @@ public class EnemiesDataTests
     }
 
     [Test]
+    public void Bannerman_GivesPlus2DamageToTheAlliesOnThe8CellsAroundIt()
+    {
+        EntityData bannerman = LoadEnemy("Bannerman");
+        BoostEntitiesOnRelativeCellBuffFactory banner = GetItemBuff<BoostEntitiesOnRelativeCellBuffFactory>(bannerman);
+
+        Assert.AreEqual("Bannerman", bannerman.title);
+        Assert.IsFalse(string.IsNullOrEmpty(bannerman.description));
+        Assert.IsNotNull(bannerman.model);
+        Assert.IsEmpty(bannerman.skillFactories, "it doesn't attack");
+        Assert.IsFalse(bannerman.HasTag(TagNames.Reward), "an enemy, never a reward");
+        Assert.AreEqual(RelativeCellPatternType.Adjacent, banner.data.pattern);
+        Assert.AreEqual(1, banner.data.range);
+        FlatModifierFactory modifier = banner.data.buffHandlerFactory.buffFactoryList[0] as FlatModifierFactory;
+        Assert.IsNotNull(modifier);
+        Assert.AreEqual(AttributeType.Damage, modifier.data.type);
+        Assert.AreEqual(AttributeModifierType.Add, modifier.data.modifierType);
+        Assert.AreEqual(2f, modifier.data.value, 0.0001f);
+    }
+
+    [Test]
+    public void EliteBastion_FieldsTheBannermanBetweenTwoMortarsBehindTheColossusAndTheShamanBehindIt()
+    {
+        WavePatternData wave = LoadWave("Wave_Elite_Bastion");
+
+        Assert.AreEqual(3, wave.slots.GetLength(0));
+        CollectionAssert.AreEqual(new[] { "Hit Armor Buffer", "Colossus" }, GetRank(wave, 0));
+        CollectionAssert.AreEqual(new[] { "Mortar", "Bannerman", "Mortar" }, GetRank(wave, 1));
+        CollectionAssert.AreEqual(new[] { "Shaman" }, GetRank(wave, 2));
+        // In the middle, the Bannerman boosts every unit of the wave
+        Assert.AreEqual("Bannerman", wave.slots[1, 1].entity.title);
+    }
+
+    [Test]
     public void Archer_ShootsWeakShotsAtYourFarthestUnit()
     {
         EntityData archer = LoadEnemy("Archer");
