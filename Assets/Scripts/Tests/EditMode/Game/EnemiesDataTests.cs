@@ -186,6 +186,44 @@ public class EnemiesDataTests
     }
 
     [Test]
+    public void BloodWarden_GivesPlus50PercentArmorToItsAlliesUnderHalfHealth()
+    {
+        EntityData warden = LoadEnemy("BloodWarden");
+        ApplyBuffToAlliesBuffFactory ward = GetItemBuff<ApplyBuffToAlliesBuffFactory>(warden);
+
+        Assert.AreEqual("Blood Warden", warden.title);
+        Assert.IsFalse(string.IsNullOrEmpty(warden.description));
+        Assert.IsNotNull(warden.model);
+        Assert.IsEmpty(warden.skillFactories, "it doesn't attack");
+        Assert.IsFalse(warden.HasTag(TagNames.Reward), "an enemy, never a reward");
+        Assert.AreEqual(DurationType.Infinite, ward.data.buffHandlerFactory.durationType);
+        HealthThresholdModifierFactory modifier = ward.data.buffHandlerFactory.buffFactoryList[0] as HealthThresholdModifierFactory;
+        Assert.IsNotNull(modifier);
+        Assert.AreEqual(AttributeType.PercentArmor, modifier.data.type);
+        Assert.AreEqual(AttributeModifierType.Add, modifier.data.modifierType);
+        Assert.AreEqual(0.5f, modifier.data.value, 0.0001f);
+        Assert.AreEqual(0.5f, modifier.data.threshold, 0.0001f);
+        Assert.IsTrue(modifier.data.isBelow);
+    }
+
+    [Test]
+    public void Berserker_Deals5Damage()
+    {
+        Assert.AreEqual(5f, LoadEnemy("Berserker").attributes[AttributeType.Damage]);
+    }
+
+    [Test]
+    public void EliteCult_FieldsThreeBerserkersInFrontProtectedByTheGuardianAndTheBloodWarden()
+    {
+        WavePatternData wave = LoadWave("Wave_Elite_Cult");
+
+        Assert.AreEqual(3, wave.slots.GetLength(0));
+        CollectionAssert.AreEqual(new[] { "Berserker", "Berserker", "Berserker" }, GetRank(wave, 0));
+        CollectionAssert.AreEqual(new[] { "Hexer", "Guardian", "Hexer" }, GetRank(wave, 1));
+        CollectionAssert.AreEqual(new[] { "War Drum", "Blood Warden" }, GetRank(wave, 2));
+    }
+
+    [Test]
     public void Archer_ShootsWeakShotsAtYourFarthestUnit()
     {
         EntityData archer = LoadEnemy("Archer");

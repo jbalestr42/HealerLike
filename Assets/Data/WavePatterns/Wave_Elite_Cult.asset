@@ -17,9 +17,10 @@ MonoBehaviour:
     SerializedBytes: 
     ReferencedUnityObjects:
     - {fileID: 11400000, guid: d59ff905363b2bf4a92108520332c95f, type: 2}
-    - {fileID: 11400000, guid: c769518f4162ae044938f5418afa853a, type: 2}
     - {fileID: 11400000, guid: a2fcc40f3274d284dbfad72818ce1511, type: 2}
-    - {fileID: 11400000, guid: 1e4ddcb10b35d0e4fbd04e3cc6af63d5, type: 2}
+    - {fileID: 11400000, guid: 77f9fb43933fe2145adfe39d5a354a24, type: 2}
+    - {fileID: 11400000, guid: 1eb0f48ee5b489b4c9c1583922c0b2cc, type: 2}
+    - {fileID: 11400000, guid: 2b3e01c137194a5994e25882de93cebc, type: 2}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -30,10 +31,28 @@ MonoBehaviour:
       Data: 0|EntitySlot[,], HealerLike.Runtime
     - Name: 
       Entry: 12
-      Data: 6
+      Data: 9
     - Name: ranks
       Entry: 1
-      Data: 2|3
+      Data: 3|3
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
     - Name: 
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
@@ -57,7 +76,7 @@ MonoBehaviour:
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 10
-      Data: 0
+      Data: 2
     - Name: 
       Entry: 8
       Data: 
@@ -66,7 +85,7 @@ MonoBehaviour:
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 10
-      Data: 2
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
@@ -83,8 +102,17 @@ MonoBehaviour:
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
+      Entry: 6
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
       Entry: 10
-      Data: 2
+      Data: 4
     - Name: 
       Entry: 8
       Data: 
@@ -94,7 +122,7 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  width: 2
+  width: 3
   height: 3
   score:
     dps: 10.051943
