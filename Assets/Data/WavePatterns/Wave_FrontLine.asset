@@ -17,6 +17,7 @@ MonoBehaviour:
     SerializedBytes: 
     ReferencedUnityObjects:
     - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
+    - {fileID: 11400000, guid: 9bfeb902817e465197ea836de7c0b1e8, type: 2}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -27,10 +28,28 @@ MonoBehaviour:
       Data: 0|EntitySlot[,], HealerLike.Runtime
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 6
     - Name: ranks
       Entry: 1
-      Data: 1|2
+      Data: 2|3
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 6
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
     - Name: 
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
@@ -45,7 +64,25 @@ MonoBehaviour:
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 10
-      Data: 0
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 6
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 10
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
@@ -55,8 +92,8 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  width: 1
-  height: 2
+  width: 2
+  height: 3
   score:
     dps: 5.791916
     peakDps: 8
