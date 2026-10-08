@@ -16,8 +16,8 @@ MonoBehaviour:
     SerializedFormat: 2
     SerializedBytes: 
     ReferencedUnityObjects:
-    - {fileID: 11400000, guid: ebce9d0497d9ba042a3d687cf2086b68, type: 2}
-    - {fileID: 11400000, guid: a9540b7e6e04d1d4f9bfaa8f653333fa, type: 2}
+    - {fileID: 11400000, guid: a964e1041d6144d4844f9f224e623125, type: 2}
+    - {fileID: 11400000, guid: 956eb398886440a58bfbca6b156fb276, type: 2}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -63,15 +63,6 @@ MonoBehaviour:
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
-      Entry: 6
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: EntitySlot, HealerLike.Runtime
-    - Name: entity
       Entry: 10
       Data: 1
     - Name: 
@@ -83,6 +74,15 @@ MonoBehaviour:
     - Name: entity
       Entry: 6
       Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 10
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
