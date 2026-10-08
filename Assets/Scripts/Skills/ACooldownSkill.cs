@@ -36,6 +36,12 @@ public abstract class ACooldownSkill<SkillData> : ASkill<SkillData>, ICooldownSk
         _cooldown = 0f;
     }
 
+    // Sets the time left before the next use, 0 to use it as soon as possible
+    public void InitCooldown(float cooldown)
+    {
+        _cooldown = Mathf.Max(0f, cooldown);
+    }
+
     public abstract bool Execute(GameObject source);
 
     #region ICooldownSkill

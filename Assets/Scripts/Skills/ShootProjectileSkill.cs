@@ -18,6 +18,36 @@ public class ShootProjectileSkill : ACooldownSkill<ShootProjectileSkillData>
         requirements = new List<IRequirement>();
         requirements.Add(new TargetRequirement(gameObject));
         _cooldownDuration = GetComponent<AttributeManager>().Get(AttributeType.AttackRate);
+        StaggerFirstShot();
+    }
+
+    // Called after each fight: the units staying for the next one stagger their first shot of it too
+    public override void Reset()
+    {
+        base.Reset();
+        StaggerFirstShot();
+    }
+
+    // The first shot of a fight waits a random part of the attack cooldown, so the units don't all shoot at once
+    void StaggerFirstShot()
+    {
+        // Reset() is also called by the editor when the component is added, before Start()
+        if (_cooldownDuration == null)
+        {
+            return;
+        }
+
+        DataManager dataManager = DataManager.existingInstance;
+        if (StaggersFirstShot(dataManager != null ? dataManager.data : null))
+        {
+            InitCooldown(UnityEngine.Random.Range(0f, cooldownDuration));
+        }
+    }
+
+    // Whether the units don't all shoot at once when a fight starts (GameData.staggerFirstAttacks, on without data)
+    public static bool StaggersFirstShot(GameData data)
+    {
+        return data == null || data.staggerFirstAttacks;
     }
 
     public override bool Execute(GameObject source)

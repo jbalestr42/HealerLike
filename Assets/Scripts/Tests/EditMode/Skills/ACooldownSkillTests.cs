@@ -45,6 +45,87 @@ public class ACooldownSkillTests
         return skill;
     }
 
+    // Game time until the first use, ticking by 0.01s
+    static float TimeToFirstUse(FakeCooldownSkill skill, GameObject source)
+    {
+        float time = 0f;
+        while (skill.uses == 0 && time < 10f)
+        {
+            skill.Tick(source, 0.01f);
+            time += 0.01f;
+        }
+        return time;
+    }
+
+    [Test]
+    public void FirstUse_WithoutStagger_RightAway()
+    {
+        FakeCooldownSkill skill = CreateSkill();
+
+        skill.Tick(_go, 0.01f);
+
+        Assert.AreEqual(1, skill.uses);
+    }
+
+    [Test]
+    public void InitCooldown_DelaysTheFirstUseByThatTime()
+    {
+        FakeCooldownSkill skill = CreateSkill();
+
+        skill.InitCooldown(1.5f);
+
+        Assert.AreEqual(1.5f, TimeToFirstUse(skill, _go), 0.02f);
+    }
+
+    [Test]
+    public void InitCooldown_Negative_UsedRightAway()
+    {
+        FakeCooldownSkill skill = CreateSkill();
+
+        skill.InitCooldown(-2f);
+        skill.Tick(_go, 0.01f);
+
+        Assert.AreEqual(1, skill.uses);
+    }
+
+    [Test]
+    public void Reset_AfterInitCooldown_UsedRightAway()
+    {
+        FakeCooldownSkill skill = CreateSkill();
+        skill.InitCooldown(3f);
+
+        skill.Reset();
+        skill.Tick(_go, 0.01f);
+
+        Assert.AreEqual(1, skill.uses);
+    }
+
+    [Test]
+    public void ShootProjectileSkill_StaggersItsFirstShotAsTheGameDataSays()
+    {
+        GameData data = ScriptableObject.CreateInstance<GameData>();
+        try
+        {
+            Assert.IsTrue(data.staggerFirstAttacks, "on by default");
+            Assert.IsTrue(ShootProjectileSkill.StaggersFirstShot(data));
+            data.staggerFirstAttacks = false;
+            Assert.IsFalse(ShootProjectileSkill.StaggersFirstShot(data));
+            Assert.IsTrue(ShootProjectileSkill.StaggersFirstShot(null), "on without data");
+        }
+        finally
+        {
+            Object.DestroyImmediate(data);
+        }
+    }
+
+    [Test]
+    public void GameDataOfTheGame_StaggersTheFirstAttacks()
+    {
+        GameData data = UnityEditor.AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/TestData.asset");
+
+        Assert.IsTrue(data.staggerFirstAttacks);
+    }
+
     [Test]
     public void GetComponent_FindsTheSkillAsICooldownSkill()
     {

@@ -42,6 +42,11 @@ public class GameData : SerializedScriptableObject
     [BoxGroup("Split/Player Data")]
     public List<WavePool> wavePools = new List<WavePool>();
 
+    // Each unit waits a random part of its attack cooldown, between none and all of it, before its first shot of a
+    // fight, so they don't all shoot at once when it starts
+    [BoxGroup("Split/Player Data")]
+    public bool staggerFirstAttacks = true;
+
     [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<CharacterData>, CharacterData>(characters, this)")]
     public List<CharacterData> characters = new List<CharacterData>();
 
