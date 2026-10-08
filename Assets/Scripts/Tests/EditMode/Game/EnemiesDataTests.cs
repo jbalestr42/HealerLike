@@ -133,6 +133,26 @@ public class EnemiesDataTests
     }
 
     [Test]
+    public void ArcMage_LightningChainsThroughFourUnits()
+    {
+        BounceProjectileBehaviourFactory bounce = AssetDatabase.LoadAssetAtPath<BounceProjectileBehaviourFactory>("Assets/Data/EntityItems/ArcItem/BounceProjectileBehaviourFactory.asset");
+        Assert.IsNotNull(bounce);
+
+        // The first target, then 3 jumps
+        Assert.AreEqual(3, bounce.data.bounce);
+        StringAssert.Contains("4", LoadEnemy("ArcMage").description);
+    }
+
+    [Test]
+    public void Storm_FieldsThreeSoldiersInFrontAndTheWarDrumBetweenTwoArcMages()
+    {
+        WavePatternData wave = LoadWave("Wave_Storm");
+
+        CollectionAssert.AreEqual(new[] { "Soldier", "Soldier", "Soldier" }, GetRank(wave, 0));
+        CollectionAssert.AreEqual(new[] { "Arc Mage", "War Drum", "Arc Mage" }, GetRank(wave, 1));
+    }
+
+    [Test]
     public void Archer_ShootsWeakShotsAtYourFarthestUnit()
     {
         EntityData archer = LoadEnemy("Archer");

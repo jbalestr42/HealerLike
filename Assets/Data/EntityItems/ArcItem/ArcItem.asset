@@ -24,7 +24,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 9392f93915a0c67489f7288cf69dd701, type: 3}
     name: Arc
-    description: Lightning chains to 2 more nearby targets, dealing 25% less damage on each jump
+    description: Lightning chains to 3 more nearby targets, dealing 25% less damage on each jump
     tags:
     - {fileID: 11400000, guid: 70e1d7434c8b934438c8f00ac71691d8, type: 2}
     - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}

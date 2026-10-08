@@ -24,4 +24,4 @@ MonoBehaviour:
   data:
     rangeMultiplier: 100
     decreaseMultiplierPerBounce: 0.75
-    bounce: 2
+    bounce: 3

@@ -95,7 +95,7 @@ MonoBehaviour:
       Data: 
   model: {fileID: 4281683080859636826, guid: 93df5c48d5e021040916b0e984d9b01a, type: 3}
   title: Arc Mage
-  description: Casts lightning that chains through 3 of your units
+  description: Casts lightning that chains through 4 of your units
   attributes:
   - key: 0
     value: 90
