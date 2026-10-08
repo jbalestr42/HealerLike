@@ -7,10 +7,20 @@ using UnityEngine;
 // wins, spending about the mana targeted for its room type), and how each character copes
 public class BalanceReport
 {
-    // Part of the max mana a fight should take: a normal fight about 60%, an elite or a boss all of it
-    public const float CombatManaTarget = 0.6f;
-    public const float EliteManaTarget = 1f;
-    public const float ManaTolerance = 0.15f;
+    // Parts of the max mana a fight should take, by room type (40% of it comes back before each fight)
+    public struct ManaTargets
+    {
+        public float combatMin;
+        public float combatMax;
+        // Elites and bosses
+        public float eliteMin;
+        public float eliteMax;
+    }
+
+    // A normal fight 30% to 50% of the mana, an elite or a boss 60% to all of it
+    public static readonly ManaTargets DefaultManaTargets = new ManaTargets { combatMin = 0.3f, combatMax = 0.5f, eliteMin = 0.6f, eliteMax = 1f };
+    // Set from the Difficulty tab of the Balance Report
+    public static ManaTargets manaTargets = DefaultManaTargets;
 
     // Fights of a wave on a floor (or of a character), averaged
     public class Cell
@@ -82,9 +92,18 @@ public class BalanceReport
         return fights;
     }
 
+    // Range of mana spent that fits the room type
+    public static (float min, float max) GetManaTargetRange(string roomType)
+    {
+        bool isElite = roomType == MapNodeType.Elite.ToString() || roomType == MapNodeType.Boss.ToString();
+        return isElite ? (manaTargets.eliteMin, manaTargets.eliteMax) : (manaTargets.combatMin, manaTargets.combatMax);
+    }
+
+    // Middle of the range of the room type
     public static float GetManaTarget(string roomType)
     {
-        return roomType == MapNodeType.Elite.ToString() || roomType == MapNodeType.Boss.ToString() ? EliteManaTarget : CombatManaTarget;
+        (float min, float max) = GetManaTargetRange(roomType);
+        return (min + max) / 2f;
     }
 
     // Room type the wave was played in
@@ -106,16 +125,25 @@ public class BalanceReport
         return Cell.Average(_fights.FindAll(fight => fight.bot == bot && fight.roomType == roomType && (floor == null || fight.floor == floor)));
     }
 
-    // How far the mana spent is from the target of the room type, negative when the fight is too easy
+    // How far the mana spent is out of the range of the room type: 0 within it, negative when the fight is too easy
     public static float GetManaGap(Cell cell, string roomType)
     {
-        return cell.manaSpent - GetManaTarget(roomType);
+        (float min, float max) = GetManaTargetRange(roomType);
+        if (cell.manaSpent < min)
+        {
+            return cell.manaSpent - min;
+        }
+        if (cell.manaSpent > max)
+        {
+            return cell.manaSpent - max;
+        }
+        return 0f;
     }
 
-    // Every bot won, spending about the mana targeted
+    // Every bot won, spending the mana targeted
     public static bool Fits(Cell cell, string roomType)
     {
-        return cell.allWon && Mathf.Abs(GetManaGap(cell, roomType)) <= ManaTolerance;
+        return cell.allWon && GetManaGap(cell, roomType) == 0f;
     }
 
     // The floors where the wave fits, for every bot together

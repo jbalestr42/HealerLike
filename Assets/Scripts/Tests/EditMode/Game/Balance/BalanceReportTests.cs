@@ -7,6 +7,22 @@ namespace Game.Balance
 
 public class BalanceReportTests
 {
+    // The targets are set from the editor: every test starts from the defaults, the editor's ones put back after
+    BalanceReport.ManaTargets _savedTargets;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _savedTargets = BalanceReport.manaTargets;
+        BalanceReport.manaTargets = BalanceReport.DefaultManaTargets;
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        BalanceReport.manaTargets = _savedTargets;
+    }
+
     static CombatStats Fight(string wave, int floor, string bot, float manaSpent, bool won = true, string roomType = "Combat", int deaths = 0)
     {
         CombatStats fight = new CombatStats
@@ -45,11 +61,37 @@ public class BalanceReportTests
     }
 
     [Test]
-    public void ManaTarget_AboutHalfTheManaForACombat_AllOfItForAnEliteOrABoss()
+    public void ManaTarget_ByDefault_30To50PercentForACombat_60To100PercentForAnEliteOrABoss()
     {
-        Assert.AreEqual(0.6f, BalanceReport.GetManaTarget("Combat"));
-        Assert.AreEqual(1f, BalanceReport.GetManaTarget("Elite"));
-        Assert.AreEqual(1f, BalanceReport.GetManaTarget("Boss"));
+        Assert.AreEqual(0.3f, BalanceReport.GetManaTargetRange("Combat").min, 0.0001f);
+        Assert.AreEqual(0.5f, BalanceReport.GetManaTargetRange("Combat").max, 0.0001f);
+        Assert.AreEqual(0.4f, BalanceReport.GetManaTarget("Combat"), 0.0001f);
+        foreach (string roomType in new[] { "Elite", "Boss" })
+        {
+            Assert.AreEqual(0.6f, BalanceReport.GetManaTargetRange(roomType).min, 0.0001f, roomType);
+            Assert.AreEqual(1f, BalanceReport.GetManaTargetRange(roomType).max, 0.0001f, roomType);
+            Assert.AreEqual(0.8f, BalanceReport.GetManaTarget(roomType), 0.0001f, roomType);
+        }
+    }
+
+    [Test]
+    public void ManaGap_IsZeroWithinTheRange_AndTheDistanceToItOutside()
+    {
+        Assert.AreEqual(0f, BalanceReport.GetManaGap(new BalanceReport.Cell { manaSpent = 0.75f }, "Elite"));
+        Assert.AreEqual(0f, BalanceReport.GetManaGap(new BalanceReport.Cell { manaSpent = 0.6f }, "Elite"));
+        Assert.AreEqual(-0.2f, BalanceReport.GetManaGap(new BalanceReport.Cell { manaSpent = 0.4f }, "Elite"), 0.0001f);
+        Assert.AreEqual(0.1f, BalanceReport.GetManaGap(new BalanceReport.Cell { manaSpent = 1.1f }, "Elite"), 0.0001f);
+        Assert.AreEqual(0.2f, BalanceReport.GetManaGap(new BalanceReport.Cell { manaSpent = 0.7f }, "Combat"), 0.0001f);
+    }
+
+    [Test]
+    public void ManaTargets_Changed_MoveTheRanges()
+    {
+        BalanceReport.manaTargets = new BalanceReport.ManaTargets { combatMin = 0.2f, combatMax = 0.4f, eliteMin = 0.5f, eliteMax = 0.9f };
+
+        Assert.AreEqual((0.2f, 0.4f), BalanceReport.GetManaTargetRange("Combat"));
+        Assert.AreEqual((0.5f, 0.9f), BalanceReport.GetManaTargetRange("Boss"));
+        Assert.AreEqual(-0.05f, BalanceReport.GetManaGap(new BalanceReport.Cell { manaSpent = 0.15f }, "Combat"), 0.0001f);
     }
 
     [Test]
@@ -106,17 +148,19 @@ public class BalanceReportTests
     }
 
     [Test]
-    public void Fits_EveryFightWon_AndTheManaWithinTheToleranceOfTheTarget()
+    public void Fits_EveryFightWon_AndTheManaWithinTheRangeOfTheRoomType()
     {
-        BalanceReport.Cell onTarget = new BalanceReport.Cell { fights = 2, wins = 2, manaSpent = 0.7f };
-        BalanceReport.Cell tooEasy = new BalanceReport.Cell { fights = 2, wins = 2, manaSpent = 0.3f };
-        BalanceReport.Cell lost = new BalanceReport.Cell { fights = 2, wins = 1, manaSpent = 0.6f };
+        BalanceReport.Cell onTarget = new BalanceReport.Cell { fights = 2, wins = 2, manaSpent = 0.45f };
+        BalanceReport.Cell tooEasy = new BalanceReport.Cell { fights = 2, wins = 2, manaSpent = 0.2f };
+        BalanceReport.Cell tooHard = new BalanceReport.Cell { fights = 2, wins = 2, manaSpent = 0.7f };
+        BalanceReport.Cell lost = new BalanceReport.Cell { fights = 2, wins = 1, manaSpent = 0.4f };
 
         Assert.IsTrue(BalanceReport.Fits(onTarget, "Combat"));
         Assert.IsFalse(BalanceReport.Fits(tooEasy, "Combat"));
+        Assert.IsFalse(BalanceReport.Fits(tooHard, "Combat"));
         Assert.IsFalse(BalanceReport.Fits(lost, "Combat"));
         Assert.IsFalse(BalanceReport.Fits(onTarget, "Elite"));
-        Assert.AreEqual(-0.3f, BalanceReport.GetManaGap(onTarget, "Elite"), 0.0001f);
+        Assert.IsTrue(BalanceReport.Fits(tooHard, "Elite"));
     }
 
     [Test]
@@ -125,10 +169,10 @@ public class BalanceReportTests
         BalanceReport report = new BalanceReport(new List<CombatStats>
         {
             // Floor 1 too easy, floors 2 and 3 on target, floor 4 lost by one bot
-            Fight("Wave_A", 1, "ClericBot", 20f), Fight("Wave_A", 1, "DruidBot", 30f),
-            Fight("Wave_A", 2, "ClericBot", 50f), Fight("Wave_A", 2, "DruidBot", 60f),
-            Fight("Wave_A", 3, "ClericBot", 60f), Fight("Wave_A", 3, "DruidBot", 70f),
-            Fight("Wave_A", 4, "ClericBot", 70f), Fight("Wave_A", 4, "DruidBot", 70f, won: false),
+            Fight("Wave_A", 1, "ClericBot", 10f), Fight("Wave_A", 1, "DruidBot", 20f),
+            Fight("Wave_A", 2, "ClericBot", 30f), Fight("Wave_A", 2, "DruidBot", 40f),
+            Fight("Wave_A", 3, "ClericBot", 40f), Fight("Wave_A", 3, "DruidBot", 50f),
+            Fight("Wave_A", 4, "ClericBot", 50f), Fight("Wave_A", 4, "DruidBot", 50f, won: false),
         });
 
         CollectionAssert.AreEqual(new List<int> { 2, 3 }, report.GetRecommendedFloors("Wave_A"));

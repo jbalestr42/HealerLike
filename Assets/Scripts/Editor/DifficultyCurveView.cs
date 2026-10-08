@@ -21,6 +21,10 @@ public static class DifficultyCurveView
 
     const string FloorZeroThreatKey = "BalanceReport.Difficulty.FloorZeroThreat";
     const string GrowthPerFloorKey = "BalanceReport.Difficulty.GrowthPerFloor";
+    const string CombatManaMinKey = "BalanceReport.Difficulty.CombatManaMin";
+    const string CombatManaMaxKey = "BalanceReport.Difficulty.CombatManaMax";
+    const string EliteManaMinKey = "BalanceReport.Difficulty.EliteManaMin";
+    const string EliteManaMaxKey = "BalanceReport.Difficulty.EliteManaMax";
     const string MapSettingsPath = "Assets/Data/Run/MapGenerationSettings.asset";
     const float GraphHeight = 420f;
     const float LeftMargin = 60f;
@@ -34,7 +38,41 @@ public static class DifficultyCurveView
     static readonly Color GridColor = new Color(1f, 1f, 1f, 0.08f);
 
     // Elites and bosses target all the mana instead of a part of it: their threat is that much higher
-    public static float eliteFactor => BalanceReport.EliteManaTarget / BalanceReport.CombatManaTarget;
+    public static float eliteFactor => BalanceReport.GetManaTarget(MapNodeType.Elite.ToString()) / BalanceReport.GetManaTarget(MapNodeType.Combat.ToString());
+
+    // The mana targets saved in the editor, applied to every report (also loaded with the editor)
+    [InitializeOnLoadMethod]
+    public static void LoadManaTargets()
+    {
+        BalanceReport.ManaTargets defaults = BalanceReport.DefaultManaTargets;
+        BalanceReport.manaTargets = new BalanceReport.ManaTargets
+        {
+            combatMin = EditorPrefs.GetFloat(CombatManaMinKey, defaults.combatMin),
+            combatMax = EditorPrefs.GetFloat(CombatManaMaxKey, defaults.combatMax),
+            eliteMin = EditorPrefs.GetFloat(EliteManaMinKey, defaults.eliteMin),
+            eliteMax = EditorPrefs.GetFloat(EliteManaMaxKey, defaults.eliteMax),
+        };
+    }
+
+    static void SaveManaTargets(BalanceReport.ManaTargets targets)
+    {
+        EditorPrefs.SetFloat(CombatManaMinKey, targets.combatMin);
+        EditorPrefs.SetFloat(CombatManaMaxKey, targets.combatMax);
+        EditorPrefs.SetFloat(EliteManaMinKey, targets.eliteMin);
+        EditorPrefs.SetFloat(EliteManaMaxKey, targets.eliteMax);
+        LoadManaTargets();
+    }
+
+    // A min-max slider in percent of the max mana
+    static void ManaRangeField(string label, ref float min, ref float max)
+    {
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField($"{label}: {min:P0} to {max:P0}", GUILayout.Width(250f));
+        EditorGUILayout.MinMaxSlider(ref min, ref max, 0f, 1.5f, GUILayout.Width(300f));
+        EditorGUILayout.EndHorizontal();
+        min = Mathf.Round(min * 100f) / 100f;
+        max = Mathf.Round(max * 100f) / 100f;
+    }
 
     public static DifficultyCurve LoadCurve()
     {
@@ -53,7 +91,7 @@ public static class DifficultyCurveView
         DifficultyCurve curve = LoadCurve();
         int floorCount = LoadFloorCount();
 
-        EditorGUILayout.LabelField($"Target threat per floor: floor 0 threat x (1 + growth)^floor. Combat on the blue curve; elite and boss on the orange one, x{eliteFactor:0.##} (their mana target is {BalanceReport.EliteManaTarget:P0} instead of {BalanceReport.CombatManaTarget:P0}). Each wave is drawn at its measured threat (Tools > Scores) over the floors of its pools, * when out of date.", EditorStyles.wordWrappedMiniLabel);
+        EditorGUILayout.LabelField($"Target threat per floor: floor 0 threat x (1 + growth)^floor. Combat on the blue curve; elite and boss on the orange one, x{eliteFactor:0.##} (the middle of their mana target, {BalanceReport.GetManaTarget(MapNodeType.Elite.ToString()):P0}, against {BalanceReport.GetManaTarget(MapNodeType.Combat.ToString()):P0} for a combat). Each wave is drawn at its measured threat (Tools > Scores) over the floors of its pools, * when out of date.", EditorStyles.wordWrappedMiniLabel);
         EditorGUI.BeginChangeCheck();
         float floorZeroThreat = EditorGUILayout.FloatField("Floor 0 threat", curve.floorZeroThreat, GUILayout.Width(300f));
         float growth = EditorGUILayout.Slider("Growth per floor (%)", curve.growthPerFloor * 100f, 0f, 50f, GUILayout.Width(400f)) / 100f;
@@ -63,6 +101,17 @@ public static class DifficultyCurveView
             EditorPrefs.SetFloat(GrowthPerFloorKey, Mathf.Max(0f, growth));
             curve = LoadCurve();
         }
+
+        EditorGUILayout.LabelField("Mana a fight should take, part of the max mana (40% of it comes back before each fight): out of it, the cells of the Waves tab are blue (too easy) or orange (too hard)", EditorStyles.wordWrappedMiniLabel);
+        BalanceReport.ManaTargets targets = BalanceReport.manaTargets;
+        EditorGUI.BeginChangeCheck();
+        ManaRangeField("Combat", ref targets.combatMin, ref targets.combatMax);
+        ManaRangeField("Elite and boss", ref targets.eliteMin, ref targets.eliteMax);
+        if (EditorGUI.EndChangeCheck())
+        {
+            SaveManaTargets(targets);
+        }
+
         EditorGUILayout.LabelField($"Floor {floorCount - 1}: {curve.GetThreat(floorCount - 1):0} (elite {curve.GetThreat(floorCount - 1) * eliteFactor:0}), boss: {curve.GetThreat(floorCount) * eliteFactor:0}", EditorStyles.miniLabel);
 
         Rect rect = GUILayoutUtility.GetRect(width, GraphHeight, GUILayout.Width(width));

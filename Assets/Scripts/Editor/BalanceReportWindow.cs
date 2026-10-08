@@ -214,7 +214,7 @@ public class BalanceReportWindow : EditorWindow
             return;
         }
 
-        EditorGUILayout.LabelField($"{_report.fights.Count} fights. Mana spent against the target (combat {BalanceReport.CombatManaTarget:P0}, elite and boss {BalanceReport.EliteManaTarget:P0}, ±{BalanceReport.ManaTolerance:P0}): blue too easy, green fits, orange too hard, red lost", EditorStyles.wordWrappedMiniLabel);
+        EditorGUILayout.LabelField($"{_report.fights.Count} fights. Mana spent against the target (combat {BalanceReport.manaTargets.combatMin:P0} to {BalanceReport.manaTargets.combatMax:P0}, elite and boss {BalanceReport.manaTargets.eliteMin:P0} to {BalanceReport.manaTargets.eliteMax:P0}, set in the Difficulty tab): blue too easy, green fits, orange too hard, red lost", EditorStyles.wordWrappedMiniLabel);
         _scroll = EditorGUILayout.BeginScrollView(_scroll);
         if (_tab == Tab.Waves)
         {
@@ -469,7 +469,7 @@ public class BalanceReportWindow : EditorWindow
         EditorGUI.DrawRect(rect, GetColor(cell, roomType));
         string text = cell.allWon ? $"{cell.manaSpent:P0}" : $"{cell.wins}/{cell.fights}";
         string tooltip = $"Won {cell.wins}/{cell.fights}{(cell.timeouts > 0 ? $" ({cell.timeouts} timed out)" : "")}\n"
-            + $"Mana spent {cell.manaSpent:P0} (target {BalanceReport.GetManaTarget(roomType):P0})\n"
+            + $"Mana spent {cell.manaSpent:P0} (target {BalanceReport.GetManaTargetRange(roomType).min:P0} to {BalanceReport.GetManaTargetRange(roomType).max:P0})\n"
             + $"Health lost {cell.healthLost:P0}, deaths {cell.deaths:0.#}\n"
             + $"Duration {cell.duration:0}s";
         GUI.Label(rect, new GUIContent(text, tooltip), _cellStyle);
@@ -483,7 +483,7 @@ public class BalanceReportWindow : EditorWindow
         }
 
         float gap = BalanceReport.GetManaGap(cell, roomType);
-        if (Mathf.Abs(gap) <= BalanceReport.ManaTolerance)
+        if (gap == 0f)
         {
             return FitsColor;
         }
