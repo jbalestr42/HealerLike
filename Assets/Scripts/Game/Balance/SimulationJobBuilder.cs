@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 public static class SimulationJobBuilder
 {
-    // Every wave on every floor, for every bot (its character played its way) and seed. generateRun gives the
-    // reference teams of a run (one per room of its path) for a character and a seed. A bot without character
-    // is skipped
-    public static List<SimulationJob> Build(IReadOnlyList<HealerBotProfile> bots, IReadOnlyList<SimulatedWave> waves, IReadOnlyList<int> floors, int seedCount, Func<CharacterData, int, List<ReferenceTeam>> generateRun)
+    // Every wave on every floor (only the floors of its pools, give or take poolFloorMargin, when it isn't
+    // negative), for every bot (its character played its way) and seed. generateRun gives the reference teams of a
+    // run (one per room of its path) for a character and a seed. A bot without character is skipped
+    public static List<SimulationJob> Build(IReadOnlyList<HealerBotProfile> bots, IReadOnlyList<SimulatedWave> waves, IReadOnlyList<int> floors, int seedCount, Func<CharacterData, int, List<ReferenceTeam>> generateRun, int poolFloorMargin = -1)
     {
         List<SimulationJob> jobs = new List<SimulationJob>();
         foreach (HealerBotProfile bot in bots)
@@ -29,7 +29,10 @@ public static class SimulationJobBuilder
 
                     foreach (SimulatedWave wave in waves)
                     {
-                        jobs.Add(new SimulationJob { bot = bot, character = bot.character, team = team, wave = wave.wave, roomType = wave.roomType, floor = floor, seed = seed });
+                        if (IsPlayedOnFloor(wave, floor, poolFloorMargin))
+                        {
+                            jobs.Add(new SimulationJob { bot = bot, character = bot.character, team = team, wave = wave.wave, roomType = wave.roomType, floor = floor, seed = seed });
+                        }
                     }
                 }
             }
@@ -81,7 +84,44 @@ public static class SimulationJobBuilder
         return jobs;
     }
 
-    // Every wave of the wave pools once, played in the room type of its first pool
+    // Whether the wave is played on the floor: every floor with a negative margin or for a wave in no pool, else
+    // the floors of its pools give or take the margin
+    public static bool IsPlayedOnFloor(SimulatedWave wave, int floor, int poolFloorMargin)
+    {
+        if (poolFloorMargin < 0 || !wave.hasPoolFloors)
+        {
+            return true;
+        }
+        return floor >= wave.minFloor - poolFloorMargin && floor <= wave.maxFloor + poolFloorMargin;
+    }
+
+    // How many fights Build makes, without generating the teams: every floor is supposed to have one
+    public static int CountJobs(IReadOnlyList<HealerBotProfile> bots, IReadOnlyList<SimulatedWave> waves, IReadOnlyList<int> floors, int seedCount, int poolFloorMargin = -1)
+    {
+        int botCount = 0;
+        foreach (HealerBotProfile bot in bots)
+        {
+            if (bot != null && bot.character != null)
+            {
+                botCount++;
+            }
+        }
+
+        int fightsPerRun = 0;
+        foreach (int floor in floors)
+        {
+            foreach (SimulatedWave wave in waves)
+            {
+                if (IsPlayedOnFloor(wave, floor, poolFloorMargin))
+                {
+                    fightsPerRun++;
+                }
+            }
+        }
+        return botCount * seedCount * fightsPerRun;
+    }
+
+    // Every wave of the wave pools once, played in the room type of its first pool, over the floors of all its pools
     public static List<SimulatedWave> GetWaves(GameData data)
     {
         List<SimulatedWave> waves = new List<SimulatedWave>();
@@ -89,9 +129,22 @@ public static class SimulationJobBuilder
         {
             foreach (WavePatternData wave in pool.wavePatterns)
             {
-                if (wave != null && !waves.Exists(simulated => simulated.wave == wave))
+                if (wave == null)
                 {
-                    waves.Add(new SimulatedWave { wave = wave, roomType = pool.roomType });
+                    continue;
+                }
+
+                int index = waves.FindIndex(simulated => simulated.wave == wave);
+                if (index < 0)
+                {
+                    waves.Add(new SimulatedWave { wave = wave, roomType = pool.roomType, hasPoolFloors = true, minFloor = pool.minFloor, maxFloor = pool.maxFloor });
+                }
+                else
+                {
+                    SimulatedWave simulated = waves[index];
+                    simulated.minFloor = System.Math.Min(simulated.minFloor, pool.minFloor);
+                    simulated.maxFloor = System.Math.Max(simulated.maxFloor, pool.maxFloor);
+                    waves[index] = simulated;
                 }
             }
         }

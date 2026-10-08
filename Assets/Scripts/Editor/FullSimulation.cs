@@ -13,6 +13,8 @@ public static class FullSimulation
     const string RunningKey = "HealerLike.FullSimulation.Running";
     // Plan of the scene before the simulation, put back after it
     const string ScenePlanKey = "HealerLike.FullSimulation.ScenePlan";
+    // Whether the simulation plays the plan restricted to the FullSimulationSettings
+    const string UseSettingsKey = "HealerLike.FullSimulation.UseSettings";
 
     public static bool isRunning
     {
@@ -24,9 +26,24 @@ public static class FullSimulation
     {
         EditorApplication.playModeStateChanged += OnPlayModeChanged;
         EditorApplication.update += OnUpdate;
+        // Built again after the domain reload of the play mode, before the simulation starts: the restricted plan
+        // only lives in memory
+        if (isRunning && SessionState.GetBool(UseSettingsKey, false))
+        {
+            BalanceSimulator.planOverride = BuildSettingsPlan();
+        }
     }
 
-    public static void Start()
+    // The plan at PlanPath restricted to the settings, null without plan or game data
+    public static SimulationPlan BuildSettingsPlan()
+    {
+        SimulationPlan basePlan = AssetDatabase.LoadAssetAtPath<SimulationPlan>(PlanPath);
+        GameData data = BalanceReportWindow.LoadGameData();
+        return basePlan != null && data != null ? FullSimulationSettings.Load().BuildPlan(basePlan, data) : null;
+    }
+
+    // The plan at PlanPath, restricted to the FullSimulationSettings with useSettings
+    public static void Start(bool useSettings)
     {
         if (isRunning || ScoreMeasure.isRunning || EditorApplication.isPlayingOrWillChangePlaymode || !ScoreMeasure.OpenScene())
         {
@@ -34,6 +51,7 @@ public static class FullSimulation
         }
 
         SessionState.SetString(ScenePlanKey, ScoreMeasure.GetScenePlan());
+        SessionState.SetBool(UseSettingsKey, useSettings);
         ScoreMeasure.SetScenePlan(PlanPath);
         isRunning = true;
         EditorApplication.isPlaying = true;
@@ -67,6 +85,9 @@ public static class FullSimulation
         }
 
         isRunning = false;
+        SessionState.SetBool(UseSettingsKey, false);
+        // Never left for another simulation (e.g. a score measure), even when this one stopped before using it
+        BalanceSimulator.planOverride = null;
         ScoreMeasure.SetScenePlan(SessionState.GetString(ScenePlanKey, ""));
         Debug.Log($"[FullSimulation] {Path.GetFileNameWithoutExtension(PlanPath)} over: open the latest log in the Balance Report");
     }

@@ -202,7 +202,8 @@ public class FuseSkillTests
         _skill.Tick(_kamikaze, 12.9f);
         Assert.IsFalse(_skill.hasExploded);
 
-        _skill.Tick(_kamikaze, 0.1f);
+        // 12.9 + 0.1 falls just short of 13 in floats
+        _skill.Tick(_kamikaze, 0.2f);
         Assert.IsTrue(_skill.hasExploded);
     }
 

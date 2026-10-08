@@ -136,6 +136,22 @@ public class SimulationPlanTests
     }
 
     [Test]
+    public void BuildJobs_OnlyPoolFloors_EachWaveOnTheFloorsOfItsPools()
+    {
+        SimulatedWave wave = SimulationJobBuilder.GetWaves(_data).Find(simulated => simulated.roomType == MapNodeType.Combat);
+        _plan.waves = new List<WavePatternData> { wave.wave };
+        _plan.floors = new List<int> { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+        _plan.onlyPoolFloors = true;
+        _plan.poolFloorMargin = 0;
+
+        List<SimulationJob> jobs = _plan.BuildJobs(_data);
+
+        Assert.IsNotEmpty(jobs);
+        Assert.IsTrue(jobs.TrueForAll(job => job.floor >= wave.minFloor && job.floor <= wave.maxFloor));
+        Assert.AreEqual(_plan.CountJobs(_data), jobs.Count);
+    }
+
+    [Test]
     public void GetMaxDuration_LongerForAnEliteOrABoss()
     {
         _plan.maxDuration = 30f;

@@ -11,6 +11,9 @@ public class SimulationPlan : ScriptableObject
     // Every wave of the wave pools when empty
     public List<WavePatternData> waves = new List<WavePatternData>();
     public List<int> floors = new List<int> { 0, 3, 6, 9 };
+    // Each wave only on the floors of its pools, give or take poolFloorMargin (far quicker than every floor)
+    public bool onlyPoolFloors;
+    [Min(0)] public int poolFloorMargin = 1;
     [Min(1)] public int seedCount = 1;
     // Map the reference teams are built on (rewards along a path)
     public MapGenerationSettings mapSettings;
@@ -64,6 +67,16 @@ public class SimulationPlan : ScriptableObject
         return listed;
     }
 
+    // The margin given to the job builder, negative to play every floor
+    int floorMargin => onlyPoolFloors ? poolFloorMargin : -1;
+
+    // How many fights the plan makes with the bots, the floors and the reference teams (not for a fixed team or
+    // the initial teams)
+    public int CountJobs(GameData data)
+    {
+        return SimulationJobBuilder.CountJobs(healerBots, GetWaves(data), floors, seedCount, floorMargin);
+    }
+
     public float GetMaxDuration(MapNodeType roomType)
     {
         return roomType == MapNodeType.Elite || roomType == MapNodeType.Boss ? eliteMaxDuration : maxDuration;
@@ -81,6 +94,6 @@ public class SimulationPlan : ScriptableObject
         }
 
         return SimulationJobBuilder.Build(healerBots, GetWaves(data), floors, seedCount,
-            (character, seed) => ReferenceTeamGenerator.GenerateRun(mapSettings, character.entities, RewardPools.Create(data, character), seed));
+            (character, seed) => ReferenceTeamGenerator.GenerateRun(mapSettings, character.entities, RewardPools.Create(data, character), seed), floorMargin);
     }
 }

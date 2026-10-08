@@ -37,6 +37,9 @@ public class BalanceSimulator : AGameType
     // Folder of the next simulation, each plan written to <plan>.jsonl in it (e.g. the folder of a wave score
     // measure). Null for a balance simulation: Logs/Balance/sim-<plan>-<run>.jsonl
     public static string outputFolder;
+    // Plan of the next simulation instead of the one of the scene (e.g. the full simulation restricted to some
+    // waves and characters, kept in memory only): set by the editor once the domain is reloaded for the play mode
+    public static SimulationPlan planOverride;
 
     [SerializeField] SimulationPlan _plan;
 
@@ -73,6 +76,10 @@ public class BalanceSimulator : AGameType
         switch (_state)
         {
             case State.WaitForManagers:
+                if (SimulationQueue.count == 0 && planOverride != null)
+                {
+                    _plan = planOverride;
+                }
                 if (_plan == null)
                 {
                     Debug.LogError("[BalanceSimulator] No simulation plan set");
@@ -119,6 +126,7 @@ public class BalanceSimulator : AGameType
         string runId = System.DateTime.Now.ToString("yyyyMMdd-HHmmss");
         string path = GetOutputPath(_plan.name, runId, outputFolder);
         SimulationQueue.Start(_plan, jobs, path, runId);
+        planOverride = null;
         Debug.Log($"[BalanceSimulator] {_plan.name}: {jobs.Count} fights to simulate, written to {path}");
         StartEditorProgress();
     }

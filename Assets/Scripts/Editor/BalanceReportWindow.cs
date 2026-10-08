@@ -16,6 +16,8 @@ public class BalanceReportWindow : EditorWindow
         Waves,
         Characters,
         Difficulty,
+        // What the simulation run from this window plays
+        Simulation,
     }
 
     const string ManagersPrefabPath = "Assets/Prefabs/Managers.prefab";
@@ -55,6 +57,8 @@ public class BalanceReportWindow : EditorWindow
     Tab _tab;
     // 0 for the average of all the characters
     int _botIndex;
+    // What the full simulation plays
+    FullSimulationSettings _simulationSettings;
     Vector2 _scroll;
     GUIStyle _cellStyle;
     bool _wasSimulating;
@@ -152,18 +156,25 @@ public class BalanceReportWindow : EditorWindow
         return poolFloors;
     }
 
+    // The game data of the managers, the one the simulations play
+    public static GameData LoadGameData()
+    {
+        GameObject managers = AssetDatabase.LoadAssetAtPath<GameObject>(ManagersPrefabPath);
+        DataManager dataManager = managers != null ? managers.GetComponentInChildren<DataManager>() : null;
+        return dataManager != null ? dataManager.data : null;
+    }
+
     // The pools each wave is in, by wave name, from the game data of the managers
     public static Dictionary<string, List<GameData.WavePool>> LoadWavePools()
     {
         Dictionary<string, List<GameData.WavePool>> wavePools = new Dictionary<string, List<GameData.WavePool>>();
-        GameObject managers = AssetDatabase.LoadAssetAtPath<GameObject>(ManagersPrefabPath);
-        DataManager dataManager = managers != null ? managers.GetComponentInChildren<DataManager>() : null;
-        if (dataManager == null || dataManager.data == null)
+        GameData data = LoadGameData();
+        if (data == null)
         {
             return wavePools;
         }
 
-        foreach (GameData.WavePool pool in dataManager.data.wavePools)
+        foreach (GameData.WavePool pool in data.wavePools)
         {
             foreach (WavePatternData wave in pool.wavePatterns)
             {
@@ -201,6 +212,13 @@ public class BalanceReportWindow : EditorWindow
         };
 
         DrawToolbar();
+        if (_tab == Tab.Simulation)
+        {
+            _scroll = EditorGUILayout.BeginScrollView(_scroll);
+            DrawSimulationSettings();
+            EditorGUILayout.EndScrollView();
+            return;
+        }
         if (_tab == Tab.Difficulty)
         {
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
@@ -245,7 +263,7 @@ public class BalanceReportWindow : EditorWindow
         }
 
         GUILayout.Space(10f);
-        _tab = (Tab)GUILayout.Toolbar((int)_tab, new[] { "Waves", "Characters", "Difficulty" }, EditorStyles.toolbarButton, GUILayout.Width(240f));
+        _tab = (Tab)GUILayout.Toolbar((int)_tab, new[] { "Waves", "Characters", "Difficulty", "Simulation" }, EditorStyles.toolbarButton, GUILayout.Width(320f));
         if (_tab == Tab.Waves && _report != null)
         {
             GUILayout.Space(10f);
@@ -269,14 +287,116 @@ public class BalanceReportWindow : EditorWindow
             return;
         }
 
-        using (new EditorGUI.DisabledScope(ScoreMeasure.isRunning || EditorApplication.isPlayingOrWillChangePlaymode))
+        // Only to count the fights: the simulation builds it again once the play mode started
+        SimulationPlan plan = BuildSelectedPlan(out int fights);
+        bool hasPlan = plan != null;
+        if (hasPlan)
         {
-            string tooltip = $"Plays {Path.GetFileNameWithoutExtension(FullSimulation.PlanPath)} in the simulation scene (every wave on every floor, every character, about an hour), then shows it here";
-            if (GUILayout.Button(new GUIContent("Run full simulation", tooltip), EditorStyles.toolbarButton, GUILayout.Width(130f)))
+            DestroyImmediate(plan);
+        }
+        using (new EditorGUI.DisabledScope(!hasPlan || fights == 0 || ScoreMeasure.isRunning || EditorApplication.isPlayingOrWillChangePlaymode))
+        {
+            string tooltip = $"Plays {fights} fights of {Path.GetFileNameWithoutExtension(FullSimulation.PlanPath)} in the simulation scene, as picked in the Simulation tab, then shows them here";
+            if (GUILayout.Button(new GUIContent($"Run simulation ({fights} fights)", tooltip), EditorStyles.toolbarButton, GUILayout.Width(170f)))
             {
-                FullSimulation.Start();
+                FullSimulation.Start(true);
             }
         }
+    }
+
+    // The full simulation plan restricted to the settings and its count of fights, null without plan or game data
+    // or when no wave is picked (an empty list of waves would play them all)
+    SimulationPlan BuildSelectedPlan(out int fights)
+    {
+        fights = 0;
+        _simulationSettings ??= FullSimulationSettings.Load();
+        SimulationPlan basePlan = AssetDatabase.LoadAssetAtPath<SimulationPlan>(FullSimulation.PlanPath);
+        GameData data = LoadGameData();
+        if (basePlan == null || data == null)
+        {
+            return null;
+        }
+
+        SimulationPlan plan = _simulationSettings.BuildPlan(basePlan, data);
+        if (plan.waves.Count == 0)
+        {
+            DestroyImmediate(plan);
+            return null;
+        }
+        fights = plan.CountJobs(data);
+        return plan;
+    }
+
+    void DrawSimulationSettings()
+    {
+        SimulationPlan basePlan = AssetDatabase.LoadAssetAtPath<SimulationPlan>(FullSimulation.PlanPath);
+        GameData data = LoadGameData();
+        if (basePlan == null || data == null)
+        {
+            EditorGUILayout.HelpBox($"No plan at {FullSimulation.PlanPath} or no game data in {ManagersPrefabPath}", MessageType.Warning);
+            return;
+        }
+
+        FullSimulationSettings settings = _simulationSettings ??= FullSimulationSettings.Load();
+        EditorGUILayout.LabelField("What the Run simulation button plays: the characters and waves ticked, each wave on every floor of the full simulation or only around the floors of its pools, with the seeds given. Saved in the editor preferences.", EditorStyles.wordWrappedMiniLabel);
+        EditorGUI.BeginChangeCheck();
+
+        EditorGUILayout.LabelField("Characters", EditorStyles.boldLabel);
+        EditorGUILayout.BeginHorizontal();
+        foreach (HealerBotProfile bot in basePlan.healerBots.Where(bot => bot != null))
+        {
+            string label = bot.character != null ? bot.character.title : bot.name;
+            settings.SetBotPlayed(bot, EditorGUILayout.ToggleLeft(label, settings.IsBotPlayed(bot), GUILayout.Width(120f)));
+        }
+        EditorGUILayout.EndHorizontal();
+
+        List<SimulatedWave> waves = basePlan.GetWaves(data);
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Waves", EditorStyles.boldLabel, GUILayout.Width(60f));
+        if (GUILayout.Button("All", EditorStyles.miniButtonLeft, GUILayout.Width(50f)))
+        {
+            waves.ForEach(wave => settings.SetWavePlayed(wave.wave, true));
+        }
+        if (GUILayout.Button("None", EditorStyles.miniButtonRight, GUILayout.Width(50f)))
+        {
+            waves.ForEach(wave => settings.SetWavePlayed(wave.wave, false));
+        }
+        EditorGUILayout.EndHorizontal();
+        const int columns = 4;
+        for (int i = 0; i < waves.Count; i += columns)
+        {
+            EditorGUILayout.BeginHorizontal();
+            for (int j = i; j < Mathf.Min(i + columns, waves.Count); j++)
+            {
+                SimulatedWave wave = waves[j];
+                string floors = wave.hasPoolFloors ? $" ({wave.roomType}, {wave.minFloor}-{wave.maxFloor})" : "";
+                settings.SetWavePlayed(wave.wave, EditorGUILayout.ToggleLeft(wave.wave.name.Replace("Wave_", "") + floors, settings.IsWavePlayed(wave.wave), GUILayout.Width(230f)));
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        EditorGUILayout.LabelField("Floors and seeds", EditorStyles.boldLabel);
+        settings.onlyPoolFloors = EditorGUILayout.ToggleLeft(new GUIContent("Each wave only on the floors of its pools", "Far quicker than every floor of the plan; a wave in no pool is still played on every floor"), settings.onlyPoolFloors);
+        using (new EditorGUI.DisabledScope(!settings.onlyPoolFloors))
+        {
+            settings.poolFloorMargin = EditorGUILayout.IntSlider(new GUIContent("Floors around the pools", "Floors played before and after those of the pools"), settings.poolFloorMargin, 0, 5, GUILayout.Width(400f));
+        }
+        settings.seedCount = EditorGUILayout.IntSlider(new GUIContent("Seeds", "Reference teams (and chance) per character"), settings.seedCount, 1, 5, GUILayout.Width(400f));
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            settings.Save();
+        }
+
+        int full = basePlan.CountJobs(data);
+        SimulationPlan plan = BuildSelectedPlan(out int fights);
+        bool hasPlan = plan != null;
+        if (hasPlan)
+        {
+            DestroyImmediate(plan);
+        }
+        EditorGUILayout.LabelField(!hasPlan ? "No wave picked" : $"{fights} fights picked, against {full} for every wave on every floor", EditorStyles.miniLabel);
+        EditorGUILayout.Space();
     }
 
     void DrawWaves()

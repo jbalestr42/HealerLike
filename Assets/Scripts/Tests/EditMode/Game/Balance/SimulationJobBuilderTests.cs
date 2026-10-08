@@ -195,6 +195,82 @@ public class SimulationJobBuilderTests
     }
 
     [Test]
+    public void GetWaves_TheFloorsOfAllThePoolsOfTheWave()
+    {
+        GameData data = Create<GameData>("Data");
+        WavePatternData crypt = Create<WavePatternData>("Wave_Crypt");
+        data.wavePools = new List<GameData.WavePool>
+        {
+            new GameData.WavePool { roomType = MapNodeType.Combat, minFloor = 5, maxFloor = 8, wavePatterns = new List<WavePatternData> { crypt } },
+            new GameData.WavePool { roomType = MapNodeType.Combat, minFloor = 2, maxFloor = 6, wavePatterns = new List<WavePatternData> { crypt } },
+        };
+
+        SimulatedWave wave = SimulationJobBuilder.GetWaves(data)[0];
+
+        Assert.IsTrue(wave.hasPoolFloors);
+        Assert.AreEqual(2, wave.minFloor);
+        Assert.AreEqual(8, wave.maxFloor);
+    }
+
+    [Test]
+    public void IsPlayedOnFloor_TheFloorsOfItsPools_GiveOrTakeTheMargin()
+    {
+        SimulatedWave wave = new SimulatedWave { hasPoolFloors = true, minFloor = 4, maxFloor = 7 };
+
+        Assert.IsFalse(SimulationJobBuilder.IsPlayedOnFloor(wave, 2, 1));
+        Assert.IsTrue(SimulationJobBuilder.IsPlayedOnFloor(wave, 3, 1));
+        Assert.IsTrue(SimulationJobBuilder.IsPlayedOnFloor(wave, 8, 1));
+        Assert.IsFalse(SimulationJobBuilder.IsPlayedOnFloor(wave, 9, 1));
+        Assert.IsFalse(SimulationJobBuilder.IsPlayedOnFloor(wave, 3, 0));
+    }
+
+    [Test]
+    public void IsPlayedOnFloor_NegativeMarginOrAWaveInNoPool_EveryFloor()
+    {
+        Assert.IsTrue(SimulationJobBuilder.IsPlayedOnFloor(new SimulatedWave { hasPoolFloors = true, minFloor = 4, maxFloor = 7 }, 0, -1));
+        Assert.IsTrue(SimulationJobBuilder.IsPlayedOnFloor(new SimulatedWave(), 12, 1));
+    }
+
+    [Test]
+    public void Build_WithAMargin_EachWaveOnlyOnTheFloorsOfItsPools()
+    {
+        HealerBotProfile bot = CreateBot(Create<CharacterData>("Cleric"));
+        WavePatternData early = Create<WavePatternData>("Wave_Early");
+        WavePatternData late = Create<WavePatternData>("Wave_Late");
+        List<SimulatedWave> waves = new List<SimulatedWave>
+        {
+            new SimulatedWave { wave = early, hasPoolFloors = true, minFloor = 0, maxFloor = 1 },
+            new SimulatedWave { wave = late, hasPoolFloors = true, minFloor = 4, maxFloor = 5 },
+        };
+        List<int> floors = new List<int> { 0, 1, 2, 3, 4, 5 };
+
+        List<SimulationJob> jobs = SimulationJobBuilder.Build(new[] { bot }, waves, floors, 1, (character, seed) => Teams(0), poolFloorMargin: 1);
+
+        CollectionAssert.AreEquivalent(new[] { 0, 1, 2 }, jobs.FindAll(job => job.wave == early).ConvertAll(job => job.floor));
+        CollectionAssert.AreEquivalent(new[] { 3, 4, 5 }, jobs.FindAll(job => job.wave == late).ConvertAll(job => job.floor));
+    }
+
+    [Test]
+    public void CountJobs_IsTheCountOfTheFightsBuilt()
+    {
+        HealerBotProfile cleric = CreateBot(Create<CharacterData>("Cleric"));
+        HealerBotProfile druid = CreateBot(Create<CharacterData>("Druid"));
+        List<SimulatedWave> waves = new List<SimulatedWave>
+        {
+            new SimulatedWave { wave = Create<WavePatternData>("Wave_Early"), hasPoolFloors = true, minFloor = 0, maxFloor = 1 },
+            new SimulatedWave { wave = Create<WavePatternData>("Wave_Late"), hasPoolFloors = true, minFloor = 4, maxFloor = 5 },
+        };
+        List<int> floors = new List<int> { 0, 1, 2, 3, 4, 5 };
+        HealerBotProfile[] bots = { cleric, druid, CreateBot(null) };
+
+        int built = SimulationJobBuilder.Build(bots, waves, floors, 3, (character, seed) => Teams(0), poolFloorMargin: 1).Count;
+
+        Assert.AreEqual(built, SimulationJobBuilder.CountJobs(bots, waves, floors, 3, 1));
+        // 2 bots x 3 seeds x 6 floors x 2 waves without margin
+        Assert.AreEqual(72, SimulationJobBuilder.CountJobs(bots, waves, floors, 3));
+    }
+
+    [Test]
     public void GetWaves_GameDataOfTheGame_HasEliteAndBossWaves()
     {
         GameData data = AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/TestData.asset");
