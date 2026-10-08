@@ -38,7 +38,7 @@ MonoBehaviour:
       Data: 
     - Name: 
       Entry: 12
-      Data: 2
+      Data: 3
     - Name: 
       Entry: 7
       Data: 
@@ -64,6 +64,18 @@ MonoBehaviour:
       Entry: 8
       Data: 
     - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 3
+      Data: 19
+    - Name: $v
+      Entry: 4
+      Data: 0.4
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
       Entry: 13
       Data: 
     - Name: 
@@ -77,6 +89,8 @@ MonoBehaviour:
     value: 20
   - key: 9
     value: 100
+  - key: 19
+    value: 0.4
   items:
   - {fileID: 11400000, guid: 49dc63530740c7e4fb2f7b602b813a72, type: 2}
   entities:

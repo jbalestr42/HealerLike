@@ -338,11 +338,20 @@ public class AscensionGameType : AGameType, IEventRoomHost
         return closingChoices;
     }
 
-    // Every fight starts with the full mana (current max, items included), while the units keep the health
-    // they had at the end of the previous fight
+    // Every fight gives back the CombatManaRefill share of the max mana (items included) on top of the mana left,
+    // capped by the max, while the units keep the health they had at the end of the previous fight. A gain like
+    // the others (applied on the mana's next update, the effects listening to the mana gains react to it), but
+    // never critical
     public static void RefillManaForCombat(ResourceAttribute characterMana)
     {
-        characterMana.Refill();
+        AttributeManager attributes = characterMana.GetComponent<AttributeManager>();
+        float refill = attributes != null && attributes.Has(AttributeType.CombatManaRefill)
+            ? attributes.Get(AttributeType.CombatManaRefill).Value
+            : AttributeManager.GetDefaultValue(AttributeType.CombatManaRefill);
+
+        ResourceModifier manaModifier = new ResourceModifier { source = characterMana.gameObject };
+        manaModifier.consumers.Add(new RuntimeConsumer(characterMana.Max * Mathf.Max(0f, refill), canBeCritical: false));
+        characterMana.AddResourceModifier(manaModifier);
     }
 
     // Beating the boss wins the run, the other fights lead to a reward
@@ -495,7 +504,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     #region Rest
 
-    // Heal every unit or resurrect a dead one (the mana is refilled before every fight anyway)
+    // Heal every unit or resurrect a dead one
     void EnterRestRoom()
     {
         SetState(State.Rest);

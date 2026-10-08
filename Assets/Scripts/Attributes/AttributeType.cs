@@ -26,4 +26,6 @@ public enum AttributeType
     RewardChoices,
     // Multiplier of the character skill costs, 1 when the character has no such attribute
     SkillCostMultiplier,
+    // Share of the max mana given back to the character before each fight, 0.4 when it has no such attribute
+    CombatManaRefill,
 }

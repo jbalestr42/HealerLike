@@ -191,7 +191,7 @@ public class AscensionGameTypeTests
     }
 
     [Test]
-    public void RefillManaForCombat_ManaSpentInThePreviousFight_StartsFull()
+    public void RefillManaForCombat_ManaSpentInThePreviousFight_Gives40PercentOfTheMaxBack()
     {
         GameObject characterGo = new GameObject();
         try
@@ -199,6 +199,93 @@ public class AscensionGameTypeTests
             ResourceAttribute mana = CreateMana(characterGo, 100f, 15f);
 
             AscensionGameType.RefillManaForCombat(mana);
+            TestHelpers.InvokePrivate(mana, "Update");
+
+            Assert.AreEqual(55f, mana.Value, 0.001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
+
+    [Test]
+    public void RefillManaForCombat_CombatManaRefillAttribute_GivesThatShareBack()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 15f);
+            characterGo.GetComponent<AttributeManager>().Add(AttributeType.CombatManaRefill, new Attribute(0.25f));
+
+            AscensionGameType.RefillManaForCombat(mana);
+            TestHelpers.InvokePrivate(mana, "Update");
+
+            Assert.AreEqual(40f, mana.Value, 0.001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
+
+    [Test]
+    public void RefillManaForCombat_CharacterWithFullCriticalChance_IsNeverCritical()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 15f);
+            characterGo.GetComponent<AttributeManager>().Add(AttributeType.CriticalChance, new Attribute(100f));
+
+            AscensionGameType.RefillManaForCombat(mana);
+            TestHelpers.InvokePrivate(mana, "Update");
+
+            Assert.AreEqual(55f, mana.Value, 0.001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
+
+    [Test]
+    public void RefillManaForCombat_NotifiesTheGainLikeAnyOther()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 15f);
+            float notifiedGain = 0f;
+            mana.OnAllConsumerProcessed.AddListener((target, modifier, result) => notifiedGain += result.value);
+
+            AscensionGameType.RefillManaForCombat(mana);
+            TestHelpers.InvokePrivate(mana, "Update");
+
+            Assert.AreEqual(40f, notifiedGain, 0.001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
+
+    [Test]
+    public void CombatManaRefill_ByDefault_Is40Percent()
+    {
+        Assert.AreEqual(0.4f, AttributeManager.GetDefaultValue(AttributeType.CombatManaRefill), 0.0001f);
+    }
+
+    [Test]
+    public void RefillManaForCombat_ManaAlmostFull_IsCappedByTheMax()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 80f);
+
+            AscensionGameType.RefillManaForCombat(mana);
+            TestHelpers.InvokePrivate(mana, "Update");
 
             Assert.AreEqual(100f, mana.Value, 0.001f);
         }
@@ -209,7 +296,7 @@ public class AscensionGameTypeTests
     }
 
     [Test]
-    public void RefillManaForCombat_MaxRaisedByAnItem_FillsUpToTheNewMax()
+    public void RefillManaForCombat_MaxRaisedByAnItem_Gives40PercentOfTheNewMaxBack()
     {
         GameObject characterGo = new GameObject();
         try
@@ -220,8 +307,10 @@ public class AscensionGameTypeTests
             manaMax.Update();
 
             AscensionGameType.RefillManaForCombat(mana);
+            TestHelpers.InvokePrivate(mana, "Update");
 
-            Assert.AreEqual(150f, mana.Value, 0.001f);
+            // The raised max already gave its +50 (15 -> 65), then 40% of 150 comes back
+            Assert.AreEqual(125f, mana.Value, 0.001f);
         }
         finally
         {
@@ -240,6 +329,7 @@ public class AscensionGameTypeTests
             TestHelpers.InvokePrivate(_health, "Update");
 
             AscensionGameType.RefillManaForCombat(mana);
+            TestHelpers.InvokePrivate(mana, "Update");
             TestHelpers.InvokePrivate(_health, "Update");
 
             Assert.AreEqual(40f, _health.Value, 0.001f);

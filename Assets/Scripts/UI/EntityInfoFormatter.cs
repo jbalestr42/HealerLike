@@ -34,6 +34,7 @@ public static class EntityInfoFormatter
         { AttributeType.SkillCostMultiplier, "Skill Cost Multiplier" },
         { AttributeType.HealCriticalChance, "Heal Critical Chance" },
         { AttributeType.RewardChoices, "Reward Choices" },
+        { AttributeType.CombatManaRefill, "Combat Mana Refill" },
     };
 
     static readonly AttributeModifierType[] ModifierTypes = { AttributeModifierType.Add, AttributeModifierType.Multiply, AttributeModifierType.Override };

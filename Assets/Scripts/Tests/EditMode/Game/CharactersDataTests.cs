@@ -57,6 +57,16 @@ public class CharactersDataTests
         CollectionAssert.IsEmpty(invalid, "Characters with a missing description, attribute, skill or unit");
     }
 
+    [Test]
+    public void EveryCharacter_Gets40PercentOfItsManaBackBeforeEachFight()
+    {
+        foreach (CharacterData character in _gameData.characters)
+        {
+            Assert.IsTrue(character.attributes.TryGetValue(AttributeType.CombatManaRefill, out float refill), character.name);
+            Assert.AreEqual(0.4f, refill, 0.0001f, character.name);
+        }
+    }
+
     // The test entity is only meant for the sandbox
     [Test]
     public void NoCharacter_RecruitsTheTestEntity()
