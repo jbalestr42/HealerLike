@@ -57,6 +57,31 @@ public class EnemiesDataTests
     }
 
     [Test]
+    public void Crossbowman_ShootsSlowHeavyBoltsAtYourFarthestUnit()
+    {
+        EntityData crossbowman = LoadEnemy("Crossbowman");
+
+        Assert.AreEqual("Crossbowman", crossbowman.title);
+        Assert.IsFalse(string.IsNullOrEmpty(crossbowman.description));
+        Assert.IsNotNull(crossbowman.model);
+        Assert.AreEqual(TargetBehaviourType.Farest, crossbowman.targetBehaviourType);
+        Assert.AreEqual(100f, crossbowman.attributes[AttributeType.HealthMax]);
+        Assert.AreEqual(8f, crossbowman.attributes[AttributeType.Damage]);
+        // A bolt every 2.5s
+        Assert.AreEqual(2.5f, crossbowman.attributes[AttributeType.AttackRate]);
+        Assert.AreEqual(1, crossbowman.skillFactories.Count, "it attacks");
+    }
+
+    [Test]
+    public void HiddenHealer_FieldsThreeSoldiersInFrontAndTheShamanBetweenTwoCrossbowmen()
+    {
+        WavePatternData wave = LoadWave("Wave_HiddenHealer");
+
+        CollectionAssert.AreEqual(new[] { "Soldier", "Soldier", "Soldier" }, GetRank(wave, 0));
+        CollectionAssert.AreEqual(new[] { "Crossbowman", "Shaman", "Crossbowman" }, GetRank(wave, 1));
+    }
+
+    [Test]
     public void FrontLine_FieldsTwoSoldiersInFrontAndTwoArchersBehind()
     {
         WavePatternData wave = LoadWave("Wave_FrontLine");
