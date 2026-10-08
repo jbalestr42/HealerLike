@@ -17,6 +17,22 @@ public class BalanceSimulator : AGameType
 
     // Unity's default for Time.maximumDeltaTime
     const float DefaultMaximumDeltaTime = 0.3333333f;
+    const float ProgressBarWidth = 1000f;
+    const float ProgressBarHeight = 40f;
+    const int ProgressFontSize = 24;
+    const int DetailsFontSize = 20;
+
+    static readonly Color ProgressBackColor = new Color(0f, 0f, 0f, 0.6f);
+    static readonly Color ProgressFillColor = new Color(0.35f, 0.75f, 0.4f, 0.9f);
+
+    // Built in the first OnGUI, the only place the GUI skin can be read
+    GUIStyle _progressStyle;
+    GUIStyle _detailsStyle;
+
+#if UNITY_EDITOR
+    // The simulation in the editor's background tasks (status bar), 0 when none: static to outlive the scene reloads
+    static int _editorProgressId;
+#endif
 
     // Folder of the next simulation, each plan written to <plan>.jsonl in it (e.g. the folder of a wave score
     // measure). Null for a balance simulation: Logs/Balance/sim-<plan>-<run>.jsonl
@@ -104,6 +120,7 @@ public class BalanceSimulator : AGameType
         string path = GetOutputPath(_plan.name, runId, outputFolder);
         SimulationQueue.Start(_plan, jobs, path, runId);
         Debug.Log($"[BalanceSimulator] {_plan.name}: {jobs.Count} fights to simulate, written to {path}");
+        StartEditorProgress();
     }
 
     public static string GetOutputPath(string planName, string runId, string folder)
@@ -233,6 +250,7 @@ public class BalanceSimulator : AGameType
         Debug.Log($"[BalanceSimulator] {SimulationQueue.index + 1}/{SimulationQueue.count} {stats.character}: {stats.ToSummary()}");
 
         SimulationQueue.Advance();
+        ReportEditorProgress();
         if (SimulationQueue.isRunning)
         {
             ReloadScene();
@@ -260,10 +278,67 @@ public class BalanceSimulator : AGameType
         Time.maximumDeltaTime = DefaultMaximumDeltaTime;
         if (_state != State.Done)
         {
-            Debug.Log($"[BalanceSimulator] Done: {SimulationQueue.count} fights written to {SimulationQueue.outputPath}");
+            Debug.Log($"[BalanceSimulator] Done: {SimulationQueue.count} fights written to {SimulationQueue.outputPath} in {SimulationProgress.FormatDuration(SimulationQueue.elapsedRealtime)}");
         }
         _state = State.Done;
+        FinishEditorProgress(true);
     }
+
+    // The progress also shown in the editor's status bar, seen without the Game view
+    void StartEditorProgress()
+    {
+#if UNITY_EDITOR
+        FinishEditorProgress(false);
+        ReportEditorProgress();
+        // Stopping the play mode in the middle of a simulation cancels it
+        Application.quitting -= OnQuitting;
+        Application.quitting += OnQuitting;
+#endif
+    }
+
+    // The status bar only shows the name of a task, which can't be changed: the task is made again under a name
+    // holding the progress, "Simulation 3% 120/3744"
+    static void ReportEditorProgress()
+    {
+#if UNITY_EDITOR
+        RemoveEditorProgress();
+        int done = SimulationQueue.index;
+        _editorProgressId = UnityEditor.Progress.Start($"Simulation {SimulationProgress.DescribeShort(done, SimulationQueue.count)}",
+            SimulationProgress.Describe(done, SimulationQueue.count, SimulationQueue.elapsedRealtime));
+        UnityEditor.Progress.SetTimeDisplayMode(_editorProgressId, UnityEditor.Progress.TimeDisplayMode.NoTimeShown);
+        UnityEditor.Progress.Report(_editorProgressId, SimulationProgress.GetRatio(done, SimulationQueue.count));
+#endif
+    }
+
+    static void FinishEditorProgress(bool succeeded)
+    {
+#if UNITY_EDITOR
+        if (_editorProgressId != 0 && UnityEditor.Progress.Exists(_editorProgressId))
+        {
+            UnityEditor.Progress.Finish(_editorProgressId, succeeded ? UnityEditor.Progress.Status.Succeeded : UnityEditor.Progress.Status.Canceled);
+        }
+        _editorProgressId = 0;
+#endif
+    }
+
+#if UNITY_EDITOR
+    static void RemoveEditorProgress()
+    {
+        if (_editorProgressId != 0 && UnityEditor.Progress.Exists(_editorProgressId))
+        {
+            UnityEditor.Progress.Remove(_editorProgressId);
+        }
+        _editorProgressId = 0;
+    }
+#endif
+
+#if UNITY_EDITOR
+    static void OnQuitting()
+    {
+        Application.quitting -= OnQuitting;
+        FinishEditorProgress(SimulationQueue.count > 0 && !SimulationQueue.isRunning);
+    }
+#endif
 
     void OnEntityKilled(Entity entity)
     {
@@ -298,12 +373,37 @@ public class BalanceSimulator : AGameType
             return;
         }
 
+        if (_progressStyle == null)
+        {
+            _progressStyle = new GUIStyle(GUI.skin.label) { fontSize = ProgressFontSize, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
+            _detailsStyle = new GUIStyle(GUI.skin.label) { fontSize = DetailsFontSize };
+        }
+
+        // The bar of the fights done, with their count, the time spent and the time left, at the top middle of the
+        // screen
+        int done = _state == State.Done ? SimulationQueue.count : SimulationQueue.index;
+        float ratio = SimulationProgress.GetRatio(done, SimulationQueue.count);
+        float width = Mathf.Min(ProgressBarWidth, Screen.width - 20f);
+        Rect bar = new Rect((Screen.width - width) / 2f, 10f, width, ProgressBarHeight);
+        DrawRect(bar, ProgressBackColor);
+        DrawRect(new Rect(bar.x, bar.y, bar.width * ratio, bar.height), ProgressFillColor);
+        GUI.Label(new Rect(bar.x + 10f, bar.y, bar.width - 10f, bar.height), SimulationProgress.Describe(done, SimulationQueue.count, SimulationQueue.elapsedRealtime), _progressStyle);
+
         string text = _state == State.Done
             ? $"Simulation done: {SimulationQueue.count} fights\n{SimulationQueue.outputPath}"
             : $"Fight {SimulationQueue.index + 1}/{SimulationQueue.count}"
                 + (SimulationQueue.current != null ? $"\n{(SimulationQueue.current.bot != null ? SimulationQueue.current.bot.name : "No bot")} ({SimulationQueue.current.character.title}), floor {SimulationQueue.current.floor}, {SimulationQueue.current.wave.name}, seed {SimulationQueue.current.seed}" : "")
                 + $"\n{Time.time - _startTime:0}s / {_maxDuration:0}s (x{_plan.timeScale:0.#})";
-        GUI.Label(new Rect(10f, 10f, 600f, 60f), text);
+        DrawRect(new Rect(bar.x, bar.yMax + 4f, bar.width, DetailsFontSize * 4.5f), ProgressBackColor);
+        GUI.Label(new Rect(bar.x + 10f, bar.yMax + 8f, bar.width - 10f, DetailsFontSize * 4f), text, _detailsStyle);
+    }
+
+    static void DrawRect(Rect rect, Color color)
+    {
+        Color previous = GUI.color;
+        GUI.color = color;
+        GUI.DrawTexture(rect, Texture2D.whiteTexture);
+        GUI.color = previous;
     }
 
     public override void StartGame()

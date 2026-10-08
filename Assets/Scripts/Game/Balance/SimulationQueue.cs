@@ -11,6 +11,9 @@ public static class SimulationQueue
     public static SimulationPlan plan { get; private set; }
     public static string outputPath { get; private set; }
     public static string runId { get; private set; }
+    // Real time (Time.realtimeSinceStartup) the simulation started at, whatever its time scale
+    public static float startRealtime { get; private set; }
+    public static float elapsedRealtime => Time.realtimeSinceStartup - startRealtime;
     public static bool isRunning => _next < _jobs.Count;
     public static int count => _jobs.Count;
     // Index of the current fight
@@ -24,6 +27,7 @@ public static class SimulationQueue
         _next = 0;
         outputPath = path;
         runId = id;
+        startRealtime = Time.realtimeSinceStartup;
     }
 
     public static void Advance()

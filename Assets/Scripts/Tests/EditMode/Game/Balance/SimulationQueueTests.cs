@@ -46,6 +46,15 @@ public class SimulationQueueTests
     }
 
     [Test]
+    public void Start_RecordsWhenTheSimulationStarted()
+    {
+        SimulationQueue.Start(null, new List<SimulationJob> { new SimulationJob() }, "path", "run");
+
+        Assert.AreEqual(Time.realtimeSinceStartup, SimulationQueue.startRealtime, 1f);
+        Assert.GreaterOrEqual(SimulationQueue.elapsedRealtime, 0f);
+    }
+
+    [Test]
     public void Start_CopiesTheList()
     {
         List<SimulationJob> jobs = new List<SimulationJob> { new SimulationJob() };
