@@ -224,6 +224,31 @@ public class EnemiesDataTests
     }
 
     [Test]
+    public void Necromancer_KeepsUpTo2FrailSkeletonsAtATime()
+    {
+        EntityData necromancer = LoadEnemy("Necromancer");
+        SummonSkillFactory summon = (SummonSkillFactory)necromancer.skillFactories.Find(factory => factory is SummonSkillFactory);
+        Assert.IsNotNull(summon, "the Necromancer raises nothing");
+
+        Assert.AreEqual(2, summon.data.maxAlive);
+        Assert.AreEqual("Skeleton", summon.data.entity.title);
+        Assert.AreEqual(15f, summon.data.entity.attributes[AttributeType.HealthMax]);
+        StringAssert.Contains("up to 2", necromancer.description);
+    }
+
+    [Test]
+    public void Siphoner_EachHitDrains1Mana()
+    {
+        ItemFactory siphon = LoadEnemy("Siphoner").items[0] as ItemFactory;
+        Assert.IsNotNull(siphon);
+        DrainCharacterManaBuffFactory drain = siphon.data.onHitEffects[0].buffFactoryList[0] as DrainCharacterManaBuffFactory;
+        Assert.IsNotNull(drain);
+
+        Assert.AreEqual(1f, GetFlatDamage(drain.data.consumerFactory), 0.0001f);
+        StringAssert.Contains("drain 1 ", siphon.data.description);
+    }
+
+    [Test]
     public void Archer_ShootsWeakShotsAtYourFarthestUnit()
     {
         EntityData archer = LoadEnemy("Archer");

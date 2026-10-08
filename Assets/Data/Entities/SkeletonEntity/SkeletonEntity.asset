@@ -47,7 +47,7 @@ MonoBehaviour:
       Data: 0
     - Name: $v
       Entry: 4
-      Data: 40
+      Data: 15
     - Name: 
       Entry: 8
       Data: 
@@ -98,7 +98,7 @@ MonoBehaviour:
   description: 'Raised by the Necromancer: frail, with weak shots'
   attributes:
   - key: 0
-    value: 40
+    value: 15
   - key: 1
     value: 1.5
   - key: 2

@@ -107,7 +107,7 @@ MonoBehaviour:
       Data: 
   model: {fileID: 2795397902362475942, guid: 72c47fdc43d84b243bdc109c284341d6, type: 3}
   title: Necromancer
-  description: Doesn't attack. Raises a Skeleton on the nearest free cell every 6s, up to 4 at a time
+  description: Doesn't attack. Raises a Skeleton on the nearest free cell every 6s, up to 2 at a time
   attributes:
   - key: 0
     value: 100

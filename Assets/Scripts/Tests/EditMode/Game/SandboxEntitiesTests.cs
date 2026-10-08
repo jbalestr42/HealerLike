@@ -133,7 +133,7 @@ public class SandboxEntitiesTests
     }
 
     [Test]
-    public void Necromancer_RaisesUpToFourFrailSkeletons()
+    public void Necromancer_RaisesUpToTwoFrailSkeletons()
     {
         EntityData necromancer = _sandboxData.entities.Find(entity => entity != null && entity.name == "NecromancerEntity");
         Assert.IsNotNull(necromancer);
@@ -141,7 +141,7 @@ public class SandboxEntitiesTests
         SummonSkillFactory summon = necromancer.skillFactories.Find(skill => skill is SummonSkillFactory) as SummonSkillFactory;
         Assert.IsNotNull(summon);
         Assert.AreEqual("SkeletonEntity", summon.data.entity.name);
-        Assert.AreEqual(4, summon.data.maxAlive);
+        Assert.AreEqual(2, summon.data.maxAlive);
         // Frailer than the Necromancer itself
         Assert.Less(summon.data.entity.attributes[AttributeType.HealthMax], necromancer.attributes[AttributeType.HealthMax]);
     }

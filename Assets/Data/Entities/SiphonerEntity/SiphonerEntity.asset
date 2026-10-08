@@ -95,7 +95,7 @@ MonoBehaviour:
       Data: 
   model: {fileID: 7099655024501674456, guid: 8760cc9eb30a2b340b14499b6e150dc4, type: 3}
   title: Siphoner
-  description: Weak shots at random targets, each hit drains 3 of your mana
+  description: Weak shots at random targets, each hit drains 1 of your mana
   attributes:
   - key: 0
     value: 120

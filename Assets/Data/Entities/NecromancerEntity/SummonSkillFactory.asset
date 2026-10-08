@@ -25,4 +25,4 @@ MonoBehaviour:
     onSkillTriggerFactory: []
     entity: {fileID: 11400000, guid: 694d0ae6cd811294a8b0f90e4c85c871, type: 2}
     cooldown: 6
-    maxAlive: 4
+    maxAlive: 2
