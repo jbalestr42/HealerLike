@@ -114,6 +114,20 @@ public class WavePoolsDataTests
         CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, 13), "Wave_TotalWar");
     }
 
+    // Its threat is the one of Living Wall and Bulwark, far above the waves starting the run: met on their floors
+    [Test]
+    public void SlowPoison_IsMetWithLivingWallAndBulwark_NeverAtTheStart()
+    {
+        for (int floor = 0; floor < 8; floor++)
+        {
+            CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, floor), "Wave_SlowPoison", $"floor {floor}");
+        }
+        for (int floor = 8; floor <= 11; floor++)
+        {
+            CollectionAssert.Contains(GetWaves(MapNodeType.Combat, floor), "Wave_SlowPoison", $"floor {floor}");
+        }
+    }
+
     [Test]
     public void Ironclad_IsALivingWallWithASecondColossus()
     {
