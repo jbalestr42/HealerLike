@@ -25,6 +25,13 @@ public class MarkerTitanDataTests
         return skill;
     }
 
+    // So the effects weaker on bosses (e.g. CurrentHealthDamage) know it
+    [Test]
+    public void IsTaggedBoss()
+    {
+        Assert.IsTrue(_titan.HasTag(TagNames.Boss));
+    }
+
     [Test]
     public void MarkedStrike_LeavesTimeToProtectTheMarkedUnit()
     {

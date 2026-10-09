@@ -218,6 +218,7 @@ MonoBehaviour:
     maxFloor: 100
     wavePatterns:
     - {fileID: 11400000, guid: e1dafe1b45569f54f86105fe3b828b76, type: 2}
+  staggerFirstAttacks: 1
   characters:
   - {fileID: 11400000, guid: 246613bc00a2adc4faacf8f72aa81ddd, type: 2}
   - {fileID: 11400000, guid: fa67b546fd2076e47a9f5aebfe698f8c, type: 2}
@@ -332,3 +333,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
   - {fileID: 11400000, guid: be9c6084f0f587e418806bd83d4ab2fd, type: 2}
   - {fileID: 11400000, guid: 3e3da7a1624a46a6bb004c4cc819f3a3, type: 2}
+  - {fileID: 11400000, guid: 8c2d734b862d50d4886a7ff7d37eb7e5, type: 2}

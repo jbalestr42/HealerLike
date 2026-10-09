@@ -34,5 +34,6 @@ MonoBehaviour:
       type: {class: CurrentHealthValue, ns: , asm: Assembly-CSharp}
       data:
         data:
-          multiplier: 0.1
+          multiplier: 0.05
           inverse: 0
+          bossMultiplier: 0.5

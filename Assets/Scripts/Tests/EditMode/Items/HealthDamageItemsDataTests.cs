@@ -1,6 +1,7 @@
 using Entities;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEngine;
 
 namespace Items
 {
@@ -10,11 +11,16 @@ namespace Items
 public class HealthDamageItemsDataTests
 {
     readonly TestUnits _units = new TestUnits();
+    GameplayTag _bossTag;
 
     [TearDown]
     public void TearDown()
     {
         _units.DestroyAll();
+        if (_bossTag != null)
+        {
+            Object.DestroyImmediate(_bossTag);
+        }
     }
 
     static ConsumerFactory LoadConsumer(string name)
@@ -25,11 +31,17 @@ public class HealthDamageItemsDataTests
         return (ConsumerFactory)item.data.onHitConsumers[0];
     }
 
-    // Hit of an attacker at full health on a target at half health
-    float Hit(ConsumerFactory consumer)
+    // Hit of an attacker at full health on a target at half health, a boss with isBoss
+    float Hit(ConsumerFactory consumer, bool isBoss = false)
     {
         Entity attacker = _units.Create(100f, 100f, "Attacker");
         Entity target = _units.Create(500f, 1000f, "Target");
+        if (isBoss)
+        {
+            _bossTag = ScriptableObject.CreateInstance<GameplayTag>();
+            _bossTag.name = TagNames.Boss;
+            target.AddTag(_bossTag);
+        }
 
         target.health.AddResourceModifier(ResourceModifier.Create(consumer, attacker.gameObject, target.gameObject));
         TestUnits.Process(target.health);
@@ -46,12 +58,19 @@ public class HealthDamageItemsDataTests
     }
 
     [Test]
-    public void CurrentHealthDamage_Deals10PercentOfTheTargetCurrentHealth()
+    public void CurrentHealthDamage_Deals5PercentOfTheTargetCurrentHealth()
     {
-        Assert.AreEqual(50f, Hit(LoadConsumer("CurrentHealthDamageItem")), 0.0001f);
+        Assert.AreEqual(25f, Hit(LoadConsumer("CurrentHealthDamageItem")), 0.0001f);
     }
 
-    // The innate item of the Strangler Vine, half the Current Health Damage item
+    // Halved on the bosses, whose large health made the item far too strong
+    [Test]
+    public void CurrentHealthDamage_Deals2Point5PercentOfTheTargetCurrentHealth_OnABoss()
+    {
+        Assert.AreEqual(12.5f, Hit(LoadConsumer("CurrentHealthDamageItem"), isBoss: true), 0.0001f);
+    }
+
+    // The innate item of the Strangler Vine, as much as the Current Health Damage item but on bosses too
     [Test]
     public void Strangle_Deals5PercentOfTheTargetCurrentHealth()
     {

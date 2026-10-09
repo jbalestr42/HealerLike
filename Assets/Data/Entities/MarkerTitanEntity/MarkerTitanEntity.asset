@@ -110,6 +110,7 @@ MonoBehaviour:
   tags:
   - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}
   - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
+  - {fileID: 11400000, guid: 8c2d734b862d50d4886a7ff7d37eb7e5, type: 2}
   items:
   - {fileID: 11400000, guid: 2f43c30180d24455b3bba4119631add4, type: 2}
   skillFactories:

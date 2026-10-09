@@ -30,4 +30,6 @@ public static class TagNames
     public const string Simulation = "Simulation";
     // Harmful buffs put on a unit by its enemies (poison, curse, slow...), the ones a cleanse removes
     public const string Debuff = "Debuff";
+    // The bosses, whose large health some effects treat apart (e.g. CurrentHealthDamage is weaker on them)
+    public const string Boss = "Boss";
 }
