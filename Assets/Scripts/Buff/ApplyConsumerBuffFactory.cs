@@ -1,6 +1,6 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/ApplyConsumerBuff")]
 public class ApplyConsumerBuffFactory : BuffFactory<ApplyConsumerBuff, ApplyConsumerBuffData> {}

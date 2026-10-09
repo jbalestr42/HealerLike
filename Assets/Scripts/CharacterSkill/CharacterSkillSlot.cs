@@ -1,12 +1,9 @@
 
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class CharacterSkillSlot : MonoBehaviour
 {
-    [InlineProperty]
-    [HideLabel]
     [SerializeField] CharacterSkillData _data;
     public CharacterSkillData data => _data;
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/ApplyConsumerOnEntitiesBuff")]
 public class ApplyConsumerOnEntitiesBuffFactory : BuffFactory<ApplyConsumerOnEntitiesBuff, ApplyConsumerOnEntitiesBuffData> { }

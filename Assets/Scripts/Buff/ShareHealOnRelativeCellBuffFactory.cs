@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/ShareHealOnRelativeCellBuff")]
 public class ShareHealOnRelativeCellBuffFactory : BuffFactory<ShareHealOnRelativeCellBuff, ShareHealOnRelativeCellBuffData> { }
@@ -10,16 +10,16 @@ public class ShareHealOnRelativeCellBuffFactory : BuffFactory<ShareHealOnRelativ
 public class ShareHealOnRelativeCellBuffData
 {
     // Part of each heal received by the holder also healed on the allies on the cells of the pattern
-    [MinValue(0)]
+    [Min(0)]
     public float ratio = 0.2f;
     public RelativeCellPatternType pattern = RelativeCellPatternType.Adjacent;
-    [MinValue(1)]
+    [Min(1)]
     public int range = 1;
     // Smaller shared heals are dropped, so two holders next to each other stop sharing back and forth
-    [MinValue(0)]
+    [Min(0)]
     public float minimumSharedHeal = 1f;
     // Shown on each cell of the pattern around the holder, so the zone can be seen while placing it
-    [PreviewField(75)]
+    [Preview(75)]
     public GameObject cellPrefab;
 }
 

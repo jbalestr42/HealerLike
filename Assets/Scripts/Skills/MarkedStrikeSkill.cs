@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
+using Oisif.Inspector;
 
 [Serializable]
 public class MarkedStrikeSkillData : SkillDataBase
@@ -17,7 +17,7 @@ public class MarkedStrikeSkillData : SkillDataBase
     // Part of the strike taken by each marked unit, in the order of the targeting: one unit marked per value
     // (1, 0.5, 0.25: the first unit takes the whole strike, the second half of it, the third a quarter)
     public List<float> targetDamageMultipliers = new List<float> { 1f };
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ATargetValidatorFactory>, ATargetValidatorFactory>(targetValidators)")]
+    [CreateDataButton]
     public List<ATargetValidatorFactory> targetValidators = new List<ATargetValidatorFactory>();
     public float range = 100f;
     // Damage of the strike, applied like any hit (armor, invincibility and shields apply)

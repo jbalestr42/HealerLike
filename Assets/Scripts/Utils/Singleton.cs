@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using Sirenix.OdinInspector;
 
 /// <summary>
 /// Tracks whether the application (or play mode, in the Editor) is shutting down, shared by every
@@ -32,7 +31,7 @@ static class SingletonShutdown
 /// 
 /// As a note, this is made as MonoBehaviour because we need Coroutines.
 /// </summary>
-public class Singleton<T> : SerializedMonoBehaviour where T : SerializedMonoBehaviour
+public class Singleton<T> : Sirenix.OdinInspector.SerializedMonoBehaviour where T : Sirenix.OdinInspector.SerializedMonoBehaviour
 {
     private static T _instance;
     private static object _lock = new object();

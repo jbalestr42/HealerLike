@@ -1,18 +1,19 @@
 using UnityEngine;
 using UnityEngine.Serialization;
-using Sirenix.OdinInspector;
+using Oisif.Inspector;
 using System.Collections.Generic;
 
 [CreateAssetMenu(menuName = "Custom/Data/WavePatternData")]
-public class WavePatternData : SerializedScriptableObject
+public class WavePatternData : Sirenix.OdinInspector.SerializedScriptableObject
 {
     // Columns of the grid, the front one first
     [FormerlySerializedAs("width")]
-    [SerializeField] int _width = 5;
+    [SerializeField, HideInInspector] int _width = 5;
     // Rows of the grid
     [FormerlySerializedAs("height")]
-    [SerializeField] int _height = 5;
+    [SerializeField, HideInInspector] int _height = 5;
     // The unit of each cell, column after column (x * height + y), null for an empty cell
+    [Grid(nameof(_width), nameof(_height), firstColumnLabel = "Front")]
     [SerializeField] List<EntityData> _cells = new List<EntityData>();
 
     // Written by the balance tools only

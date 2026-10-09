@@ -1,17 +1,15 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ATargetValidatorFactory : SerializedScriptableObject
+public abstract class ATargetValidatorFactory : Sirenix.OdinInspector.SerializedScriptableObject
 {
     public abstract ATargetValidator GetTargetValidator();
 }
 
 public class TargetValidatorFactory<TargetValidatorType, DataType> : ATargetValidatorFactory where TargetValidatorType : ATargetValidator<DataType>, new()
 {
-    [InlineProperty]
-    [HideLabel]
     public DataType data;
 
     public override ATargetValidator GetTargetValidator()

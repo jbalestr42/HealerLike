@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/CharacterSkillValidators/ResourceValidator")]
 public class ResourceValidatorFactory : CharacterSkillValidatorFactory<ResourceValidator, ResourceValidatorData> {}

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/ConsumerOnAttackBuff")]
 public class ConsumerOnAttackBuffFactory : BuffFactory<ConsumerOnAttackBuff, ConsumerOnAttackBuffData> { }

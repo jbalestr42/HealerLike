@@ -2,6 +2,7 @@
     "name": "HealerLike.Runtime",
     "rootNamespace": "",
     "references": [
+        "Oisif.Inspector",
         "QuickOutline",
         "Unity.TextMeshPro",
         "Unity.InputSystem",

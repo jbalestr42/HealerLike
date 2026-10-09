@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-namespace InspectorKit.Editor
+namespace Oisif.Editor
 {
     // Writes what an object holds as "path = value" lines, whatever serializer stores it: the fields Unity or another
     // serializer would save (public ones, [SerializeField], [SerializeReference], or any attribute named in

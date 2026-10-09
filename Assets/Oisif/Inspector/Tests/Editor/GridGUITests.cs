@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using InspectorKit.Editor;
+using Oisif.Editor;
 using NUnit.Framework;
 
-namespace InspectorKit.Tests
+namespace Oisif.Editor.Tests
 {
     public class GridGUITests
     {

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using Unity.VisualScripting;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/SkillSteps/RepeatSkillStep")]
 public class RepeatSkillStepFactory : SkillStepFactory<RepeatSkillStep, RepeatSkillStepData> { }
@@ -10,7 +10,7 @@ public class RepeatSkillStepFactory : SkillStepFactory<RepeatSkillStep, RepeatSk
 [Serializable]
 public class RepeatSkillStepData : SkillStepDataBase
 {
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillStepFactory>, ASkillStepFactory>(skillStepFactories)")]
+    [CreateDataButton]
     public List<ASkillStepFactory> skillStepFactories = new List<ASkillStepFactory>();
     public int count;
 }

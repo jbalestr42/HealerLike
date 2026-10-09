@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/CharacterSkill/DrainLifeCharacterSkill")]
 public class DrainLifeCharacterSkillFactory : CharacterSkillFactory<DrainLifeCharacterSkill, DrainLifeCharacterSkillData> {}

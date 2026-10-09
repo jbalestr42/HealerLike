@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Items/GrowingItem")]
 public class GrowingItemFactory : ItemFactory<GrowingItem, GrowingItemData> {}

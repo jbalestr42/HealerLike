@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/DrainCharacterManaBuff")]
 public class DrainCharacterManaBuffFactory : BuffFactory<DrainCharacterManaBuff, DrainCharacterManaBuffData> { }

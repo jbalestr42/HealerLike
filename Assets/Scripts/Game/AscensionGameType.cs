@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Sirenix.OdinInspector;
 using UnityEngine.Events;
+using Oisif.Inspector;
 
 // A run climbs a Slay the Spire like map: the player picks the next room on the map,
 // fights, rests, loots or plays an event in it, and goes back to the map until the boss

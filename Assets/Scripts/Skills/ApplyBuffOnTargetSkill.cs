@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [Serializable]
 public class ApplyBuffOnTargetSkillData : SkillDataBase
 {
     [CreateDataButton]
     public ABuffHandlerFactory buffHandlerFactory;
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ATargetValidatorFactory>, ATargetValidatorFactory>(targetValidators)")]
+    [CreateDataButton]
     public List<ATargetValidatorFactory> targetValidators;
     public bool singleTimeUse = false;
     [HideIf("singleTimeUse")]

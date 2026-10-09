@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -12,7 +11,7 @@ public class RaiseDeadCharacterSkillData : CharacterSkillData
 {
     public EntityData entity;
     // Summons alive at the same time, the skill can't be used again until one dies
-    [MinValue(1)]
+    [Min(1)]
     public int maxAlive = 2;
     // Stats added to the summon per Heal Power of the character
     public float healthPerHealPower = 3f;

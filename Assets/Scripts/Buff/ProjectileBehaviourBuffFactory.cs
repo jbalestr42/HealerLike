@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/ProjectileBehaviourBuff")]
 public class ProjectileBehaviourBuffFactory : BuffFactory<ProjectileBehaviourBuff, ProjectileBehaviourBuffData> {}

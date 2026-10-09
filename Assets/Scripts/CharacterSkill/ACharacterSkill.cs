@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
+using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ACharacterSkillFactory : SerializedScriptableObject
+public abstract class ACharacterSkillFactory : Sirenix.OdinInspector.SerializedScriptableObject
 {
     public abstract ACharacterSkill Create();
 }
@@ -14,8 +14,6 @@ public class CharacterSkillFactory<CharacterSkillType, DataType> : ACharacterSki
                                             where CharacterSkillType : ACharacterSkill<DataType>, new()
                                             where DataType : CharacterSkillData, new()
 {
-    [InlineProperty]
-    [HideLabel]
     public DataType data;
 
     public override ACharacterSkill Create()
@@ -33,26 +31,19 @@ public abstract class ACharacterSkill
 [Serializable]
 public class CharacterSkillData
 {
-    [TitleGroup("Common")]
-    [HorizontalGroup("Common/Split")]
-    [VerticalGroup("Common/Split/Left")]
-    [BoxGroup("Common/Split/Left/Displayed Data")]
-    [PreviewField(75)]
-    [HideLabel]
-    [AssetsOnly]
+    [Preview(75)]
     public Sprite icon;
 
-    [BoxGroup("Common/Split/Left/Displayed Data")]
     public string name;
 
-    [BoxGroup("Common/Split/Left/Displayed Data")]
     [TextArea(10, 10)]
-    [InfoBox("@TextConvertor.Convert(description, null, this)", InfoMessageType.None)]
+    [InfoBox(nameof(GetDescriptionPreview))]
     public string description;
 
-    [VerticalGroup("Common/Split/Right")]
-    [BoxGroup("Common/Split/Right/Validators")]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ACharacterSkillValidatorFactory>, ACharacterSkillValidatorFactory>(validators)")]
+    // The description as the player reads it, shown above it in the inspector
+    string GetDescriptionPreview() => TextConvertor.Convert(description, null, this);
+
+    [CreateDataButton]
     public List<ACharacterSkillValidatorFactory> validators;
 }
 

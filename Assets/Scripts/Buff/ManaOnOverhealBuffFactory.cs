@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/ManaOnOverhealBuff")]
@@ -10,7 +9,7 @@ public class ManaOnOverhealBuffFactory : BuffFactory<ManaOnOverhealBuff, ManaOnO
 public class ManaOnOverhealBuffData
 {
     // Part of the heal above the max health restored as mana to the character carrying the buff
-    [MinValue(0)]
+    [Min(0)]
     public float ratio = 0.1f;
     // Side of the entities whose overheal gives mana
     public Entity.EntityType healedType = Entity.EntityType.Player;

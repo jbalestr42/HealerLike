@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Items/Item")]
 public class ItemFactory : ItemFactory<Item, ItemData> {}
@@ -10,19 +10,19 @@ public class ItemFactory : ItemFactory<Item, ItemData> {}
 public class ItemData : BaseItemData
 {
     [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(buffs)")]
+    [CreateDataButton]
     public List<ABuffHandlerFactory> buffs = new List<ABuffHandlerFactory>();
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(onHitEffects)")]
+    [CreateDataButton]
     public List<ABuffHandlerFactory> onHitEffects = new List<ABuffHandlerFactory>();
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AConsumerFactory>, AConsumerFactory>(onHitConsumers)")]
+    [CreateDataButton]
     public List<AConsumerFactory> onHitConsumers = new List<AConsumerFactory>();
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(projectileBehaviours)")]
+    [CreateDataButton]
     public List<ABuffHandlerFactory> projectileBehaviours = new List<ABuffHandlerFactory>();
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillFactory>, ASkillFactory>(skills)")]
+    [CreateDataButton]
     public List<ASkillFactory> skills = new List<ASkillFactory>();
 }
 

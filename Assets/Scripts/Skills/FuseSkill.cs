@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [Serializable]
 public class FuseSkillData : SkillDataBase
 {
     // Time of battle before the holder blows up by itself, drawn at random between the two for each fuse
-    [MinValue(0.1f)]
+    [Min(0.1f)]
     public float minDelay = 10f;
-    [MinValue(0.1f)]
+    [Min(0.1f)]
     public float maxDelay = 10f;
     // Dealt to every opponent when it blows up, on top of what its death triggers (e.g. the Kamikaze's Self-Destruct)
     [CreateDataButton]

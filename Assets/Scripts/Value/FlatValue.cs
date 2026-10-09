@@ -1,12 +1,10 @@
 ﻿using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Scripting.APIUpdating;
 
 [Serializable]
 public class FlatValueData
 {
-    [HideLabel]
     public float value;
 }
 

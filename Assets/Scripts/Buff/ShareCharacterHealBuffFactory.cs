@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -11,10 +10,10 @@ public class ShareCharacterHealBuffFactory : BuffFactory<ShareCharacterHealBuff,
 public class ShareCharacterHealBuffData
 {
     // Part of each heal of the character on an ally also healed on the most wounded ally around the holder
-    [MinValue(0)]
+    [Min(0)]
     public float ratio = 0.4f;
     public RelativeCellPatternType pattern = RelativeCellPatternType.Adjacent;
-    [MinValue(1)]
+    [Min(1)]
     public int range = 1;
 }
 

@@ -1,19 +1,16 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 // Projectiles shot by an attack, at each of the current targets of the attacker
 [Serializable]
 public class ProjectileData
 {
-    [HorizontalGroup("Split", 75)]
-    [PreviewField(75)]
-    [HideLabel]
-    [AssetsOnly]
+    [Preview(75)]
     public GameObject projectilePrefab;
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AConsumerFactory>, AConsumerFactory>(onHitConsumer)")]
+    [CreateDataButton]
     public List<AConsumerFactory> onHitConsumer;
 
     public int numberOfProjectileToShootPerTarget = 1;

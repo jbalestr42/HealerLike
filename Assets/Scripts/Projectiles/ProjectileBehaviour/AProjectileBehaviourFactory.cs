@@ -1,16 +1,14 @@
-﻿using Sirenix.OdinInspector;
+﻿using Oisif.Inspector;
 using UnityEngine;
 
 [InlineEditor]
-public abstract class AProjectileBehaviourFactory : SerializedScriptableObject
+public abstract class AProjectileBehaviourFactory : Sirenix.OdinInspector.SerializedScriptableObject
 {
     public abstract AProjectileBehaviour AddBehaviour(GameObject target);
 }
 
 public class ProjectileBehaviourFactory<ProjectileBehaviourType, ProjectileBehaviourData> : AProjectileBehaviourFactory where ProjectileBehaviourType : AProjectileBehaviour<ProjectileBehaviourData>, new()
 {
-    [InlineProperty]
-    [HideLabel]
     public ProjectileBehaviourData data;
 
     public override AProjectileBehaviour AddBehaviour(GameObject target)
@@ -31,7 +29,5 @@ public abstract class AProjectileBehaviour : MonoBehaviour
 
 public abstract class AProjectileBehaviour<ProjectileBehaviourData> : AProjectileBehaviour
 {
-    [InlineProperty]
-    [HideLabel]
     public ProjectileBehaviourData data;
 }

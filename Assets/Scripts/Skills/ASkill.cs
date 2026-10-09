@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
+using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ASkillFactory : SerializedScriptableObject
+public abstract class ASkillFactory : Sirenix.OdinInspector.SerializedScriptableObject
 {
     public abstract ASkill AddSkill(GameObject target);
 }
@@ -15,8 +15,6 @@ public class SkillFactory<SkillType, SkillData> : ASkillFactory
                                 where SkillType : ASkill<SkillData>, new()
                                 where SkillData : SkillDataBase
 {
-    [InlineProperty]
-    [HideLabel]
     public SkillData data;
 
     public override ASkill AddSkill(GameObject target)
@@ -64,13 +62,11 @@ public abstract class ASkill : MonoBehaviour
 [Serializable]
 public class SkillDataBase
 {
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AOnSkillTriggerFactory>, AOnSkillTriggerFactory>(onSkillTriggerFactory)")]
+    [CreateDataButton]
     public List<AOnSkillTriggerFactory> onSkillTriggerFactory;
 }
 
 public abstract class ASkill<SkillData> : ASkill where SkillData : SkillDataBase
 {
-    [InlineProperty]
-    [HideLabel]
     public SkillData data;
 }

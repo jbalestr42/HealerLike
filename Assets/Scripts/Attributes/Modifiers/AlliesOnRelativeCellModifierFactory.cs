@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/Data/Modifier/AlliesOnRelativeCellModifier")]
@@ -14,7 +13,7 @@ public class AlliesOnRelativeCellModifierData : BaseData
     // Gives the value once when no ally is on the pattern instead, nothing otherwise (e.g. a lone wolf)
     public bool isWhenAlone;
     public RelativeCellPatternType pattern = RelativeCellPatternType.Adjacent;
-    [MinValue(1)]
+    [Min(1)]
     public int range = 1;
 }
 

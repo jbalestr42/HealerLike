@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/GameData")]
-public class GameData : SerializedScriptableObject
+public class GameData : Sirenix.OdinInspector.SerializedScriptableObject
 {
     [Serializable]
-    [InlineProperty(LabelWidth = 130)]
     public struct AttributeUpgradeData
     {
         public int startingUpgradeCost;
@@ -25,38 +23,27 @@ public class GameData : SerializedScriptableObject
         public List<WavePatternData> wavePatterns = new List<WavePatternData>();
     }
 
-    [HorizontalGroup("Split")]
-    [BoxGroup("Split/Player Data")]
     public float playerItemChance = 0.2f;
 
     // Chance for each reward choice to be a unit, the other choices being items
-    [BoxGroup("Split/Player Data")]
     [Range(0f, 1f)]
     public float unitRewardChance = 0.25f;
 
-    [BoxGroup("Split/Upgrade Data")]
     [SerializeField]
-    [DictionaryDrawerSettings(DisplayMode = DictionaryDisplayOptions.Foldout)]
     public Dictionary<AttributeType, AttributeUpgradeData> attributeUpgradeData = new Dictionary<AttributeType, AttributeUpgradeData>();
 
-    [BoxGroup("Split/Player Data")]
     public List<WavePool> wavePools = new List<WavePool>();
 
     // Each unit waits a random part of its attack cooldown, between none and all of it, before its first shot of a
     // fight, so they don't all shoot at once when it starts
-    [BoxGroup("Split/Player Data")]
     public bool staggerFirstAttacks = true;
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<CharacterData>, CharacterData>(characters, this)")]
     public List<CharacterData> characters = new List<CharacterData>();
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<AItemFactory>, AItemFactory>(items, this)")]
     public List<AItemFactory> items = new List<AItemFactory>();
 
     // Units found by their tags (e.g. the ones a class can recruit)
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<EntityData>, EntityData>(entities, this)")]
     public List<EntityData> entities = new List<EntityData>();
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<GameplayTag>, GameplayTag>(tags, this)")]
     public List<GameplayTag> tags = new List<GameplayTag>();
 }

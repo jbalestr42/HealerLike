@@ -5,14 +5,14 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace InspectorKit.Editor
+namespace Oisif.Editor
 {
     // Photo of the data of the project: every ScriptableObject (main and sub-assets) and every component of the
     // prefabs under the folders, written as sorted "asset | object | field = value" lines. Taken before and after a
     // change of serializer, the two files must be the same
     public static class DataSnapshot
     {
-        const string FoldersKey = "InspectorKit.DataSnapshot.Folders";
+        const string FoldersKey = "Oisif.Inspector.DataSnapshot.Folders";
         public const string OutputFolder = "Logs/DataSnapshots";
 
         // Folders photographed, separated by ';', saved in the editor preferences
@@ -22,14 +22,14 @@ namespace InspectorKit.Editor
             set => EditorPrefs.SetString(FoldersKey, string.Join(";", value));
         }
 
-        [MenuItem("Tools/Inspector Kit/Data Snapshot/Take")]
+        [MenuItem("Tools/Oisif/Data Snapshot/Take")]
         static void TakeFromMenu()
         {
             string path = Take();
             Debug.Log($"[DataSnapshot] written to {path}");
         }
 
-        [MenuItem("Tools/Inspector Kit/Data Snapshot/Compare The Last Two")]
+        [MenuItem("Tools/Oisif/Data Snapshot/Compare The Last Two")]
         static void CompareFromMenu()
         {
             List<string> files = Directory.Exists(OutputFolder)

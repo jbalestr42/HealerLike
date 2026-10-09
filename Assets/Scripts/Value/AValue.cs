@@ -1,5 +1,4 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 [Serializable]
@@ -11,7 +10,5 @@ public abstract class AValue
 [Serializable]
 public abstract class AValue<DataType> : AValue
 {
-    [InlineProperty]
-    [HideLabel]
     public DataType data;
 }

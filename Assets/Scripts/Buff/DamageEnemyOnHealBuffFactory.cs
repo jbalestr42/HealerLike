@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/DamageEnemyOnHealBuff")]
@@ -10,7 +9,7 @@ public class DamageEnemyOnHealBuffFactory : BuffFactory<DamageEnemyOnHealBuff, D
 public class DamageEnemyOnHealBuffData
 {
     // Part of each heal received by the holder dealt as damage to one of its enemies
-    [MinValue(0)]
+    [Min(0)]
     public float ratio = 0.25f;
     // How the enemy is picked, from the position of the holder
     public TargetBehaviourType targetType = TargetBehaviourType.Nearest;

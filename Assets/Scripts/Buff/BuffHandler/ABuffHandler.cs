@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 public enum DurationType
 {
@@ -11,7 +11,7 @@ public enum DurationType
 }
 
 [InlineEditor]
-public abstract class ABuffHandlerFactory : SerializedScriptableObject, ITaggable
+public abstract class ABuffHandlerFactory : Sirenix.OdinInspector.SerializedScriptableObject, ITaggable
 {
     [HideInInlineEditors]
     public string uniqueID = Guid.NewGuid().ToString();
@@ -38,8 +38,6 @@ public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory
                                             where BuffHandlerType : ABuffHandler<DataType>, new()
                                             where DataType : BuffHandlerBaseData
 {
-    [InlineProperty]
-    [HideLabel]
     public DataType data;
 
     public override ABuffHandler GetBuffHandler()
@@ -86,27 +84,27 @@ public class BuffHandlerBaseData
     public float duration;
     [HideIf("durationType", DurationType.Instant)]
     public bool isPeriodic;
-    [ShowIf("@this.durationType != DurationType.Instant && isPeriodic")]
+    [ShowIf(nameof(hasPeriod))]
     public float periodDuration;
+    // A periodic buff lasting more than an instant: its period counts
+    bool hasPeriod => durationType != DurationType.Instant && isPeriodic;
     // Stacks a single source can apply (every source together with stackAcrossSources), 0 for no limit: over
     // it, a new application only refreshes the duration
     [HideIf("durationType", DurationType.Instant)]
-    [MinValue(0)]
+    [Min(0)]
     public int maxStacks;
     // Every source feeds the same stacks on a target instead of each source having its own (e.g. a poison
     // applied by several enemies), and the handler outlives its sources: it ends with its duration
     [HideIf("durationType", DurationType.Instant)]
     public bool stackAcrossSources;
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffFactory>, ABuffFactory>(buffFactoryList)")]
+    [CreateDataButton]
     public List<ABuffFactory> buffFactoryList;
 
-    [AssetsOnly]
     public GameObject buffEffect; // TODO IBuffEffect ? to manage start and stop visual effect
 
     // Displayed over the target while the handler is active (no icon = not displayed)
-    [PreviewField(50)]
-    [AssetsOnly]
+    [Preview(50)]
     public Sprite icon;
 
     public List<GameplayTag> tags = new List<GameplayTag>();

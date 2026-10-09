@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [Serializable]
 public class PurifySkillData : SkillDataBase
@@ -9,9 +9,9 @@ public class PurifySkillData : SkillDataBase
     // The handlers with this tag (or one of its descendants) are the debuffs it removes
     public GameplayTag debuffTag;
     // One of them, picked at random, given to a random ally on each use
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(buffHandlerFactories)")]
+    [CreateDataButton]
     public List<ABuffHandlerFactory> buffHandlerFactories = new List<ABuffHandlerFactory>();
-    [MinValue(0.1f)]
+    [Min(0.1f)]
     public float rate = 5f;
 }
 

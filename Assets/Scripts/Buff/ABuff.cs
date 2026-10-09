@@ -1,9 +1,9 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ABuffFactory : SerializedScriptableObject
+public abstract class ABuffFactory : Sirenix.OdinInspector.SerializedScriptableObject
 {
     [HideInInlineEditors]
     public string uniqueID = Guid.NewGuid().ToString();
@@ -14,8 +14,6 @@ public abstract class ABuffFactory : SerializedScriptableObject
 
 public class BuffFactory<BuffType, DataType> : ABuffFactory where BuffType : ABuff<DataType>, new()
 {
-    [InlineProperty]
-    [HideLabel]
     public DataType data;
 
     public override ABuff GetBuff(ABuffHandler buffHandler)

@@ -1,10 +1,8 @@
 {
-    "name": "InspectorKit.Editor",
-    "rootNamespace": "InspectorKit.Editor",
+    "name": "Oisif.Inspector",
+    "rootNamespace": "Oisif.Inspector",
     "references": [],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

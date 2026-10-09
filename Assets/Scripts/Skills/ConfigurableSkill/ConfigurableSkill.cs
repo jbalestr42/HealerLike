@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [Serializable]
 public class ConfigurableSkillData : SkillDataBase
 {
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillStepFactory>, ASkillStepFactory>(skillStepFactories)")]
+    [CreateDataButton]
     public List<ASkillStepFactory> skillStepFactories = new List<ASkillStepFactory>();
 }
 

@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "HealerLike.Runtime",
+        "Oisif.Inspector",
         "UnityEngine.UI",
         "Unity.TextMeshPro",
         "Unity.Cinemachine",

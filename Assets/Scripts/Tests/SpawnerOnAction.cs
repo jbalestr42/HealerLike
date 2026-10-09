@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Sirenix.OdinInspector;
+using Oisif.Inspector;
 
-public class SpawnerOnAction : SerializedMonoBehaviour
+public class SpawnerOnAction : Sirenix.OdinInspector.SerializedMonoBehaviour
 {
     List<GameObject> entities = new List<GameObject>();
 

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
-public abstract class AItemFactory : SerializedScriptableObject, ITaggable
+public abstract class AItemFactory : Sirenix.OdinInspector.SerializedScriptableObject, ITaggable
 {
     public abstract AItem GetItem();
     public abstract string title { get; }
@@ -21,8 +21,6 @@ public class ItemFactory<ItemType, DataType> : AItemFactory
                                             where ItemType : AItem<DataType>, new()
                                             where DataType : BaseItemData
 {
-    [InlineProperty]
-    [HideLabel]
     public DataType data;
 
     public override AItem GetItem()
@@ -37,22 +35,13 @@ public class ItemFactory<ItemType, DataType> : AItemFactory
 [Serializable]
 public class BaseItemData
 {
-    [HorizontalGroup("Split", 75)]
-    [PreviewField(75)]
-    [HideLabel]
-    [AssetsOnly]
+    [Preview(75)]
     public Sprite icon;
 
-    [VerticalGroup("Split/Data")]
-    [LabelWidth(100)]
     public string name;
 
-    [VerticalGroup("Split/Data")]
-    [LabelWidth(100)]
     public string description;
 
-    [VerticalGroup("Split/Data")]
-    [LabelWidth(100)]
     public List<GameplayTag> tags = new List<GameplayTag>();
 }
 

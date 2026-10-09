@@ -1,8 +1,9 @@
 {
-    "name": "InspectorKit.Tests",
-    "rootNamespace": "InspectorKit.Tests",
+    "name": "Oisif.Inspector.Tests",
+    "rootNamespace": "Oisif.Editor.Tests",
     "references": [
-        "InspectorKit.Editor",
+        "Oisif.Inspector",
+        "Oisif.Inspector.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

@@ -1,32 +1,24 @@
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/CharacterData")]
 [InlineEditor]
-public class CharacterData : SerializedScriptableObject
+public class CharacterData : Sirenix.OdinInspector.SerializedScriptableObject
 {
-    [HorizontalGroup("Data", 75)]
-    [PreviewField(75)]
-    [HideLabel]
-    [AssetsOnly]
+    [Preview(75)]
     public GameObject model;
 
-    [VerticalGroup("Data/Stats")]
-    [LabelWidth(100)]
     public string title;
 
-    [VerticalGroup("Data/Stats")]
-    [LabelWidth(100)]
     public string text;
 
     [Space]
     [SerializeField]
-    [DictionaryDrawerSettings(KeyLabel = "Attribute Type", ValueLabel = "Value")]
     public Dictionary<AttributeType, float> attributes = new Dictionary<AttributeType, float>();
 
     [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AItemFactory>, AItemFactory>(items)")]
+    [CreateDataButton]
     public List<AItemFactory> items = new List<AItemFactory>();
 
     [Space]
@@ -36,6 +28,6 @@ public class CharacterData : SerializedScriptableObject
     public GameplayTag classTag;
 
     [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ACharacterSkillFactory>, ACharacterSkillFactory>(skills)")]
+    [CreateDataButton]
     public List<ACharacterSkillFactory> skills = new List<ACharacterSkillFactory>();
 }

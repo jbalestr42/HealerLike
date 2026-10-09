@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace InspectorKit.Editor
+namespace Oisif.Editor
 {
     // How GridGUI draws a grid
     public class GridGUIOptions
@@ -180,7 +180,7 @@ namespace InspectorKit.Editor
             }
         }
 
-        const string DragSourceKey = "InspectorKit.GridGUI.Source";
+        const string DragSourceKey = "Oisif.Inspector.GridGUI.Source";
 
         static void HandleDragAndDrop(Rect rect, SerializedProperty cell, Type objectType, Event current)
         {

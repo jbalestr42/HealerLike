@@ -1,10 +1,9 @@
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 public class ExpressionEvaluatorTester : MonoBehaviour
 {
     [SerializeField]
-    [OnValueChanged("DebugEvaluateExpression")]
     string debugText;
 
     [SerializeField]

@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/EchoAttackBuff")]
@@ -10,10 +9,10 @@ public class EchoAttackBuffFactory : BuffFactory<EchoAttackBuff, EchoAttackBuffD
 public class EchoAttackBuffData
 {
     // Every attackCount attacks, the last one is made twice
-    [MinValue(1)]
+    [Min(1)]
     public int attackCount = 4;
     // Seconds before the attack is repeated, so both can be told apart
-    [MinValue(0)]
+    [Min(0)]
     public float delay = 0.2f;
 }
 

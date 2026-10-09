@@ -1,17 +1,15 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ACharacterSkillValidatorFactory : SerializedScriptableObject
+public abstract class ACharacterSkillValidatorFactory : Sirenix.OdinInspector.SerializedScriptableObject
 {
     public abstract ACharacterSkillValidator Create();
 }
 
 public class CharacterSkillValidatorFactory<CharacterSkillValidatorType, DataType> : ACharacterSkillValidatorFactory where CharacterSkillValidatorType : ACharacterSkillValidator<DataType>, new()
 {
-    [InlineProperty]
-    [HideLabel]
     public DataType data;
 
     public override ACharacterSkillValidator Create()

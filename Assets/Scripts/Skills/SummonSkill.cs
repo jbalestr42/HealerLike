@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 [Serializable]
@@ -9,7 +8,7 @@ public class SummonSkillData : SkillDataBase
     public EntityData entity;
     public float cooldown = 6f;
     // Summons of the caster alive at the same time, it waits for one to die to summon again
-    [MinValue(1)]
+    [Min(1)]
     public int maxAlive = 2;
 }
 

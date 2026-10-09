@@ -1,9 +1,8 @@
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/SandboxData")]
-public class SandboxData : SerializedScriptableObject
+public class SandboxData : Sirenix.OdinInspector.SerializedScriptableObject
 {
     // Attributes (mana, ...) of the sandbox character are taken from this character
     public CharacterData character;
@@ -11,16 +10,12 @@ public class SandboxData : SerializedScriptableObject
     // Characters that can be played in the sandbox, with their own skills and items
     public List<CharacterData> characters = new List<CharacterData>();
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<EntityData>, EntityData>(entities, this)")]
     public List<EntityData> entities = new List<EntityData>();
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<WavePatternData>, WavePatternData>(waves, this)")]
     public List<WavePatternData> waves = new List<WavePatternData>();
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<ACharacterSkillFactory>, ACharacterSkillFactory>(characterSkills, this)")]
     public List<ACharacterSkillFactory> characterSkills = new List<ACharacterSkillFactory>();
 
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.DrawRefreshButton<List<AItemFactory>, AItemFactory>(items, this)")]
     public List<AItemFactory> items = new List<AItemFactory>();
 
     // played: null plays with every sandbox skill, otherwise the character with its skills and items

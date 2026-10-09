@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [Serializable]
 public class AreaOfEffectSkillData : SkillDataBase
 {
-    [HorizontalGroup("Split", 75)]
-    [PreviewField(75)]
-    [HideLabel]
-    [AssetsOnly]
+    [Preview(75)]
     public GameObject areaOfEffectPrefab;
 }
 

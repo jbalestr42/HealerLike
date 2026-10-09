@@ -1,9 +1,9 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class AConsumerFactory : SerializedScriptableObject
+public abstract class AConsumerFactory : Sirenix.OdinInspector.SerializedScriptableObject
 {
     public abstract AConsumer GetConsumer(GameObject source, GameObject target);
 }
@@ -12,8 +12,6 @@ public class ConsumerFactory<ConsumerType, DataType> : AConsumerFactory
                                             where ConsumerType : AConsumer<DataType>, new()
                                             where DataType : ConsumerBaseData
 {
-    [InlineProperty]
-    [HideLabel]
     public DataType data;
 
     public override AConsumer GetConsumer(GameObject source, GameObject target)

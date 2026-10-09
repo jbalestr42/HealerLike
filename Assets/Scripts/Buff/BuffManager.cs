@@ -1,11 +1,10 @@
 
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class BuffManager : SerializedMonoBehaviour
+public class BuffManager : Sirenix.OdinInspector.SerializedMonoBehaviour
 {
     [HideInInspector] public UnityEvent<BuffData> OnBuffAdded = new UnityEvent<BuffData>();
     [HideInInspector] public UnityEvent<BuffData> OnBuffRemoved = new UnityEvent<BuffData>();
@@ -29,7 +28,6 @@ public class BuffManager : SerializedMonoBehaviour
     class BuffDataPerId
     {
         // BuffFactory unique Id -> BuffDataPerId
-        [DictionaryDrawerSettings(KeyLabel = "Id", ValueLabel = "Buff Data")]
         [SerializeField] public Dictionary<string, BuffData> buffPerId = new Dictionary<string, BuffData>();
     }
 
@@ -56,15 +54,12 @@ public class BuffManager : SerializedMonoBehaviour
     class BuffHandlerDataPerId
     {
         // BuffHandlerFactory unique Id -> BuffHandlerDataPerId
-        [DictionaryDrawerSettings(KeyLabel = "Id", ValueLabel = "Buff Handler Data")]
         [SerializeField] public Dictionary<string, BuffHandlerData> buffHandlerPerId = new Dictionary<string, BuffHandlerData>();
     }
 
     // Buff source -> BuffData (this buff manager's own game object for the handlers stacking across sources)
-    [DictionaryDrawerSettings(KeyLabel = "Source", ValueLabel = "Data per Id")]
     [SerializeField] Dictionary<GameObject, BuffDataPerId> _buffPerSource = new Dictionary<GameObject, BuffDataPerId>();
     // Buff source -> BuffHandlerData
-    [DictionaryDrawerSettings(KeyLabel = "Source", ValueLabel = "Handler Data per Id")]
     [SerializeField] Dictionary<GameObject, BuffHandlerDataPerId> _buffHandlerPerSource = new Dictionary<GameObject, BuffHandlerDataPerId>();
 
     List<string> _cachedBuffIdsToRemove = new List<string>();
