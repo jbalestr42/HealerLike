@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcc2b6efee1b8c64ea56b363406b462f, type: 3}
   m_Name: DamageHPBasedModifierFactory
   m_EditorClassIdentifier: HealerLike.Runtime::HPBasedModifierFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 49a1722e-3d76-46f7-b542-8a4c556e53dc
   data:
     type: 2

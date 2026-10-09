@@ -402,104 +402,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d50caccc59df4a4799db19c701ed664, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects:
-    - {fileID: 658297190}
-    - {fileID: 2128122847}
-    - {fileID: 2120812393}
-    - {fileID: 1377840494}
-    - {fileID: 97231}
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: _views
-      Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[ViewType, HealerLike.Runtime],[AView, HealerLike.Runtime]], mscorlib
-    - Name: comparer
-      Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[ViewType, HealerLike.Runtime]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 12
-      Data: 5
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 1
-    - Name: $v
-      Entry: 10
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 2
-    - Name: $v
-      Entry: 10
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 4
-    - Name: $v
-      Entry: 10
-      Data: 2
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 5
-    - Name: $v
-      Entry: 10
-      Data: 3
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 6
-    - Name: $v
-      Entry: 10
-      Data: 4
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
   _views:
   - key: 1
     value: {fileID: 658297190}
@@ -1679,15 +1581,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6329070572e29b3419b1f94d98b406b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
 --- !u!114 &711645747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1756,8 +1649,11 @@ MonoBehaviour:
   _mapSettings: {fileID: 11400000, guid: 2382ba3ade5a45043ace836e6bf1cc19, type: 2}
   _seed: 0
   _restHealConsumer: {fileID: 11400000, guid: 10219a6cd6b91d743b05c7c0bca5d739, type: 2}
+  _restDescription: Take a moment to recover before moving on.
+  _restHealDescription: Every unit recovers 30% of its max health.
   _rewardChoiceCount: 3
   _eliteRewardChoiceCount: 4
+  _recordCombatLog: 0
 --- !u!1001 &723866369
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2274,15 +2170,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cfa8122d7dcf7a44b901aa0395cedea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
 --- !u!1 &1117896677
 GameObject:
   m_ObjectHideFlags: 0
@@ -4004,15 +3891,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e945a0b102168d4cb093f54458d5cd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   _skillInputs:
   - {fileID: 892513156125766737, guid: 0c2bc830538da654da4288bd1a900f80, type: 3}
   - {fileID: 4904762223498611440, guid: 0c2bc830538da654da4288bd1a900f80, type: 3}

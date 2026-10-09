@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bca54e06da23ca4ba282988c8ff682e, type: 3}
   m_Name: SummonSkillFactory
   m_EditorClassIdentifier: HealerLike.Runtime::SummonSkillFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     onSkillTriggerFactory: []
     entity: {fileID: 11400000, guid: 694d0ae6cd811294a8b0f90e4c85c871, type: 2}

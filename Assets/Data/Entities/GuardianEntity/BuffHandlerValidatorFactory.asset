@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 465ba9fbfb86819429c635bb7cf4b71a, type: 3}
   m_Name: BuffHandlerValidatorFactory
   m_EditorClassIdentifier: HealerLike.Runtime::BuffHandlerValidatorFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     buffHandlerFactory: {fileID: 11400000, guid: c8f201c709d77964c90514a497efe80b, type: 2}
     mustHave: 0

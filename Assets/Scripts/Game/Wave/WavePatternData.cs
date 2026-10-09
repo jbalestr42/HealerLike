@@ -4,7 +4,7 @@ using Oisif.Inspector;
 using System.Collections.Generic;
 
 [CreateAssetMenu(menuName = "Custom/Data/WavePatternData")]
-public class WavePatternData : Sirenix.OdinInspector.SerializedScriptableObject
+public class WavePatternData : ScriptableObject
 {
     // Columns of the grid, the front one first
     [FormerlySerializedAs("width")]

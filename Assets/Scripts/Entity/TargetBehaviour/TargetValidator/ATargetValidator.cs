@@ -3,7 +3,7 @@ using UnityEngine;
 using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ATargetValidatorFactory : Sirenix.OdinInspector.SerializedScriptableObject
+public abstract class ATargetValidatorFactory : ScriptableObject
 {
     public abstract ATargetValidator GetTargetValidator();
 }

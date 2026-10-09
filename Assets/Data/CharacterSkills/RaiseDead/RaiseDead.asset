@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66da91b40236c8445a833015c9f80701, type: 3}
   m_Name: RaiseDead
   m_EditorClassIdentifier: HealerLike.Runtime::RaiseDeadCharacterSkillFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     icon: {fileID: 21300000, guid: 08c09715fa0a5a5459d08c73c0435261, type: 3}
     name: Raise Dead

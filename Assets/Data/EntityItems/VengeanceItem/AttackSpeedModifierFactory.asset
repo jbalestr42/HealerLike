@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 778064751e008ff48bdc7958831ce9d0, type: 3}
   m_Name: AttackSpeedModifierFactory
   m_EditorClassIdentifier: HealerLike.Runtime::AttackSpeedModifierFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: ec6d08fe-5ed9-4773-af8c-45aa93cf01fb
   data:
     type: 1

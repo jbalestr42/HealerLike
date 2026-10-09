@@ -281,78 +281,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d50caccc59df4a4799db19c701ed664, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects:
-    - {fileID: 658297190}
-    - {fileID: 2128122847}
-    - {fileID: 2120812393}
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: _views
-      Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[ViewType, HealerLike.Runtime],[AView, HealerLike.Runtime]], mscorlib
-    - Name: comparer
-      Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[ViewType, HealerLike.Runtime]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 12
-      Data: 3
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 1
-    - Name: $v
-      Entry: 10
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 2
-    - Name: $v
-      Entry: 10
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 4
-    - Name: $v
-      Entry: 10
-      Data: 2
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
   _views:
   - key: 1
     value: {fileID: 658297190}
@@ -1931,15 +1859,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6329070572e29b3419b1f94d98b406b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
 --- !u!114 &711645747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2618,6 +2537,7 @@ MonoBehaviour:
   _buttonHeight: 28
   _refreshPeriod: 0.1
   _backgroundColor: {r: 0.05, g: 0.06, b: 0.08, a: 0.85}
+  _canChangeTargeting: 1
 --- !u!224 &996174463
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2819,15 +2739,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cfa8122d7dcf7a44b901aa0395cedea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
 --- !u!1 &1117896677
 GameObject:
   m_ObjectHideFlags: 0
@@ -5655,15 +5566,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e945a0b102168d4cb093f54458d5cd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   _skillInputs:
   - {fileID: 892513156125766737, guid: 0c2bc830538da654da4288bd1a900f80, type: 3}
   - {fileID: 4904762223498611440, guid: 0c2bc830538da654da4288bd1a900f80, type: 3}

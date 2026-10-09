@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e321382ab739504ab8f748087ee86bb, type: 3}
   m_Name: ApplyBuffOnTargetSkillFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     onSkillTriggerFactory: []
     buffHandlerFactory: {fileID: 11400000, guid: c8ff49d1430877842be0fd2f68bc1468, type: 2}

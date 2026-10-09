@@ -12,15 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7968a8c5c06ea604fa522198c2b8909f, type: 3}
   m_Name: LifeStealBuffFactory
   m_EditorClassIdentifier: HealerLike.Runtime::LifeStealBuffFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 1f475bb8-41df-4b6a-9bc6-29298a9f0a0c
   data:
     ratio: 0.5
+    target: 0

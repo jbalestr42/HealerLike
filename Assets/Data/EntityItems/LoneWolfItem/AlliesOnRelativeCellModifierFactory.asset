@@ -11,16 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3f2668ffc7884fffa1e1c3f078ab1879, type: 3}
   m_Name: AlliesOnRelativeCellModifierFactory
-  m_EditorClassIdentifier:
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes:
-    ReferencedUnityObjects: []
-    SerializedBytesString:
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
+  m_EditorClassIdentifier: 
   uniqueID: 1733a82c-2d22-465b-b715-2275842e10e8
   data:
     type: 2

@@ -3,7 +3,7 @@ using UnityEngine;
 using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class AConsumerFactory : Sirenix.OdinInspector.SerializedScriptableObject
+public abstract class AConsumerFactory : ScriptableObject
 {
     public abstract AConsumer GetConsumer(GameObject source, GameObject target);
 }

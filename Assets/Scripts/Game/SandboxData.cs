@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/SandboxData")]
-public class SandboxData : Sirenix.OdinInspector.SerializedScriptableObject
+public class SandboxData : ScriptableObject
 {
     // Attributes (mana, ...) of the sandbox character are taken from this character
     public CharacterData character;

@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
   m_Name: InvincibilityBuffHandlerFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 12c1ed2c-95ca-406d-a627-6a029ab48766
   data:
     durationType: 1
@@ -28,6 +19,7 @@ MonoBehaviour:
     isPeriodic: 0
     periodDuration: 0
     maxStacks: 0
+    stackAcrossSources: 0
     buffFactoryList:
     - {fileID: 11400000, guid: 5b0bff5beda94eb99bdae1eaffca8ebf, type: 2}
     buffEffect: {fileID: 0}

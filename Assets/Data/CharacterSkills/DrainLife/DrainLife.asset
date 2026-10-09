@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af2b4854621c0ac4db43ab4355faa37e, type: 3}
   m_Name: DrainLife
   m_EditorClassIdentifier: HealerLike.Runtime::DrainLifeCharacterSkillFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     icon: {fileID: 21300000, guid: 7494ba15848983f46b96fc61c28d5674, type: 3}
     name: Drain Life

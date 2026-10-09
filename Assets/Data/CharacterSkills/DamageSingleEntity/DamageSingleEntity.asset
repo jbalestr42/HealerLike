@@ -12,19 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e399561e7a75ef84b90e3dfa12cdbd5f, type: 3}
   m_Name: DamageSingleEntity
   m_EditorClassIdentifier: HealerLike.Runtime::ApplyConsumerCharacterSkillFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     icon: {fileID: 0}
-    name: "Damage Single Unit"
-    description: "Deal <color=\"red\">{data:consumer.data.value.data.value}</color> damage to any unit, ignoring armor"
+    name: Damage Single Unit
+    description: Deal <color="red">{data:consumer.data.value.data.value}</color> damage to any unit, ignoring armor
     validators: []
     isSingle: 1
     entityType: 3

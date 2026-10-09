@@ -12,13 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 290ba80bca36cab448a5b6cb01eeeaed, type: 3}
   m_Name: SoulLinkBuffFactory
   m_EditorClassIdentifier: HealerLike.Runtime::SoulLinkBuffFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 819cd087-cb39-4b90-8c62-559c92ad9c51

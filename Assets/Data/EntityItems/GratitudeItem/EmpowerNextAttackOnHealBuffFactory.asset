@@ -11,16 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f727f9dd69b248509d01e4fb8fd0b0e3, type: 3}
   m_Name: EmpowerNextAttackOnHealBuffFactory
-  m_EditorClassIdentifier:
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes:
-    ReferencedUnityObjects: []
-    SerializedBytesString:
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
+  m_EditorClassIdentifier: 
   uniqueID: 9e971cfa-725c-4bbd-af3e-549d7c12efb7
   data:
     damageMultiplier: 1.5

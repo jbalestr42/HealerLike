@@ -3,7 +3,7 @@ using UnityEngine;
 using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ASkillStepFactory : Sirenix.OdinInspector.SerializedScriptableObject
+public abstract class ASkillStepFactory : ScriptableObject
 {
     public abstract ASkillStep AddSkillStep(GameObject source);
 }

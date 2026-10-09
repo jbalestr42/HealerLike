@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Oisif.Inspector;
 
-public class SpawnerOnAction : Sirenix.OdinInspector.SerializedMonoBehaviour
+public class SpawnerOnAction : MonoBehaviour
 {
     List<GameObject> entities = new List<GameObject>();
 

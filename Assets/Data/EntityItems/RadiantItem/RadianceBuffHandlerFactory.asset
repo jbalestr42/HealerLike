@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
   m_Name: RadianceBuffHandlerFactory
   m_EditorClassIdentifier: HealerLike.Runtime::BuffHandlerFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 9489744d-fbd5-4c05-98ba-965c189231b7
   data:
     durationType: 1
@@ -28,6 +19,7 @@ MonoBehaviour:
     isPeriodic: 0
     periodDuration: 0
     maxStacks: 1
+    stackAcrossSources: 0
     buffFactoryList:
     - {fileID: 11400000, guid: 3dd5fa9d65eb6144293390b758fe1e75, type: 2}
     - {fileID: 11400000, guid: e6b81c2822d21be4d9b260e758febb12, type: 2}

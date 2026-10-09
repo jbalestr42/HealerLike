@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27f6c4ddd06fce2428362e09371bab14, type: 3}
   m_Name: BalanceLife
   m_EditorClassIdentifier: HealerLike.Runtime::BalanceLifeCharacterSkillFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     icon: {fileID: 21300000, guid: 338cc04877ed9b642abc819503c5f721, type: 3}
     name: Balance Life
@@ -33,3 +24,4 @@ MonoBehaviour:
     - {fileID: 11400000, guid: b71ba0e09dc7ace49b3bd0c3243513f8, type: 2}
     - {fileID: 11400000, guid: e36cf6074fea67045912b3b85d9b2fb5, type: 2}
     entityType: 1
+    mode: 0

@@ -12,18 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aee98d927598e340ae28ed4c28c0ac7, type: 3}
   m_Name: ConsumerFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     ignoreDamageReduction: 0
     ignoreConsumerPrevention: 0
+    canBeCritical: 1
     value:
       rid: 5275139311471951893
     valueOwner: 1
@@ -31,7 +23,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 5275139311471951893
-      type: {class: CurrentHealthValue, ns: , asm: Assembly-CSharp}
+      type: {class: CurrentHealthValue, ns: , asm: HealerLike.Runtime}
       data:
         data:
           multiplier: 0.05

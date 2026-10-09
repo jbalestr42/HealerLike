@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e399561e7a75ef84b90e3dfa12cdbd5f, type: 3}
   m_Name: HealSingleTarget
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     icon: {fileID: 21300000, guid: bbe4f04da39757b43b86e63a47657063, type: 3}
     name: Heal

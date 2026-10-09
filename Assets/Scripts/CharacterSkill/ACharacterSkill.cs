@@ -5,7 +5,7 @@ using UnityEngine.Events;
 using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ACharacterSkillFactory : Sirenix.OdinInspector.SerializedScriptableObject
+public abstract class ACharacterSkillFactory : ScriptableObject
 {
     public abstract ACharacterSkill Create();
 }

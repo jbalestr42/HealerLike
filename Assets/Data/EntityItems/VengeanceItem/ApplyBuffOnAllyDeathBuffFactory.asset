@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b673d8364bf70d4488d5d87ee96e41dd, type: 3}
   m_Name: ApplyBuffOnAllyDeathBuffFactory
   m_EditorClassIdentifier: HealerLike.Runtime::ApplyBuffOnAllyDeathBuffFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 73442bf0-8483-4676-9e32-e00e7405fcd1
   data:
     buffHandlerFactory: {fileID: 11400000, guid: ddc2377d9ec04e27ab368eba5214c7fe, type: 2}

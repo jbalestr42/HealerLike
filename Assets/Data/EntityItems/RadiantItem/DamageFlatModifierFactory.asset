@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 984d75a39286c4f498033bb6c8f5e063, type: 3}
   m_Name: DamageFlatModifierFactory
   m_EditorClassIdentifier: HealerLike.Runtime::FlatModifierFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: fa7f4f69-85e7-4c1c-a8d6-b2566788d0c8
   data:
     type: 2

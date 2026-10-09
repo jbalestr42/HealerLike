@@ -12,21 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
   m_Name: BuffHandlerFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 4f6beb89-245a-4359-8a4d-d69670382e11
   data:
     durationType: 2
     duration: 0
     isPeriodic: 0
     periodDuration: 0
+    maxStacks: 0
+    stackAcrossSources: 0
     buffFactoryList:
     - {fileID: 11400000, guid: 5b4c314f3e67fde4eb51385e485987f5, type: 2}
     buffEffect: {fileID: 0}
+    icon: {fileID: 0}
+    tags: []

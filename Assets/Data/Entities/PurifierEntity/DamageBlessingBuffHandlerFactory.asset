@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
   m_Name: DamageBlessingBuffHandlerFactory
   m_EditorClassIdentifier: HealerLike.Runtime::BuffHandlerFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: bac17cec-6016-48a7-9238-63a3c3d83b62
   data:
     durationType: 1
@@ -28,6 +19,7 @@ MonoBehaviour:
     isPeriodic: 0
     periodDuration: 0
     maxStacks: 1
+    stackAcrossSources: 0
     buffFactoryList:
     - {fileID: 11400000, guid: e94df31c7d5fde84599afef3a6833112, type: 2}
     buffEffect: {fileID: 0}

@@ -11,20 +11,14 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 60fe46f5c27c4357949d038438458660, type: 3}
   m_Name: GrowingSeedItem
-  m_EditorClassIdentifier:
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes:
-    ReferencedUnityObjects: []
-    SerializedBytesString:
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
+  m_EditorClassIdentifier: 
   data:
     icon: {fileID: 21300000, guid: 0c99c08fb2785eb4da2a6de83d8a7e03, type: 3}
     name: Growing Seed
-    description: "+1 damage and +5 max health for good after each battle survived"
+    description: +1 damage and +5 max health for good after each battle survived
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     growthBuffHandlerFactory: {fileID: 11400000, guid: 503c13e2c59048ad8459c7136dd9c329, type: 2}
+    maxGrowth: 0
+    killGrowthBuffHandlerFactory: {fileID: 0}
+    maxKillGrowth: 0

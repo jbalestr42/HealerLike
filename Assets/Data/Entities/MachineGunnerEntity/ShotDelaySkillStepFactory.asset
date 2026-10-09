@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee4336be73d3274ca513c5b6bb22f0f, type: 3}
   m_Name: ShotDelaySkillStepFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     duration:
       rid: 5275139311471951901
@@ -28,7 +19,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 5275139311471951901
-      type: {class: AttributeValue, ns: , asm: Assembly-CSharp}
+      type: {class: AttributeValue, ns: , asm: HealerLike.Runtime}
       data:
         data:
           type: 1

@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1daeb55ff2876b4aba6a3bd1e4c82b2, type: 3}
   m_Name: PurifySkillFactory
   m_EditorClassIdentifier: HealerLike.Runtime::PurifySkillFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     onSkillTriggerFactory: []
     debuffTag: {fileID: 11400000, guid: 3e3da7a1624a46a6bb004c4cc819f3a3, type: 2}

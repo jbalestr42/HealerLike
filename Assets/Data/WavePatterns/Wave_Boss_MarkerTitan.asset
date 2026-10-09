@@ -12,40 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_Boss_MarkerTitan
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects:
-    - {fileID: 11400000, guid: 887d2a996a67b2c4c8f2b4898df96150, type: 2}
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: slots
-      Entry: 7
-      Data: 0|EntitySlot[,], HealerLike.Runtime
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: ranks
-      Entry: 1
-      Data: 1|1
-    - Name: 
-      Entry: 7
-      Data: EntitySlot, HealerLike.Runtime
-    - Name: entity
-      Entry: 10
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
   _width: 1
   _height: 1
   _cells:

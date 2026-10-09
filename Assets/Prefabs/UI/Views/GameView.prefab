@@ -4489,52 +4489,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 098410b6af34ccb4cbddfffbe34cadc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects:
-    - {fileID: 8657242083343784433}
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: _panels
-      Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[PanelType, HealerLike.Runtime],[APanel, HealerLike.Runtime]], mscorlib
-    - Name: comparer
-      Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[PanelType, HealerLike.Runtime]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 12
-      Data: 1
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 1
-    - Name: $v
-      Entry: 10
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
   _characterSkillInventory: {fileID: 3732021053095227208}
   _entityInventory: {fileID: 2619937223158775351}
   _playerInventory: {fileID: 1649112816370789345}

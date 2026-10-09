@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0695537ea3889344a71b6cf1dec1135, type: 3}
   m_Name: ApplyConsumerOnEntitiesBuffFactory
   m_EditorClassIdentifier: HealerLike.Runtime::ApplyConsumerOnEntitiesBuffFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 1f314a80-6589-4252-bb1f-c72dddd847c0
   data:
     consumerFactory: {fileID: 11400000, guid: e6ebea7666509564eaee68fbbfb762ec, type: 2}

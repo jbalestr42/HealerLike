@@ -31,7 +31,7 @@ static class SingletonShutdown
 /// 
 /// As a note, this is made as MonoBehaviour because we need Coroutines.
 /// </summary>
-public class Singleton<T> : Sirenix.OdinInspector.SerializedMonoBehaviour where T : Sirenix.OdinInspector.SerializedMonoBehaviour
+public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
     private static T _instance;
     private static object _lock = new object();

@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fec17fdacd5a1e74697fd8a9627a0933, type: 3}
   m_Name: ApplyConsumerBuffFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 774f5789-b5de-4de1-bdbe-f115cd6f8e18
   data:
     consumerFactory: {fileID: 11400000, guid: fe9cbdaddf13e1a44b568496db9bae8d, type: 2}

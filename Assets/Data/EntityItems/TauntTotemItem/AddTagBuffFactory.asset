@@ -11,16 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cb5d23b41e3d43baabf49d465c2a5c4d, type: 3}
   m_Name: AddTagBuffFactory
-  m_EditorClassIdentifier:
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes:
-    ReferencedUnityObjects: []
-    SerializedBytesString:
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
+  m_EditorClassIdentifier: 
   uniqueID: 76f75b21-bc5d-42ed-a1a5-e168319e7a0a
   data:
     tag: {fileID: 11400000, guid: 96fbc7a1ec67496b9cb741e981371b7c, type: 2}

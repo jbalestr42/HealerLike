@@ -12,18 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00021442e3210b74da48ba18d8fd9ba1, type: 3}
   m_Name: HealthThresholdModifierFactory
   m_EditorClassIdentifier: HealerLike.Runtime::HealthThresholdModifierFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 09f43fc5-9c06-4e2d-a991-cba3347a1daf
   data:
     type: 2
     modifierType: 1
     value: 0.5
     threshold: 0.7
+    isBelow: 0

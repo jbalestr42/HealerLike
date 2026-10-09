@@ -62,15 +62,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c9ac60218e75bb4eb35305993fade4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   OnItemSelected:
     m_PersistentCalls:
       m_Calls: []

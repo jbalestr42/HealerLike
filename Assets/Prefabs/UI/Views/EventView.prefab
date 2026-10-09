@@ -579,20 +579,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9a4a1acd4f5606488f24ea454912a78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HealerLike.Runtime::EventView
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   _title: {fileID: 889702651234224736}
   _description: {fileID: 154874388948859717}
   _choiceContainer: {fileID: 3564140085048613826}
   _choiceSize: {x: 300, y: 280}
   _fontSize: 24
+  _minFontSize: 12
   _choiceColor: {r: 0.2, g: 0.25, b: 0.35, a: 1}
   _unavailableColor: {r: 0.2, g: 0.2, b: 0.2, a: 0.6}
   _choiceSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}

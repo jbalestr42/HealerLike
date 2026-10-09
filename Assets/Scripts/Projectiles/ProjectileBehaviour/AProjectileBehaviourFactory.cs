@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [InlineEditor]
-public abstract class AProjectileBehaviourFactory : Sirenix.OdinInspector.SerializedScriptableObject
+public abstract class AProjectileBehaviourFactory : ScriptableObject
 {
     public abstract AProjectileBehaviour AddBehaviour(GameObject target);
 }

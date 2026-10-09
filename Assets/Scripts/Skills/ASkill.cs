@@ -6,7 +6,7 @@ using UnityEngine.Events;
 using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ASkillFactory : Sirenix.OdinInspector.SerializedScriptableObject
+public abstract class ASkillFactory : ScriptableObject
 {
     public abstract ASkill AddSkill(GameObject target);
 }

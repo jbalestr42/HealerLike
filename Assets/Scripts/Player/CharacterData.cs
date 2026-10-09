@@ -4,7 +4,7 @@ using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/CharacterData")]
 [InlineEditor]
-public class CharacterData : Sirenix.OdinInspector.SerializedScriptableObject
+public class CharacterData : ScriptableObject
 {
     [Preview(75)]
     public GameObject model;

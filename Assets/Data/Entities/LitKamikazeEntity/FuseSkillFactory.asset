@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4be191ee1321e504fa77cc2dac080aed, type: 3}
   m_Name: FuseSkillFactory
   m_EditorClassIdentifier: HealerLike.Runtime::FuseSkillFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     onSkillTriggerFactory: []
     minDelay: 10

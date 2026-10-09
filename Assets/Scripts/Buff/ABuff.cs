@@ -3,7 +3,7 @@ using UnityEngine;
 using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ABuffFactory : Sirenix.OdinInspector.SerializedScriptableObject
+public abstract class ABuffFactory : ScriptableObject
 {
     [HideInInlineEditors]
     public string uniqueID = Guid.NewGuid().ToString();

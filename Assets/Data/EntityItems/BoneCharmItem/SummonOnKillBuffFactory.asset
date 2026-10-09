@@ -11,16 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f92fa1eb8884d0581d67d584dcb445b, type: 3}
   m_Name: SummonOnKillBuffFactory
-  m_EditorClassIdentifier:
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes:
-    ReferencedUnityObjects: []
-    SerializedBytesString:
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
+  m_EditorClassIdentifier: 
   uniqueID: 932d0f06-24c4-46d2-946b-55ac392d3268
   data:
     entity: {fileID: 11400000, guid: 694d0ae6cd811294a8b0f90e4c85c871, type: 2}

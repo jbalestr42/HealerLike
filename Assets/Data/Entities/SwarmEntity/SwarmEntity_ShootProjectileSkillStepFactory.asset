@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cc78a7da60785349b9588854a55a5f6, type: 3}
   m_Name: SwarmEntity_ShootProjectileSkillStepFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     projectiles:
     - projectilePrefab: {fileID: 1985067714463758, guid: 3c17665f881eca744be3ca7d15fcd364, type: 3}

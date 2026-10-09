@@ -11,7 +11,7 @@ public enum DurationType
 }
 
 [InlineEditor]
-public abstract class ABuffHandlerFactory : Sirenix.OdinInspector.SerializedScriptableObject, ITaggable
+public abstract class ABuffHandlerFactory : ScriptableObject, ITaggable
 {
     [HideInInlineEditors]
     public string uniqueID = Guid.NewGuid().ToString();

@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c407ffc4dad446d2a935fb077f0a1071, type: 3}
   m_Name: ShareHealOnRelativeCellBuffFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 818cb7ed-0fea-44d8-ac5f-843555f42950
   data:
     ratio: 0.2

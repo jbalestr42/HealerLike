@@ -12,23 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
   m_Name: ManaOnRoundEndItem_BuffHandlerFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 174f4db1-f7b2-4791-b4af-ef2240444197
   data:
     durationType: 2
     duration: 0
     isPeriodic: 0
     periodDuration: 0
+    maxStacks: 0
+    stackAcrossSources: 0
     buffFactoryList:
     - {fileID: 11400000, guid: c06844e11a51062428c140c267121451, type: 2}
     buffEffect: {fileID: 0}
+    icon: {fileID: 0}
     tags:
     - {fileID: 11400000, guid: 89edbaa6345fd89478db1b09b2b2150f, type: 2}

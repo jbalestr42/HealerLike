@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Oisif.Inspector;
 
-public abstract class AItemFactory : Sirenix.OdinInspector.SerializedScriptableObject, ITaggable
+public abstract class AItemFactory : ScriptableObject, ITaggable
 {
     public abstract AItem GetItem();
     public abstract string title { get; }

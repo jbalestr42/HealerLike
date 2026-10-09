@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/GameData")]
-public class GameData : Sirenix.OdinInspector.SerializedScriptableObject
+public class GameData : ScriptableObject
 {
     [Serializable]
     public struct AttributeUpgradeData

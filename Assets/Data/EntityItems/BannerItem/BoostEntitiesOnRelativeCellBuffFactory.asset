@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bfaf2529e3ef9b44b7b9426b3fa728e, type: 3}
   m_Name: BoostEntitiesOnRelativeCellBuffFactory
   m_EditorClassIdentifier: HealerLike.Runtime::BoostEntitiesOnRelativeCellBuffFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 27de1ed6-affb-420b-8593-1ab98529b7fe
   data:
     buffHandlerFactory: {fileID: 11400000, guid: 6e4bf1d7153440a2ae1846d1aa8d91eb, type: 2}

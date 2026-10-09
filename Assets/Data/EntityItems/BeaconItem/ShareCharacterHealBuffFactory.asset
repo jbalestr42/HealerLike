@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3941b35bdd6a29479675b759def55ec, type: 3}
   m_Name: ShareCharacterHealBuffFactory
   m_EditorClassIdentifier: HealerLike.Runtime::ShareCharacterHealBuffFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 01a9d6aa-a103-4466-9fee-2c5ce92b7960
   data:
     ratio: 0.4

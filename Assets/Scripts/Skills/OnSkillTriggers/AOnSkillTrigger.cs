@@ -4,7 +4,7 @@ using UnityEngine;
 using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class AOnSkillTriggerFactory : Sirenix.OdinInspector.SerializedScriptableObject
+public abstract class AOnSkillTriggerFactory : ScriptableObject
 {
     public abstract AOnSkillTrigger GetSkillTrigger();
 }
