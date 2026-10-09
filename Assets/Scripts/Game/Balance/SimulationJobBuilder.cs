@@ -84,6 +84,52 @@ public static class SimulationJobBuilder
         return jobs;
     }
 
+    // Every wave against the same team, once without item then once with each item, to measure the items one by
+    // one. Each unit item is held by every unit of the team in turn, a fight each, and each item of the character
+    // is played as many times. The fights of a turn share their seed with the fight without item of that turn, so
+    // an item changing nothing plays the same fight as it. Without withoutItemFights, the fights without item aren't
+    // played (e.g. taken from a previous measure)
+    public static List<SimulationJob> BuildForEachItem(CharacterData character, ReferenceTeam team, IReadOnlyList<SimulatedWave> waves, int seedCount, IReadOnlyList<AItemFactory> unitItems, IReadOnlyList<AItemFactory> playerItems, WavePatternData teamPattern = null, bool withoutItemFights = true)
+    {
+        List<SimulationJob> jobs = new List<SimulationJob>();
+        if (character == null || team == null)
+        {
+            return jobs;
+        }
+
+        int turns = System.Math.Max(1, team.units.Count);
+        for (int seedIndex = 0; seedIndex < seedCount; seedIndex++)
+        {
+            for (int turn = 0; turn < turns; turn++)
+            {
+                int seed = seedIndex * turns + turn + 1;
+                foreach (SimulatedWave wave in waves)
+                {
+                    if (withoutItemFights)
+                    {
+                        jobs.Add(new SimulationJob { character = character, team = team, teamPattern = teamPattern, wave = wave.wave, roomType = wave.roomType, floor = team.floor, seed = seed });
+                    }
+                    if (turn < team.units.Count)
+                    {
+                        foreach (AItemFactory item in unitItems)
+                        {
+                            ReferenceTeam holding = team.Copy(team.floor);
+                            holding.unitItems.Add(new ReferenceTeam.UnitItem { unit = turn, item = item });
+                            jobs.Add(new SimulationJob { character = character, team = holding, teamPattern = teamPattern, wave = wave.wave, roomType = wave.roomType, floor = team.floor, seed = seed, item = item, itemHolder = turn });
+                        }
+                    }
+                    foreach (AItemFactory item in playerItems)
+                    {
+                        ReferenceTeam holding = team.Copy(team.floor);
+                        holding.playerItems.Add(item);
+                        jobs.Add(new SimulationJob { character = character, team = holding, teamPattern = teamPattern, wave = wave.wave, roomType = wave.roomType, floor = team.floor, seed = seed, item = item });
+                    }
+                }
+            }
+        }
+        return jobs;
+    }
+
     // Whether the wave is played on the floor: every floor with a negative margin or for a wave in no pool, else
     // the floors of its pools give or take the margin
     public static bool IsPlayedOnFloor(SimulatedWave wave, int floor, int poolFloorMargin)

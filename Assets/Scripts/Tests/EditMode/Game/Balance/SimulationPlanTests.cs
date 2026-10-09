@@ -123,6 +123,116 @@ public class SimulationPlanTests
     }
 
     [Test]
+    public void BuildJobs_EachRewardItem_EveryRewardItemOnEveryUnitOfTheFixedTeam()
+    {
+        SimulationPlan plan = AssetDatabase.LoadAssetAtPath<SimulationPlan>("Assets/Data/Balance/ItemDpsSimulation.asset");
+        Assert.IsNotNull(plan);
+        RewardPools rewards = RewardPools.Create(_data, null);
+
+        List<SimulationJob> jobs = plan.BuildJobs(_data);
+
+        int units = ReferenceTeam.FromWave(plan.fixedTeam).units.Count;
+        Assert.AreEqual(5, units);
+        // Each unit in turn: a fight without item, each unit item on it, each character item
+        Assert.AreEqual(plan.seedCount * units * (1 + rewards.unitItems.Count + rewards.playerItems.Count), jobs.Count);
+        foreach (AItemFactory item in rewards.unitItems)
+        {
+            List<int> holders = jobs.FindAll(job => job.item == item).ConvertAll(job => job.itemHolder);
+            Assert.AreEqual(plan.seedCount * units, holders.Count, item.name);
+            CollectionAssert.AreEquivalent(new[] { 0, 1, 2, 3, 4 }, new HashSet<int>(holders), item.name);
+        }
+        Assert.IsTrue(jobs.TrueForAll(job => job.teamPattern == plan.fixedTeam));
+    }
+
+    [Test]
+    public void CopyFor_AnItem_OnlyThatItem_AndTheFightsWithoutItem()
+    {
+        SimulationPlan plan = AssetDatabase.LoadAssetAtPath<SimulationPlan>("Assets/Data/Balance/ItemDpsSimulation.asset");
+        AItemFactory poison = RewardPools.Create(_data, null).unitItems[0];
+
+        SimulationPlan copy = plan.CopyFor(poison);
+        List<SimulationJob> jobs = copy.BuildJobs(_data);
+
+        // Under the same name, its log read as the plan's
+        Assert.AreEqual(plan.name, copy.name);
+        Assert.IsEmpty(plan.onlyItems);
+        // Each turn: a fight without item, one with the item
+        Assert.AreEqual(plan.seedCount * 5 * 2, jobs.Count);
+        Assert.IsTrue(jobs.TrueForAll(job => job.item == null || job.item == poison));
+        Object.DestroyImmediate(copy);
+    }
+
+    [Test]
+    public void CopyFor_AnItem_TheFightsWithoutItemTakenFromAPreviousMeasure_OnlyTheItem()
+    {
+        SimulationPlan plan = AssetDatabase.LoadAssetAtPath<SimulationPlan>("Assets/Data/Balance/ItemRobustnessSimulation.asset");
+        AItemFactory poison = RewardPools.Create(_data, null).unitItems[0];
+
+        SimulationPlan copy = plan.CopyFor(poison, true);
+        List<SimulationJob> jobs = copy.BuildJobs(_data);
+
+        Assert.AreEqual(plan.seedCount * 5, jobs.Count);
+        Assert.IsTrue(jobs.TrueForAll(job => job.item == poison));
+        Assert.IsFalse(plan.skipFightsWithoutItem);
+        Object.DestroyImmediate(copy);
+    }
+
+    [Test]
+    public void CopyFor_AWave_OnlyThatWave_InsteadOfEveryWaveOfThePools()
+    {
+        SimulationPlan waveDps = AssetDatabase.LoadAssetAtPath<SimulationPlan>("Assets/Data/Balance/WaveDpsSimulation.asset");
+        SimulationPlan teamDps = AssetDatabase.LoadAssetAtPath<SimulationPlan>("Assets/Data/Balance/BalanceTeamDpsSimulation.asset");
+        WavePatternData wave = SimulationJobBuilder.GetWaves(_data)[0].wave;
+
+        SimulationPlan waveCopy = waveDps.CopyFor(wave);
+        SimulationPlan teamCopy = teamDps.CopyFor(wave);
+
+        CollectionAssert.AreEqual(new[] { wave }, waveCopy.waves);
+        // The balance team against the dummies doesn't play the waves: copied whole
+        CollectionAssert.AreEqual(teamDps.waves, teamCopy.waves);
+        Object.DestroyImmediate(waveCopy);
+        Object.DestroyImmediate(teamCopy);
+    }
+
+    [Test]
+    public void CopyFor_ACharacter_OnlyItsBots()
+    {
+        SimulationPlan plan = AssetDatabase.LoadAssetAtPath<SimulationPlan>("Assets/Data/Balance/CharacterRobustnessSimulation.asset");
+        CharacterData druid = AssetDatabase.LoadAssetAtPath<CharacterData>("Assets/Data/Characters/DruidCharacter/DruidCharacter.asset");
+        Assert.Greater(plan.healerBots.Count, 1);
+
+        SimulationPlan copy = plan.CopyFor(druid);
+
+        Assert.AreEqual(1, copy.healerBots.Count);
+        Assert.AreSame(druid, copy.healerBots[0].character);
+        Object.DestroyImmediate(copy);
+    }
+
+    [Test]
+    public void ItemPlans_TheBalanceTeamAgainstTheDummies_ThenTheMortalDummiesAgainstTheBalanceTeam()
+    {
+        WavePatternData attackers = AssetDatabase.LoadAssetAtPath<WavePatternData>("Assets/Data/Balance/Wave_Balance_Attackers.asset");
+        WavePatternData dummies = AssetDatabase.LoadAssetAtPath<WavePatternData>("Assets/Data/Balance/Wave_Balance_Dummies.asset");
+        SimulationPlan dps = AssetDatabase.LoadAssetAtPath<SimulationPlan>("Assets/Data/Balance/ItemDpsSimulation.asset");
+        SimulationPlan robustness = AssetDatabase.LoadAssetAtPath<SimulationPlan>("Assets/Data/Balance/ItemRobustnessSimulation.asset");
+
+        Assert.IsTrue(dps.eachRewardItem);
+        Assert.AreSame(attackers, dps.fixedTeam);
+        CollectionAssert.AreEqual(new[] { dummies }, dps.waves);
+        Assert.IsFalse(dps.fixedTeamDies);
+        Assert.IsTrue(robustness.eachRewardItem);
+        Assert.AreSame(dummies, robustness.fixedTeam);
+        CollectionAssert.AreEqual(new[] { attackers }, robustness.waves);
+        Assert.IsTrue(robustness.fixedTeamDies);
+        // 2 seeds: 10 fights per item and way, two fights with the same seed already differing by 2 to 4%
+        Assert.AreEqual(2, dps.seedCount);
+        Assert.AreEqual(2, robustness.seedCount);
+        // The same fights as the other measures: 30s of damage, then until the dummies die
+        Assert.AreEqual(30f, dps.maxDuration);
+        Assert.AreEqual(180f, robustness.maxDuration);
+    }
+
+    [Test]
     public void GetWaves_AListedWaveInNoPool_PlayedAsACombat()
     {
         WavePatternData dummies = ScriptableObject.CreateInstance<WavePatternData>();

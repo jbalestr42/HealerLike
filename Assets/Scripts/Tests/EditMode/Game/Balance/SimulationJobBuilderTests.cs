@@ -322,6 +322,94 @@ public class SimulationJobBuilderTests
         Assert.AreEqual(2, jobs.Count);
         Assert.IsTrue(jobs.TrueForAll(job => job.teamPattern == dummies));
     }
+
+    AItemFactory CreateItem(string name)
+    {
+        ItemFactory item = Create<ItemFactory>(name);
+        item.data = new ItemData { name = name };
+        return item;
+    }
+
+    // A team of three units against one wave, with two unit items and one character item
+    List<SimulationJob> BuildForEachItem(int seedCount, out ReferenceTeam team, out AItemFactory bounce, out AItemFactory poison, out AItemFactory beads)
+    {
+        team = new ReferenceTeam { units = new List<EntityData> { Create<EntityData>("Sniper"), Create<EntityData>("Gunner"), Create<EntityData>("Mortar") } };
+        bounce = CreateItem("BounceItem");
+        poison = CreateItem("PoisonItem");
+        beads = CreateItem("PrayerBeadsItem");
+        List<SimulatedWave> waves = new List<SimulatedWave> { new SimulatedWave { wave = Create<WavePatternData>("Wave_Balance_Dummies"), roomType = MapNodeType.Combat } };
+        return SimulationJobBuilder.BuildForEachItem(Create<CharacterData>("Balance"), team, waves, seedCount, new[] { bounce, poison }, new[] { beads });
+    }
+
+    [Test]
+    public void BuildForEachItem_EachUnitItemHeldByEveryUnitInTurn_EachCharacterItemAsOften_AndAFightWithoutItemPerTurn()
+    {
+        List<SimulationJob> jobs = BuildForEachItem(1, out ReferenceTeam team, out AItemFactory bounce, out AItemFactory poison, out AItemFactory beads);
+
+        // 3 turns x (no item + 2 unit items + 1 character item)
+        Assert.AreEqual(12, jobs.Count);
+        List<SimulationJob> bounceJobs = jobs.FindAll(job => job.item == bounce);
+        CollectionAssert.AreEquivalent(new[] { 0, 1, 2 }, bounceJobs.ConvertAll(job => job.itemHolder));
+        foreach (SimulationJob job in bounceJobs)
+        {
+            Assert.AreEqual(1, job.team.unitItems.Count);
+            Assert.AreEqual(job.itemHolder, job.team.unitItems[0].unit);
+            Assert.AreSame(bounce, job.team.unitItems[0].item);
+            Assert.IsEmpty(job.team.playerItems);
+        }
+
+        List<SimulationJob> beadsJobs = jobs.FindAll(job => job.item == beads);
+        Assert.AreEqual(3, beadsJobs.Count);
+        Assert.IsTrue(beadsJobs.TrueForAll(job => job.itemHolder == SimulationJob.NoHolder && job.team.playerItems.Count == 1 && job.team.playerItems[0] == beads && job.team.unitItems.Count == 0));
+
+        List<SimulationJob> withoutItem = jobs.FindAll(job => job.item == null);
+        Assert.AreEqual(3, withoutItem.Count);
+        Assert.IsTrue(withoutItem.TrueForAll(job => job.team == team && job.itemHolder == SimulationJob.NoHolder));
+        // The team itself is never given an item
+        Assert.IsEmpty(team.unitItems);
+        Assert.IsEmpty(team.playerItems);
+    }
+
+    [Test]
+    public void BuildForEachItem_TheFightsOfATurnShareTheSeedOfItsFightWithoutItem()
+    {
+        List<SimulationJob> jobs = BuildForEachItem(2, out ReferenceTeam _, out AItemFactory bounce, out AItemFactory _, out AItemFactory beads);
+
+        // 2 seeds x 3 turns: a seed each
+        List<SimulationJob> withoutItem = jobs.FindAll(job => job.item == null);
+        CollectionAssert.AreEquivalent(new[] { 1, 2, 3, 4, 5, 6 }, withoutItem.ConvertAll(job => job.seed));
+        foreach (SimulationJob job in jobs.FindAll(job => job.item != null))
+        {
+            Assert.AreEqual(1, withoutItem.FindAll(reference => reference.seed == job.seed).Count);
+        }
+        // Each unit holds the item once per seed, with another seed each time
+        List<SimulationJob> bounceOnGunner = jobs.FindAll(job => job.item == bounce && job.itemHolder == 1);
+        CollectionAssert.AreEquivalent(new[] { 2, 5 }, bounceOnGunner.ConvertAll(job => job.seed));
+        CollectionAssert.AreEquivalent(new[] { 1, 2, 3, 4, 5, 6 }, jobs.FindAll(job => job.item == beads).ConvertAll(job => job.seed));
+    }
+
+    [Test]
+    public void BuildForEachItem_WithoutTheFightsWithoutItem_OnlyTheItems()
+    {
+        ReferenceTeam team = new ReferenceTeam { units = new List<EntityData> { Create<EntityData>("Sniper"), Create<EntityData>("Gunner") } };
+        AItemFactory bounce = CreateItem("BounceItem");
+        List<SimulatedWave> waves = new List<SimulatedWave> { new SimulatedWave { wave = Create<WavePatternData>("Wave_Balance_Dummies") } };
+
+        List<SimulationJob> jobs = SimulationJobBuilder.BuildForEachItem(Create<CharacterData>("Balance"), team, waves, 2, new[] { bounce }, new AItemFactory[0], null, false);
+
+        // 2 seeds x 2 turns, each with the item only, on the same seeds as with the fights without item
+        Assert.AreEqual(4, jobs.Count);
+        Assert.IsTrue(jobs.TrueForAll(job => job.item == bounce));
+        CollectionAssert.AreEquivalent(new[] { 1, 2, 3, 4 }, jobs.ConvertAll(job => job.seed));
+    }
+
+    [Test]
+    public void BuildForEachItem_NoCharacter_None()
+    {
+        List<SimulatedWave> waves = new List<SimulatedWave> { new SimulatedWave { wave = Create<WavePatternData>("Wave") } };
+
+        Assert.IsEmpty(SimulationJobBuilder.BuildForEachItem(null, new ReferenceTeam(), waves, 1, new[] { CreateItem("BounceItem") }, new AItemFactory[0]));
+    }
 }
 
 }

@@ -155,7 +155,8 @@ public class BalanceSimulator : AGameType
 
         PlaceTeam(job.team, job.teamPattern);
         _entities.SpawnWave(job.wave, transform.position, Entity.EntityType.Computer);
-        ForEachEntity(KeepAliveIfSimulation);
+        bool fixedTeamDies = _plan.fixedTeamDies;
+        ForEachEntity(entity => KeepAliveIfSimulation(entity, fixedTeamDies));
 
         CombatStats stats = new CombatStats
         {
@@ -165,6 +166,8 @@ public class BalanceSimulator : AGameType
             roomType = job.roomType.ToString(),
             wave = job.wave.name,
             character = job.character.title,
+            item = job.item != null ? job.item.name : "",
+            itemHolder = job.item != null && job.itemHolder >= 0 && job.itemHolder < job.team.units.Count ? job.team.units[job.itemHolder].title : "",
         };
 
         // Without bot (a fixed team), the character casts nothing
@@ -216,18 +219,29 @@ public class BalanceSimulator : AGameType
         }
     }
 
-    // The units made for the simulations (dummies, the team measuring the waves) never die, on either side
-    public static void KeepAliveIfSimulation(Entity entity)
+    // The units made for the simulations (dummies, the team measuring the waves) never die, on either side, but the
+    // player's ones when the fixed team dies (e.g. the dummies measuring the items)
+    public static void KeepAliveIfSimulation(Entity entity, bool fixedTeamDies = false)
     {
+        if (fixedTeamDies && entity.entityType == Entity.EntityType.Player)
+        {
+            return;
+        }
         if (entity.HasTag(TagNames.Simulation))
         {
             entity.AddDeathPrevention(KeepAlive);
         }
     }
 
-    // Back to full health instead of dying: the hit is still counted whole in the damage taken
+    // Back to full health instead of dying, as a new unit: the buffs and debuffs gained during the fight are gone
+    // (e.g. the stacks of a poison), only the permanent ones are kept (e.g. those of its items), as when a battle
+    // ends. The hit is still counted whole in the damage taken
     public static bool KeepAlive(Entity dying)
     {
+        if (dying.buffManager != null)
+        {
+            dying.buffManager.RemoveBuff(handler => !handler.buffHandlerFactory.HasTag(TagNames.Permanent));
+        }
         dying.health.SetValue(dying.health.Max);
         return true;
     }

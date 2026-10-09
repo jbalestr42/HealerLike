@@ -6,12 +6,13 @@ using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-// The scores of the waves of the pools and of the characters in their initial state, whether they are up to date,
+// The scores of the waves of the pools, of the characters in their initial state and of the reward items, whether
+// they are up to date,
 // and the buttons measuring them (ScoreMeasure). Apart from the Balance Report, which reads the balance
 // simulations of the characters along a run
 public class ScoreWindow : EditorWindow
 {
-    // A wave or a character: its name links to its asset, the status is the last column
+    // A wave, a character or an item: its name links to its asset, the status is the last column
     class Row
     {
         public UnityEngine.Object asset;
@@ -46,6 +47,8 @@ public class ScoreWindow : EditorWindow
         public List<Row> rows;
         // Date of the latest finished measure, empty without any
         public string lastMeasure = "";
+        // The measures without item of the latest item measure, null without any
+        public ItemScore baseline;
 
         public Table(MultiColumnHeaderState.Column[] columns, int sortedColumn, params ColumnGroup[] groups)
         {
@@ -69,6 +72,8 @@ public class ScoreWindow : EditorWindow
     }
 
     const float RowHeight = 20f;
+    const float MeasureButtonWidth = 22f;
+    const string NoEffectShareKey = "HealerLike.ScoreWindow.NoEffectShare";
 
     static readonly string[] StatusNames = { "Up to date", "Lower bound", "Out of date", "Not measured" };
     static readonly Color[] StatusColors = { new Color(0.35f, 0.75f, 0.4f), new Color(0.4f, 0.6f, 0.9f), new Color(0.95f, 0.65f, 0.25f), new Color(0.85f, 0.3f, 0.3f) };
@@ -78,17 +83,23 @@ public class ScoreWindow : EditorWindow
     // Computed on demand: the fingerprints read every data file
     Table _waves;
     Table _characters;
+    Table _items;
     bool _wasMeasuring;
     Vector2 _scroll;
     GUIStyle _statusStyle;
     GUIStyle _numberStyle;
 
-    Table current => _tab == ScoreMeasure.Kind.Waves ? _waves : _characters;
+    Table current => _tab == ScoreMeasure.Kind.Waves ? _waves : _tab == ScoreMeasure.Kind.Characters ? _characters : _items;
 
     [MenuItem("Tools/Scores")]
     static void Open()
     {
         GetWindow<ScoreWindow>("Scores");
+    }
+
+    void OnEnable()
+    {
+        ItemScore.noEffectShare = EditorPrefs.GetFloat(NoEffectShareKey, ItemScore.DefaultNoEffectShare);
     }
 
     void OnGUI()
@@ -105,12 +116,14 @@ public class ScoreWindow : EditorWindow
         _numberStyle ??= new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleRight };
         _waves ??= new Table(CreateWaveColumns(), 7);
         _characters ??= new Table(CreateCharacterColumns(), 10, new ColumnGroup("Without skills", 1, 4), new ColumnGroup("With skills", 5, 6));
+        _items ??= new Table(CreateItemColumns(), 12, new ColumnGroup("Damage: held by a unit of the balance team", 2, 4), new ColumnGroup("Robustness: held by a dummy", 6, 4), new ColumnGroup("Power: both", 10, 3));
 
         // The scores just written are shown
         if (_wasMeasuring && !ScoreMeasure.isRunning)
         {
             _waves.rows = null;
             _characters.rows = null;
+            _items.rows = null;
         }
         _wasMeasuring = ScoreMeasure.isRunning;
 
@@ -118,19 +131,17 @@ public class ScoreWindow : EditorWindow
         DrawToolbar();
         if (current.rows == null)
         {
-            current.rows = _tab == ScoreMeasure.Kind.Waves ? BuildWaveRows(_waves) : BuildCharacterRows(_characters);
+            current.rows = _tab == ScoreMeasure.Kind.Waves ? BuildWaveRows(_waves) : _tab == ScoreMeasure.Kind.Characters ? BuildCharacterRows(_characters) : BuildItemRows(_items);
             current.Sort();
         }
-        EditorGUILayout.LabelField(_tab == ScoreMeasure.Kind.Waves
-            ? "Damage of each wave against 5 dummies, and how long it survives the balance team: the threat is the damage it deals before dying. Click a header to sort, hover it for the details."
-            : "The starting units, items and skills of each character: their damage against 5 dummies, and how long they survive the balance team, without then with the skills of the character played by its healer bot. Click a header to sort, hover it for the details.", EditorStyles.wordWrappedMiniLabel);
+        EditorGUILayout.LabelField(GetDescription(), EditorStyles.wordWrappedMiniLabel);
         DrawTable(current);
     }
 
     void DrawToolbar()
     {
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-        _tab = (ScoreMeasure.Kind)GUILayout.Toolbar((int)_tab, new[] { "Waves", "Characters" }, EditorStyles.toolbarButton, GUILayout.Width(160f));
+        _tab = (ScoreMeasure.Kind)GUILayout.Toolbar((int)_tab, new[] { "Waves", "Characters", "Items" }, EditorStyles.toolbarButton, GUILayout.Width(240f));
         GUILayout.Space(10f);
 
         if (ScoreMeasure.isRunning)
@@ -148,8 +159,11 @@ public class ScoreWindow : EditorWindow
             {
                 string tooltip = _tab == ScoreMeasure.Kind.Waves
                     ? $"Plays the three measures in the simulation scene (about 10 minutes at x20), then writes the scores into the waves. Logs and scores in {root}"
-                    : $"Plays the five measures in the simulation scene (a few minutes at x20). Logs and scores in {root}";
-                if (GUILayout.Button(new GUIContent(_tab == ScoreMeasure.Kind.Waves ? "Measure every wave" : "Measure every character", tooltip), EditorStyles.toolbarButton, GUILayout.Width(150f)))
+                    : _tab == ScoreMeasure.Kind.Characters
+                        ? $"Plays the five measures in the simulation scene (a few minutes at x20). Logs and scores in {root}"
+                        : $"Plays the two measures in the simulation scene, each item held by each unit in turn (about 1000 fights at x20, half an hour). Logs and scores in {root}";
+                string label = _tab == ScoreMeasure.Kind.Waves ? "Measure every wave" : _tab == ScoreMeasure.Kind.Characters ? "Measure every character" : "Measure every item";
+                if (GUILayout.Button(new GUIContent(label, tooltip), EditorStyles.toolbarButton, GUILayout.Width(150f)))
                 {
                     ScoreMeasure.Start(_tab);
                 }
@@ -166,8 +180,37 @@ public class ScoreWindow : EditorWindow
         }
 
         GUILayout.FlexibleSpace();
+        if (_tab == ScoreMeasure.Kind.Items)
+        {
+            GUILayout.Label(new GUIContent("No effect under", "A gain below this share of the value without item is shown as no effect: two fights with the same seed already differ by 2 to 4%"), EditorStyles.miniLabel);
+            float percent = EditorGUILayout.DelayedFloatField(ItemScore.noEffectShare * 100f, EditorStyles.toolbarTextField, GUILayout.Width(40f));
+            GUILayout.Label("%", EditorStyles.miniLabel);
+            float share = Mathf.Max(0f, percent) / 100f;
+            if (!Mathf.Approximately(share, ItemScore.noEffectShare))
+            {
+                ItemScore.noEffectShare = share;
+                EditorPrefs.SetFloat(NoEffectShareKey, share);
+                _items.rows = null;
+            }
+            GUILayout.Space(10f);
+        }
         GUILayout.Label(string.IsNullOrEmpty(current.lastMeasure) ? "Never measured" : $"Last measure: {current.lastMeasure}", EditorStyles.miniLabel);
         EditorGUILayout.EndHorizontal();
+    }
+
+    string GetDescription()
+    {
+        switch (_tab)
+        {
+            case ScoreMeasure.Kind.Waves:
+                return "Damage of each wave against 5 dummies, and how long it survives the balance team: the threat is the damage it deals before dying. Click a header to sort, hover it for the details.";
+            case ScoreMeasure.Kind.Characters:
+                return "The starting units, items and skills of each character: their damage against 5 dummies, and how long they survive the balance team, without then with the skills of the character played by its healer bot. Click a header to sort, hover it for the details.";
+            default:
+                ItemScore baseline = _items.baseline;
+                string reference = baseline != null ? $" Without item: {baseline.dps:0.0} dps, {baseline.effectiveHealth:0} effective health ({baseline.survivalTime:0.0}s), {baseline.power:0} power." : "";
+                return "Each reward item on its own, held by each unit in turn: the damage it adds to the balance team against 5 dummies, and the effective health it adds to the dummies against the balance team. Its power is computed as the threat of a wave: damage per second x survival time, both with the item. No effect: a gain under the threshold (top right), lost in the noise of the fights or not measurable by them (e.g. a heal at the end of the round)." + reference + " Click a header to sort, hover it for the details.";
+        }
     }
 
     static ScoreFile.Measure ReadLatest(ScoreMeasure.Kind kind, Table table)
@@ -252,11 +295,53 @@ public class ScoreWindow : EditorWindow
         return rows;
     }
 
+    // The reward items, with their score in the latest measure
+    static List<Row> BuildItemRows(Table table)
+    {
+        ScoreFile.Measure measure = ReadLatest(ScoreMeasure.Kind.Items, table);
+        table.baseline = measure?.itemBaseline;
+        List<AItemFactory> items = ScoreMeasure.GetRewardItems();
+        Dictionary<AItemFactory, string> fingerprints = measure != null ? ScoreMeasure.ComputeItemFingerprints(items) : new Dictionary<AItemFactory, string>();
+        List<Row> rows = new List<Row>();
+        foreach (AItemFactory item in items)
+        {
+            ItemScore score = measure?.items.Find(entry => entry.item == item.name)?.score;
+            bool measured = score != null && !string.IsNullOrEmpty(score.fingerprint);
+            int status = !measured ? 3 : score.fingerprint != fingerprints[item] ? 2 : score.timedOut ? 1 : 0;
+            score ??= new ItemScore();
+            string type = item.HasTag(TagNames.Player) ? "Character" : "Unit";
+            rows.Add(new Row
+            {
+                asset = item,
+                status = status,
+                cells = new[]
+                {
+                    item.title,
+                    type,
+                    measured ? $"{score.dps:0.0}" : "-",
+                    !measured ? "-" : score.hasDpsEffect ? $"{score.dpsGain:+0.0;-0.0}" : "No effect",
+                    !measured ? "-" : score.hasDpsEffect ? $"{score.dpsGainShare:+0%;-0%}" : "No effect",
+                    measured && score.hasDpsEffect && !string.IsNullOrEmpty(score.bestHolder) ? $"{score.bestHolder} ({score.bestHolderDpsGain:+0.0;-0.0})" : "-",
+                    measured ? $"{score.survivalTime:0.0}s" : "-",
+                    measured ? $"{score.effectiveHealth:0}" : "-",
+                    !measured ? "-" : score.hasRobustnessEffect ? $"{score.effectiveHealthGain:+0;-0}" : "No effect",
+                    !measured ? "-" : score.hasRobustnessEffect ? $"{score.effectiveHealthGainShare:+0%;-0%}" : "No effect",
+                    measured ? $"{score.power:0}" : "-",
+                    !measured ? "-" : score.hasPowerEffect ? $"{score.powerGain:+0;-0}" : "No effect",
+                    !measured ? "-" : score.hasPowerEffect ? $"{score.powerGainShare:+0%;-0%}" : "No effect",
+                    StatusNames[status],
+                },
+                keys = new IComparable[] { item.title, type, score.dps, score.dpsGain, score.dpsGainShare, score.bestHolderDpsGain, score.survivalTime, score.effectiveHealth, score.effectiveHealthGain, score.effectiveHealthGainShare, score.power, score.powerGain, score.powerGainShare, status },
+            });
+        }
+        return rows;
+    }
+
     static MultiColumnHeaderState.Column[] CreateWaveColumns()
     {
         return new[]
         {
-            CreateColumn(new GUIContent("Wave", "Click to select the wave asset"), 170f),
+            CreateColumn(new GUIContent("Wave", "Click to select the wave asset, the button measures it only"), 196f),
             CreateColumn(new GUIContent("Type", "Room type of the wave pools it is in (combat, elite, boss)"), 80f),
             CreateColumn(new GUIContent("Pools", "Floors of the wave pools it is in"), 90f),
             CreateColumn(Header<WaveScore>("Survival", "survivalTime"), 70f),
@@ -272,7 +357,7 @@ public class ScoreWindow : EditorWindow
     {
         return new[]
         {
-            CreateColumn(new GUIContent("Character", "Click to select the character asset"), 120f),
+            CreateColumn(new GUIContent("Character", "Click to select the character asset, the button measures it only"), 146f),
             // Without skills: the character casts nothing
             CreateColumn(Header<CharacterScore>("Survival", "survivalTime"), 70f),
             CreateColumn(Header<CharacterScore>("DPS", "dps"), 70f),
@@ -285,6 +370,30 @@ public class ScoreWindow : EditorWindow
             CreateColumn(Header<CharacterScore>("DPS", "spellDps"), 70f),
             CreateColumn(Header<CharacterScore>("Eff. health", "spellEffectiveHealth"), 80f),
             CreateColumn(Header<CharacterScore>("Threat", "spellThreat"), 70f),
+            CreateColumn(new GUIContent("Status", StatusTooltip), 100f),
+        };
+    }
+
+    static MultiColumnHeaderState.Column[] CreateItemColumns()
+    {
+        return new[]
+        {
+            CreateColumn(new GUIContent("Item", "Click to select the item asset, the button measures it only"), 186f),
+            CreateColumn(new GUIContent("Type", "Unit item (held by a unit) or character item (held by the character)"), 70f),
+            // Damage: on the balance team against the dummies
+            CreateColumn(Header<ItemScore>("DPS", "dps"), 65f),
+            CreateColumn(Header<ItemScore>("Gain", "dpsGain"), 70f),
+            CreateColumn(Header<ItemScore>("Gain %", "dpsGainShare"), 70f),
+            CreateColumn(Header<ItemScore>("Best holder", "bestHolder"), 150f),
+            // Robustness: on the dummies against the balance team
+            CreateColumn(Header<ItemScore>("Survival", "survivalTime"), 70f),
+            CreateColumn(Header<ItemScore>("Eff. health", "effectiveHealth"), 80f),
+            CreateColumn(Header<ItemScore>("Gain", "effectiveHealthGain"), 70f),
+            CreateColumn(Header<ItemScore>("Gain %", "effectiveHealthGainShare"), 70f),
+            // Power: both ways, as the threat of a wave
+            CreateColumn(Header<ItemScore>("Power", "power"), 70f),
+            CreateColumn(Header<ItemScore>("Gain", "powerGain"), 70f),
+            CreateColumn(Header<ItemScore>("Gain %", "powerGainShare"), 70f),
             CreateColumn(new GUIContent("Status", StatusTooltip), 100f),
         };
     }
@@ -339,7 +448,18 @@ public class ScoreWindow : EditorWindow
                 }
                 else if (column == 0)
                 {
-                    // A link to the asset: selects it in the Inspector and pings it in the Project window
+                    // A button measuring this row only, then a link to the asset: selects it in the Inspector and
+                    // pings it in the Project window
+                    Rect button = new Rect(inner.x, inner.y + 1f, MeasureButtonWidth, inner.height - 2f);
+                    using (new EditorGUI.DisabledScope(ScoreMeasure.isRunning || FullSimulation.isRunning || EditorApplication.isPlayingOrWillChangePlaymode))
+                    {
+                        GUIContent measure = new GUIContent(EditorGUIUtility.IconContent("PlayButton").image, $"Measures {row.cells[column]} only, the other scores of the latest measure kept");
+                        if (GUI.Button(button, measure, EditorStyles.miniButton))
+                        {
+                            ScoreMeasure.Start(_tab, row.asset);
+                        }
+                    }
+                    inner.xMin += MeasureButtonWidth + 4f;
                     if (EditorGUI.LinkButton(inner, row.cells[column]))
                     {
                         Selection.activeObject = row.asset;

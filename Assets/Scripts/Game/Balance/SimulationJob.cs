@@ -11,4 +11,10 @@ public class SimulationJob
     public MapNodeType roomType;
     public int floor;
     public int seed;
+    // The reward item measured by the fight (in the team, on itemHolder), null for the fight without item
+    public AItemFactory item;
+    // Index in the team of the unit holding item, NoHolder for an item of the character
+    public int itemHolder = NoHolder;
+
+    public const int NoHolder = -1;
 }

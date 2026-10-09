@@ -11,7 +11,9 @@ using UnityEngine;
 //   balance team; the scores and their fingerprint are written into the waves
 // - the characters (their starting units, items and skills): the balance team against the dummies, the starting
 //   units against the dummies, then against the balance team without and with the skills of the character
-// Each measure has its own folder (Logs/WaveScore/<date>/ or Logs/CharacterScore/<date>/), apart from the balance
+// - the reward items, one by one: the balance team against the dummies, one of its units holding the item, then
+//   the dummies against the balance team, one of them holding the item
+// Each measure has its own folder (Logs/WaveScore/<date>/, Logs/CharacterScore/<date>/ or Logs/ItemScore/<date>/), apart from the balance
 // simulations: one log per plan, and scores.json once every plan played to its end. A measure stopped before is
 // deleted. The step survives the domain reloads of the play mode
 [InitializeOnLoad]
@@ -21,6 +23,7 @@ public static class ScoreMeasure
     {
         Waves,
         Characters,
+        Items,
     }
 
     public const string ScenePath = "Assets/Scenes/BalanceSimulation.unity";
@@ -31,8 +34,11 @@ public static class ScoreMeasure
     public const string CharacterRobustnessPlanPath = "Assets/Data/Balance/CharacterRobustnessSimulation.asset";
     public const string CharacterSpellDpsPlanPath = "Assets/Data/Balance/CharacterSpellDpsSimulation.asset";
     public const string CharacterSpellRobustnessPlanPath = "Assets/Data/Balance/CharacterSpellRobustnessSimulation.asset";
+    public const string ItemDpsPlanPath = "Assets/Data/Balance/ItemDpsSimulation.asset";
+    public const string ItemRobustnessPlanPath = "Assets/Data/Balance/ItemRobustnessSimulation.asset";
     static readonly string[] WavePlanPaths = { TeamDpsPlanPath, WaveDpsPlanPath, WaveRobustnessPlanPath };
     static readonly string[] CharacterPlanPaths = { TeamDpsPlanPath, CharacterDpsPlanPath, CharacterRobustnessPlanPath, CharacterSpellDpsPlanPath, CharacterSpellRobustnessPlanPath };
+    static readonly string[] ItemPlanPaths = { ItemDpsPlanPath, ItemRobustnessPlanPath };
 
     // -1 when not measuring
     const string StepKey = "HealerLike.ScoreMeasure.Step";
@@ -43,6 +49,10 @@ public static class ScoreMeasure
     const string StepOverKey = "HealerLike.ScoreMeasure.StepOver";
     // Folder of the running measure
     const string FolderKey = "HealerLike.ScoreMeasure.Folder";
+    // Asset path of the only wave, character or item measured, empty to measure every one
+    const string TargetKey = "HealerLike.ScoreMeasure.Target";
+    // Folder of a previous item measure whose fights without item are taken again, empty to play them
+    const string BaselineKey = "HealerLike.ScoreMeasure.Baseline";
 
     static int step
     {
@@ -62,29 +72,62 @@ public static class ScoreMeasure
         private set => SessionState.SetInt(KindKey, (int)value);
     }
 
+    // The only wave, character or item measured, null when measuring every one
+    public static UnityEngine.Object target
+    {
+        get
+        {
+            string path = SessionState.GetString(TargetKey, "");
+            return string.IsNullOrEmpty(path) ? null : AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+        }
+    }
+
     public static bool isRunning => step >= 0;
     static string[] planPaths => GetPlanPaths(runningKind);
-    public static string status => isRunning ? $"Measuring the {runningKind.ToString().ToLower()} {step + 1}/{planPaths.Length}: {Path.GetFileNameWithoutExtension(planPaths[step])}" : "";
+    static string measuredName => target != null ? target.name : "the " + runningKind.ToString().ToLower();
+    public static string status => isRunning ? $"Measuring {measuredName} {step + 1}/{planPaths.Length}: {Path.GetFileNameWithoutExtension(planPaths[step])}" : "";
 
     static ScoreMeasure()
     {
         EditorApplication.playModeStateChanged += OnPlayModeChanged;
         EditorApplication.update += OnUpdate;
-        // Loaded again after the domain reload of the play mode, before the simulation starts
+        // Loaded again after the domain reload of the play mode, before the simulation starts, with the plan
+        // restricted to the target, which only lives in memory
         BalanceSimulator.outputFolder = isRunning ? folder : null;
+        if (isRunning)
+        {
+            BalanceSimulator.planOverride = BuildStepPlan();
+        }
     }
 
     public static string[] GetPlanPaths(Kind kind)
     {
-        return kind == Kind.Waves ? WavePlanPaths : CharacterPlanPaths;
+        switch (kind)
+        {
+            case Kind.Waves:
+                return WavePlanPaths;
+            case Kind.Characters:
+                return CharacterPlanPaths;
+            default:
+                return ItemPlanPaths;
+        }
     }
 
     public static string GetRoot(Kind kind)
     {
-        return kind == Kind.Waves ? ScoreFile.waveRoot : ScoreFile.characterRoot;
+        switch (kind)
+        {
+            case Kind.Waves:
+                return ScoreFile.waveRoot;
+            case Kind.Characters:
+                return ScoreFile.characterRoot;
+            default:
+                return ScoreFile.itemRoot;
+        }
     }
 
-    public static void Start(Kind kind)
+    // targetAsset: the only wave, character or item of the kind to measure, null for every one
+    public static void Start(Kind kind, UnityEngine.Object targetAsset = null)
     {
         if (isRunning || FullSimulation.isRunning || EditorApplication.isPlayingOrWillChangePlaymode || !OpenScene())
         {
@@ -93,6 +136,10 @@ public static class ScoreMeasure
 
         SessionState.SetString(ScenePlanKey, GetScenePlan());
         runningKind = kind;
+        SessionState.SetString(TargetKey, targetAsset != null ? AssetDatabase.GetAssetPath(targetAsset) : "");
+        // A single item: the fights without item of the latest measure, when its setup didn't change since
+        string baseline = kind == Kind.Items && targetAsset != null ? ScoreFile.FindItemBaseline(ScoreFile.itemRoot, ComputeItemSetupFingerprint(), GetLogNames(ItemPlanPaths)) : null;
+        SessionState.SetString(BaselineKey, baseline ?? "");
         folder = Path.Combine(GetRoot(kind), DateTime.Now.ToString("yyyyMMdd-HHmmss"));
         step = 0;
         PlayStep();
@@ -110,6 +157,7 @@ public static class ScoreMeasure
         SetScenePlan(planPaths[step]);
         SessionState.SetBool(StepOverKey, false);
         BalanceSimulator.outputFolder = folder;
+        BalanceSimulator.planOverride = BuildStepPlan();
         EditorApplication.isPlaying = true;
     }
 
@@ -199,16 +247,29 @@ public static class ScoreMeasure
 
         string measured = folder;
         Kind kind = runningKind;
+        bool partial = target != null;
+        string baselineFolder = SessionState.GetString(BaselineKey, "");
         End();
-        int written = kind == Kind.Waves ? WriteWaveScores(measured) : WriteCharacterScores(measured);
+        int written = kind == Kind.Waves ? WriteWaveScores(measured, partial) : kind == Kind.Characters ? WriteCharacterScores(measured, partial) : WriteItemScores(measured, partial, baselineFolder);
         Debug.Log($"[ScoreMeasure] Scores of {written} {kind.ToString().ToLower()} written into {Path.Combine(measured, ScoreFile.FileName)}");
+    }
+
+    // The plan of the step restricted to the target, null when measuring every one (the plan of the scene)
+    static SimulationPlan BuildStepPlan()
+    {
+        UnityEngine.Object measured = target;
+        SimulationPlan plan = measured != null ? AssetDatabase.LoadAssetAtPath<SimulationPlan>(planPaths[step]) : null;
+        return plan != null ? plan.CopyFor(measured, !string.IsNullOrEmpty(SessionState.GetString(BaselineKey, ""))) : null;
     }
 
     static void End()
     {
         step = -1;
         folder = "";
+        SessionState.SetString(TargetKey, "");
+        SessionState.SetString(BaselineKey, "");
         BalanceSimulator.outputFolder = null;
+        BalanceSimulator.planOverride = null;
         SetScenePlan(SessionState.GetString(ScenePlanKey, ""));
     }
 
@@ -225,7 +286,7 @@ public static class ScoreMeasure
     }
 
     // Into every wave measured both ways and into scores.json. The number of waves written
-    static int WriteWaveScores(string measureFolder)
+    static int WriteWaveScores(string measureFolder, bool partial)
     {
         List<List<CombatStats>> fights = ReadLogs(measureFolder, WavePlanPaths);
         if (fights == null)
@@ -259,12 +320,12 @@ public static class ScoreMeasure
             measure.waves.Add(new ScoreFile.WaveEntry { wave = wave.name, score = score });
         }
 
-        ScoreFile.Write(measureFolder, measure);
+        WriteMeasure(Kind.Waves, measureFolder, measure, partial);
         return measure.waves.Count;
     }
 
     // Into scores.json only: the characters hold no score. The number of characters written
-    static int WriteCharacterScores(string measureFolder)
+    static int WriteCharacterScores(string measureFolder, bool partial)
     {
         List<List<CombatStats>> fights = ReadLogs(measureFolder, CharacterPlanPaths);
         if (fights == null)
@@ -287,8 +348,101 @@ public static class ScoreMeasure
             measure.characters.Add(new ScoreFile.CharacterEntry { character = bot.character.title, score = score });
         }
 
-        ScoreFile.Write(measureFolder, measure);
+        WriteMeasure(Kind.Characters, measureFolder, measure, partial);
         return measure.characters.Count;
+    }
+
+    // Into scores.json only: the items hold no score. The number of items written
+    // baselineFolder: the measure the fights without item are taken from, empty when played in this one
+    static int WriteItemScores(string measureFolder, bool partial, string baselineFolder)
+    {
+        List<List<CombatStats>> fights = ReadLogs(measureFolder, ItemPlanPaths);
+        if (fights == null)
+        {
+            return 0;
+        }
+
+        if (!string.IsNullOrEmpty(baselineFolder))
+        {
+            List<List<CombatStats>> previous = ReadLogs(baselineFolder, ItemPlanPaths);
+            if (previous == null)
+            {
+                return 0;
+            }
+            for (int plan = 0; plan < fights.Count; plan++)
+            {
+                fights[plan].AddRange(previous[plan].Where(fight => string.IsNullOrEmpty(fight.item)));
+            }
+        }
+
+        Dictionary<string, ItemScore> scores = ItemScoreCalculator.Compute(fights[0], fights[1], out ItemScore baseline);
+        ScoreFile.Measure measure = new ScoreFile.Measure
+        {
+            date = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
+            teamDps = baseline.dps,
+            itemBaseline = baseline,
+            itemSetupFingerprint = ComputeItemSetupFingerprint(),
+            itemBaselineFolder = Path.GetFileName(string.IsNullOrEmpty(baselineFolder) ? measureFolder : baselineFolder),
+        };
+        List<AItemFactory> items = GetRewardItems();
+        Dictionary<AItemFactory, string> fingerprints = ComputeItemFingerprints(items);
+        foreach (AItemFactory item in items)
+        {
+            if (!scores.TryGetValue(item.name, out ItemScore score))
+            {
+                continue;
+            }
+
+            score.fingerprint = fingerprints[item];
+            measure.items.Add(new ScoreFile.ItemEntry { item = item.name, score = score });
+        }
+
+        WriteMeasure(Kind.Items, measureFolder, measure, partial);
+        return measure.items.Count;
+    }
+
+    // A measure of a single wave, character or item keeps the other scores of the latest measure, the window
+    // reading the latest one only
+    static void WriteMeasure(Kind kind, string measureFolder, ScoreFile.Measure measure, bool partial)
+    {
+        if (partial)
+        {
+            string latest = ScoreFile.FindLatest(GetRoot(kind));
+            ScoreFile.Merge(measure, latest != null ? ScoreFile.Read(latest) : null);
+        }
+        ScoreFile.Write(measureFolder, measure);
+    }
+
+    // The setup of the item measure alone: the plans, the balance team, the dummies and the data they use
+    static string ComputeItemSetupFingerprint()
+    {
+        return ScoreFingerprint.ComputeForData(new UnityEngine.Object[0], GetMeasureSetup(Kind.Items));
+    }
+
+    // The file names of the logs of the plans
+    static string[] GetLogNames(string[] plans)
+    {
+        return plans.Select(plan => Path.GetFileName(BalanceSimulator.GetOutputPath(Path.GetFileNameWithoutExtension(plan), "", "folder"))).ToArray();
+    }
+
+    // The unit then the player items of the rewards, from the game data the simulations play
+    public static List<AItemFactory> GetRewardItems()
+    {
+        GameData data = BalanceReportWindow.LoadGameData();
+        if (data == null)
+        {
+            return new List<AItemFactory>();
+        }
+
+        RewardPools rewards = RewardPools.Create(data, null);
+        return rewards.unitItems.Concat(rewards.playerItems).Distinct().ToList();
+    }
+
+    // Each item with the measure setup
+    public static Dictionary<AItemFactory, string> ComputeItemFingerprints(IEnumerable<AItemFactory> items)
+    {
+        Dictionary<UnityEngine.Object, string> fingerprints = ScoreFingerprint.ComputeAllForData(items.Cast<UnityEngine.Object>(), GetMeasureSetup(Kind.Items));
+        return fingerprints.ToDictionary(fingerprint => (AItemFactory)fingerprint.Key, fingerprint => fingerprint.Value);
     }
 
     // What every score of the kind also depends on: the plans, and through them the dummies and the balance team

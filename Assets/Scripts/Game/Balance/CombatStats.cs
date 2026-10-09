@@ -32,6 +32,10 @@ public class CombatStats
     public List<string> allies = new List<string>();
     // Healer bot profile playing the character in a simulation, empty in a real run
     public string bot;
+    // Reward item measured by a simulation (its asset name), empty for the fight without item and in a real run
+    public string item;
+    // Unit holding the measured item, empty for an item of the character
+    public string itemHolder;
 
     // Result
     public bool won;

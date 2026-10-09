@@ -26,6 +26,34 @@ public static class ScoreFingerprint
         return WaveScore.ComputeFingerprint(contents);
     }
 
+    // The same as ComputeForData for each data on its own (e.g. every item), the measure setup and the files shared
+    // by the data read only once
+    public static Dictionary<Object, string> ComputeAllForData(IEnumerable<Object> measured, IEnumerable<Object> measureSetup)
+    {
+        Dictionary<string, string[]> directDependencies = new Dictionary<string, string[]>();
+        HashSet<string> setupDependencies = CollectDataDependencies(GetPaths(measureSetup), directDependencies);
+        Dictionary<string, string> readFiles = new Dictionary<string, string>();
+
+        Dictionary<Object, string> fingerprints = new Dictionary<Object, string>();
+        foreach (Object data in measured.Where(data => data != null).Distinct())
+        {
+            HashSet<string> dependencies = new HashSet<string>(setupDependencies);
+            dependencies.UnionWith(CollectDataDependencies(GetPaths(new[] { data }), directDependencies));
+            List<string> contents = new List<string>();
+            foreach (string path in dependencies.OrderBy(path => path, System.StringComparer.Ordinal))
+            {
+                if (!readFiles.TryGetValue(path, out string content))
+                {
+                    content = ReadContent(path);
+                    readFiles[path] = content;
+                }
+                contents.Add(content);
+            }
+            fingerprints[data] = WaveScore.ComputeFingerprint(contents);
+        }
+        return fingerprints;
+    }
+
     static string[] GetPaths(IEnumerable<Object> assets)
     {
         return assets.Where(asset => asset != null).Select(AssetDatabase.GetAssetPath).Where(path => !string.IsNullOrEmpty(path)).ToArray();

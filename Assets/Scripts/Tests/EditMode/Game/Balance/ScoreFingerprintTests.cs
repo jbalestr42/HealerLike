@@ -110,6 +110,21 @@ public class ScoreFingerprintTests
     }
 
     [Test]
+    public void AllForData_EachTheSameAsOnItsOwn()
+    {
+        CharacterData cleric = AssetDatabase.LoadAssetAtPath<CharacterData>("Assets/Data/Characters/ClericCharacter/ClericCharacter.asset");
+        CharacterData druid = AssetDatabase.LoadAssetAtPath<CharacterData>("Assets/Data/Characters/DruidCharacter/DruidCharacter.asset");
+        SimulationPlan setup = AssetDatabase.LoadAssetAtPath<SimulationPlan>("Assets/Data/Balance/ItemRobustnessSimulation.asset");
+        Assert.IsNotNull(setup);
+
+        Dictionary<Object, string> fingerprints = ScoreFingerprint.ComputeAllForData(new Object[] { cleric, druid }, new Object[] { setup });
+
+        Assert.AreEqual(ScoreFingerprint.ComputeForData(new Object[] { cleric }, new Object[] { setup }), fingerprints[cleric]);
+        Assert.AreEqual(ScoreFingerprint.ComputeForData(new Object[] { druid }, new Object[] { setup }), fingerprints[druid]);
+        Assert.AreNotEqual(fingerprints[cleric], fingerprints[druid]);
+    }
+
+    [Test]
     public void DataDependencies_ExcludedOnes_NeitherCountedNorFollowed()
     {
         string skeleton = "Assets/Data/Entities/SkeletonEntity/SkeletonEntity.asset";

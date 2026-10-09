@@ -25,6 +25,19 @@ public class SimulationPlan : ScriptableObject
     public WavePatternData fixedTeam;
     // Without item nor skill, so it changes nothing in the fight
     public CharacterData fixedTeamCharacter;
+    // The units of the fixed team tagged Simulation die like the others (e.g. the dummies, to measure how long
+    // they survive). The enemies tagged Simulation still never die
+    public bool fixedTeamDies;
+
+    [Header("Items")]
+    // With a fixed team: every wave is played once without item, then once with each reward item, each unit item
+    // held by every unit of the fixed team in turn (e.g. to score the items)
+    public bool eachRewardItem;
+    // With eachRewardItem, only these reward items when not empty (e.g. one item measured again), the fights
+    // without item still played
+    public List<AItemFactory> onlyItems = new List<AItemFactory>();
+    // With eachRewardItem, the fights without item aren't played, taken from a previous measure instead
+    public bool skipFightsWithoutItem;
 
     [Header("Initial teams")]
     // When set (and no fixed team), the floors and the reference teams aren't used: every wave fights the starting
@@ -77,6 +90,36 @@ public class SimulationPlan : ScriptableObject
         return SimulationJobBuilder.CountJobs(healerBots, GetWaves(data), floors, seedCount, floorMargin);
     }
 
+    // A copy of the plan, under the same name, measuring only the target: a wave instead of every wave of the pools,
+    // the bots of a character, or a reward item. What doesn't play the target's kind is copied whole (e.g. the
+    // balance team against the dummies, listing its own wave and no bot). With skipFightsWithoutItem, an item is
+    // played without the fights without item (taken from a previous measure)
+    public SimulationPlan CopyFor(Object target, bool skipFightsWithoutItem = false)
+    {
+        SimulationPlan copy = Instantiate(this);
+        copy.name = name;
+        if (target is WavePatternData wave && waves.Count == 0)
+        {
+            copy.waves = new List<WavePatternData> { wave };
+        }
+        else if (target is CharacterData character && healerBots.Count > 0)
+        {
+            copy.healerBots = healerBots.FindAll(bot => bot != null && bot.character == character);
+        }
+        else if (target is AItemFactory item && eachRewardItem)
+        {
+            copy.onlyItems = new List<AItemFactory> { item };
+            copy.skipFightsWithoutItem = skipFightsWithoutItem;
+        }
+        return copy;
+    }
+
+    // Whether the reward item is measured by eachRewardItem
+    bool IsMeasured(AItemFactory item)
+    {
+        return onlyItems.Count == 0 || onlyItems.Contains(item);
+    }
+
     public float GetMaxDuration(MapNodeType roomType)
     {
         return roomType == MapNodeType.Elite || roomType == MapNodeType.Boss ? eliteMaxDuration : maxDuration;
@@ -84,6 +127,13 @@ public class SimulationPlan : ScriptableObject
 
     public List<SimulationJob> BuildJobs(GameData data)
     {
+        if (fixedTeam != null && eachRewardItem)
+        {
+            RewardPools rewards = RewardPools.Create(data, null);
+            List<AItemFactory> unitItems = rewards.unitItems.FindAll(IsMeasured);
+            List<AItemFactory> playerItems = rewards.playerItems.FindAll(IsMeasured);
+            return SimulationJobBuilder.BuildForEachItem(fixedTeamCharacter, ReferenceTeam.FromWave(fixedTeam), GetWaves(data), seedCount, unitItems, playerItems, fixedTeam, !skipFightsWithoutItem);
+        }
         if (fixedTeam != null)
         {
             return SimulationJobBuilder.BuildForFixedTeam(fixedTeamCharacter, ReferenceTeam.FromWave(fixedTeam), GetWaves(data), seedCount, fixedTeam);
