@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-// What a condition of a healer bot rule looks at. Health and mana values are fractions of the max (0.7 = 70%)
+// What a condition of a healer bot rule looks at. Health and mana values are fractions of the max (0.7 = 70%),
+// times are in seconds
 public enum HealerBotConditionType
 {
     // At least count living allies below value
@@ -15,6 +16,8 @@ public enum HealerBotConditionType
     HealthSpreadAbove,
     // Mana of the character below value
     ManaBelow,
+    // A living ally marked by a telegraphed strike landing within value seconds
+    StrikeWithin,
 }
 
 // Who the skill is cast on, for the skills asking for a target
@@ -30,6 +33,8 @@ public enum HealerBotTarget
     HighestHealthEnemy,
     // A free cell in front of the team (summons)
     FrontCell,
+    // The living ally marked by the telegraphed strike landing first
+    MarkedAlly,
 }
 
 [Serializable]

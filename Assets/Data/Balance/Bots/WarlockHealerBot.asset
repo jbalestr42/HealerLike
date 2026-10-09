@@ -15,6 +15,13 @@ MonoBehaviour:
   character: {fileID: 11400000, guid: 137cb5a7a59624041aba09d3f103f0e3, type: 2}
   decisionInterval: 0.25
   rules:
+  - skill: {fileID: 11400000, guid: 00a255aac080439ea7292e169fb1517b, type: 2}
+    conditions:
+    - type: 5
+      value: 1
+      count: 1
+    target: 6
+    skipTargetsWithItsBuff: 1
   - skill: {fileID: 11400000, guid: fecd39d5edd8a3545b80b61542167a42, type: 2}
     conditions:
     - type: 4

@@ -59,8 +59,9 @@ public class HealerBot
 
         List<Entity> allies = GetLiving(Entity.EntityType.Player);
         List<Entity> enemies = GetLiving(Entity.EntityType.Computer);
-        List<BotUnit> allyUnits = allies.ConvertAll(ToBotUnit);
-        List<BotUnit> enemyUnits = enemies.ConvertAll(ToBotUnit);
+        Dictionary<GameObject, float> strikes = GetStrikes(enemies);
+        List<BotUnit> allyUnits = allies.ConvertAll(ally => ToBotUnit(ally, strikes));
+        List<BotUnit> enemyUnits = enemies.ConvertAll(enemy => ToBotUnit(enemy, strikes));
         float manaPercent = _character.mana.Max > 0f ? _character.mana.Value / _character.mana.Max : 0f;
 
         foreach (HealerBotRule rule in _profile.rules)
@@ -139,8 +140,27 @@ public class HealerBot
         return living;
     }
 
-    static BotUnit ToBotUnit(Entity entity)
+    // The units marked by the telegraphed strikes of the enemies, with the seconds before the first strike on each
+    static Dictionary<GameObject, float> GetStrikes(List<Entity> enemies)
     {
-        return new BotUnit { health = entity.health.Value, maxHealth = entity.health.Max, isTank = entity.HasTag(TagNames.Tank) };
+        Dictionary<GameObject, float> strikes = new Dictionary<GameObject, float>();
+        foreach (Entity enemy in enemies)
+        {
+            foreach (MarkedStrikeSkill strike in enemy.GetComponents<MarkedStrikeSkill>())
+            {
+                GameObject target = strike.markedTarget;
+                if (strike.isMarking && target != null && (!strikes.TryGetValue(target, out float strikeIn) || strike.remainingDelay < strikeIn))
+                {
+                    strikes[target] = strike.remainingDelay;
+                }
+            }
+        }
+        return strikes;
+    }
+
+    static BotUnit ToBotUnit(Entity entity, Dictionary<GameObject, float> strikes)
+    {
+        bool isMarked = strikes.TryGetValue(entity.gameObject, out float strikeIn);
+        return new BotUnit { health = entity.health.Value, maxHealth = entity.health.Max, isTank = entity.HasTag(TagNames.Tank), isMarked = isMarked, strikeIn = strikeIn };
     }
 }

@@ -155,6 +155,43 @@ public class HealerBotBrainTests
         Assert.AreEqual(-1, HealerBotBrain.PickTarget(HealerBotTarget.FrontCell, new List<BotUnit> { Unit(10f) }, dead));
     }
 
+    static BotUnit Marked(float health, float strikeIn)
+    {
+        BotUnit unit = Unit(health);
+        unit.isMarked = true;
+        unit.strikeIn = strikeIn;
+        return unit;
+    }
+
+    [Test]
+    public void StrikeWithin_OnlyWhenTheStrikeOnALivingAllyIsClose()
+    {
+        HealerBotCondition withinOneSecond = Condition(HealerBotConditionType.StrikeWithin, 1f);
+
+        Assert.IsTrue(HealerBotBrain.IsMet(withinOneSecond, new List<BotUnit> { Unit(100f), Marked(100f, 0.8f) }, 1f));
+        Assert.IsTrue(HealerBotBrain.IsMet(withinOneSecond, new List<BotUnit> { Marked(100f, 1f) }, 1f));
+        Assert.IsFalse(HealerBotBrain.IsMet(withinOneSecond, new List<BotUnit> { Marked(100f, 2.5f) }, 1f), "too early");
+        Assert.IsFalse(HealerBotBrain.IsMet(withinOneSecond, new List<BotUnit> { Unit(100f), Unit(50f) }, 1f), "nobody marked");
+        Assert.IsFalse(HealerBotBrain.IsMet(withinOneSecond, new List<BotUnit> { Marked(0f, 0.5f) }, 1f), "marked ally dead");
+    }
+
+    [Test]
+    public void PickTarget_MarkedAlly_TheLivingMarkedAllyStruckFirst()
+    {
+        List<BotUnit> allies = new List<BotUnit> { Unit(10f), Marked(100f, 2f), Marked(0f, 0.1f), Marked(80f, 0.5f) };
+
+        Assert.AreEqual(3, HealerBotBrain.PickTarget(HealerBotTarget.MarkedAlly, allies, new List<BotUnit>()));
+        Assert.AreEqual(1, HealerBotBrain.PickTarget(HealerBotTarget.MarkedAlly, allies, new List<BotUnit>(), i => i == 3));
+    }
+
+    [Test]
+    public void PickTarget_MarkedAllyWithoutMark_NoTarget()
+    {
+        List<BotUnit> allies = new List<BotUnit> { Unit(10f), Unit(100f) };
+
+        Assert.AreEqual(-1, HealerBotBrain.PickTarget(HealerBotTarget.MarkedAlly, allies, new List<BotUnit>()));
+    }
+
     // Decisions taken over 10s with a 0.25s interval, the bot being updated every deltaTime
     static int CountDecisions(float deltaTime)
     {

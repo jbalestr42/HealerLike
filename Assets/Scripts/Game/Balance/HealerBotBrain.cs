@@ -8,6 +8,9 @@ public struct BotUnit
     public float health;
     public float maxHealth;
     public bool isTank;
+    // Marked by a telegraphed strike landing in strikeIn seconds
+    public bool isMarked;
+    public float strikeIn;
 
     public bool isAlive => health > 0f;
     public float healthPercent => maxHealth > 0f ? health / maxHealth : 0f;
@@ -49,6 +52,8 @@ public static class HealerBotBrain
                 return GetHealthSpread(allies) > condition.value;
             case HealerBotConditionType.ManaBelow:
                 return manaPercent < condition.value;
+            case HealerBotConditionType.StrikeWithin:
+                return HasLiving(allies, null, unit => unit.isMarked && unit.strikeIn <= condition.value);
             default:
                 return false;
         }
@@ -101,8 +106,8 @@ public static class HealerBotBrain
         return count >= 2 ? max - min : 0f;
     }
 
-    // Index of the unit picked among the living ones not excluded, -1 when there is none. LowestHealthAlly and
-    // Tank look at allies, the enemy targets at enemies; ties go to the first unit
+    // Index of the unit picked among the living ones not excluded, -1 when there is none. LowestHealthAlly, Tank and
+    // MarkedAlly look at allies, the enemy targets at enemies; ties go to the first unit
     public static int PickTarget(HealerBotTarget target, IReadOnlyList<BotUnit> allies, IReadOnlyList<BotUnit> enemies, Func<int, bool> isExcluded = null)
     {
         switch (target)
@@ -117,6 +122,8 @@ public static class HealerBotBrain
                 return PickBest(enemies, isExcluded, unit => -unit.health);
             case HealerBotTarget.HighestHealthEnemy:
                 return PickBest(enemies, isExcluded, unit => unit.health);
+            case HealerBotTarget.MarkedAlly:
+                return PickBest(allies, i => !allies[i].isMarked || (isExcluded != null && isExcluded(i)), unit => -unit.strikeIn);
             default:
                 return -1;
         }
