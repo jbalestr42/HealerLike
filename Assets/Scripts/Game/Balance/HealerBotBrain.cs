@@ -8,9 +8,10 @@ public struct BotUnit
     public float health;
     public float maxHealth;
     public bool isTank;
-    // Marked by a telegraphed strike landing in strikeIn seconds
+    // Marked by a telegraphed strike landing in strikeIn seconds, taking strikeShare of it (1: the whole strike)
     public bool isMarked;
     public float strikeIn;
+    public float strikeShare;
 
     public bool isAlive => health > 0f;
     public float healthPercent => maxHealth > 0f ? health / maxHealth : 0f;
@@ -123,10 +124,29 @@ public static class HealerBotBrain
             case HealerBotTarget.HighestHealthEnemy:
                 return PickBest(enemies, isExcluded, unit => unit.health);
             case HealerBotTarget.MarkedAlly:
-                return PickBest(allies, i => !allies[i].isMarked || (isExcluded != null && isExcluded(i)), unit => -unit.strikeIn);
+                return PickMarkedAlly(allies, isExcluded);
             default:
                 return -1;
         }
+    }
+
+    // The marked ally struck first, the one taking the biggest part of the strike among the ones struck together
+    static int PickMarkedAlly(IReadOnlyList<BotUnit> allies, Func<int, bool> isExcluded)
+    {
+        int best = -1;
+        for (int i = 0; i < allies.Count; i++)
+        {
+            BotUnit ally = allies[i];
+            if (!ally.isAlive || !ally.isMarked || (isExcluded != null && isExcluded(i)))
+            {
+                continue;
+            }
+            if (best < 0 || ally.strikeIn < allies[best].strikeIn || (Mathf.Approximately(ally.strikeIn, allies[best].strikeIn) && ally.strikeShare > allies[best].strikeShare))
+            {
+                best = i;
+            }
+        }
+        return best;
     }
 
     static int PickBest(IReadOnlyList<BotUnit> units, Func<int, bool> isExcluded, Func<BotUnit, float> score)

@@ -59,7 +59,7 @@ public class HealerBot
 
         List<Entity> allies = GetLiving(Entity.EntityType.Player);
         List<Entity> enemies = GetLiving(Entity.EntityType.Computer);
-        Dictionary<GameObject, float> strikes = GetStrikes(enemies);
+        Dictionary<GameObject, BotUnit> strikes = GetStrikes(enemies);
         List<BotUnit> allyUnits = allies.ConvertAll(ally => ToBotUnit(ally, strikes));
         List<BotUnit> enemyUnits = enemies.ConvertAll(enemy => ToBotUnit(enemy, strikes));
         float manaPercent = _character.mana.Max > 0f ? _character.mana.Value / _character.mana.Max : 0f;
@@ -140,27 +140,42 @@ public class HealerBot
         return living;
     }
 
-    // The units marked by the telegraphed strikes of the enemies, with the seconds before the first strike on each
-    static Dictionary<GameObject, float> GetStrikes(List<Entity> enemies)
+    // The units marked by the telegraphed strikes of the enemies, with the first strike on each: its seconds left
+    // and the part of it the unit takes
+    static Dictionary<GameObject, BotUnit> GetStrikes(List<Entity> enemies)
     {
-        Dictionary<GameObject, float> strikes = new Dictionary<GameObject, float>();
+        Dictionary<GameObject, BotUnit> strikes = new Dictionary<GameObject, BotUnit>();
         foreach (Entity enemy in enemies)
         {
             foreach (MarkedStrikeSkill strike in enemy.GetComponents<MarkedStrikeSkill>())
             {
-                GameObject target = strike.markedTarget;
-                if (strike.isMarking && target != null && (!strikes.TryGetValue(target, out float strikeIn) || strike.remainingDelay < strikeIn))
+                if (!strike.isMarking)
                 {
-                    strikes[target] = strike.remainingDelay;
+                    continue;
+                }
+                foreach (StrikeMark mark in strike.marks)
+                {
+                    if (mark.target != null && (!strikes.TryGetValue(mark.target, out BotUnit first) || strike.remainingDelay < first.strikeIn))
+                    {
+                        strikes[mark.target] = new BotUnit { isMarked = true, strikeIn = strike.remainingDelay, strikeShare = mark.damageMultiplier };
+                    }
                 }
             }
         }
         return strikes;
     }
 
-    static BotUnit ToBotUnit(Entity entity, Dictionary<GameObject, float> strikes)
+    static BotUnit ToBotUnit(Entity entity, Dictionary<GameObject, BotUnit> strikes)
     {
-        bool isMarked = strikes.TryGetValue(entity.gameObject, out float strikeIn);
-        return new BotUnit { health = entity.health.Value, maxHealth = entity.health.Max, isTank = entity.HasTag(TagNames.Tank), isMarked = isMarked, strikeIn = strikeIn };
+        strikes.TryGetValue(entity.gameObject, out BotUnit strike);
+        return new BotUnit
+        {
+            health = entity.health.Value,
+            maxHealth = entity.health.Max,
+            isTank = entity.HasTag(TagNames.Tank),
+            isMarked = strike.isMarked,
+            strikeIn = strike.strikeIn,
+            strikeShare = strike.strikeShare,
+        };
     }
 }

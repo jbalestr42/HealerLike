@@ -29,6 +29,22 @@ public class StrikeMarker : MonoBehaviour
         }
     }
 
+    // Hidden on the units struck along the main one: a single countdown is enough
+    public void ShowCountdown(bool isShown)
+    {
+        // The text only: it may sit on the marker itself, whose effects stay
+        if (_countdown != null)
+        {
+            _countdown.enabled = isShown;
+        }
+        if (_countdownRoot != null && _countdownRoot != transform)
+        {
+            _countdownRoot.gameObject.SetActive(isShown);
+        }
+    }
+
+    public bool isCountdownShown => _countdown != null && _countdown.enabled;
+
     // "2.4": tenths of a second, never negative
     public static string FormatCountdown(float seconds)
     {

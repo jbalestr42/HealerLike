@@ -26,6 +26,10 @@ MonoBehaviour:
     interval: 8
     delay: 3
     targetBehaviourType: 4
+    targetDamageMultipliers:
+    - 1
+    - 0.5
+    - 0.25
     targetValidators: []
     range: 100
     strikeConsumer: {fileID: 11400000, guid: 1d28a5e2784811e4391275545b733c55, type: 2}
@@ -38,3 +42,5 @@ MonoBehaviour:
     arcDashLength: 0.3
     arcScrollSpeed: 1.2
     impactPrefab: {fileID: 1040608886635896, guid: a97415c6b57076f41a6621a7b51d63a3, type: 3}
+    impactShakeForce: 0.4
+    impactShakeDuration: 0.25

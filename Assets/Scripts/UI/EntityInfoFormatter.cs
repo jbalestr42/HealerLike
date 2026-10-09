@@ -300,13 +300,23 @@ public static class EntityInfoFormatter
         return line;
     }
 
-    // "every 8.0s, strikes 3.0s after the mark · next mark in 4.2s", or "... · striking Knight in 1.8s"
+    // "every 8.0s, strikes 3.0s after the mark · next mark in 4.2s", or "... · striking Knight in 1.8s", the units
+    // taking a part of the strike with it: "... · striking Knight, Archer (x0.5) in 1.8s"
     public static string FormatMarkedStrike(MarkedStrikeSkill skill)
     {
         string line = $"every {FormatDuration(skill.interval)}, strikes {FormatDuration(skill.data.delay)} after the mark";
         if (skill.isMarking && skill.markedTarget != null)
         {
-            return line + $" · striking {GetSourceName(skill.markedTarget, skill.gameObject)} in {FormatDuration(skill.remainingDelay)}";
+            List<string> targets = new List<string>();
+            foreach (StrikeMark mark in skill.marks)
+            {
+                if (mark.target != null)
+                {
+                    string share = Mathf.Approximately(mark.damageMultiplier, 1f) ? "" : $" (x{mark.damageMultiplier.ToString("0.##", CultureInfo.InvariantCulture)})";
+                    targets.Add(GetSourceName(mark.target, skill.gameObject) + share);
+                }
+            }
+            return line + $" · striking {string.Join(", ", targets)} in {FormatDuration(skill.remainingDelay)}";
         }
         return line + $" · next mark in {FormatDuration(skill.remainingInterval)}";
     }

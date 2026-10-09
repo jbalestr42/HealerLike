@@ -185,6 +185,21 @@ public class HealerBotBrainTests
     }
 
     [Test]
+    public void PickTarget_MarkedAlly_StruckTogether_TheOneTakingTheBiggestPart()
+    {
+        BotUnit whole = Marked(100f, 0.5f);
+        whole.strikeShare = 1f;
+        BotUnit half = Marked(100f, 0.5f);
+        half.strikeShare = 0.5f;
+        BotUnit quarter = Marked(100f, 0.5f);
+        quarter.strikeShare = 0.25f;
+        List<BotUnit> allies = new List<BotUnit> { quarter, whole, half };
+
+        Assert.AreEqual(1, HealerBotBrain.PickTarget(HealerBotTarget.MarkedAlly, allies, new List<BotUnit>()));
+        Assert.AreEqual(2, HealerBotBrain.PickTarget(HealerBotTarget.MarkedAlly, allies, new List<BotUnit>(), i => i == 1), "already protected");
+    }
+
+    [Test]
     public void PickTarget_MarkedAllyWithoutMark_NoTarget()
     {
         List<BotUnit> allies = new List<BotUnit> { Unit(10f), Unit(100f) };

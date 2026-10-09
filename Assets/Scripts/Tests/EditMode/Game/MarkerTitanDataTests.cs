@@ -41,6 +41,13 @@ public class MarkerTitanDataTests
         Assert.Greater(data.interval, 0f);
     }
 
+    // The first unit takes the whole strike, the second half of it, the third a quarter
+    [Test]
+    public void MarkedStrike_MarksThreeUnits_TheNextOnesTakingHalfThenAQuarterOfTheStrike()
+    {
+        CollectionAssert.AreEqual(new[] { 1f, 0.5f, 0.25f }, GetMarkedStrike().data.targetDamageMultipliers);
+    }
+
     [Test]
     public void MarkedStrike_ShowsTheMarkTheArcAndTheImpact()
     {

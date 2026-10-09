@@ -14,10 +14,18 @@ public class MarkedStrikeViewTests
     class TestMarkedStrikeSkill : MarkedStrikeSkill
     {
         public GameObject nextTarget;
+        // Picked after nextTarget, in this order
+        public List<GameObject> nextOthers = new List<GameObject>();
 
-        protected override GameObject FindTarget()
+        protected override List<GameObject> FindTargets(int count)
         {
-            return nextTarget;
+            List<GameObject> targets = new List<GameObject>();
+            if (nextTarget != null)
+            {
+                targets.Add(nextTarget);
+                targets.AddRange(nextOthers);
+            }
+            return targets.GetRange(0, Mathf.Min(count, targets.Count));
         }
     }
 
@@ -229,6 +237,128 @@ public class MarkedStrikeViewTests
         MarkedStrikeSkillData data = new MarkedStrikeSkillData { impactShakeForce = 0.4f };
 
         Assert.IsTrue(data.hasVisuals);
+    }
+
+    [Test]
+    public void SeveralMarkedUnits_ShowsAMarkerAndAnArcOnEach_SmallerWhenTheyTakeLess()
+    {
+        Entity second = _units.Create(100f, 100f, "Second");
+        Entity third = _units.Create(100f, 100f, "Third");
+        _skill.nextOthers.Add(second.gameObject);
+        _skill.nextOthers.Add(third.gameObject);
+        _skill.data.targetDamageMultipliers = new List<float> { 1f, 0.5f, 0.25f };
+        _skill.Tick(Interval);
+
+        _view.Refresh(0f);
+
+        List<StrikeMarker> markers = _view.markers;
+        Assert.AreEqual(3, markers.Count);
+        Assert.AreSame(second.transform, markers[1].transform.parent);
+        Assert.AreEqual(1f, markers[0].transform.localScale.x, 0.0001f);
+        Assert.AreEqual(Mathf.Sqrt(0.5f), markers[1].transform.localScale.x, 0.0001f);
+        Assert.AreEqual(0.5f, markers[2].transform.localScale.x, 0.0001f);
+        Assert.AreEqual(3, _view.shownArcCount);
+    }
+
+    [Test]
+    public void SeveralMarkedUnits_OnlyTheMainOneShowsTheCountdown()
+    {
+        Entity second = _units.Create(100f, 100f, "Second");
+        _skill.nextOthers.Add(second.gameObject);
+        _skill.data.targetDamageMultipliers = new List<float> { 1f, 0.5f };
+        _skill.Tick(Interval);
+
+        _view.Refresh(0f);
+
+        Assert.IsTrue(_view.markers[0].isCountdownShown);
+        Assert.IsFalse(_view.markers[1].isCountdownShown);
+    }
+
+    [Test]
+    public void SeveralMarkedUnits_TheArcsGoFromTheEntityToTheMainUnit_ThenFromUnitToUnit()
+    {
+        Entity second = _units.Create(100f, 100f, "Second");
+        Entity third = _units.Create(100f, 100f, "Third");
+        _skill.transform.position = Vector3.zero;
+        _target.transform.position = new Vector3(2f, 0f, 0f);
+        second.transform.position = new Vector3(4f, 0f, 0f);
+        third.transform.position = new Vector3(6f, 0f, 0f);
+        _skill.nextOthers.Add(second.gameObject);
+        _skill.nextOthers.Add(third.gameObject);
+        _skill.data.targetDamageMultipliers = new List<float> { 1f, 0.5f, 0.25f };
+        _skill.Tick(Interval);
+
+        _view.Refresh(0f);
+
+        List<LineRenderer> arcs = _view.shownArcs;
+        Vector3[] ends = { Vector3.zero, _target.transform.position, second.transform.position, third.transform.position };
+        for (int i = 0; i < arcs.Count; i++)
+        {
+            Assert.That(Vector3.Distance(ends[i], arcs[i].GetPosition(0)), Is.LessThan(0.001f), $"arc {i} start");
+            Assert.That(Vector3.Distance(ends[i + 1], arcs[i].GetPosition(arcs[i].positionCount - 1)), Is.LessThan(0.001f), $"arc {i} end");
+        }
+        Assert.AreEqual(3, arcs.Count);
+    }
+
+    [Test]
+    public void MainMarkedUnitDestroyed_TheNextOneShowsTheCountdown()
+    {
+        Entity second = _units.Create(100f, 100f, "Second");
+        _skill.nextOthers.Add(second.gameObject);
+        _skill.data.targetDamageMultipliers = new List<float> { 1f, 0.5f };
+        _skill.Tick(Interval);
+        _view.Refresh(0f);
+
+        Object.DestroyImmediate(_target.gameObject);
+        _skill.Tick(0.1f);
+        _view.Refresh(0.1f);
+
+        Assert.IsTrue(_view.marker.isCountdownShown);
+    }
+
+    [Test]
+    public void SeveralMarkedUnits_AfterTheStrike_HidesEveryMarkAndPlaysAnImpactOnEach()
+    {
+        Entity second = _units.Create(100f, 100f, "Second");
+        _skill.nextOthers.Add(second.gameObject);
+        _skill.data.targetDamageMultipliers = new List<float> { 1f, 0.5f };
+        _skill.Tick(Interval);
+        _view.Refresh(0f);
+
+        _skill.Tick(Delay);
+        _view.Refresh(Delay);
+
+        Assert.IsEmpty(_view.markers);
+        Assert.IsFalse(_view.isArcShown);
+        Assert.AreEqual(2, FindImpacts().Count);
+    }
+
+    [Test]
+    public void OneOfTheMarkedUnitsDestroyed_ItsMarkGoes_TheOthersStay()
+    {
+        Entity second = _units.Create(100f, 100f, "Second");
+        _skill.nextOthers.Add(second.gameObject);
+        _skill.data.targetDamageMultipliers = new List<float> { 1f, 0.5f };
+        _skill.Tick(Interval);
+        _view.Refresh(0f);
+
+        Object.DestroyImmediate(_target.gameObject);
+        _skill.Tick(0.1f);
+        _view.Refresh(0.1f);
+
+        Assert.AreEqual(1, _view.markers.Count);
+        Assert.AreSame(second.transform, _view.marker.transform.parent);
+        Assert.AreEqual(1, _view.shownArcCount);
+    }
+
+    // The area of the marker follows the damage taken
+    [TestCase(1f, 1f)]
+    [TestCase(0.25f, 0.5f)]
+    [TestCase(0f, 0f)]
+    [TestCase(2f, 1f)]
+    public void MarkerScale_IsTheSquareRootOfThePartOfTheStrike(float damageMultiplier, float expected)
+    {
+        Assert.AreEqual(expected, MarkedStrikeView.GetMarkerScale(damageMultiplier), 0.0001f);
     }
 
     [TestCase(2.44f, "2.4")]

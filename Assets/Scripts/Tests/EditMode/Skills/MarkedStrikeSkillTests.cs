@@ -9,14 +9,22 @@ namespace Skills
 // The telegraphed strike of the Marker Titan: marks a unit, then strikes it after a delay
 public class MarkedStrikeSkillTests
 {
-    // The target is given by the test, the real one is picked among the entities of the EntityManager
+    // The targets are given by the test, the real ones are picked among the entities of the EntityManager
     class TestMarkedStrikeSkill : MarkedStrikeSkill
     {
         public GameObject nextTarget;
+        // Picked after nextTarget, in this order
+        public List<GameObject> nextOthers = new List<GameObject>();
 
-        protected override GameObject FindTarget()
+        protected override List<GameObject> FindTargets(int count)
         {
-            return nextTarget;
+            List<GameObject> targets = new List<GameObject>();
+            if (nextTarget != null)
+            {
+                targets.Add(nextTarget);
+                targets.AddRange(nextOthers);
+            }
+            return targets.GetRange(0, Mathf.Min(count, targets.Count));
         }
     }
 
@@ -270,6 +278,104 @@ public class MarkedStrikeSkillTests
 
         // At most the time of the update that marked is counted, not the time spent waiting
         Assert.AreEqual(Delay - 0.1f, _skill.remainingDelay, 0.0001f);
+    }
+
+    // The first marked unit takes the whole strike, the second half of it, the third a quarter
+    void MarkThreeUnits(out Entity second, out Entity third)
+    {
+        second = _units.Create(100f, 100f, "Second");
+        third = _units.Create(100f, 100f, "Third");
+        _skill.nextOthers.Add(second.gameObject);
+        _skill.nextOthers.Add(third.gameObject);
+        _skill.data.targetDamageMultipliers = new List<float> { 1f, 0.5f, 0.25f };
+        _skill.Tick(Interval);
+    }
+
+    [Test]
+    public void SeveralMultipliers_MarksAsManyUnits_InTheOrderOfTheTargeting()
+    {
+        MarkThreeUnits(out Entity second, out Entity third);
+
+        CollectionAssert.AreEqual(new[] { _target.gameObject, second.gameObject, third.gameObject }, _marked);
+        Assert.AreEqual(3, _skill.marks.Count);
+        Assert.AreSame(_target.gameObject, _skill.markedTarget);
+        Assert.AreEqual(1f, _skill.GetDamageMultiplier(_target.gameObject));
+        Assert.AreEqual(0.5f, _skill.GetDamageMultiplier(second.gameObject));
+        Assert.AreEqual(0.25f, _skill.GetDamageMultiplier(third.gameObject));
+    }
+
+    [Test]
+    public void SeveralMarkedUnits_EachTakesItsPartOfTheStrike()
+    {
+        MarkThreeUnits(out Entity second, out Entity third);
+
+        _skill.Tick(Delay);
+        ProcessHits();
+        TestUnits.Process(second.health);
+        TestUnits.Process(third.health);
+
+        // 80% of their max health, then half of it, then a quarter
+        Assert.AreEqual(20f, _target.health.Value, 0.0001f);
+        Assert.AreEqual(60f, second.health.Value, 0.0001f);
+        Assert.AreEqual(80f, third.health.Value, 0.0001f);
+        CollectionAssert.AreEqual(new[] { _target.gameObject, second.gameObject, third.gameObject }, _struck);
+        Assert.IsFalse(_skill.isMarking);
+        Assert.AreEqual(0f, _skill.GetDamageMultiplier(second.gameObject), "no mark left");
+    }
+
+    [Test]
+    public void FewerUnitsThanMultipliers_MarksTheOnesThere_TheFirstTakingTheWholeStrike()
+    {
+        _skill.data.targetDamageMultipliers = new List<float> { 1f, 0.5f, 0.25f };
+
+        _skill.Tick(Interval);
+        _skill.Tick(Delay);
+        ProcessHits();
+
+        Assert.AreEqual(1, _marked.Count);
+        Assert.AreEqual(20f, _target.health.Value, 0.0001f);
+    }
+
+    [Test]
+    public void OneOfTheMarkedUnitsDestroyed_TheOthersAreStillStruck()
+    {
+        MarkThreeUnits(out Entity second, out Entity third);
+
+        Object.DestroyImmediate(_target.gameObject);
+        _skill.Tick(0.1f);
+        Assert.IsTrue(_skill.isMarking);
+        Assert.AreSame(second.gameObject, _skill.markedTarget);
+
+        _skill.Tick(Delay);
+        TestUnits.Process(second.health);
+
+        CollectionAssert.AreEqual(new[] { second.gameObject, third.gameObject }, _struck);
+        Assert.AreEqual(60f, second.health.Value, 0.0001f);
+    }
+
+    [Test]
+    public void SkillLine_WhileMarkingSeveralUnits_ShowsTheirPartOfTheStrike()
+    {
+        MarkThreeUnits(out _, out _);
+        _skill.Tick(1.2f);
+
+        Assert.AreEqual("every 8.0s, strikes 3.0s after the mark · striking Target, Second (x0.5), Third (x0.25) in 1.8s", EntityInfoFormatter.FormatMarkedStrike(_skill));
+    }
+
+    [Test]
+    public void Data_OneUnitPerMultiplier_TheWholeStrikeWithoutMultiplier()
+    {
+        MarkedStrikeSkillData data = new MarkedStrikeSkillData();
+        Assert.AreEqual(1, data.targetCount, "one unit by default");
+        Assert.AreEqual(1f, data.GetTargetDamageMultiplier(0));
+
+        data.targetDamageMultipliers = new List<float> { 1f, 0.5f };
+        Assert.AreEqual(2, data.targetCount);
+        Assert.AreEqual(0.5f, data.GetTargetDamageMultiplier(1));
+        Assert.AreEqual(1f, data.GetTargetDamageMultiplier(5));
+
+        data.targetDamageMultipliers = new List<float>();
+        Assert.AreEqual(1, data.targetCount, "at least one unit");
     }
 
     [Test]
