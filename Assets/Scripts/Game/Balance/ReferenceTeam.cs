@@ -24,17 +24,14 @@ public class ReferenceTeam
     public static ReferenceTeam FromWave(WavePatternData wave)
     {
         ReferenceTeam team = new ReferenceTeam();
-        if (wave == null || wave.slots == null)
+        if (wave == null)
         {
             return team;
         }
 
-        foreach (EntitySlot slot in wave.slots)
+        foreach ((int x, int y, EntityData entity) unit in wave.GetUnits())
         {
-            if (slot.entity != null)
-            {
-                team.units.Add(slot.entity);
-            }
+            team.units.Add(unit.entity);
         }
         return team;
     }

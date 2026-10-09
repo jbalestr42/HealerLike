@@ -57,12 +57,9 @@ public class BossRoomTests
         Assert.IsNotNull(wave);
 
         List<string> titles = new List<string>();
-        foreach (EntitySlot slot in wave.slots)
+        foreach ((int x, int y, EntityData entity) unit in wave.GetUnits())
         {
-            if (slot.entity != null)
-            {
-                titles.Add(slot.entity.title);
-            }
+            titles.Add(unit.entity.title);
         }
 
         CollectionAssert.AreEqual(new[] { "Marker Titan" }, titles);

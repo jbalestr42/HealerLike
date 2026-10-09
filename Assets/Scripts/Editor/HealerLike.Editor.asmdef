@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "HealerLike.Runtime",
-        "HealerLike.Utils.Editor"
+        "HealerLike.Utils.Editor",
+        "InspectorKit.Editor"
     ],
     "includePlatforms": [
         "Editor"

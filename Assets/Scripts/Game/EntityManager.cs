@@ -80,18 +80,12 @@ public class EntityManager : Singleton<EntityManager>
     public List<Entity> SpawnWave(WavePatternData waveData, Vector3 center, Entity.EntityType entityType)
     {
         List<Entity> spawned = new List<Entity>();
-        for (int i = 0; i < waveData.width; i++)
+        foreach ((int x, int y, EntityData data) unit in waveData.GetUnits())
         {
-            for (int j = 0; j < waveData.height; j++)
+            GameObject entity = SpawnEntity(unit.data, waveData.GetSlotPosition(center, unit.x, unit.y), entityType);
+            if (entity != null)
             {
-                if (waveData.slots[i, j].entity != null)
-                {
-                    GameObject entity = SpawnEntity(waveData.slots[i, j].entity, waveData.GetSlotPosition(center, i, j), entityType);
-                    if (entity != null)
-                    {
-                        spawned.Add(entity.GetComponent<Entity>());
-                    }
-                }
+                spawned.Add(entity.GetComponent<Entity>());
             }
         }
         return spawned;

@@ -41,13 +41,10 @@ public class WavePoolsDataTests
         WavePatternData wave = AssetDatabase.LoadAssetAtPath<WavePatternData>(WavesFolder + waveName + ".asset");
         Assert.IsNotNull(wave, waveName);
         Dictionary<string, int> counts = new Dictionary<string, int>();
-        foreach (EntitySlot slot in wave.slots)
+        foreach ((int x, int y, EntityData entity) unit in wave.GetUnits())
         {
-            if (slot.entity != null)
-            {
-                counts.TryGetValue(slot.entity.title, out int count);
-                counts[slot.entity.title] = count + 1;
-            }
+            counts.TryGetValue(unit.entity.title, out int count);
+            counts[unit.entity.title] = count + 1;
         }
         return counts;
     }

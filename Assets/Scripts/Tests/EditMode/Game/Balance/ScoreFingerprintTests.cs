@@ -33,12 +33,10 @@ public class ScoreFingerprintTests
     WavePatternData CreateWave(params EntityData[] units)
     {
         WavePatternData wave = Create<WavePatternData>("Wave");
-        wave.width = units.Length;
-        wave.height = 1;
-        wave.slots = new EntitySlot[units.Length, 1];
+        wave.Resize(units.Length, 1);
         for (int i = 0; i < units.Length; i++)
         {
-            wave.slots[i, 0].entity = units[i];
+            wave.SetEntity(i, 0, units[i]);
         }
         return wave;
     }

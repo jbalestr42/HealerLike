@@ -137,9 +137,7 @@ public class SimulationFormationTests
     WavePatternData CreatePattern(int width, int height)
     {
         WavePatternData pattern = ScriptableObject.CreateInstance<WavePatternData>();
-        pattern.width = width;
-        pattern.height = height;
-        pattern.slots = new EntitySlot[width, height];
+        pattern.Resize(width, height);
         _created.Add(pattern);
         return pattern;
     }
@@ -151,7 +149,7 @@ public class SimulationFormationTests
         EntityData dummy = CreateUnit(null);
         foreach (Vector2Int slot in new[] { new Vector2Int(0, 0), new Vector2Int(0, 2), new Vector2Int(1, 1), new Vector2Int(2, 0), new Vector2Int(2, 2) })
         {
-            pattern.slots[slot.x, slot.y].entity = dummy;
+            pattern.SetEntity(slot.x, slot.y, dummy);
         }
 
         Dictionary<int, Vector2Int> cells = SimulationFormation.GetPatternCells(pattern, 6, 8);
@@ -167,8 +165,8 @@ public class SimulationFormationTests
         WavePatternData pattern = CreatePattern(2, 1);
         EntityData back = CreateUnit(null);
         EntityData front = CreateUnit(null);
-        pattern.slots[0, 0].entity = front;
-        pattern.slots[1, 0].entity = back;
+        pattern.SetEntity(0, 0, front);
+        pattern.SetEntity(1, 0, back);
 
         Dictionary<int, Vector2Int> cells = SimulationFormation.GetPatternCells(pattern, 6, 8);
         ReferenceTeam team = ReferenceTeam.FromWave(pattern);

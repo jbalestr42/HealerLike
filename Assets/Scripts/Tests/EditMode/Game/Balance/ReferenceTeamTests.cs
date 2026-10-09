@@ -72,10 +72,10 @@ public class ReferenceTeamTests
     WavePatternData CreateWave(params EntityData[] units)
     {
         WavePatternData wave = ScriptableObject.CreateInstance<WavePatternData>();
-        wave.slots = new EntitySlot[2, 3];
+        wave.Resize(2, 3);
         for (int i = 0; i < units.Length; i++)
         {
-            wave.slots[i % 2, i / 2].entity = units[i];
+            wave.SetEntity(i % 2, i / 2, units[i]);
         }
         _created.Add(wave);
         return wave;

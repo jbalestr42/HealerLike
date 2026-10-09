@@ -94,8 +94,15 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  width: 2
-  height: 3
+  _width: 2
+  _height: 3
+  _cells:
+  - {fileID: 11400000, guid: ebce9d0497d9ba042a3d687cf2086b68, type: 2}
+  - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
+  - {fileID: 11400000, guid: ebce9d0497d9ba042a3d687cf2086b68, type: 2}
+  - {fileID: 11400000, guid: 2c3697a6933a9454e99b7ad7dcdab91b, type: 2}
+  - {fileID: 11400000, guid: 77f9fb43933fe2145adfe39d5a354a24, type: 2}
+  - {fileID: 11400000, guid: 2c3697a6933a9454e99b7ad7dcdab91b, type: 2}
   score:
     dps: 8.171723
     peakDps: 10

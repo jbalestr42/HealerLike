@@ -104,9 +104,9 @@ public class SimulationPlanTests
     {
         EntityData bag = ScriptableObject.CreateInstance<EntityData>();
         WavePatternData bags = ScriptableObject.CreateInstance<WavePatternData>();
-        bags.slots = new EntitySlot[1, 2];
-        bags.slots[0, 0].entity = bag;
-        bags.slots[0, 1].entity = bag;
+        bags.Resize(1, 2);
+        bags.SetEntity(0, 0, bag);
+        bags.SetEntity(0, 1, bag);
         CharacterData character = ScriptableObject.CreateInstance<CharacterData>();
         _plan.fixedTeam = bags;
         _plan.fixedTeamCharacter = character;

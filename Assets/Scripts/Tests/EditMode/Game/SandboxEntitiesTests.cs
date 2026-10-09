@@ -124,9 +124,9 @@ public class SandboxEntitiesTests
         {
             foreach (WavePatternData wave in pool.wavePatterns)
             {
-                foreach (EntitySlot slot in wave.slots)
+                foreach ((int x, int y, EntityData entity) unit in wave.GetUnits())
                 {
-                    Assert.AreNotEqual(bag, slot.entity, $"{wave.name} is a wave of the run");
+                    Assert.AreNotEqual(bag, unit.entity, $"{wave.name} is a wave of the run");
                 }
             }
         }

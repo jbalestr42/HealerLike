@@ -45,22 +45,16 @@ public static class SimulationFormation
     public static Dictionary<int, Vector2Int> GetPatternCells(WavePatternData pattern, int frontColumn, int centerRow)
     {
         Dictionary<int, Vector2Int> cells = new Dictionary<int, Vector2Int>();
-        if (pattern == null || pattern.slots == null)
+        if (pattern == null)
         {
             return cells;
         }
 
         int index = 0;
-        for (int i = 0; i < pattern.slots.GetLength(0); i++)
+        foreach ((int x, int y, EntityData entity) unit in pattern.GetUnits())
         {
-            for (int j = 0; j < pattern.slots.GetLength(1); j++)
-            {
-                if (pattern.slots[i, j].entity != null)
-                {
-                    cells[index] = new Vector2Int(frontColumn - i, centerRow + j - (pattern.slots.GetLength(1) - 1) / 2);
-                    index++;
-                }
-            }
+            cells[index] = new Vector2Int(frontColumn - unit.x, centerRow + unit.y - (pattern.height - 1) / 2);
+            index++;
         }
         return cells;
     }

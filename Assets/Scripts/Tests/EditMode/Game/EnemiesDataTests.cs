@@ -29,9 +29,9 @@ public class EnemiesDataTests
     static List<string> GetRank(WavePatternData wave, int rank)
     {
         List<string> titles = new List<string>();
-        for (int i = 0; i < wave.slots.GetLength(1); i++)
+        for (int i = 0; i < wave.height; i++)
         {
-            EntityData entity = wave.slots[rank, i].entity;
+            EntityData entity = wave.GetEntity(rank, i);
             if (entity != null)
             {
                 titles.Add(entity.title);
@@ -177,12 +177,12 @@ public class EnemiesDataTests
     {
         WavePatternData wave = LoadWave("Wave_Elite_Bastion");
 
-        Assert.AreEqual(3, wave.slots.GetLength(0));
+        Assert.AreEqual(3, wave.width);
         CollectionAssert.AreEqual(new[] { "Soldier", "Colossus" }, GetRank(wave, 0));
         CollectionAssert.AreEqual(new[] { "Bannerman", "Mortar" }, GetRank(wave, 1));
         CollectionAssert.AreEqual(new[] { "Shaman" }, GetRank(wave, 2));
         // In the middle, the Bannerman boosts every unit of the wave
-        Assert.AreEqual("Bannerman", wave.slots[1, 1].entity.title);
+        Assert.AreEqual("Bannerman", wave.GetEntity(1, 1).title);
     }
 
     [Test]
@@ -217,7 +217,7 @@ public class EnemiesDataTests
     {
         WavePatternData wave = LoadWave("Wave_Elite_Cult");
 
-        Assert.AreEqual(3, wave.slots.GetLength(0));
+        Assert.AreEqual(3, wave.width);
         CollectionAssert.AreEqual(new[] { "Berserker", "Berserker", "Berserker" }, GetRank(wave, 0));
         CollectionAssert.AreEqual(new[] { "Hexer", "Guardian", "Hexer" }, GetRank(wave, 1));
         CollectionAssert.AreEqual(new[] { "War Drum", "Blood Warden" }, GetRank(wave, 2));
@@ -294,7 +294,7 @@ public class EnemiesDataTests
     {
         WavePatternData wave = LoadWave("Wave_FrontLine");
 
-        Assert.AreEqual(2, wave.slots.GetLength(0));
+        Assert.AreEqual(2, wave.width);
         CollectionAssert.AreEqual(new[] { "Soldier", "Soldier" }, GetRank(wave, 0));
         CollectionAssert.AreEqual(new[] { "Archer", "Archer", "Archer" }, GetRank(wave, 1));
     }

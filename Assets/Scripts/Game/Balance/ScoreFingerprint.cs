@@ -154,22 +154,10 @@ public static class ScoreFingerprint
     public static string GetLayout(WavePatternData wave)
     {
         StringBuilder layout = new StringBuilder($"{wave.width}x{wave.height}");
-        if (wave.slots == null)
+        foreach ((int x, int y, EntityData entity) in wave.GetUnits())
         {
-            return layout.ToString();
-        }
-
-        for (int i = 0; i < wave.slots.GetLength(0); i++)
-        {
-            for (int j = 0; j < wave.slots.GetLength(1); j++)
-            {
-                EntityData entity = wave.slots[i, j].entity;
-                if (entity != null)
-                {
-                    string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(entity));
-                    layout.Append($" {i},{j}:{(string.IsNullOrEmpty(guid) ? entity.name : guid)}");
-                }
-            }
+            string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(entity));
+            layout.Append($" {x},{y}:{(string.IsNullOrEmpty(guid) ? entity.name : guid)}");
         }
         return layout.ToString();
     }
