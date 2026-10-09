@@ -71,7 +71,7 @@ MonoBehaviour:
       Data: 2
     - Name: $v
       Entry: 4
-      Data: 25
+      Data: 20
     - Name: 
       Entry: 8
       Data: 
@@ -102,7 +102,7 @@ MonoBehaviour:
   - key: 1
     value: 3
   - key: 2
-    value: 25
+    value: 20
   - key: 3
     value: 100
   targetBehaviourType: 3

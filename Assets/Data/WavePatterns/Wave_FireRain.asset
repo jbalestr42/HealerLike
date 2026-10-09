@@ -18,6 +18,7 @@ MonoBehaviour:
     ReferencedUnityObjects:
     - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
     - {fileID: 11400000, guid: 16f92a7dacfc6af4fac5c774dec0ead7, type: 2}
+    - {fileID: 11400000, guid: 9bfeb902817e465197ea836de7c0b1e8, type: 2}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -81,8 +82,8 @@ MonoBehaviour:
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
-      Entry: 6
-      Data: 
+      Entry: 10
+      Data: 2
     - Name: 
       Entry: 8
       Data: 
@@ -95,10 +96,10 @@ MonoBehaviour:
   width: 2
   height: 3
   score:
-    dps: 14.340961
-    peakDps: 19.333334
-    survivalTime: 14.331276
-    effectiveHealth: 555.99896
-    threat: 205.52428
+    dps: 17.227285
+    peakDps: 22.333334
+    survivalTime: 16.400648
+    effectiveHealth: 652.80194
+    threat: 282.53864
     timedOut: 0
-    fingerprint: 1073ba3690f77f5fe2318b17a280940a
+    fingerprint: 0be69435bf1fbd2f931ad5b52913832d

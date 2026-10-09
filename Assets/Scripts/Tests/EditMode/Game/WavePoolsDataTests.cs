@@ -118,11 +118,11 @@ public class WavePoolsDataTests
     [Test]
     public void SlowPoison_IsMetWithLivingWallAndBulwark_NeverAtTheStart()
     {
-        for (int floor = 0; floor < 8; floor++)
+        for (int floor = 0; floor < 9; floor++)
         {
             CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, floor), "Wave_SlowPoison", $"floor {floor}");
         }
-        for (int floor = 8; floor <= 11; floor++)
+        for (int floor = 9; floor <= 12; floor++)
         {
             CollectionAssert.Contains(GetWaves(MapNodeType.Combat, floor), "Wave_SlowPoison", $"floor {floor}");
         }
@@ -134,22 +134,23 @@ public class WavePoolsDataTests
         Dictionary<string, int> enemies = CountEnemies("Wave_Ironclad");
 
         Assert.AreEqual(2, enemies["Colossus"]);
-        Assert.AreEqual(2, enemies["Sniper"]);
+        Assert.AreEqual(1, enemies["Sniper"]);
+        Assert.AreEqual(1, enemies["Archer"]);
         Assert.AreEqual(1, enemies["Shaman"]);
         Assert.AreEqual(5, enemies.Values.Sum());
     }
 
     [Test]
-    public void Siege_IsABulwarkWithAMortarAndAnArcMage()
+    public void Siege_IsABulwarkWithAMortar()
     {
         Dictionary<string, int> enemies = CountEnemies("Wave_Siege");
 
         Assert.AreEqual(1, enemies["Colossus"]);
-        Assert.AreEqual(2, enemies["Sniper"]);
+        Assert.AreEqual(1, enemies["Sniper"]);
+        Assert.AreEqual(1, enemies["Archer"]);
         Assert.AreEqual(1, enemies["Guardian"]);
         Assert.AreEqual(1, enemies["Mortar"]);
-        Assert.AreEqual(1, enemies["Arc Mage"]);
-        Assert.AreEqual(6, enemies.Values.Sum());
+        Assert.AreEqual(5, enemies.Values.Sum());
     }
 }
 

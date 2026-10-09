@@ -17,6 +17,7 @@ MonoBehaviour:
     SerializedBytes: 
     ReferencedUnityObjects:
     - {fileID: 11400000, guid: ebce9d0497d9ba042a3d687cf2086b68, type: 2}
+    - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
     - {fileID: 11400000, guid: 2c3697a6933a9454e99b7ad7dcdab91b, type: 2}
     - {fileID: 11400000, guid: 77f9fb43933fe2145adfe39d5a354a24, type: 2}
     SerializedBytesString: 
@@ -46,8 +47,8 @@ MonoBehaviour:
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
-      Entry: 6
-      Data: 
+      Entry: 10
+      Data: 1
     - Name: 
       Entry: 8
       Data: 
@@ -65,7 +66,16 @@ MonoBehaviour:
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
       Entry: 10
-      Data: 1
+      Data: 2
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: EntitySlot, HealerLike.Runtime
+    - Name: entity
+      Entry: 10
+      Data: 3
     - Name: 
       Entry: 8
       Data: 
@@ -79,15 +89,6 @@ MonoBehaviour:
       Entry: 8
       Data: 
     - Name: 
-      Entry: 7
-      Data: EntitySlot, HealerLike.Runtime
-    - Name: entity
-      Entry: 10
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
       Entry: 13
       Data: 
     - Name: 
@@ -96,10 +97,10 @@ MonoBehaviour:
   width: 2
   height: 3
   score:
-    dps: 5.2379293
-    peakDps: 6.6666665
-    survivalTime: 16.678009
-    effectiveHealth: 647.0433
-    threat: 87.35823
+    dps: 8.171723
+    peakDps: 10
+    survivalTime: 18.77355
+    effectiveHealth: 747.2516
+    threat: 153.41226
     timedOut: 0
-    fingerprint: 32d66c9cda5caf73f91bc3095a2fb17f
+    fingerprint: bf9d9d5dbf12a0dfc8697fb70f172ee0

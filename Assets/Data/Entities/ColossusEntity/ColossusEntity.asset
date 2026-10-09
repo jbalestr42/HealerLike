@@ -47,7 +47,7 @@ MonoBehaviour:
       Data: 0
     - Name: $v
       Entry: 4
-      Data: 600
+      Data: 500
     - Name: 
       Entry: 8
       Data: 
@@ -110,7 +110,7 @@ MonoBehaviour:
   description: 'A huge armored wall: 600 HP, every hit it takes is reduced by 1. Weak shots at the nearest unit'
   attributes:
   - key: 0
-    value: 600
+    value: 500
   - key: 1
     value: 2
   - key: 2

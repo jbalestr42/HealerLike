@@ -124,11 +124,11 @@ public class EnemiesDataTests
     }
 
     [Test]
-    public void Fuse_FieldsThreeLitKamikazesInFrontAndTwoVengefulSnipersBehind()
+    public void Fuse_FieldsOneLitKamikazeInFrontAndTwoVengefulSnipersBehind()
     {
         WavePatternData wave = LoadWave("Wave_Fuse");
 
-        CollectionAssert.AreEqual(new[] { "Lit Kamikaze", "Lit Kamikaze", "Lit Kamikaze" }, GetRank(wave, 0));
+        CollectionAssert.AreEqual(new[] { "Lit Kamikaze" }, GetRank(wave, 0));
         CollectionAssert.AreEqual(new[] { "Vengeful Sniper", "Vengeful Sniper" }, GetRank(wave, 1));
     }
 
@@ -173,13 +173,13 @@ public class EnemiesDataTests
     }
 
     [Test]
-    public void EliteBastion_FieldsTheBannermanBetweenTwoMortarsBehindTheColossusAndTheShamanBehindIt()
+    public void EliteBastion_FieldsTheBannermanNextToAMortarBehindTheColossusAndTheShamanBehindIt()
     {
         WavePatternData wave = LoadWave("Wave_Elite_Bastion");
 
         Assert.AreEqual(3, wave.slots.GetLength(0));
-        CollectionAssert.AreEqual(new[] { "Hit Armor Buffer", "Colossus" }, GetRank(wave, 0));
-        CollectionAssert.AreEqual(new[] { "Mortar", "Bannerman", "Mortar" }, GetRank(wave, 1));
+        CollectionAssert.AreEqual(new[] { "Soldier", "Colossus" }, GetRank(wave, 0));
+        CollectionAssert.AreEqual(new[] { "Bannerman", "Mortar" }, GetRank(wave, 1));
         CollectionAssert.AreEqual(new[] { "Shaman" }, GetRank(wave, 2));
         // In the middle, the Bannerman boosts every unit of the wave
         Assert.AreEqual("Bannerman", wave.slots[1, 1].entity.title);
@@ -274,29 +274,29 @@ public class EnemiesDataTests
         Assert.IsNotNull(crossbowman.model);
         Assert.AreEqual(TargetBehaviourType.Farest, crossbowman.targetBehaviourType);
         Assert.AreEqual(100f, crossbowman.attributes[AttributeType.HealthMax]);
-        Assert.AreEqual(8f, crossbowman.attributes[AttributeType.Damage]);
+        Assert.AreEqual(7f, crossbowman.attributes[AttributeType.Damage]);
         // A bolt every 2.5s
         Assert.AreEqual(2.5f, crossbowman.attributes[AttributeType.AttackRate]);
         Assert.AreEqual(1, crossbowman.skillFactories.Count, "it attacks");
     }
 
     [Test]
-    public void HiddenHealer_FieldsThreeSoldiersInFrontAndTheShamanBetweenTwoCrossbowmen()
+    public void HiddenHealer_FieldsTwoSoldiersInFrontAndTheShamanBetweenTwoCrossbowmen()
     {
         WavePatternData wave = LoadWave("Wave_HiddenHealer");
 
-        CollectionAssert.AreEqual(new[] { "Soldier", "Soldier", "Soldier" }, GetRank(wave, 0));
+        CollectionAssert.AreEqual(new[] { "Soldier", "Soldier" }, GetRank(wave, 0));
         CollectionAssert.AreEqual(new[] { "Crossbowman", "Shaman", "Crossbowman" }, GetRank(wave, 1));
     }
 
     [Test]
-    public void FrontLine_FieldsTwoSoldiersInFrontAndTwoArchersBehind()
+    public void FrontLine_FieldsTwoSoldiersInFrontAndThreeArchersBehind()
     {
         WavePatternData wave = LoadWave("Wave_FrontLine");
 
         Assert.AreEqual(2, wave.slots.GetLength(0));
         CollectionAssert.AreEqual(new[] { "Soldier", "Soldier" }, GetRank(wave, 0));
-        CollectionAssert.AreEqual(new[] { "Archer", "Archer" }, GetRank(wave, 1));
+        CollectionAssert.AreEqual(new[] { "Archer", "Archer", "Archer" }, GetRank(wave, 1));
     }
 }
 

@@ -46,8 +46,8 @@ MonoBehaviour:
       Entry: 7
       Data: EntitySlot, HealerLike.Runtime
     - Name: entity
-      Entry: 6
-      Data: 
+      Entry: 10
+      Data: 0
     - Name: 
       Entry: 8
       Data: 
@@ -96,10 +96,10 @@ MonoBehaviour:
   width: 2
   height: 3
   score:
-    dps: 13.299989
-    peakDps: 17.777777
-    survivalTime: 16.858345
-    effectiveHealth: 654.0396
-    threat: 224.2158
+    dps: 16.111227
+    peakDps: 20.555555
+    survivalTime: 20.15806
+    effectiveHealth: 802.3598
+    threat: 324.7711
     timedOut: 0
-    fingerprint: 4392647f071243121fb46cb3cda2e84d
+    fingerprint: 5a163f19ad1b57a5f76605cda17cea88

@@ -155,16 +155,16 @@ MonoBehaviour:
     minFloor: 2
     maxFloor: 5
     wavePatterns:
-    - {fileID: 11400000, guid: 751e244b43ca41f43aac44fd6922d25d, type: 2}
-    - {fileID: 11400000, guid: 4cfe159b8ed188b4497ffa802ed53dca, type: 2}
     - {fileID: 11400000, guid: 8161e30f498e47aa9369c3e1ce67f21f, type: 2}
   - roomType: 0
     minFloor: 4
-    maxFloor: 7
+    maxFloor: 8
     wavePatterns:
     - {fileID: 11400000, guid: 6908f06dc1d046145887e3096a487189, type: 2}
     - {fileID: 11400000, guid: 3dd9572fccf8ecd448fd7c3c30c43abe, type: 2}
     - {fileID: 11400000, guid: a92f9a632870a1d49b6a63d524d5e18e, type: 2}
+    - {fileID: 11400000, guid: 4cfe159b8ed188b4497ffa802ed53dca, type: 2}
+    - {fileID: 11400000, guid: 751e244b43ca41f43aac44fd6922d25d, type: 2}
   - roomType: 0
     minFloor: 5
     maxFloor: 8
@@ -177,14 +177,14 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 1c212a03fe4897f4eba4cde365605551, type: 2}
     - {fileID: 11400000, guid: a52669809764a5b4bbd7ad66af7aa539, type: 2}
   - roomType: 0
-    minFloor: 8
-    maxFloor: 11
+    minFloor: 9
+    maxFloor: 12
     wavePatterns:
     - {fileID: 11400000, guid: beface40ce100824ab741b4ac2c539e5, type: 2}
     - {fileID: 11400000, guid: f08beef215ffd974580a5f027047588f, type: 2}
     - {fileID: 11400000, guid: 55bd537b7a6b4020b407348f851dfc37, type: 2}
   - roomType: 0
-    minFloor: 10
+    minFloor: 11
     maxFloor: 14
     wavePatterns:
     - {fileID: 11400000, guid: 969d7bfa63d746d48bd2a49112027a65, type: 2}
