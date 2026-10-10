@@ -8,7 +8,7 @@ public class ShootProjectileSkillData : SkillDataBase
     public List<ProjectileData> projectiles;
 }
 
-public class ShootProjectileSkill : ACooldownSkill<ShootProjectileSkillData>
+public class ShootProjectileSkill : ACooldownSkill<ShootProjectileSkillData>, IAttackSkill
 {
     Attribute _cooldownDuration;
     int _projectileIndex = 0;
@@ -62,4 +62,10 @@ public class ShootProjectileSkill : ACooldownSkill<ShootProjectileSkillData>
     }
 
     public override float cooldownDuration => _cooldownDuration.Value;
+
+    #region IAttackSkill
+
+    public bool attacksTargets => true;
+
+    #endregion
 }

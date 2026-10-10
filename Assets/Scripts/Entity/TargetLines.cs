@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Arcs from the selected entity to its targets: the ones it attacks in battle, the ones it would aim at
-// from where it stands during the placement. Hidden until SelectableEntity shows it.
+// from where it stands during the placement. Hidden until SelectableEntity shows it, and never shown for an
+// entity without attack (e.g. a unit which only buffs its allies).
 public class TargetLines : MonoBehaviour
 {
     // Look of a line (material, width...), its color is the one of the side of the entity
@@ -24,6 +25,7 @@ public class TargetLines : MonoBehaviour
     MaterialPropertyBlock _propertyBlock;
     static readonly int BaseMapST = Shader.PropertyToID("_BaseMap_ST");
     bool _isShown = false;
+    bool _hasAttack = true;
     float _nextRefreshTime = 0f;
 
     public int visibleLineCount => _lines.FindAll(line => line.gameObject.activeSelf).Count;
@@ -31,6 +33,28 @@ public class TargetLines : MonoBehaviour
     void Awake()
     {
         _entity = GetComponent<Entity>();
+    }
+
+    // Entity.Init, right after the spawn, has added the skills of its data by then
+    void Start()
+    {
+        if (_entity != null)
+        {
+            _hasAttack = HasAttack(_entity.skills);
+        }
+    }
+
+    // One of the skills attacks the targets
+    public static bool HasAttack(List<ASkill> skills)
+    {
+        foreach (ASkill skill in skills)
+        {
+            if (skill is IAttackSkill attack && attack.attacksTargets)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void Show(bool isShown)
@@ -50,7 +74,7 @@ public class TargetLines : MonoBehaviour
             ScrollDashes(Time.unscaledTime);
         }
 
-        if (!_isShown || _entity == null || _entity.targetProvider == null || Time.unscaledTime < _nextRefreshTime)
+        if (!_isShown || !_hasAttack || _entity == null || _entity.targetProvider == null || Time.unscaledTime < _nextRefreshTime)
         {
             return;
         }

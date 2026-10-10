@@ -10,7 +10,7 @@ public class ConfigurableSkillData : SkillDataBase
     public List<ASkillStepFactory> skillStepFactories = new List<ASkillStepFactory>();
 }
 
-public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill
+public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill, IAttackSkill
 {
     int _currentStep = 0;
     List<ASkillStep> _skillSteps = new List<ASkillStep>();
@@ -104,6 +104,13 @@ public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill
             return Mathf.Clamp01((duration - elapsed) / duration);
         }
     }
+
+    #endregion
+
+    #region IAttackSkill
+
+    // One of its steps shoots at the targets (e.g. a burst of shots then a pause)
+    public bool attacksTargets => data != null && data.skillStepFactories.Exists(factory => factory != null && factory.shootsAtTargets);
 
     #endregion
 }

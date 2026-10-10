@@ -6,6 +6,9 @@ using Oisif.Inspector;
 public abstract class ASkillStepFactory : ScriptableObject
 {
     public abstract ASkillStep AddSkillStep(GameObject source);
+
+    // The step shoots at the targets of the entity, itself or one of its inner steps
+    public virtual bool shootsAtTargets => false;
 }
 
 public class SkillStepFactory<SkillStepType, SkillStepData> : ASkillStepFactory

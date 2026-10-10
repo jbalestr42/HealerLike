@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/Data/SkillSteps/ShootProjectileSkillStep")]
-public class ShootProjectileSkillStepFactory : SkillStepFactory<ShootProjectileSkillStep, ShootProjectileSkillStepData> { }
+public class ShootProjectileSkillStepFactory : SkillStepFactory<ShootProjectileSkillStep, ShootProjectileSkillStepData>
+{
+    public override bool shootsAtTargets => true;
+}
 
 [Serializable]
 public class ShootProjectileSkillStepData : SkillStepDataBase

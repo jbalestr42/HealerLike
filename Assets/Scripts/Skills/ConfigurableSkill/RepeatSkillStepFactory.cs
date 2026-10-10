@@ -5,7 +5,10 @@ using UnityEngine;
 using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/SkillSteps/RepeatSkillStep")]
-public class RepeatSkillStepFactory : SkillStepFactory<RepeatSkillStep, RepeatSkillStepData> { }
+public class RepeatSkillStepFactory : SkillStepFactory<RepeatSkillStep, RepeatSkillStepData>
+{
+    public override bool shootsAtTargets => data != null && data.skillStepFactories.Exists(factory => factory != null && factory.shootsAtTargets);
+}
 
 [Serializable]
 public class RepeatSkillStepData : SkillStepDataBase
