@@ -406,17 +406,18 @@ namespace Oisif.Editor
             Rect remove = new Rect(footer.xMax - 29f, footer.y, 25f, 16f);
             using (new EditorGUI.DisabledScope(canCreate && elementType == null))
             {
-                if (GUI.Button(add, canCreate ? styles.createContent : styles.addContent, styles.footerButton))
+                if (canCreate)
                 {
-                    if (canCreate)
+                    // Opens its menu as soon as it is pressed, like the dropdown buttons of Unity
+                    if (EditorGUI.DropdownButton(add, styles.createContent, FocusType.Passive, styles.footerButton))
                     {
-                        CreateIntoList(list, elementType);
+                        CreateIntoList(list, elementType, add);
                     }
-                    else
-                    {
-                        AddElement(list);
-                        SetSelected(list, list.arraySize - 1);
-                    }
+                }
+                else if (GUI.Button(add, styles.addContent, styles.footerButton))
+                {
+                    AddElement(list);
+                    SetSelected(list, list.arraySize - 1);
                 }
             }
             using (new EditorGUI.DisabledScope(list.arraySize == 0))
@@ -576,22 +577,23 @@ namespace Oisif.Editor
             list.DeleteArrayElementAtIndex(index);
         }
 
-        void CreateIntoList(SerializedProperty list, Type elementType)
+        // The menu of the types, under the button; the asset picked is created then added at the end of the list
+        static void CreateIntoList(SerializedProperty list, Type elementType, Rect button)
         {
-            SerializedObject owner = list.serializedObject;
             string path = list.propertyPath;
-            UnityEngine.Object host = owner.targetObject;
+            UnityEngine.Object host = list.serializedObject.targetObject;
             string prefix = System.IO.Path.GetFileName(DataAssets.GetFolder(host));
             DataAssets.ShowTypeMenu(elementType, type =>
             {
                 ScriptableObject asset = DataAssets.Create(type, host, prefix);
-                owner.Update();
+                // A new SerializedObject: creating the asset can rebuild the inspectors, disposing the one of the list
+                SerializedObject owner = new SerializedObject(host);
                 SerializedProperty target = owner.FindProperty(path);
                 target.arraySize++;
                 target.GetArrayElementAtIndex(target.arraySize - 1).objectReferenceValue = asset;
                 target.isExpanded = true;
                 owner.ApplyModifiedProperties();
-            });
+            }, button);
         }
 
         void DrawObjectField(SerializedProperty property, GUIContent label, FieldInfo field, Type objectType)
@@ -633,13 +635,13 @@ namespace Oisif.Editor
             {
                 if (value == null && GUILayout.Button(new GUIContent("+", "Create a new asset"), EditorStyles.miniButton, GUILayout.Width(24f)))
                 {
-                    SerializedObject owner = property.serializedObject;
                     string path = property.propertyPath;
-                    UnityEngine.Object host = owner.targetObject;
+                    UnityEngine.Object host = property.serializedObject.targetObject;
                     DataAssets.ShowTypeMenu(objectType, type =>
                     {
                         ScriptableObject asset = DataAssets.Create(type, host);
-                        owner.Update();
+                        // A new SerializedObject: creating the asset can rebuild the inspectors, disposing the one of the field
+                        SerializedObject owner = new SerializedObject(host);
                         SerializedProperty target = owner.FindProperty(path);
                         target.objectReferenceValue = asset;
                         target.isExpanded = true;

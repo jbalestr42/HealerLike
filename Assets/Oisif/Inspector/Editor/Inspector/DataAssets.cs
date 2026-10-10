@@ -66,12 +66,12 @@ namespace Oisif.Editor
             return AssetDatabase.DeleteAsset(path);
         }
 
-        // A menu of the creatable types under the mouse, onPicked called with the one picked. A single type is
-        // created at once
-        public static void ShowTypeMenu(Type fieldType, Action<Type> onPicked)
+        // A menu of the creatable types, onPicked called with the one picked: under the button when given (the menu
+        // of a dropdown button, even for a single type), under the mouse otherwise, a single type created at once
+        public static void ShowTypeMenu(Type fieldType, Action<Type> onPicked, Rect? button = null)
         {
             List<Type> types = GetCreatableTypes(fieldType);
-            if (types.Count == 1)
+            if (types.Count == 1 && button == null)
             {
                 onPicked(types[0]);
                 return;
@@ -86,7 +86,14 @@ namespace Oisif.Editor
             {
                 menu.AddDisabledItem(new GUIContent($"No type to create for {fieldType.Name}"));
             }
-            menu.ShowAsContext();
+            if (button != null)
+            {
+                menu.DropDown(button.Value);
+            }
+            else
+            {
+                menu.ShowAsContext();
+            }
         }
     }
 }
