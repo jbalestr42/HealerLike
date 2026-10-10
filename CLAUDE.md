@@ -60,3 +60,13 @@ around it instead (see `CurrentWaveModifierTests.cs` for an example of this trad
 Run tests via Unity's Test Runner window (Window > General > Test Runner > EditMode), or ask
 Claude to do it via the `mcp__unity-mcp__` bridge - `Unity.exe -batchmode -runTests` only works
 when no Editor instance already has the project open.
+
+## Oisif Inspector (editor kit)
+
+The inspectors and data tools are our own, in `Assets/Oisif/Inspector` (Odin was removed): attributes in
+namespace `Oisif.Inspector` (`InlineEditor`, `InlineProperty`, `CreateDataButton`, `ShowIf`/`HideIf`, `ReadOnly`, `Button`, `Grid`,
+`Preview`...), editor code in `Oisif.Editor` (`AttributeEditor`, `AssetBrowserWindow`, `GridGUI`). The kit must never
+reference the game, so it can be exported: game-specific glue goes in `Assets/Scripts/Editor` (e.g.
+`OisifInspectors.cs`, `DataEditor.cs`). Its tests live in the kit (`Assets/Oisif/Inspector/Tests`, assembly
+`Oisif.Inspector.Tests`), not in `Assets/Scripts/Tests`. After a change to data types or to the kit, check with
+Tools > Oisif > Data Snapshot (compare before/after) and Tools > Oisif > Check Inspectors.

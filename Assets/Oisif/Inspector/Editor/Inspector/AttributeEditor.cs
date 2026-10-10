@@ -131,6 +131,11 @@ namespace Oisif.Editor
                 {
                     DrawManagedReference(property, label, field);
                 }
+                else if (property.propertyType == SerializedPropertyType.Generic && field != null && field.IsDefined(typeof(InlinePropertyAttribute), true))
+                {
+                    DrawDecorators(field);
+                    DrawChildrenInPlace(property);
+                }
                 else if (property.propertyType == SerializedPropertyType.Generic)
                 {
                     DrawDecorators(field);
@@ -188,7 +193,25 @@ namespace Oisif.Editor
                 return;
             }
 
-            EditorGUI.indentLevel++;
+            DrawFramedChildren(property);
+        }
+
+        // The fields of a nested object in a frame, to see which object they belong to
+        void DrawFramedChildren(SerializedProperty property)
+        {
+            int indent = BeginFrame();
+            try
+            {
+                DrawChildrenInPlace(property);
+            }
+            finally
+            {
+                EndFrame(indent);
+            }
+        }
+
+        void DrawChildrenInPlace(SerializedProperty property)
+        {
             SerializedProperty child = property.Copy();
             SerializedProperty end = property.GetEndProperty();
             bool enterChildren = true;
@@ -197,7 +220,24 @@ namespace Oisif.Editor
                 enterChildren = false;
                 DrawProperty(child.Copy());
             }
-            EditorGUI.indentLevel--;
+        }
+
+        // A frame shifted by the indent, its content starting again from no indent, so that the frames nest
+        static int BeginFrame()
+        {
+            int indent = EditorGUI.indentLevel;
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(indent * 15f + 12f);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            EditorGUI.indentLevel = 0;
+            return indent;
+        }
+
+        static void EndFrame(int indent)
+        {
+            EditorGUI.indentLevel = indent;
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndHorizontal();
         }
 
         void DrawList(SerializedProperty list, GUIContent label, FieldInfo field, PropertyInfo info)
@@ -232,7 +272,7 @@ namespace Oisif.Editor
                 EditorGUILayout.BeginVertical();
                 if (!DrawKeyValue(element))
                 {
-                    DrawProperty(element, new GUIContent(GetElementLabel(element, i)));
+                    DrawProperty(element, GetElementLabel(element));
                 }
                 EditorGUILayout.EndVertical();
                 if (DrawElementButtons(list, i))
@@ -245,9 +285,43 @@ namespace Oisif.Editor
             EditorGUI.indentLevel--;
         }
 
-        static string GetElementLabel(SerializedProperty element, int index)
+        // No index: an object or a value alone, a class by its type (its foldout needs a label)
+        static GUIContent GetElementLabel(SerializedProperty element)
         {
-            return element.propertyType == SerializedPropertyType.ObjectReference ? $"{index}" : $"Element {index}";
+            if (element.propertyType == SerializedPropertyType.Generic)
+            {
+                Type type = PropertyReflection.Find(element).type;
+                return new GUIContent(type != null ? DataAssets.GetNiceName(type) : "Element");
+            }
+            return GUIContent.none;
+        }
+
+        // A foldout arrow alone when there is no label, the label clickable otherwise
+        static bool DrawFoldout(bool isExpanded, GUIContent label)
+        {
+            if (label == null || label == GUIContent.none || string.IsNullOrEmpty(label.text))
+            {
+                // Unity draws the arrow shifted by the indent but clicks it at its rect: the indent is put in the
+                // rect, the arrow drawn without indent
+                float indent = EditorGUI.indentLevel * 15f;
+                Rect rect = GUILayoutUtility.GetRect(indent + 14f, EditorGUIUtility.singleLineHeight, GUILayout.Width(indent + 14f));
+                rect.xMin += indent;
+                int indentLevel = EditorGUI.indentLevel;
+                EditorGUI.indentLevel = 0;
+                bool expanded = EditorGUI.Foldout(rect, isExpanded, GUIContent.none, true);
+                EditorGUI.indentLevel = indentLevel;
+                return expanded;
+            }
+            return EditorGUILayout.Foldout(isExpanded, label, true);
+        }
+
+        // A field without label after the arrow, which already holds the indent
+        static void DrawFieldAfterFoldout(SerializedProperty property)
+        {
+            int indentLevel = EditorGUI.indentLevel;
+            EditorGUI.indentLevel = 0;
+            EditorGUILayout.PropertyField(property, GUIContent.none);
+            EditorGUI.indentLevel = indentLevel;
         }
 
         // The entries of a dictionary on one line: the key then the value
@@ -364,8 +438,15 @@ namespace Oisif.Editor
             EditorGUILayout.BeginHorizontal();
             if (canInline)
             {
-                property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, label, true);
-                EditorGUILayout.PropertyField(property, GUIContent.none);
+                property.isExpanded = DrawFoldout(property.isExpanded, label);
+                if (label == GUIContent.none || string.IsNullOrEmpty(label.text))
+                {
+                    DrawFieldAfterFoldout(property);
+                }
+                else
+                {
+                    EditorGUILayout.PropertyField(property, GUIContent.none);
+                }
             }
             else
             {
@@ -442,16 +523,14 @@ namespace Oisif.Editor
             }
 
             InlineStack.Add(value);
-            EditorGUI.indentLevel++;
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            int indent = BeginFrame();
             try
             {
                 editor.OnInspectorGUI();
             }
             finally
             {
-                EditorGUILayout.EndVertical();
-                EditorGUI.indentLevel--;
+                EndFrame(indent);
                 InlineStack.Remove(value);
             }
         }
@@ -471,9 +550,9 @@ namespace Oisif.Editor
             EditorGUILayout.BeginHorizontal();
             if (value != null)
             {
-                property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, label, true);
+                property.isExpanded = DrawFoldout(property.isExpanded, label);
             }
-            else
+            else if (label != GUIContent.none && !string.IsNullOrEmpty(label.text))
             {
                 EditorGUILayout.PrefixLabel(label);
             }
@@ -485,16 +564,7 @@ namespace Oisif.Editor
 
             if (value != null && property.isExpanded)
             {
-                EditorGUI.indentLevel++;
-                SerializedProperty child = property.Copy();
-                SerializedProperty end = property.GetEndProperty();
-                bool enterChildren = true;
-                while (child.NextVisible(enterChildren) && !SerializedProperty.EqualContents(child, end))
-                {
-                    enterChildren = false;
-                    DrawProperty(child.Copy());
-                }
-                EditorGUI.indentLevel--;
+                DrawFramedChildren(property);
             }
         }
 

@@ -57,6 +57,7 @@ namespace Oisif.Editor.Tests
         {
             _writer = new SnapshotWriter();
             _writer.serializedAttributeNames.Add(nameof(OtherSerializeAttribute));
+            _writer.ignoredTypeNames.Add(nameof(SerializationData));
         }
 
         [Test]

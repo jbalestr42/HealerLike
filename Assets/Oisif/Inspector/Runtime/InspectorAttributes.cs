@@ -8,6 +8,11 @@ namespace Oisif.Inspector
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class, Inherited = true)]
     public class InlineEditorAttribute : Attribute {}
 
+    // On a field holding a class: its fields drawn in place of it, without its name, foldout or frame (e.g. the data
+    // of an object, which would only repeat it)
+    [AttributeUsage(AttributeTargets.Field)]
+    public class InlinePropertyAttribute : Attribute {}
+
     // Left out when the object is drawn inline in the inspector of another object
     [AttributeUsage(AttributeTargets.Field)]
     public class HideInInlineEditorsAttribute : Attribute {}

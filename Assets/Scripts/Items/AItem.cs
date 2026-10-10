@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Oisif.Inspector;
 
+[InlineEditor]
 public abstract class AItemFactory : ScriptableObject, ITaggable
 {
     public abstract AItem GetItem();
@@ -21,6 +22,7 @@ public class ItemFactory<ItemType, DataType> : AItemFactory
                                             where ItemType : AItem<DataType>, new()
                                             where DataType : BaseItemData
 {
+    [InlineProperty]
     public DataType data;
 
     public override AItem GetItem()

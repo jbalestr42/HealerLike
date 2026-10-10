@@ -15,6 +15,7 @@ public class SkillFactory<SkillType, SkillData> : ASkillFactory
                                 where SkillType : ASkill<SkillData>, new()
                                 where SkillData : SkillDataBase
 {
+    [InlineProperty]
     public SkillData data;
 
     public override ASkill AddSkill(GameObject target)

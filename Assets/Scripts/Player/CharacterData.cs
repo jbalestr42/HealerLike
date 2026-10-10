@@ -13,6 +13,10 @@ public class CharacterData : ScriptableObject
 
     public string text;
 
+    // The units tagged with it and Reward can be recruited by the character (rewards, recruitment event)
+    [Space]
+    public GameplayTag classTag;
+
     [Space]
     [SerializeField]
     public Dictionary<AttributeType, float> attributes = new Dictionary<AttributeType, float>();
@@ -23,9 +27,6 @@ public class CharacterData : ScriptableObject
 
     [Space]
     public List<EntityData> entities = new List<EntityData>();
-
-    // The units tagged with it and Reward can be recruited by the character (rewards, recruitment event)
-    public GameplayTag classTag;
 
     [Space]
     [CreateDataButton]

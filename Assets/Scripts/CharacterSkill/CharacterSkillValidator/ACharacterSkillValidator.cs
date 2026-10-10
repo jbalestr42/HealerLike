@@ -10,6 +10,7 @@ public abstract class ACharacterSkillValidatorFactory : ScriptableObject
 
 public class CharacterSkillValidatorFactory<CharacterSkillValidatorType, DataType> : ACharacterSkillValidatorFactory where CharacterSkillValidatorType : ACharacterSkillValidator<DataType>, new()
 {
+    [InlineProperty]
     public DataType data;
 
     public override ACharacterSkillValidator Create()

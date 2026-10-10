@@ -12,6 +12,7 @@ public class ConsumerFactory<ConsumerType, DataType> : AConsumerFactory
                                             where ConsumerType : AConsumer<DataType>, new()
                                             where DataType : ConsumerBaseData
 {
+    [InlineProperty]
     public DataType data;
 
     public override AConsumer GetConsumer(GameObject source, GameObject target)

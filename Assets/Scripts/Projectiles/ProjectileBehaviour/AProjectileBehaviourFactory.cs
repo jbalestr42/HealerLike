@@ -9,6 +9,7 @@ public abstract class AProjectileBehaviourFactory : ScriptableObject
 
 public class ProjectileBehaviourFactory<ProjectileBehaviourType, ProjectileBehaviourData> : AProjectileBehaviourFactory where ProjectileBehaviourType : AProjectileBehaviour<ProjectileBehaviourData>, new()
 {
+    [InlineProperty]
     public ProjectileBehaviourData data;
 
     public override AProjectileBehaviour AddBehaviour(GameObject target)

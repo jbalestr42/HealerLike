@@ -38,6 +38,7 @@ public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory
                                             where BuffHandlerType : ABuffHandler<DataType>, new()
                                             where DataType : BuffHandlerBaseData
 {
+    [InlineProperty]
     public DataType data;
 
     public override ABuffHandler GetBuffHandler()

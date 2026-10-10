@@ -14,6 +14,7 @@ public class CharacterSkillFactory<CharacterSkillType, DataType> : ACharacterSki
                                             where CharacterSkillType : ACharacterSkill<DataType>, new()
                                             where DataType : CharacterSkillData, new()
 {
+    [InlineProperty]
     public DataType data;
 
     public override ACharacterSkill Create()

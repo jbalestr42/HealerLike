@@ -11,6 +11,7 @@ public abstract class AOnSkillTriggerFactory : ScriptableObject
 
 public class OnSkillTriggerFactory<OnSkillTriggerType, OnSkillTriggerData> : AOnSkillTriggerFactory where OnSkillTriggerType : AOnSkillTrigger<OnSkillTriggerData>, new()
 {
+    [InlineProperty]
     public OnSkillTriggerData data;
 
     public override AOnSkillTrigger GetSkillTrigger()

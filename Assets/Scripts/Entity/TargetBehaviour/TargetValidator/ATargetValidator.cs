@@ -10,6 +10,7 @@ public abstract class ATargetValidatorFactory : ScriptableObject
 
 public class TargetValidatorFactory<TargetValidatorType, DataType> : ATargetValidatorFactory where TargetValidatorType : ATargetValidator<DataType>, new()
 {
+    [InlineProperty]
     public DataType data;
 
     public override ATargetValidator GetTargetValidator()

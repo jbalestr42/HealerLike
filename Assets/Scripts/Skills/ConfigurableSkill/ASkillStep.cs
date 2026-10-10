@@ -12,6 +12,7 @@ public class SkillStepFactory<SkillStepType, SkillStepData> : ASkillStepFactory
                                 where SkillStepType : ASkillStep<SkillStepData>, new()
                                 where SkillStepData : SkillStepDataBase
 {
+    [InlineProperty]
     public SkillStepData data;
 
     public override ASkillStep AddSkillStep(GameObject source)

@@ -14,6 +14,7 @@ public abstract class ABuffFactory : ScriptableObject
 
 public class BuffFactory<BuffType, DataType> : ABuffFactory where BuffType : ABuff<DataType>, new()
 {
+    [InlineProperty]
     public DataType data;
 
     public override ABuff GetBuff(ABuffHandler buffHandler)

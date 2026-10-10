@@ -75,6 +75,7 @@ namespace Oisif.Editor
 
             EditorGUILayout.BeginHorizontal();
             DrawList();
+            DrawSeparator();
             DrawRight();
             EditorGUILayout.EndHorizontal();
         }
@@ -98,32 +99,31 @@ namespace Oisif.Editor
         {
             EditorGUILayout.BeginVertical(GUILayout.Width(ListWidth));
             _search = EditorGUILayout.TextField(_search, EditorStyles.toolbarSearchField);
-            _listScroll = EditorGUILayout.BeginScrollView(_listScroll);
+            // A fixed width: the room of the vertical scroll bar always kept (the bar only shown when needed), never a
+            // horizontal one, the rows fitting what is left
+            _listScroll = EditorGUILayout.BeginScrollView(_listScroll, false, false, GUIStyle.none, GUI.skin.verticalScrollbar, GUIStyle.none);
+            float rowWidth = ListWidth - GUI.skin.verticalScrollbar.fixedWidth - 8f;
             foreach (AssetSection section in _sections)
             {
-                DrawSection(section);
+                DrawSection(section, rowWidth);
             }
             EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
         }
 
-        void DrawSection(AssetSection section)
+        void DrawSection(AssetSection section, float rowWidth)
         {
             List<ScriptableObject> assets = _assets.TryGetValue(section, out List<ScriptableObject> found) ? found : new List<ScriptableObject>();
             List<ScriptableObject> shown = string.IsNullOrEmpty(_search)
                 ? assets
                 : assets.Where(asset => asset != null && asset.name.IndexOf(_search, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
 
-            EditorGUILayout.BeginHorizontal();
-            if (!string.IsNullOrEmpty(section.title))
-            {
-                EditorGUILayout.LabelField($"{section.title} ({shown.Count})", EditorStyles.boldLabel);
-            }
-            else
-            {
-                GUILayout.FlexibleSpace();
-            }
-            if (section.canCreate && GUILayout.Button(new GUIContent("+", "Create a new asset"), EditorStyles.miniButton, GUILayout.Width(24f)))
+            const float AddWidth = 24f;
+            EditorGUILayout.BeginHorizontal(GUILayout.Width(rowWidth));
+            float titleWidth = section.canCreate ? rowWidth - AddWidth - 4f : rowWidth;
+            string title = string.IsNullOrEmpty(section.title) ? "" : $"{section.title} ({shown.Count})";
+            GUILayout.Label(new GUIContent(title, title), EditorStyles.boldLabel, GUILayout.Width(titleWidth));
+            if (section.canCreate && GUILayout.Button(new GUIContent("+", "Create a new asset"), EditorStyles.miniButton, GUILayout.Width(AddWidth)))
             {
                 StartCreating(section);
             }
@@ -136,11 +136,20 @@ namespace Oisif.Editor
                     continue;
                 }
                 bool isSelected = asset == _selected;
-                if (GUILayout.Toggle(isSelected, asset.name, EditorStyles.miniButton) && !isSelected)
+                if (GUILayout.Toggle(isSelected, new GUIContent(asset.name, asset.name), EditorStyles.miniButton, GUILayout.Width(rowWidth)) && !isSelected)
                 {
                     Select(asset);
                 }
             }
+            GUILayout.Space(6f);
+        }
+
+        // A thin line between the list and the right side, over the whole height
+        static void DrawSeparator()
+        {
+            GUILayout.Space(4f);
+            Rect line = GUILayoutUtility.GetRect(1f, 1f, GUILayout.Width(1f), GUILayout.ExpandHeight(true));
+            EditorGUI.DrawRect(line, EditorGUIUtility.isProSkin ? new Color(0.1f, 0.1f, 0.1f) : new Color(0.6f, 0.6f, 0.6f));
             GUILayout.Space(6f);
         }
 
