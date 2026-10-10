@@ -23,6 +23,10 @@ namespace Oisif.Editor
         static readonly List<UnityEngine.Object> InlineStack = new List<UnityEngine.Object>();
         const int MaxInlineDepth = 6;
 
+        // Frames being drawn, one inside the other: the second, the fourth... are darker
+        static int FrameDepth;
+        static readonly Color DarkerFrame = new Color(0f, 0f, 0f, 0.12f);
+
         // True while the object is drawn inside the inspector of another one
         public static bool isDrawingInline => InlineStack.Count > 0;
 
@@ -226,63 +230,248 @@ namespace Oisif.Editor
         static int BeginFrame()
         {
             int indent = EditorGUI.indentLevel;
+            // Apart from the field it opens
+            GUILayout.Space(4f);
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(indent * 15f + 12f);
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            Rect frame = EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            FrameDepth++;
+            if (FrameDepth % 2 == 0 && Event.current.type == EventType.Repaint)
+            {
+                // Inside the border of the box
+                EditorGUI.DrawRect(new Rect(frame.x + 1f, frame.y + 1f, frame.width - 2f, frame.height - 2f), DarkerFrame);
+            }
             EditorGUI.indentLevel = 0;
             return indent;
         }
 
         static void EndFrame(int indent)
         {
+            FrameDepth--;
             EditorGUI.indentLevel = indent;
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
+            // Apart from the field after the frame
+            GUILayout.Space(4f);
         }
 
+        // A list looking like the ones of Unity: a header with the foldout and the size, the elements in a box with a
+        // handle to drag them, a footer to add one and remove the selected one
         void DrawList(SerializedProperty list, GUIContent label, FieldInfo field, PropertyInfo info)
         {
             DrawDecorators(field);
             bool canCreate = field != null && field.IsDefined(typeof(CreateDataButtonAttribute), true);
             Type elementType = PropertyReflection.GetElementType(info.type);
+            ListStyles styles = ListStyles.instance;
+            int indentLevel = EditorGUI.indentLevel;
+            float indent = indentLevel * 15f;
 
-            EditorGUILayout.BeginHorizontal();
-            list.isExpanded = EditorGUILayout.Foldout(list.isExpanded, $"{label.text} ({list.arraySize})", true);
-            if (canCreate && elementType != null && GUILayout.Button(new GUIContent("+", "Create a new asset"), EditorStyles.miniButton, GUILayout.Width(24f)))
+            Rect header = GUILayoutUtility.GetRect(0f, 20f, GUILayout.ExpandWidth(true));
+            header.xMin += indent;
+            if (Event.current.type == EventType.Repaint)
             {
-                CreateIntoList(list, elementType);
+                styles.header.Draw(header, false, false, false, false);
+                if (!list.isExpanded)
+                {
+                    // The header alone has no bottom border
+                    EditorGUI.DrawRect(new Rect(header.x + 1f, header.yMax - 1f, header.width - 2f, 1f), styles.borderColor);
+                }
             }
-            else if (!canCreate && GUILayout.Button(new GUIContent("+", "Add an element"), EditorStyles.miniButton, GUILayout.Width(24f)))
+            EditorGUI.indentLevel = 0;
+            try
+            {
+                Rect foldout = new Rect(header.x + 18f, header.y + 1f, header.width - 76f, EditorGUIUtility.singleLineHeight);
+                list.isExpanded = EditorGUI.Foldout(foldout, list.isExpanded, label, true);
+                // A margin around it, inside the header
+                Rect size = new Rect(header.xMax - 56f, header.y + 2f, 48f, header.height - 4f);
+                int newSize = EditorGUI.DelayedIntField(size, list.arraySize);
+                if (newSize != list.arraySize)
+                {
+                    SetSize(list, Mathf.Max(0, newSize));
+                }
+            }
+            finally
+            {
+                EditorGUI.indentLevel = indentLevel;
+            }
+
+            if (list.isExpanded)
+            {
+                Rect box = DrawListElements(list, header, indent, styles);
+                Rect footer = DrawListFooter(list, box, canCreate, elementType, styles);
+                // Only the handle selects an element: any other click, even used by a field, deselects it, but the
+                // footer, whose - removes it
+                if (Event.current.rawType == EventType.MouseDown && ListDrag.GetDraggedIndex(list) < 0 && !footer.Contains(Event.current.mousePosition))
+                {
+                    SetSelected(list, -1);
+                }
+            }
+            // Apart from the field after the list
+            GUILayout.Space(4f);
+        }
+
+        // The rect of the box holding the elements
+        Rect DrawListElements(SerializedProperty list, Rect header, float indent, ListStyles styles)
+        {
+            int indentLevel = EditorGUI.indentLevel;
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(indent);
+            Rect box = EditorGUILayout.BeginVertical();
+            if (Event.current.type == EventType.Repaint)
+            {
+                // As wide as the header, the layout giving a few pixels less
+                styles.background.Draw(new Rect(header.x, box.y, header.width, box.height), false, false, false, false);
+            }
+            EditorGUI.indentLevel = 0;
+            try
+            {
+                GUILayout.Space(3f);
+                if (list.arraySize == 0)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    GUILayout.Space(6f);
+                    EditorGUILayout.LabelField("List is Empty");
+                    EditorGUILayout.EndHorizontal();
+                }
+
+                // The order of a dictionary doesn't matter: no handle
+                bool canReorder = list.arraySize == 0 || !IsKeyValue(list.GetArrayElementAtIndex(0));
+                int selected = GetSelected(list);
+                List<Rect> rects = new List<Rect>();
+                for (int i = 0; i < list.arraySize; i++)
+                {
+                    SerializedProperty element = list.GetArrayElementAtIndex(i);
+                    Rect row = EditorGUILayout.BeginHorizontal();
+                    rects.Add(row);
+                    if (Event.current.type == EventType.Repaint && (i == selected || i == ListDrag.GetDraggedIndex(list)))
+                    {
+                        styles.element.Draw(row, false, true, true, true);
+                    }
+                    GUILayout.Space(2f);
+                    if (canReorder)
+                    {
+                        ListDrag.Handle(list, i);
+                        if (ListDrag.GetDraggedIndex(list) == i)
+                        {
+                            SetSelected(list, i);
+                        }
+                    }
+                    else
+                    {
+                        GUILayout.Space(ListDrag.HandleWidth);
+                    }
+                    EditorGUILayout.BeginVertical();
+                    // The fields leave a margin above them only: a bit less above, more under them, for the selection
+                    // to frame them
+                    GUILayout.Space(-1f);
+                    if (!DrawKeyValue(element))
+                    {
+                        DrawProperty(element, GetElementLabel(element));
+                    }
+                    GUILayout.Space(3f);
+                    EditorGUILayout.EndVertical();
+                    GUILayout.Space(4f);
+                    EditorGUILayout.EndHorizontal();
+                }
+                if (canReorder && ListDrag.End(list, rects))
+                {
+                    SetSelected(list, ListDrag.lastDropIndex);
+                }
+                // As much space under the last element as above the first one, the elements leaving 3 pixels under
+                // them
+                GUILayout.Space(list.arraySize > 0 ? 1f : 3f);
+            }
+            finally
+            {
+                EditorGUI.indentLevel = indentLevel;
+            }
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndHorizontal();
+            return new Rect(header.x, box.y, header.width, box.height);
+        }
+
+        // + to add an element (or create an asset), - to remove the selected one, the last one without selection;
+        // the rect of the footer
+        Rect DrawListFooter(SerializedProperty list, Rect box, bool canCreate, Type elementType, ListStyles styles)
+        {
+            GUILayoutUtility.GetRect(0f, 20f, GUILayout.ExpandWidth(true));
+            // Under the right of the box, whatever the space the layout leaves between them
+            Rect footer = new Rect(box.xMax - 58f, box.yMax, 58f, 20f);
+            if (Event.current.type == EventType.Repaint)
+            {
+                styles.footer.Draw(footer, false, false, false, false);
+            }
+
+            Rect add = new Rect(footer.x + 4f, footer.y, 25f, 16f);
+            Rect remove = new Rect(footer.xMax - 29f, footer.y, 25f, 16f);
+            using (new EditorGUI.DisabledScope(canCreate && elementType == null))
+            {
+                if (GUI.Button(add, canCreate ? styles.createContent : styles.addContent, styles.footerButton))
+                {
+                    if (canCreate)
+                    {
+                        CreateIntoList(list, elementType);
+                    }
+                    else
+                    {
+                        AddElement(list);
+                        SetSelected(list, list.arraySize - 1);
+                    }
+                }
+            }
+            using (new EditorGUI.DisabledScope(list.arraySize == 0))
+            {
+                if (GUI.Button(remove, styles.removeContent, styles.footerButton))
+                {
+                    int selected = GetSelected(list);
+                    int index = selected >= 0 && selected < list.arraySize ? selected : list.arraySize - 1;
+                    RemoveElement(list, index);
+                    SetSelected(list, Mathf.Min(index, list.arraySize - 1));
+                }
+            }
+            return footer;
+        }
+
+        static void SetSize(SerializedProperty list, int size)
+        {
+            while (list.arraySize < size)
             {
                 AddElement(list);
-                list.isExpanded = true;
             }
-            EditorGUILayout.EndHorizontal();
-
-            if (!list.isExpanded)
+            while (list.arraySize > size)
             {
-                return;
+                RemoveElement(list, list.arraySize - 1);
             }
+        }
 
-            EditorGUI.indentLevel++;
-            for (int i = 0; i < list.arraySize; i++)
-            {
-                SerializedProperty element = list.GetArrayElementAtIndex(i);
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.BeginVertical();
-                if (!DrawKeyValue(element))
-                {
-                    DrawProperty(element, GetElementLabel(element));
-                }
-                EditorGUILayout.EndVertical();
-                if (DrawElementButtons(list, i))
-                {
-                    EditorGUILayout.EndHorizontal();
-                    break;
-                }
-                EditorGUILayout.EndHorizontal();
-            }
-            EditorGUI.indentLevel--;
+        // The selected element of each list shown, by object and path
+        static readonly Dictionary<(UnityEngine.Object, string), int> SelectedByList = new Dictionary<(UnityEngine.Object, string), int>();
+
+        static int GetSelected(SerializedProperty list)
+        {
+            return SelectedByList.TryGetValue((list.serializedObject.targetObject, list.propertyPath), out int index) ? index : -1;
+        }
+
+        static void SetSelected(SerializedProperty list, int index)
+        {
+            SelectedByList[(list.serializedObject.targetObject, list.propertyPath)] = index;
+        }
+
+        // The styles of the lists of Unity
+        class ListStyles
+        {
+            static ListStyles _instance;
+            public static ListStyles instance => _instance ?? (_instance = new ListStyles());
+
+            public readonly GUIStyle header = "RL Header";
+            public readonly Color borderColor = EditorGUIUtility.isProSkin ? new Color(0.14f, 0.14f, 0.14f) : new Color(0.6f, 0.6f, 0.6f);
+            public readonly GUIStyle background = "RL Background";
+            public readonly GUIStyle element = "RL Element";
+            public readonly GUIStyle footer = "RL Footer";
+            public readonly GUIStyle footerButton = "RL FooterButton";
+            public readonly GUIContent addContent = EditorGUIUtility.TrIconContent("Toolbar Plus", "Add to the list");
+            public readonly GUIContent createContent = EditorGUIUtility.TrIconContent("Toolbar Plus More", "Create a new asset");
+            public readonly GUIContent removeContent = EditorGUIUtility.TrIconContent("Toolbar Minus", "Remove the selected element from the list");
         }
 
         // No index: an object or a value alone, a class by its type (its foldout needs a label)
@@ -324,8 +513,8 @@ namespace Oisif.Editor
             EditorGUI.indentLevel = indentLevel;
         }
 
-        // The entries of a dictionary on one line: the key then the value
-        bool DrawKeyValue(SerializedProperty element)
+        // An entry of a dictionary: a key, simple, and a value
+        static bool IsKeyValue(SerializedProperty element)
         {
             if (element.propertyType != SerializedPropertyType.Generic)
             {
@@ -333,10 +522,18 @@ namespace Oisif.Editor
             }
             SerializedProperty key = element.FindPropertyRelative("key");
             SerializedProperty value = element.FindPropertyRelative("value");
-            if (key == null || value == null || key.hasVisibleChildren && key.propertyType == SerializedPropertyType.Generic)
+            return key != null && value != null && !(key.hasVisibleChildren && key.propertyType == SerializedPropertyType.Generic);
+        }
+
+        // The entries of a dictionary on one line: the key then the value
+        bool DrawKeyValue(SerializedProperty element)
+        {
+            if (!IsKeyValue(element))
             {
                 return false;
             }
+            SerializedProperty key = element.FindPropertyRelative("key");
+            SerializedProperty value = element.FindPropertyRelative("value");
             if (value.propertyType == SerializedPropertyType.Generic)
             {
                 EditorGUILayout.PropertyField(key, GUIContent.none);
@@ -351,33 +548,6 @@ namespace Oisif.Editor
             EditorGUILayout.PropertyField(value, GUIContent.none);
             EditorGUILayout.EndHorizontal();
             return true;
-        }
-
-        // Up, down and remove; true when the list changed
-        static bool DrawElementButtons(SerializedProperty list, int index)
-        {
-            using (new EditorGUI.DisabledScope(index == 0))
-            {
-                if (GUILayout.Button("▲", EditorStyles.miniButtonLeft, GUILayout.Width(20f)))
-                {
-                    list.MoveArrayElement(index, index - 1);
-                    return true;
-                }
-            }
-            using (new EditorGUI.DisabledScope(index == list.arraySize - 1))
-            {
-                if (GUILayout.Button("▼", EditorStyles.miniButtonMid, GUILayout.Width(20f)))
-                {
-                    list.MoveArrayElement(index, index + 1);
-                    return true;
-                }
-            }
-            if (GUILayout.Button(new GUIContent("✕", "Remove from the list"), EditorStyles.miniButtonRight, GUILayout.Width(20f)))
-            {
-                RemoveElement(list, index);
-                return true;
-            }
-            return false;
         }
 
         // A new element at the end: empty, not a copy of the last one
