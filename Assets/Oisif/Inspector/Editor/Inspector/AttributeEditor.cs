@@ -111,7 +111,7 @@ namespace Oisif.Editor
                     string text = PropertyReflection.GetMemberValue(info.owner, infoBox.member, out _) as string;
                     if (!string.IsNullOrEmpty(text))
                     {
-                        EditorGUILayout.HelpBox(text, MessageType.None);
+                        InfoBoxGUI.Draw(text);
                     }
                 }
             }
