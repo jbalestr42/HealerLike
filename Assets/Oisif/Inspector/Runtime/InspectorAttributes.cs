@@ -87,7 +87,8 @@ namespace Oisif.Inspector
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class ShowInInspectorAttribute : Attribute {}
 
-    // A picture of the referenced object under its field (a model, a sprite...), size pixels high
+    // The field drawn as a picture of the referenced object (a model, a sprite...), size pixels high: an object is
+    // dropped on it or picked with its Select button
     [AttributeUsage(AttributeTargets.Field)]
     public class PreviewAttribute : Attribute
     {

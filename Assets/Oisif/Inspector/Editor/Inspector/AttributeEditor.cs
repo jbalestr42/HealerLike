@@ -601,6 +601,12 @@ namespace Oisif.Editor
             {
                 objectType = typeof(UnityEngine.Object);
             }
+            PreviewAttribute preview = field?.GetCustomAttribute<PreviewAttribute>(true);
+            if (preview != null)
+            {
+                DrawPreviewField(property, label, objectType, preview.size);
+                return;
+            }
             UnityEngine.Object value = property.objectReferenceValue;
             bool canInline = value != null && (field != null && field.IsDefined(typeof(InlineEditorAttribute), true) || value.GetType().IsDefined(typeof(InlineEditorAttribute), true));
             bool canCreate = field != null && field.IsDefined(typeof(CreateDataButtonAttribute), true);
@@ -655,11 +661,6 @@ namespace Oisif.Editor
             }
             EditorGUILayout.EndHorizontal();
 
-            PreviewAttribute preview = field?.GetCustomAttribute<PreviewAttribute>(true);
-            if (preview != null && value != null)
-            {
-                DrawPreview(value, preview.size);
-            }
 
             if (canInline && property.isExpanded)
             {
@@ -667,15 +668,22 @@ namespace Oisif.Editor
             }
         }
 
-        static void DrawPreview(UnityEngine.Object value, float size)
+        // The field is its preview, after its label
+        static void DrawPreviewField(SerializedProperty property, GUIContent label, Type objectType, float size)
         {
-            UnityEngine.Object shown = value is IInspectorPreview preview && preview.previewObject != null ? preview.previewObject : value;
-            Texture texture = AssetPreview.GetAssetPreview(shown) ?? AssetPreview.GetMiniThumbnail(shown);
-            Rect rect = EditorGUI.IndentedRect(GUILayoutUtility.GetRect(size, size, GUILayout.ExpandWidth(false)));
-            if (texture != null)
+            EditorGUILayout.BeginHorizontal();
+            if (label != GUIContent.none && !string.IsNullOrEmpty(label.text))
             {
-                GUI.DrawTexture(rect, texture, ScaleMode.ScaleToFit);
+                EditorGUILayout.PrefixLabel(label);
             }
+            else
+            {
+                GUILayout.Space(EditorGUI.indentLevel * 15f);
+            }
+            Rect rect = GUILayoutUtility.GetRect(size, size, GUILayout.Width(size), GUILayout.Height(size));
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+            PreviewField.Draw(rect, property, objectType, GetPreviewTexture);
         }
 
         void DrawInline(UnityEngine.Object value)
