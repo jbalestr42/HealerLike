@@ -24,8 +24,7 @@ namespace Oisif.Editor
             Object value = property.objectReferenceValue;
             Event current = Event.current;
             // Centered at the bottom
-            float selectWidth = selectStyle.CalcSize(SelectContent).x;
-            Rect select = new Rect(rect.center.x - selectWidth / 2f, rect.yMax - 17f, selectWidth, 14f);
+            Rect select = GetSelectRect(new Vector2(rect.center.x, rect.yMax - 10f));
 
             switch (current.GetTypeForControl(id))
             {
@@ -44,7 +43,7 @@ namespace Oisif.Editor
                     {
                         GUI.Label(inner, $"None\n({ObjectNames.NicifyVariableName(objectType.Name)})", EditorStyles.centeredGreyMiniLabel);
                     }
-                    selectStyle.Draw(select, SelectContent, select.Contains(current.mousePosition), false, false, false);
+                    DrawSelectButton(select);
                     break;
 
                 case EventType.MouseDown:
@@ -101,11 +100,9 @@ namespace Oisif.Editor
                     break;
 
                 case EventType.ExecuteCommand:
-                    if (current.commandName == "ObjectSelectorUpdated" && EditorGUIUtility.GetObjectPickerControlID() == id)
+                    if (TryTakePicked(id, objectType, out Object picked))
                     {
-                        property.objectReferenceValue = GetDropped(new[] { EditorGUIUtility.GetObjectPickerObject() }, objectType);
-                        GUI.changed = true;
-                        current.Use();
+                        property.objectReferenceValue = picked;
                     }
                     break;
             }
@@ -144,9 +141,37 @@ namespace Oisif.Editor
             return null;
         }
 
-        static void ShowPicker(Type objectType, Object value, int id)
+        // The Select button, centered on the point
+        internal static Rect GetSelectRect(Vector2 center)
+        {
+            float width = selectStyle.CalcSize(SelectContent).x;
+            return new Rect(center.x - width / 2f, center.y - 7f, width, 14f);
+        }
+
+        internal static void DrawSelectButton(Rect select)
+        {
+            selectStyle.Draw(select, SelectContent, select.Contains(Event.current.mousePosition), false, false, false);
+        }
+
+        // The object picker of Unity, its picks sent to the control id
+        internal static void ShowPicker(Type objectType, Object value, int id)
         {
             ShowPickerMethod.MakeGenericMethod(objectType).Invoke(null, new object[] { value, false, "", id });
+        }
+
+        // True with the object picked (null for None) when the event is a pick of the picker shown for the control id
+        internal static bool TryTakePicked(int id, Type objectType, out Object picked)
+        {
+            Event current = Event.current;
+            picked = null;
+            if (current.type != EventType.ExecuteCommand || current.commandName != "ObjectSelectorUpdated" || EditorGUIUtility.GetObjectPickerControlID() != id)
+            {
+                return false;
+            }
+            picked = GetDropped(new[] { EditorGUIUtility.GetObjectPickerObject() }, objectType);
+            GUI.changed = true;
+            current.Use();
+            return true;
         }
     }
 }

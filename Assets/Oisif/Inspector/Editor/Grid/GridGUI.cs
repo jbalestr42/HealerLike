@@ -18,13 +18,21 @@ namespace Oisif.Editor
     }
 
     // Draws a list of object references as a grid of width columns and height rows, the cells column after column
-    // (index x * height + y), the row 0 at the bottom. A cell takes an object dropped on it or picked with its
-    // button, a right click empties it. Changing the size keeps each object in its cell
+    // (index x * height + y), the row 0 at the bottom. A cell takes an object dropped on it or picked with its Select
+    // button (at the bottom of an empty cell, or of a filled one under the mouse), a click shows its object in the
+    // Project window, a drag moves it to another cell, a right click empties it. Changing the size keeps each object
+    // in its cell
     public static class GridGUI
     {
         static readonly Color EmptyColor = new Color(0f, 0f, 0f, 0.15f);
         static readonly Color FilledColor = new Color(0.3f, 0.5f, 0.8f, 0.25f);
         static readonly Color HoverColor = new Color(1f, 1f, 1f, 0.15f);
+        static readonly int CellHash = "OisifGridCell".GetHashCode();
+        // Pixels the mouse moves, pressed on a cell, before dragging its object
+        const float DragThreshold = 4f;
+        static Vector2 _pressPosition;
+        // The cell under the mouse at the last move, -1 out of the grid
+        static int _hoveredIndex = -1;
 
         public static int GetIndex(int x, int y, int height)
         {
@@ -65,6 +73,7 @@ namespace Oisif.Editor
             }
 
             Rect area = GUILayoutUtility.GetRect(width.intValue * options.cellSize, height.intValue * options.cellSize, GUILayout.ExpandWidth(false));
+            RepaintOnHover(area, height.intValue, options.cellSize);
             for (int x = 0; x < width.intValue; x++)
             {
                 for (int y = 0; y < height.intValue; y++)
@@ -73,6 +82,39 @@ namespace Oisif.Editor
                     Rect cell = new Rect(area.x + x * options.cellSize, area.y + (height.intValue - 1 - y) * options.cellSize, options.cellSize, options.cellSize);
                     DrawCell(cell, cells.GetArrayElementAtIndex(GetIndex(x, y, height.intValue)), objectType, options);
                 }
+            }
+        }
+
+        // The window repaints when the mouse goes from a cell to another, for the hovered cell to light up at once
+        // rather than at the next repaint: it is asked the mouse moves when the mouse is over the grid
+        static void RepaintOnHover(Rect area, int height, float cellSize)
+        {
+            Event current = Event.current;
+            EditorWindow window = EditorWindow.mouseOverWindow;
+            if (window == null)
+            {
+                return;
+            }
+            bool isOver = area.Contains(current.mousePosition);
+            if (isOver && !window.wantsMouseMove)
+            {
+                window.wantsMouseMove = true;
+            }
+            if (current.type != EventType.MouseMove)
+            {
+                return;
+            }
+            int hovered = -1;
+            if (isOver)
+            {
+                int x = Mathf.FloorToInt((current.mousePosition.x - area.x) / cellSize);
+                int row = Mathf.FloorToInt((current.mousePosition.y - area.y) / cellSize);
+                hovered = GetIndex(x, height - 1 - row, height);
+            }
+            if (hovered != _hoveredIndex)
+            {
+                _hoveredIndex = hovered;
+                window.Repaint();
             }
         }
 
@@ -123,14 +165,21 @@ namespace Oisif.Editor
         static void DrawCell(Rect rect, SerializedProperty cell, Type objectType, GridGUIOptions options)
         {
             Rect inner = new Rect(rect.x + 2f, rect.y + 2f, rect.width - 4f, rect.height - 4f);
+            int id = GUIUtility.GetControlID(CellHash, FocusType.Passive, inner);
             UnityEngine.Object value = cell.objectReferenceValue;
             Event current = Event.current;
             bool isHovered = inner.Contains(current.mousePosition);
+            // At the bottom: always on an empty cell, over the name of a filled one under the mouse
+            Rect selectRect = PreviewField.GetSelectRect(new Vector2(inner.center.x, inner.yMax - 9f));
+            bool showSelect = value == null || isHovered;
 
-            EditorGUI.DrawRect(inner, value != null ? FilledColor : EmptyColor);
-            if (isHovered)
+            if (current.type == EventType.Repaint)
             {
-                EditorGUI.DrawRect(inner, HoverColor);
+                EditorGUI.DrawRect(inner, value != null ? FilledColor : EmptyColor);
+                if (isHovered)
+                {
+                    EditorGUI.DrawRect(inner, HoverColor);
+                }
             }
 
             if (value != null)
@@ -141,42 +190,75 @@ namespace Oisif.Editor
                 {
                     GUI.DrawTexture(pictureRect, preview, ScaleMode.ScaleToFit);
                 }
-                string label = options.getLabel?.Invoke(value) ?? value.name;
-                GUI.Label(new Rect(inner.x, inner.yMax - 16f, inner.width, 16f), new GUIContent(label, label), CenteredMiniLabel);
+                if (!isHovered)
+                {
+                    string label = options.getLabel?.Invoke(value) ?? value.name;
+                    GUI.Label(new Rect(inner.x, inner.yMax - 16f, inner.width, 16f), new GUIContent(label, label), CenteredMiniLabel);
+                }
             }
 
-            // The object picker, small, in the corner
-            Rect pickerRect = new Rect(inner.xMax - 18f, inner.y, 18f, 16f);
-            UnityEngine.Object picked = EditorGUI.ObjectField(pickerRect, GUIContent.none, value, objectType, false);
-            if (picked != value)
+            if (showSelect && current.type == EventType.Repaint)
+            {
+                PreviewField.DrawSelectButton(selectRect);
+            }
+            if (PreviewField.TryTakePicked(id, objectType, out UnityEngine.Object picked))
             {
                 cell.objectReferenceValue = picked;
             }
 
             HandleDragAndDrop(inner, cell, objectType, current);
 
-            if (isHovered && current.type == EventType.MouseDown)
+            switch (current.GetTypeForControl(id))
             {
-                if (current.button == 1 && value != null)
-                {
-                    cell.objectReferenceValue = null;
-                    current.Use();
-                }
-                else if (current.button == 0 && current.clickCount == 2 && value != null)
-                {
-                    EditorGUIUtility.PingObject(value);
-                    Selection.activeObject = value;
-                    current.Use();
-                }
-                else if (current.button == 0 && value != null && !pickerRect.Contains(current.mousePosition))
-                {
-                    // Drags the object to another cell or elsewhere
-                    DragAndDrop.PrepareStartDrag();
-                    DragAndDrop.objectReferences = new[] { value };
-                    DragAndDrop.SetGenericData(DragSourceKey, cell.propertyPath);
-                    DragAndDrop.StartDrag(value.name);
-                    current.Use();
-                }
+                case EventType.MouseDown:
+                    if (!isHovered)
+                    {
+                        break;
+                    }
+                    if (current.button == 0 && showSelect && selectRect.Contains(current.mousePosition))
+                    {
+                        PreviewField.ShowPicker(objectType, value, id);
+                        current.Use();
+                    }
+                    else if (current.button == 1 && value != null)
+                    {
+                        cell.objectReferenceValue = null;
+                        current.Use();
+                    }
+                    else if (current.button == 0 && value != null)
+                    {
+                        // A click or the start of a drag: told apart when the mouse moves
+                        GUIUtility.hotControl = id;
+                        _pressPosition = current.mousePosition;
+                        current.Use();
+                    }
+                    break;
+
+                case EventType.MouseDrag:
+                    if (GUIUtility.hotControl == id && value != null && Vector2.Distance(current.mousePosition, _pressPosition) > DragThreshold)
+                    {
+                        // Drags the object to another cell or elsewhere
+                        GUIUtility.hotControl = 0;
+                        DragAndDrop.PrepareStartDrag();
+                        DragAndDrop.objectReferences = new[] { value };
+                        DragAndDrop.SetGenericData(DragSourceKey, cell.propertyPath);
+                        DragAndDrop.StartDrag(value.name);
+                        current.Use();
+                    }
+                    break;
+
+                case EventType.MouseUp:
+                    if (GUIUtility.hotControl == id)
+                    {
+                        // A click shows where the object is in the Project window, without selecting it
+                        GUIUtility.hotControl = 0;
+                        if (value != null)
+                        {
+                            EditorGUIUtility.PingObject(value);
+                        }
+                        current.Use();
+                    }
+                    break;
             }
         }
 
