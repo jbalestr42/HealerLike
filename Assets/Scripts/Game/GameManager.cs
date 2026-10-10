@@ -13,16 +13,14 @@ public class GameManager : Singleton<GameManager>
     public AGameType gameType { get { return _gameType; } }
 
     GameState _state = GameState.None;
-    GameView _gameView;
 
     void Start()
     {
         _gameType = GetComponent<AGameType>();
-        _gameView = UIManager.instance.GetView<GameView>(ViewType.Game);
-
-        _gameView.gameHUD.startGameButton.onClick.AddListener(StartGame);
 
         UIManager.instance.AddView(ViewType.Game);
+        // The character was picked in the menu: the run starts with the scene
+        SetState(GameState.StartGame);
         
         EntityManager.instance.OnEntityKilled.AddListener(OnEntityKilled);
     }
@@ -35,7 +33,6 @@ public class GameManager : Singleton<GameManager>
                 break;
 
             case GameState.StartGame:
-                _gameView.gameHUD.startGameButton.interactable = false;
                 _gameType.StartGame();
                 SetState(GameState.Running);
                 break;
@@ -43,7 +40,6 @@ public class GameManager : Singleton<GameManager>
             case GameState.Running:
                 if (_gameType.IsOver())
                 {
-                    _gameView.gameHUD.startGameButton.interactable = true;
                     SetState(GameState.None);
                 }
                 break;
@@ -52,11 +48,6 @@ public class GameManager : Singleton<GameManager>
                 Debug.Log("State not implemented: " + _state);
                 break;
         }
-    }
-
-    void StartGame()
-    {
-        SetState(GameState.StartGame);
     }
 
     void SetState(GameState newState)
