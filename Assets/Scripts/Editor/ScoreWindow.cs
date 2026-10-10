@@ -104,8 +104,9 @@ public class ScoreWindow : EditorWindow
 
     void OnGUI()
     {
-        // Black on the colored cell in every state: the hover one of the skin turns it white
-        _statusStyle ??= new GUIStyle(EditorStyles.miniLabel)
+        // Made again at each draw: a cached copy of a skin style can be reset by Unity (a reload of the skin), its text
+        // then black and in the top left corner. Black on the colored cell in every state: the hover one of the skin turns it white
+        _statusStyle = new GUIStyle(EditorStyles.miniLabel)
         {
             alignment = TextAnchor.MiddleCenter,
             normal = { textColor = Color.black },
@@ -113,7 +114,7 @@ public class ScoreWindow : EditorWindow
             active = { textColor = Color.black },
             focused = { textColor = Color.black },
         };
-        _numberStyle ??= new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleRight };
+        _numberStyle = new GUIStyle(EditorStyles.label) { alignment = TextAnchor.MiddleRight };
         _waves ??= new Table(CreateWaveColumns(), 7);
         _characters ??= new Table(CreateCharacterColumns(), 10, new ColumnGroup("Without skills", 1, 4), new ColumnGroup("With skills", 5, 6));
         _items ??= new Table(CreateItemColumns(), 12, new ColumnGroup("Damage: held by a unit of the balance team", 2, 4), new ColumnGroup("Robustness: held by a dummy", 6, 4), new ColumnGroup("Power: both", 10, 3));
