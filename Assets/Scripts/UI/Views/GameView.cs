@@ -18,9 +18,6 @@ public class GameView : AView
     [SerializeField] PlayerInventory _playerInventory;
     public PlayerInventory playerInventory { get { return _playerInventory; } }
 
-    [SerializeField] InventoryItemDescription _itemDescription;
-    public InventoryItemDescription itemDescription { get { return _itemDescription; } }
-
     [SerializeField] GameHUD _gameHUD;
     public GameHUD gameHUD { get { return _gameHUD; } }
 
@@ -48,12 +45,10 @@ public class GameView : AView
         if (_playerInventory.IsInventoryVisible())
         {
             _playerInventory.HideInventory();
-            _itemDescription.gameObject.SetActive(false);
         }
         else
         {
             _playerInventory.ShowInventory();
-            _itemDescription.gameObject.SetActive(true);
         }
     }
 

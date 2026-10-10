@@ -17,9 +17,9 @@ MonoBehaviour:
     name: Drain Life
     description: 'Deal <color="red">[{attribute:current:HealPower}x{data:multiplier}]</color> <color=#008080ff>([{data:multiplier}x100]% HealPower)</color> damage to an enemy, and heal your most wounded ally for <color="green">[{data:healRatio}x100]%</color> of the damage dealt
 
-      Cost: <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color> mana
+      Cost: <color=#8AB5FF>{data:validators|1.data.consumer.data.value.data.value}</color> mana
 
-      Cooldown: <color="yellow">{cooldown}s</color>'
+      Cooldown: <color=#FFCF70>{cooldown}s</color>'
     validators:
     - {fileID: 11400000, guid: 2315c661ac821fe49916352e55bf6df0, type: 2}
     - {fileID: 11400000, guid: 047cc36bc2b50804fb3ab68f9e7e00e3, type: 2}

@@ -43,7 +43,7 @@ public class CharacterSkillSlotTests
         _buttonGo = new GameObject("SkillButton");
         _skillButton = _buttonGo.AddComponent<UseCharacterSkillButton>();
         TestHelpers.SetPrivateField(_skillButton, "_button", _buttonGo.AddComponent<UnityEngine.UI.Button>());
-        TestHelpers.SetPrivateField(_skillButton, "_nameText", _buttonGo.AddComponent<UnityEngine.UI.Text>());
+        TestHelpers.SetPrivateField(_skillButton, "_nameText", _buttonGo.AddComponent<TMPro.TextMeshProUGUI>());
 
         _validatorFactory = ScriptableObject.CreateInstance<BlockingValidatorFactory>();
         _skill = new FakeCharacterSkill { data = new CharacterSkillData { name = "Skill", validators = new List<ACharacterSkillValidatorFactory> { _validatorFactory } } };

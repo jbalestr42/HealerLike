@@ -15,9 +15,9 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 509bfad95deac1e42a65bf1b2345e728, type: 3}
     name: Dark Pact
-    description: 'Every ally sacrifices <color="red">[{data:healthPercent}x100]%</color> of its max health (never below 1 HP): you gain <color="blue">[{data:manaPerHealth}x100]%</color> of the health sacrificed as mana
+    description: 'Every ally sacrifices <color="red">[{data:healthPercent}x100]%</color> of its max health (never below 1 HP): you gain <color=#8AB5FF>[{data:manaPerHealth}x100]%</color> of the health sacrificed as mana
 
-      Cooldown: <color="yellow">{cooldown}s</color>'
+      Cooldown: <color=#FFCF70>{cooldown}s</color>'
     validators:
     - {fileID: 11400000, guid: b4ed2a8346acec6488f76b424d5e0b3b, type: 2}
     healthPercent: 0.15

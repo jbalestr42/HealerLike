@@ -17,9 +17,9 @@ MonoBehaviour:
     name: Balance Life
     description: 'Share the health of the team: every ally ends up at the average health percent of the team. Ignores armor, invincibility, buffs and debuffs
 
-      Cost: <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color> mana
+      Cost: <color=#8AB5FF>{data:validators|1.data.consumer.data.value.data.value}</color> mana
 
-      Cooldown: <color="yellow">{cooldown}s</color>'
+      Cooldown: <color=#FFCF70>{cooldown}s</color>'
     validators:
     - {fileID: 11400000, guid: b71ba0e09dc7ace49b3bd0c3243513f8, type: 2}
     - {fileID: 11400000, guid: e36cf6074fea67045912b3b85d9b2fb5, type: 2}

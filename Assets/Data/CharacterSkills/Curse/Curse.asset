@@ -17,9 +17,9 @@ MonoBehaviour:
     name: Curse
     description: 'Curse an enemy: <color="red">[{attribute:current:HealPower}x{data:buffHandlerFactory|0.data.buffFactoryList|0.data.consumerFactory.data.value.data.multiplier}]</color> <color=#008080ff>([{data:buffHandlerFactory|0.data.buffFactoryList|0.data.consumerFactory.data.value.data.multiplier}x100]% HealPower)</color> damage every {data:buffHandlerFactory|0.data.periodDuration}s during <color="green">{data:buffHandlerFactory|0.data.duration}s</color>, ignoring armor
 
-      Cost: <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color> mana
+      Cost: <color=#8AB5FF>{data:validators|1.data.consumer.data.value.data.value}</color> mana
 
-      Cooldown: <color="yellow">{cooldown}s</color>'
+      Cooldown: <color=#FFCF70>{cooldown}s</color>'
     validators:
     - {fileID: 11400000, guid: 56ca71b01e7c13345ab3bd9e0163cb03, type: 2}
     - {fileID: 11400000, guid: 3520b3f1f2a2fb146a6e1375ff233e25, type: 2}

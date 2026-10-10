@@ -17,9 +17,9 @@ MonoBehaviour:
     name: Soul Link
     description: 'Link a single ally to the team during <color="green">{data:buffHandlerFactory|0.data.duration}s</color>: the damage it takes is split evenly between it and every other ally
 
-      Cost: <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color> mana
+      Cost: <color=#8AB5FF>{data:validators|1.data.consumer.data.value.data.value}</color> mana
 
-      Cooldown: <color="yellow">{cooldown}s</color>'
+      Cooldown: <color=#FFCF70>{cooldown}s</color>'
     validators:
     - {fileID: 11400000, guid: 3bdaff93f1844ea28f47a56d500dd398, type: 2}
     - {fileID: 11400000, guid: 80cbeaa03d714156a0aafe8ac85be160, type: 2}

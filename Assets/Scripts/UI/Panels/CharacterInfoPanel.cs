@@ -11,7 +11,7 @@ public class CharacterInfoPanel : MonoBehaviour
 {
     [SerializeField] SandboxButton _buttonPrefab;
     [SerializeField] Vector2 _buttonPosition = new Vector2(15f, -49f);
-    [SerializeField] Vector2 _buttonSize = new Vector2(120f, 30f);
+    [SerializeField] Vector2 _buttonSize = new Vector2(140f, 30f);
     [SerializeField] Vector2 _panelPosition = new Vector2(15f, -140f);
     [SerializeField] float _width = 380f;
     [SerializeField] float _maxHeight = 560f;

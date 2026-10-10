@@ -4,9 +4,9 @@ public class UseCharacterSkillButton : MonoBehaviour
 {
     [SerializeField] UnityEngine.UI.Button _button;
     public UnityEngine.UI.Button button => _button;
-    [SerializeField] UnityEngine.UI.Text _nameText;
-    [SerializeField] UnityEngine.UI.Text _cooldownText;
-    [SerializeField] UnityEngine.UI.Text _costText;
+    [SerializeField] TMPro.TMP_Text _nameText;
+    [SerializeField] TMPro.TMP_Text _cooldownText;
+    [SerializeField] TMPro.TMP_Text _costText;
     [SerializeField] UnityEngine.UI.Image _cooldownImage;
     public Character character { get; set; }
     public CharacterSkillData data { get; set; }

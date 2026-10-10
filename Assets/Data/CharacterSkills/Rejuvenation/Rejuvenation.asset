@@ -17,9 +17,9 @@ MonoBehaviour:
     name: Rejuvenation
     description: 'Heal a single ally for <color="green">[{attribute:current:HealPower}x{data:buffHandlerFactory|0.data.buffFactoryList|0.data.consumerFactory.data.value.data.multiplier}x-1]</color> <color=#008080ff>([{data:buffHandlerFactory|0.data.buffFactoryList|0.data.consumerFactory.data.value.data.multiplier}x-100]% HealPower)</color> every {data:buffHandlerFactory|0.data.periodDuration}s during <color="green">{data:buffHandlerFactory|0.data.duration}s</color>, without stacking
 
-      Cost: <color="blue">{data:validators|1.data.consumer.data.value.data.value}</color> mana
+      Cost: <color=#8AB5FF>{data:validators|1.data.consumer.data.value.data.value}</color> mana
 
-      Cooldown: <color="yellow">{cooldown}s</color>'
+      Cooldown: <color=#FFCF70>{cooldown}s</color>'
     validators:
     - {fileID: 11400000, guid: c1c4c60e20f319a459555c28aaee2323, type: 2}
     - {fileID: 11400000, guid: 948505fdb0561b14abec886818de03ee, type: 2}
