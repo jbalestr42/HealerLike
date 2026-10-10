@@ -14,9 +14,9 @@ namespace Oisif.Editor
     // change of serializer can be checked by comparing them
     public class SnapshotWriter
     {
-        // Attributes of other serializers marking a private field as saved, by type name (e.g. "OdinSerializeAttribute")
+        // Attributes of other serializers marking a private field as saved, by type name (e.g. "MySerializeAttribute")
         public List<string> serializedAttributeNames = new List<string>();
-        // Fields of these types are left out, by type name (e.g. the raw data of another serializer, "SerializationData")
+        // Fields of these types are left out, by type name (e.g. the raw data of another serializer, "RawSerializerData")
         public List<string> ignoredTypeNames = new List<string>();
         // Names given to the Unity objects referenced, e.g. their asset path
         public Func<UnityEngine.Object, string> describeReference = obj => obj.name;

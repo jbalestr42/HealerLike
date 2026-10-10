@@ -12,7 +12,7 @@ namespace Oisif.Editor.Tests
         [AttributeUsage(AttributeTargets.Field)]
         class OtherSerializeAttribute : Attribute {}
 
-        class SerializationData
+        class RawSerializerData
         {
             public string nodes = "raw";
         }
@@ -45,7 +45,7 @@ namespace Oisif.Editor.Tests
             int _notSaved = 2;
             [NonSerialized] public int publicNotSaved = 3;
             [OtherSerialize] int _savedByOther = 4;
-            public SerializationData rawData = new SerializationData();
+            public RawSerializerData rawData = new RawSerializerData();
 
             public int Sum() => _saved + _notSaved + _savedByOther;
         }
@@ -57,7 +57,7 @@ namespace Oisif.Editor.Tests
         {
             _writer = new SnapshotWriter();
             _writer.serializedAttributeNames.Add(nameof(OtherSerializeAttribute));
-            _writer.ignoredTypeNames.Add(nameof(SerializationData));
+            _writer.ignoredTypeNames.Add(nameof(RawSerializerData));
         }
 
         [Test]

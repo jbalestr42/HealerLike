@@ -63,7 +63,7 @@ when no Editor instance already has the project open.
 
 ## Oisif Inspector (editor kit)
 
-The inspectors and data tools are our own, in `Assets/Oisif/Inspector` (Odin was removed): attributes in
+The inspectors and data tools are our own, in `Assets/Oisif/Inspector`: attributes in
 namespace `Oisif.Inspector` (`InlineEditor`, `InlineProperty`, `CreateDataButton`, `ShowIf`/`HideIf`, `ReadOnly`, `Button`, `Grid`,
 `Preview`...), editor code in `Oisif.Editor` (`AttributeEditor`, `AssetBrowserWindow`, `GridGUI`). The kit must never
 reference the game, so it can be exported: game-specific glue goes in `Assets/Scripts/Editor` (e.g.

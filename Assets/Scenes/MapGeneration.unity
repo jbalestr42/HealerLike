@@ -215,10 +215,6 @@ PrefabInstance:
       propertyPath: _closeButton
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 2442085725940500821, guid: 38dbc8704acda064a91e527fba8cdbfd, type: 3}
-      propertyPath: serializationData.Prefab
-      value: 
-      objectReference: {fileID: 2442085725940500821, guid: 38dbc8704acda064a91e527fba8cdbfd, type: 3}
     - target: {fileID: 4249088702690708233, guid: 38dbc8704acda064a91e527fba8cdbfd, type: 3}
       propertyPath: m_IsActive
       value: 0
