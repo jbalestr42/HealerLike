@@ -207,6 +207,29 @@ public class ACooldownSkillTests
 
         Assert.AreEqual(1, skill.uses);
     }
+
+    [Test]
+    public void TimeBeforeUse_AfterAUse_CountsDownTheCooldown()
+    {
+        FakeCooldownSkill skill = CreateSkill();
+        skill.Tick(_go, 0.01f);
+
+        skill.Tick(_go, 1f);
+
+        Assert.AreEqual(1, skill.uses);
+        Assert.AreEqual(3f, skill.timeBeforeUse, 0.0001f);
+    }
+
+    [Test]
+    public void TimeBeforeUse_ReadyWithoutTarget_StaysAtZero()
+    {
+        FakeCooldownSkill skill = CreateSkill();
+        skill.canExecute = false;
+
+        skill.Tick(_go, 1f);
+
+        Assert.AreEqual(0f, skill.timeBeforeUse);
+    }
 }
 
 }

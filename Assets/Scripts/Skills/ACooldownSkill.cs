@@ -4,6 +4,9 @@ public abstract class ACooldownSkill<SkillData> : ASkill<SkillData>, ICooldownSk
 {
     float _cooldown = 0f;
 
+    // Battle time before the next use, 0 when it is ready
+    public float timeBeforeUse => Mathf.Max(0f, _cooldown);
+
     public override void UpdateBehaviour(GameObject source)
     {
         Tick(source, Time.deltaTime);

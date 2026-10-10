@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 8465872866791211294}
   - component: {fileID: -8835911320852111699}
   - component: {fileID: 7506461027385735391}
+  - component: {fileID: 3004177339012637636}
   m_Layer: 14
   m_Name: BaseEntity
   m_TagString: Untagged
@@ -230,6 +231,24 @@ MonoBehaviour:
   _dashLength: 0.3
   _scrollSpeed: 0.6
   _refreshPeriod: 0.25
+--- !u!114 &3004177339012637636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1773381645329648}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d4697ebea272f041969caa9c5a3ce81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HealerLike.Runtime::SkillTargetLines
+  _linePrefab: {fileID: 7779118750759557761, guid: d09cef67ca3c51b4bb4bdc2f3c1d46b2, type: 3}
+  _allyColor: {r: 0.55, g: 1, b: 0.45, a: 1}
+  _opponentColor: {r: 1, g: 0.55, b: 0.2, a: 1}
+  _warningTime: 1.5
+  _arcHeightPerDistance: 0.35
+  _segments: 16
 --- !u!1001 &7482130460885648092
 PrefabInstance:
   m_ObjectHideFlags: 0

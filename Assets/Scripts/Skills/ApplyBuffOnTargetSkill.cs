@@ -17,7 +17,7 @@ public class ApplyBuffOnTargetSkillData : SkillDataBase
     public bool targetAlly;
 }
 
-public class ApplyBuffOnTargetSkill : ACooldownSkill<ApplyBuffOnTargetSkillData>
+public class ApplyBuffOnTargetSkill : ACooldownSkill<ApplyBuffOnTargetSkillData>, ISkillTargetPreview
 {
     int _usageCount = 0;
     ATargetBehaviour _targetBehaviour;
@@ -38,8 +38,7 @@ public class ApplyBuffOnTargetSkill : ACooldownSkill<ApplyBuffOnTargetSkillData>
     {
         if (CanUseSkill())
         {
-            List<GameObject> targets = _targetBehaviour.GetTargets(source, transform.position, data.range, _targetType);
-            GameObject target = targets.Count > 0 ? targets[0] : null;
+            GameObject target = FindTarget(source);
             if (target != null)
             {
                 _usageCount++;
@@ -57,4 +56,25 @@ public class ApplyBuffOnTargetSkill : ACooldownSkill<ApplyBuffOnTargetSkillData>
     {
         return !data.singleTimeUse || (data.singleTimeUse && _usageCount < 1);
     }
+
+    // The unit with the lowest health in range, null without any
+    GameObject FindTarget(GameObject source)
+    {
+        List<GameObject> targets = _targetBehaviour.GetTargets(source, transform.position, data.range, _targetType);
+        return targets.Count > 0 ? targets[0] : null;
+    }
+
+    #region ISkillTargetPreview
+
+    public GameObject GetUpcomingTarget()
+    {
+        // Before Start, or once a single use is spent
+        if (_targetBehaviour == null || !CanUseSkill())
+        {
+            return null;
+        }
+        return FindTarget(gameObject);
+    }
+
+    #endregion
 }
