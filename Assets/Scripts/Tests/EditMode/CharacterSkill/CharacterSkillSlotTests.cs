@@ -79,6 +79,30 @@ public class CharacterSkillSlotTests
         Assert.IsFalse(_skillButton.hasCooldown);
         Assert.IsFalse(_skillButton.hasCost);
     }
+
+    [Test]
+    public void UseSkill_Disabled_IsBlockedEvenWithoutValidators()
+    {
+        _slot.Init(_skill, _skillButton, useValidators: false);
+        _slot.isEnabled = false;
+
+        _slot.UseSkill();
+
+        Assert.IsFalse(_slot.CanUseSkill());
+        Assert.AreEqual(0, _skill.useCount);
+    }
+
+    [Test]
+    public void UseSkill_EnabledAgain_CanBeUsed()
+    {
+        _slot.Init(_skill, _skillButton, useValidators: false);
+        _slot.isEnabled = false;
+        _slot.isEnabled = true;
+
+        _slot.UseSkill();
+
+        Assert.AreEqual(1, _skill.useCount);
+    }
 }
 
 }

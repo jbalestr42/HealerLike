@@ -10,6 +10,9 @@ public class CharacterSkillSlot : MonoBehaviour
     List<ACharacterSkillValidator> _validators = new List<ACharacterSkillValidator>();
     ACharacterSkill _skill;
     UseCharacterSkillButton _skillButton;
+    // Off outside of a battle (the preparation of a round included): the skill can't be used, whatever its validators
+    bool _isEnabled = true;
+    public bool isEnabled { get { return _isEnabled; } set { _isEnabled = value; } }
 
     public void Init(ACharacterSkill skill, UseCharacterSkillButton skillButton, bool useValidators = true)
     {
@@ -42,9 +45,13 @@ public class CharacterSkillSlot : MonoBehaviour
         _skillButton.Enable(CanUseSkill());
     }
 
-    // Every validator allows it (cost, cooldown, ...)
+    // Enabled, and every validator allows it (cost, cooldown, ...)
     public bool CanUseSkill()
     {
+        if (!_isEnabled)
+        {
+            return false;
+        }
         foreach (ACharacterSkillValidator validator in _validators)
         {
             if (!validator.IsValid(gameObject))
