@@ -22,10 +22,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 16f92a7dacfc6af4fac5c774dec0ead7, type: 2}
   - {fileID: 11400000, guid: d4fe46281f621eb4690eae61dd8247f0, type: 2}
   score:
-    dps: 17.33365
-    peakDps: 23.333334
-    survivalTime: 19.295609
-    effectiveHealth: 768.0313
-    threat: 334.46335
+    dps: 17.36342
+    peakDps: 23
+    survivalTime: 19.606705
+    effectiveHealth: 785.65125
+    threat: 340.43945
     timedOut: 0
-    fingerprint: b2179cac2e13764e93e22a87b7aafd4c
+    fingerprint: 61985de46a3282c702126bf3c1188c3b

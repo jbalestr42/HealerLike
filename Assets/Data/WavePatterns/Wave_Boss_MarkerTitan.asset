@@ -17,10 +17,10 @@ MonoBehaviour:
   _cells:
   - {fileID: 11400000, guid: 887d2a996a67b2c4c8f2b4898df96150, type: 2}
   score:
-    dps: 13.646542
+    dps: 13.6503315
     peakDps: 49.333332
-    survivalTime: 70.56208
-    effectiveHealth: 2774.1184
-    threat: 962.92834
+    survivalTime: 68.06311
+    effectiveHealth: 2727.3257
+    threat: 929.08405
     timedOut: 0
-    fingerprint: 9236f853631ee53b877cfef6625583a3
+    fingerprint: eec001574fd462bb33d2b9655110939c
