@@ -114,9 +114,15 @@ namespace HealerLike.Render.Stage
                 yield return deployment.Deploy(1, Vector3.left * 2f + Vector3.forward * 2f);
                 // Three unassisted allies lose the current first wave of seed 271828; the reward flow needs a win
                 yield return deployment.Deploy(1, Vector3.left * 4f + Vector3.forward);
-                yield return deployment.Deploy(1, Vector3.left * 4f + Vector3.back * 3f);
-                _output.manifest.checks.Add("Five allies deployed before the first encounter so the run reaches "
-                    + "its reward; three lose the current first wave without spell assistance");
+                // Julien's 54c28bee starts the Cleric with four units: the fifth deploys only when a roster has one
+                if (StageRosterCards.Deployable(_session.actions).Count > 0)
+                {
+                    yield return deployment.Deploy(1, Vector3.left * 4f + Vector3.back * 3f);
+                }
+
+                int fielded = _session.manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
+                _output.manifest.checks.Add("Every starting ally deployed before the first encounter so the run "
+                    + "reaches its reward: " + fielded + " player entities on the board");
                 yield return navigation.LandscapeControls();
                 _session.actions.Submit("wave-button");
                 yield return Wait(2f);
