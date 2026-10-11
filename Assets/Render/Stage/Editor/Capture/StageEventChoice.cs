@@ -231,6 +231,25 @@ namespace HealerLike.Render.Stage
         IEnumerator CheckLiveCards(string room, List<UiButton> before, AscensionGameType.State state)
         {
             AscensionGameType ascension = Object.FindAnyObjectByType<AscensionGameType>();
+            if (isToolkitPanelDrawing)
+            {
+                // Our event panel is a modal over the HUD: a touch at a spell or unit card lands on the panel, and where
+                // a choice card lies there it is a real pick. So the check is that the panel covers both cards.
+                VisualElement panel = _session.actions.root.Q("event-panel");
+                UnityEngine.UIElements.Button spellCard = _session.actions.Cards("spell-list")[0];
+                UnityEngine.UIElements.Button unitCard = _session.actions.Cards("party-list")[0];
+                bool covered = panel.pickingMode == PickingMode.Position
+                    && panel.worldBound.Contains(spellCard.worldBound.center)
+                    && panel.worldBound.Contains(unitCard.worldBound.center);
+                _manifest.cardEffects.Add(room + ": the Toolkit event panel " + (covered ? "covers" : "does not cover")
+                    + " the spell and unit cards, " + ScreenState());
+                _session.output.Check(covered, room + ": the Toolkit event panel covers the spell and unit cards");
+                _session.output.Check(view.isActiveAndEnabled && SameButtons(before, view.choiceButtons)
+                    && LegacyUiReader.AscensionState(ascension) == state,
+                    room + ": the seam checks leave Julien's screen and the run state as they were");
+                yield break;
+            }
+
             RenderManager manager = _session.manager;
             float mana = manager.player.character.mana.Value;
             int allies = manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
