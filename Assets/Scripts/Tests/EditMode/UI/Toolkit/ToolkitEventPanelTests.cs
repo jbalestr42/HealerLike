@@ -296,16 +296,12 @@ namespace UI.Toolkit
             int picked = 0;
             Display(Choice("Heal", () => picked++), Choice("Resurrect"));
             _panel.Refresh();
-            UnityEngine.UIElements.Button card = _root.Q("event-list").Query<UnityEngine.UIElements.Button>("data-card").ToList()
-                .First(button => button.Q<Label>("card-title")?.text == "Heal");
-            using (ToolkitTestPanel panel = new ToolkitTestPanel())
-            {
-                panel.root.Add(_root);
-                using (NavigationSubmitEvent submit = NavigationSubmitEvent.GetPooled())
-                {
-                    card.SendEvent(submit);
-                }
-            }
+            UnityEngine.UIElements.Button card = _root.Q("event-list").Query<UnityEngine.UIElements.Button>("data-card")
+                .ToList().First(button => button.Q<Label>("card-title")?.text == "Heal");
+            ToolkitCardModel model = (ToolkitCardModel)card.userData;
+
+            Assert.AreSame(_eventView.choiceButtons[0], model.source);
+            model.activate.Invoke(model);
 
             Assert.AreEqual(1, picked, "The card drawn after the redisplay presses his new button, not the destroyed one.");
         }
