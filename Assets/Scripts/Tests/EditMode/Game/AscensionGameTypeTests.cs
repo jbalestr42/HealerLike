@@ -54,22 +54,22 @@ public class AscensionGameTypeTests
     }
 
     [Test]
-    public void ApplyConsumer_RestHeal_GivesBackAShareOfTheMaxHealth()
+    public void HealForRest_GivesBackAShareOfTheMaxHealth()
     {
         SetHealth(40f);
 
-        AscensionGameType.ApplyConsumer(_entity, _restHeal);
+        AscensionGameType.HealForRest(_entity, 0.3f);
         Drain();
 
         Assert.AreEqual(70f, _health.Value, 0.001f);
     }
 
     [Test]
-    public void ApplyConsumer_RestHeal_NeverHealsAboveMax()
+    public void HealForRest_NeverHealsAboveMax()
     {
         SetHealth(90f);
 
-        AscensionGameType.ApplyConsumer(_entity, _restHeal);
+        AscensionGameType.HealForRest(_entity, 0.3f);
         Drain();
 
         Assert.AreEqual(100f, _health.Value);
@@ -101,15 +101,71 @@ public class AscensionGameTypeTests
     }
 
     [Test]
-    public void ApplyConsumer_RestHeal_IsNotBlockedByConsumerPrevention()
+    public void HealForRest_IsNotBlockedByConsumerPrevention()
     {
         SetHealth(40f);
         _health.preventConsumers = true;
 
-        AscensionGameType.ApplyConsumer(_entity, _restHeal);
+        AscensionGameType.HealForRest(_entity, 0.3f);
         Drain();
 
         Assert.AreEqual(70f, _health.Value, 0.001f);
+    }
+
+    [Test]
+    public void HealForRest_GoesThroughTheResourceFlowWithTheEntityAsSource()
+    {
+        SetHealth(40f);
+        ResourceModifier processedModifier = null;
+        float processedValue = 0f;
+        _health.OnAllConsumerProcessed.AddListener((target, modifier, result) =>
+        {
+            processedModifier = modifier;
+            processedValue = result.value;
+        });
+
+        AscensionGameType.HealForRest(_entity, 0.2f);
+        Drain();
+
+        Assert.AreSame(_entityGo, processedModifier.source);
+        Assert.AreEqual(20f, processedValue, 0.001f);
+    }
+
+    [Test]
+    public void RestHeal_ByDefault_Is30Percent()
+    {
+        Assert.AreEqual(0.3f, AttributeManager.GetDefaultValue(AttributeType.RestHeal), 0.0001f);
+
+        GameObject character = CreateCharacter(null);
+        Assert.AreEqual(0.3f, AscensionGameType.GetRestHeal(character), 0.0001f);
+        Object.DestroyImmediate(character);
+    }
+
+    [Test]
+    public void RestHeal_RestHealAttribute_IsTheShareHealed()
+    {
+        GameObject character = CreateCharacter(null);
+        character.GetComponent<AttributeManager>().Add(AttributeType.RestHeal, new Attribute(0.2f));
+
+        Assert.AreEqual(0.2f, AscensionGameType.GetRestHeal(character), 0.0001f);
+        Object.DestroyImmediate(character);
+    }
+
+    [Test]
+    public void RestHeal_NeverBelowZero()
+    {
+        GameObject character = CreateCharacter(null);
+        character.GetComponent<AttributeManager>().Add(AttributeType.RestHeal, new Attribute(-0.1f));
+
+        Assert.AreEqual(0f, AscensionGameType.GetRestHeal(character), 0.0001f);
+        Object.DestroyImmediate(character);
+    }
+
+    [Test]
+    public void RestHealDescription_ShowsTheShareInPercent()
+    {
+        Assert.AreEqual("Every unit recovers 30% of its max health.", AscensionGameType.GetRestHealDescription(0.3f));
+        Assert.AreEqual("Every unit recovers 20% of its max health.", AscensionGameType.GetRestHealDescription(0.2f));
     }
 
     // A character holding only an attribute manager, with the given RewardChoices (none when null)

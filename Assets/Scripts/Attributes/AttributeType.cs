@@ -28,4 +28,7 @@ public enum AttributeType
     SkillCostMultiplier,
     // Share of the max mana given back to the character before each fight, 0.4 when it has no such attribute
     CombatManaRefill,
+    // Share of the max health every unit recovers when healing in a rest room, 0.3 when the character has no such
+    // attribute
+    RestHeal,
 }

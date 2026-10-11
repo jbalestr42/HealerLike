@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 
 namespace Game
@@ -28,15 +27,6 @@ public class RestRoomTests
         unit.description = $"{title} description";
         _created.Add(unit);
         return unit;
-    }
-
-    [Test]
-    public void RestHealConsumer_NeverCritical()
-    {
-        ConsumerFactory restHeal = AssetDatabase.LoadAssetAtPath<ConsumerFactory>("Assets/Data/Run/RestHealConsumer.asset");
-
-        Assert.IsNotNull(restHeal);
-        Assert.IsFalse(restHeal.data.canBeCritical);
     }
 
     [Test]

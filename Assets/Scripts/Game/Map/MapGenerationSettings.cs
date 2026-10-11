@@ -83,6 +83,20 @@ public class MapGenerationSettings : ScriptableObject
         return null;
     }
 
+    // A copy with the weight of the rooms of this type multiplied (e.g. more elites in a harder run), to destroy
+    // once used
+    public MapGenerationSettings CloneWithWeight(MapNodeType type, float multiplier)
+    {
+        MapGenerationSettings copy = Instantiate(this);
+        copy.name = name;
+        RoomTypeSettings roomType = copy.GetRoomType(type);
+        if (roomType != null)
+        {
+            roomType.weight *= multiplier;
+        }
+        return copy;
+    }
+
     // Every setting of the other one, its name aside (e.g. to save the settings tuned in the test scene)
     public void CopyFrom(MapGenerationSettings other)
     {

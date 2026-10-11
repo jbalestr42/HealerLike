@@ -15,21 +15,54 @@ MonoBehaviour:
   levels:
   - title: Ambush
     description: Elites appear more often on the map.
+    eliteWeightMultiplier: 1.5
+    characterItems: []
+    resurrectConsumers: []
   - title: Hardened Foes
     description: Enemies of normal fights have 10% more health.
+    eliteWeightMultiplier: 1
+    characterItems: []
+    resurrectConsumers: []
   - title: Drained
     description: Each fight gives back 30% of your max mana instead of 40%.
+    eliteWeightMultiplier: 1
+    characterItems:
+    - {fileID: 11400000, guid: 7f38950b73479844d90663cf995a9e6b, type: 2}
+    resurrectConsumers: []
   - title: Restless
-    description: Healing at a Rest restores a third less health.
+    description: Healing at a Rest restores 20% of max health instead of 30%.
+    eliteWeightMultiplier: 1
+    characterItems:
+    - {fileID: 11400000, guid: ec05d98a7f146354a83b0a4d3bcf688d, type: 2}
+    resurrectConsumers: []
   - title: Obstacle
     description: A block takes the center cell of your board. No unit can stand there.
+    eliteWeightMultiplier: 1
+    characterItems: []
+    resurrectConsumers: []
   - title: Sharpened Blades
     description: Enemies of normal fights deal 10% more damage.
+    eliteWeightMultiplier: 1
+    characterItems: []
+    resurrectConsumers: []
   - title: Costly Spells
     description: Your spells cost 10% more mana.
+    eliteWeightMultiplier: 1
+    characterItems: []
+    resurrectConsumers: []
   - title: Weak Return
     description: A unit resurrected at a Rest comes back with half of its health.
+    eliteWeightMultiplier: 1
+    characterItems: []
+    resurrectConsumers:
+    - {fileID: 11400000, guid: f90d9c90240369f4897ba83a080a0740, type: 2}
   - title: Frenzy
     description: Enemies attack 10% faster.
+    eliteWeightMultiplier: 1
+    characterItems: []
+    resurrectConsumers: []
   - title: Faltering Faith
     description: Your heal power is reduced by 10%.
+    eliteWeightMultiplier: 1
+    characterItems: []
+    resurrectConsumers: []

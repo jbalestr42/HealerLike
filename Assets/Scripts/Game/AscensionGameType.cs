@@ -33,10 +33,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
     [SerializeField] MapGenerationSettings _mapSettings;
     // 0 to get a different map every run
     [SerializeField] int _seed = 0;
-    // Applied to every ally when healing in a rest room
-    [SerializeField] AConsumerFactory _restHealConsumer;
     [SerializeField, TextArea] string _restDescription = "Take a moment to recover before moving on.";
-    [SerializeField, TextArea] string _restHealDescription = "Every unit recovers 30% of its max health.";
     [SerializeField, Min(1)] int _rewardChoiceCount = 3;
     [SerializeField, Min(1)] int _eliteRewardChoiceCount = 4;
     // Writes every fight to the combat log (Logs/Balance), off in a normal run
@@ -57,6 +54,14 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     RunState _run;
     public RunState run => _run;
+
+    // The map settings of the run, a copy changed by the ascension level (more elites), or _mapSettings
+    MapGenerationSettings _runMapSettings;
+    // Resurrected allies not placed on the board yet, the ascension resurrect consumers applied once they are
+    List<EntityData> _resurrectedAllies = new List<EntityData>();
+
+    AscensionSettings ascension => DataManager.instance.data.ascension;
+    int ascensionLevel => _run != null ? _run.ascensionLevel : 0;
 
     WavePatternData _currentWave;
 
@@ -87,6 +92,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
         _mapView.OnNodeSelected.AddListener(OnRoomSelected);
         _entities.OnEntityKilled.AddListener(OnEntityKilled);
         _entities.OnEntitySummoned.AddListener(OnEntitySummoned);
+        _entities.OnEntitySpawned.AddListener(OnEntitySpawned);
     }
 
     void OnDestroy()
@@ -95,6 +101,11 @@ public class AscensionGameType : AGameType, IEventRoomHost
         {
             _entities.OnEntityKilled.RemoveListener(OnEntityKilled);
             _entities.OnEntitySummoned.RemoveListener(OnEntitySummoned);
+            _entities.OnEntitySpawned.RemoveListener(OnEntitySpawned);
+        }
+        if (_runMapSettings != null && _runMapSettings != _mapSettings)
+        {
+            Destroy(_runMapSettings);
         }
     }
 
@@ -129,7 +140,14 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 _gameView.gameHUD.inventoryButton.enabled = true;
                 _gameView.gameHUD.ShowManaBar(true);
 
+                int runAscensionLevel = GetAscensionLevel(ascension, CharacterSelection.ascensionLevel);
+                Debug.Log($"[AscensionGameType] Ascension level: {runAscensionLevel}");
+
                 PlayerBehaviour.instance.Init(DataManager.instance.GetCharacter(CharacterSelection.selected));
+                if (ascension != null)
+                {
+                    GiveItems(PlayerBehaviour.instance.character, ascension.GetCharacterItems(runAscensionLevel));
+                }
                 _gameView.entityInventory.Init(PlayerBehaviour.instance.character.entityPool);
 
                 int seed = _seed != 0 ? _seed : System.Environment.TickCount;
@@ -137,11 +155,11 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 _random = new System.Random(seed);
                 _seedUsed = seed;
                 _runId = System.DateTime.Now.ToString("yyyyMMdd-HHmmss");
-                _run = new RunState(MapGenerator.Generate(_mapSettings, seed), GetAscensionLevel(DataManager.instance.data.ascension, CharacterSelection.ascensionLevel));
-                Debug.Log($"[AscensionGameType] Ascension level: {_run.ascensionLevel}");
+                _runMapSettings = GetRunMapSettings(_mapSettings, ascension, runAscensionLevel);
+                _run = new RunState(MapGenerator.Generate(_runMapSettings, seed), runAscensionLevel);
                 if (_gameView.gameHUD.ascensionIndicator != null)
                 {
-                    _gameView.gameHUD.ascensionIndicator.Show(DataManager.instance.data.ascension, _run.ascensionLevel);
+                    _gameView.gameHUD.ascensionIndicator.Show(ascension, runAscensionLevel);
                 }
 
                 SetState(State.ShowMap);
@@ -307,7 +325,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
     // One of the events of the map settings, drawn by its chance; a combat when there is none to draw
     void EnterEventRoom(MapNode node)
     {
-        AEventRoom eventRoom = EventRoomPicker.Pick(_mapSettings.eventRooms, _random);
+        AEventRoom eventRoom = EventRoomPicker.Pick(_runMapSettings.eventRooms, _random);
         if (eventRoom == null)
         {
             Debug.LogWarning("[AscensionGameType] No event to draw in the map settings, the event room is played as a combat");
@@ -349,20 +367,46 @@ public class AscensionGameType : AGameType, IEventRoomHost
     // never critical
     public static void RefillManaForCombat(ResourceAttribute characterMana)
     {
-        AttributeManager attributes = characterMana.GetComponent<AttributeManager>();
-        float refill = attributes != null && attributes.Has(AttributeType.CombatManaRefill)
-            ? attributes.Get(AttributeType.CombatManaRefill).Value
-            : AttributeManager.GetDefaultValue(AttributeType.CombatManaRefill);
+        float refill = GetAttribute(characterMana.gameObject, AttributeType.CombatManaRefill);
 
         ResourceModifier manaModifier = new ResourceModifier { source = characterMana.gameObject };
         manaModifier.consumers.Add(new RuntimeConsumer(characterMana.Max * Mathf.Max(0f, refill), canBeCritical: false));
         characterMana.AddResourceModifier(manaModifier);
     }
 
+    // Its default value when the owner doesn't have the attribute
+    public static float GetAttribute(GameObject owner, AttributeType type)
+    {
+        AttributeManager attributes = owner != null ? owner.GetComponent<AttributeManager>() : null;
+        return attributes != null && attributes.Has(type) ? attributes.Get(type).Value : AttributeManager.GetDefaultValue(type);
+    }
+
     // The level chosen on the menu, within the levels of the game; 0 when the game has no ascension levels
     public static int GetAscensionLevel(AscensionSettings ascension, int chosenLevel)
     {
         return ascension != null ? ascension.ClampLevel(chosenLevel) : 0;
+    }
+
+    // The map settings themselves when the level changes nothing on the map, else a copy with its changes (destroyed
+    // by the caller)
+    public static MapGenerationSettings GetRunMapSettings(MapGenerationSettings mapSettings, AscensionSettings ascension, int level)
+    {
+        float eliteWeightMultiplier = ascension != null ? ascension.GetEliteWeightMultiplier(level) : 1f;
+        if (Mathf.Approximately(eliteWeightMultiplier, 1f))
+        {
+            return mapSettings;
+        }
+        return mapSettings.CloneWithWeight(MapNodeType.Elite, eliteWeightMultiplier);
+    }
+
+    // In the inventory of the character, shown with its other items
+    public static void GiveItems(Character character, List<AItemFactory> items)
+    {
+        foreach (AItemFactory item in items)
+        {
+            character.inventoryHandler.AddItem(item.GetItem(), -1);
+        }
+        character.ApplyBuffs();
     }
 
     // Beating the boss wins the run, the other fights lead to a reward
@@ -481,13 +525,8 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     void HealAllies()
     {
-        if (_restHealConsumer == null)
-        {
-            Debug.LogError("[AscensionGameType] No rest heal consumer set");
-            return;
-        }
-
-        _entities.GetEntities(Entity.EntityType.Player).ForEach(x => ApplyConsumer(x.GetComponent<Entity>(), _restHealConsumer));
+        float share = GetRestHeal(PlayerBehaviour.instance.character.gameObject);
+        _entities.GetEntities(Entity.EntityType.Player).ForEach(x => HealForRest(x.GetComponent<Entity>(), share));
     }
 
     #region Combat log
@@ -551,7 +590,8 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     void ShowRestChoices()
     {
-        ShowChoices("Rest", _restDescription, CreateRestChoices(_restHealDescription, _run.deadAllies.Count > 0, () =>
+        string healDescription = GetRestHealDescription(GetRestHeal(PlayerBehaviour.instance.character.gameObject));
+        ShowChoices("Rest", _restDescription, CreateRestChoices(healDescription, _run.deadAllies.Count > 0, () =>
         {
             HealAllies();
             LeaveRestRoom();
@@ -569,8 +609,23 @@ public class AscensionGameType : AGameType, IEventRoomHost
         if (_run.RemoveDeadAlly(ally))
         {
             AddUnit(ally);
+            _resurrectedAllies.Add(ally);
         }
         LeaveRestRoom();
+    }
+
+    // A resurrected ally placed on the board for the first time since it came back
+    void OnEntitySpawned(Entity entity)
+    {
+        if (entity == null || entity.entityType != Entity.EntityType.Player || ascension == null || !_resurrectedAllies.Remove(entity.data))
+        {
+            return;
+        }
+
+        foreach (AConsumerFactory consumer in ascension.GetResurrectConsumers(ascensionLevel))
+        {
+            ApplyConsumer(entity, consumer);
+        }
     }
 
     void LeaveRestRoom()
@@ -579,6 +634,26 @@ public class AscensionGameType : AGameType, IEventRoomHost
         {
             SetState(State.ShowMap);
         }
+    }
+
+    // The RestHeal share of the max health of the character (items included), 30% by default
+    public static float GetRestHeal(GameObject character)
+    {
+        return Mathf.Max(0f, GetAttribute(character, AttributeType.RestHeal));
+    }
+
+    public static string GetRestHealDescription(float share)
+    {
+        return $"Every unit recovers {Mathf.RoundToInt(share * 100f)}% of its max health.";
+    }
+
+    // That share of its max health back, through the regular resource flow so the heal feedbacks are triggered.
+    // Never critical, and even on a unit that can't be healed for now
+    public static void HealForRest(Entity entity, float share)
+    {
+        ResourceModifier heal = new ResourceModifier { source = entity.gameObject };
+        heal.consumers.Add(new RuntimeConsumer(entity.health.Max * share, canBeCritical: false));
+        entity.health.AddResourceModifier(heal);
     }
 
     // Resurrect can only be picked when a unit is dead

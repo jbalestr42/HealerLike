@@ -10,6 +10,21 @@ public class AscensionLevel
 
     // Shown to the player when choosing the level and during the run
     [TextArea] public string description;
+
+    // What the level changes, everything left to its default changes nothing
+
+    [Header("Map")]
+    // Applied to the weight of the elite rooms on the map
+    [Min(0f)] public float eliteWeightMultiplier = 1f;
+
+    [Header("Character")]
+    // Given to the character at the start of the run, shown with its other items (e.g. less mana back before each
+    // fight, a smaller rest heal)
+    public List<AItemFactory> characterItems = new List<AItemFactory>();
+
+    [Header("Rest")]
+    // Applied to a unit resurrected at a rest room once placed on the board (e.g. a part of its health lost)
+    public List<AConsumerFactory> resurrectConsumers = new List<AConsumerFactory>();
 }
 
 // Ascension levels a character unlocks one by one by winning a run. Level 0 plays the game without any malus,
@@ -31,6 +46,37 @@ public class AscensionSettings : ScriptableObject
     public List<AscensionLevel> GetActiveLevels(int level)
     {
         return levels.GetRange(0, ClampLevel(level));
+    }
+
+    // The elite weight multipliers of the levels up to this one, multiplied together
+    public float GetEliteWeightMultiplier(int level)
+    {
+        float multiplier = 1f;
+        foreach (AscensionLevel active in GetActiveLevels(level))
+        {
+            multiplier *= active.eliteWeightMultiplier;
+        }
+        return multiplier;
+    }
+
+    public List<AItemFactory> GetCharacterItems(int level)
+    {
+        List<AItemFactory> items = new List<AItemFactory>();
+        foreach (AscensionLevel active in GetActiveLevels(level))
+        {
+            items.AddRange(active.characterItems.FindAll(item => item != null));
+        }
+        return items;
+    }
+
+    public List<AConsumerFactory> GetResurrectConsumers(int level)
+    {
+        List<AConsumerFactory> consumers = new List<AConsumerFactory>();
+        foreach (AscensionLevel active in GetActiveLevels(level))
+        {
+            consumers.AddRange(active.resurrectConsumers.FindAll(consumer => consumer != null));
+        }
+        return consumers;
     }
 
     // The maluses of the level, one per line, for a tooltip
