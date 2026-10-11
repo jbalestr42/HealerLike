@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 using static HealerLike.Render.Stage.AStageRun;
 
 namespace HealerLike.Render.Stage
@@ -60,15 +61,93 @@ namespace HealerLike.Render.Stage
             _session.output.Check(false, "A usable targeting spell is available");
         }
 
+        // Casts every usable spell card once: an instant spell casts on its press, a targeted one on the most
+        // injured ally it accepts, or else the first creature it accepts; one with no target is cancelled
+        IEnumerator Assist(System.Action<int> cast)
+        {
+            AscensionGameType ascension = Object.FindAnyObjectByType<AscensionGameType>();
+            foreach (Button card in _session.actions.Cards("spell-list"))
+            {
+                if (ascension == null || LegacyUiReader.AscensionState(ascension) != AscensionGameType.State.OnGoingBattle)
+                {
+                    yield break;
+                }
+
+                if (!card.enabledInHierarchy || !StageInterfaceOutput.IsVisible(card))
+                {
+                    continue;
+                }
+
+                yield return _session.actions.SelectCard(card);
+                yield return Wait(0.2f);
+                AInteraction spell = _session.interaction.GetInteraction();
+                if (spell == null)
+                {
+                    cast(1);
+                    continue;
+                }
+
+                Entity target = Target(spell);
+                if (target != null)
+                {
+                    _session.actions.WorldTap(
+                        _session.manager.gameCamera.WorldToScreenPoint(RenderTargets.Point(target.gameObject)));
+                    yield return null;
+                }
+
+                if (_session.interaction.GetInteraction() == null)
+                {
+                    cast(1);
+                }
+                else if (StageInterfaceOutput.IsVisible(_session.actions.root.Q("cancel-button")))
+                {
+                    _session.actions.Submit("cancel-button");
+                    yield return null;
+                }
+            }
+        }
+
+        Entity Target(AInteraction spell)
+        {
+            Entity best = null;
+            foreach (GameObject ally in _session.manager.entityManager.GetEntities(Entity.EntityType.Player))
+            {
+                Entity entity = ally.GetComponent<Entity>();
+                if (entity != null && spell.IsValidTarget(ally) && (best == null
+                    || entity.health.percent < best.health.percent))
+                {
+                    best = entity;
+                }
+            }
+
+            if (best != null)
+            {
+                return best;
+            }
+
+            foreach (GameObject enemy in _session.manager.entityManager.GetEntities(Entity.EntityType.Computer))
+            {
+                if (spell.IsValidTarget(enemy))
+                {
+                    return enemy.GetComponent<Entity>();
+                }
+            }
+
+            return null;
+        }
+
         public IEnumerator Reward()
         {
             // The first wave runs normally. No direct reward or game-over event is injected.
+            // Since Julien's 54c28bee the Cleric fields four units with weaker heals, and they lose this wave
+            // unassisted: the healer heals, through the same Toolkit spell cards and world taps as a player
             float deadline = Time.realtimeSinceStartup + 100f;
+            int casts = 0;
             while (!StageInterfaceOutput.IsVisible(_session.actions.root.Q("upgrade-panel")))
             {
                 if (StageInterfaceOutput.IsVisible(_session.actions.root.Q("gameover-panel")))
                 {
-                    _session.output.Check(false, "Party survives first encounter");
+                    _session.output.Check(false, "Party survives first encounter, " + casts + " assisted casts");
                 }
 
                 if (Time.realtimeSinceStartup > deadline)
@@ -76,8 +155,12 @@ namespace HealerLike.Render.Stage
                     _session.output.Check(false, "First encounter reaches reward in 100 seconds");
                 }
 
-                yield return Wait(0.5f);
+                yield return Assist(count => casts += count);
+                yield return Wait(0.3f);
             }
+
+            _session.output.manifest.checks.Add("First encounter won with " + casts
+                + " spells cast through Toolkit cards");
 
             yield return _session.Capture("10-reward");
             List<Button> cards = _session.actions.Cards("upgrade-list");
