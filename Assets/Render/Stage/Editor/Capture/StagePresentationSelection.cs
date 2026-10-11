@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using HealerLike.Render.Creatures;
 using UnityEngine;
 
@@ -91,10 +93,14 @@ namespace HealerLike.Render.Stage
         Vector2 EntityPoint(GameObject entity, SelectableEntity source, out RaycastHit hit)
         {
             Physics.SyncTransforms();
+            List<string> seen = new List<string>();
             foreach (Collider collider in entity.GetComponentsInChildren<Collider>())
             {
-                if (!collider.enabled || collider.isTrigger)
+                // A trigger counts: the game's raycasts hit triggers (m_QueriesHitTriggers 1), and Julien's Radiant
+                // Archer has no other collider. The hit below still has to resolve to this creature's selection
+                if (!collider.enabled)
                 {
+                    seen.Add(collider.name + " skipped (disabled)");
                     continue;
                 }
 
@@ -112,10 +118,14 @@ namespace HealerLike.Render.Stage
                     {
                         return point;
                     }
+
+                    seen.Add(collider.name + " point " + i + " -> " + (hit.collider != null ? hit.collider.name
+                        + " layer " + LayerMask.LayerToName(hit.collider.gameObject.layer) : "no hit or outside"));
                 }
             }
 
-            throw new InvalidOperationException("No unobstructed live creature collider point in the Game viewport.");
+            throw new InvalidOperationException("No unobstructed live creature collider point in the Game viewport. "
+                + (seen.Count == 0 ? "The entity has no collider." : string.Join("; ", seen.Distinct())));
         }
 
         Vector2 EmptyPoint(out RaycastHit hit)
