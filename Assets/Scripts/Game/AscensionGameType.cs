@@ -370,10 +370,37 @@ public class AscensionGameType : AGameType, IEventRoomHost
     void WinRun()
     {
         Debug.Log("[AscensionGameType] Boss defeated, the run is won");
+        UnlockNextAscensionLevel();
         EnableAllEntities(false);
         UIManager.instance.AddView(ViewType.GameOver);
         UIManager.instance.GetView<GameOverView>(ViewType.GameOver).ShowResult(true);
         SetState(State.GameEnd);
+    }
+
+    // Saved right away, so the level stays unlocked even if the game is closed on the end screen
+    void UnlockNextAscensionLevel()
+    {
+        AscensionSettings ascension = DataManager.instance.data.ascension;
+        if (ascension == null)
+        {
+            return;
+        }
+
+        try
+        {
+            string path = AscensionProgress.defaultPath;
+            AscensionProgress progress = AscensionProgress.Load(path);
+            string character = AscensionProgress.GetKey(PlayerBehaviour.instance.character.data);
+            if (progress.RecordWin(character, _run.ascensionLevel, ascension.maxLevel))
+            {
+                progress.Save(path);
+                Debug.Log($"[AscensionGameType] Ascension level {progress.GetUnlockedLevel(character)} unlocked for {character}");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[AscensionGameType] Could not save the ascension progress: {e.Message}");
+        }
     }
 
     // The map can be looked at while arranging the units before a fight
