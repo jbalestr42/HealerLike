@@ -69,6 +69,13 @@ namespace HealerLike.Render.Stage
             Regenerate(owner, settings);
         }
 
+        // For a capture that edits settings after construction: generates the map again from them, under the same
+        // first-room condition
+        public void Reapply()
+        {
+            Regenerate(_owner, settings);
+        }
+
         // The run starts with the scene (GameManager.Start), so the map is usually generated before the capture can
         // install its configuration: while the first room is still to choose, the map is generated again from it
         static void Regenerate(AscensionGameType owner, MapGenerationSettings settings)

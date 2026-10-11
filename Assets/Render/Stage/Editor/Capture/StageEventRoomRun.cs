@@ -75,6 +75,8 @@ namespace HealerLike.Render.Stage
                 _session.mapFixture = new StageMapFixture(ascension, false);
                 MeasureShares(_session.mapFixture.settings);
                 Configure(_session.mapFixture.settings);
+                // The run's map was generated with the scene, before this configuration existed
+                _session.mapFixture.Reapply();
                 // The run starts with the scene: the map it offers is the first thing to wait for
                 yield return StageMapActions.WaitForSelection(_session.actions);
                 StageEventChoice choice = new StageEventChoice(_session, _manifest);
