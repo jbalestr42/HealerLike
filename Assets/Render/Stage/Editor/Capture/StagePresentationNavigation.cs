@@ -60,8 +60,7 @@ namespace HealerLike.Render.Stage
             _output.Check(Object.FindAnyObjectByType<RenderManager>() == _session.manager,
                 "New expedition retains the single original RenderManager");
             _session.mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
-            yield return _session.actions.PointerTap("start-button");
-            yield return Wait(0.8f);
+            // The new run starts with its scene: the first touch is the room pick
             yield return StageMapActions.SelectFirst(_session.actions, true);
             yield return _portraits.Portraits("05-new-expedition");
         }

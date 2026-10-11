@@ -28,7 +28,7 @@ namespace HealerLike.Render.Stage
                 + "fixed to 271828 in this capture only");
             UnityEngine.Random.InitState(StageMapFixture.Seed);
             yield return _session.Resize(1080, 1920);
-            yield return _session.actions.PointerTap("start-button");
+            // The run starts with the scene: the map it offers is the first thing to wait for
             yield return StageMapActions.WaitForSelection(_session.actions);
             yield return graph.Map("01-default-portrait", "authored-settings", true);
             _session.actions.ui.safeAreaProvider = () => new Rect(0f, 34f / 844f, 1f, 1f - 78f / 844f);
@@ -60,7 +60,7 @@ namespace HealerLike.Render.Stage
                 + "to settle, then use a two-frame touch with a refreshed collider aim inside the normal tap "
                 + "movement threshold; targets and physics are not paused");
             UnityEngine.Random.InitState(StageMapFixture.Seed);
-            yield return _session.actions.PointerTap("start-button");
+            // The run starts with the scene: the map it offers is the first thing to wait for
             yield return StageMapActions.WaitForSelection(_session.actions);
             yield return graph.Map("05-fixture-portrait", "short-route-fixture", true);
             int roomEventsBefore = _session.manifest.roomSelections;
