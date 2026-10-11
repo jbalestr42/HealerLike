@@ -3,15 +3,21 @@ using UnityEngine;
 public class DraggableEntity : MonoBehaviour, IDraggable
 {
     GridManager _grid;
+    // The board of the scene, the grid only without one
+    Board _board;
     Entity _entity;
     Collider[] _colliders;
     int[] _originalLayers;
     Vector3 _homePosition = Vector3.zero;
     public Vector3 homePosition { get { return _homePosition; } }
+    // The cell of the board left at the start of the drag, to go back to on cancel
+    Vector2Int _homeCell;
+    bool _hasHomeCell;
 
     void Start()
     {
         _grid = PlayerBehaviour.instance.grid;
+        _board = EntityManager.instance.board;
         _entity = GetComponent<Entity>();
         _colliders = GetComponentsInChildren<Collider>();
         _originalLayers = new int[_colliders.Length];
@@ -41,7 +47,31 @@ public class DraggableEntity : MonoBehaviour, IDraggable
     // units already placed never moved
     public void MoveToNearestFreeCell(Vector3 point)
     {
+        if (_board != null)
+        {
+            // Only on a cell of its side
+            if (_board.TryGetPlacementPosition(point, side, out Vector3 placement))
+            {
+                transform.position = placement;
+            }
+            return;
+        }
         transform.position = _grid.GetNearestWalkablePosition(point);
+    }
+
+    // Only the units of the player are dragged (see CanDrag)
+    const BoardCellType side = BoardCellType.Player;
+
+    void GoBackToHomeCell()
+    {
+        if (_hasHomeCell && _board.Occupy(_homeCell, gameObject, side))
+        {
+            transform.position = _board.GetUnitPosition(_homeCell);
+        }
+        else
+        {
+            transform.position = _homePosition;
+        }
     }
 
     #region IDraggable
@@ -55,7 +85,15 @@ public class DraggableEntity : MonoBehaviour, IDraggable
     {
         // The dragged entity doesn't occupy any cell until it's dropped (see EndDrag/CancelDrag), so its home cell
         // stays a free cell to move back to.
-        _grid.SetWalkable(_homePosition, true);
+        if (_board != null)
+        {
+            _hasHomeCell = _board.TryGetCoordOf(gameObject, out _homeCell);
+            _board.Release(gameObject);
+        }
+        else
+        {
+            _grid.SetWalkable(_homePosition, true);
+        }
         // Otherwise this entity's own collider(s) would intercept the drag/drop raycast, hiding the cell under the cursor.
         SetIgnoredByRaycasts(true);
     }
@@ -72,6 +110,21 @@ public class DraggableEntity : MonoBehaviour, IDraggable
 
     public void EndDrag(RaycastHit hit)
     {
+        if (_board != null)
+        {
+            // On the cell it was dragged to, else back to its cell
+            if (_board.TryGetCoord(transform.position, out Vector2Int cell) && _board.Occupy(cell, gameObject, side))
+            {
+                transform.position = _board.GetUnitPosition(cell);
+                _homePosition = transform.position;
+            }
+            else
+            {
+                GoBackToHomeCell();
+            }
+            SetIgnoredByRaycasts(false);
+            return;
+        }
         _homePosition = _grid.GetCellCenterFromPosition(transform.position);
         transform.position = _homePosition;
         _grid.SetWalkable(_homePosition, false);
@@ -80,6 +133,12 @@ public class DraggableEntity : MonoBehaviour, IDraggable
 
     public void CancelDrag()
     {
+        if (_board != null)
+        {
+            GoBackToHomeCell();
+            SetIgnoredByRaycasts(false);
+            return;
+        }
         transform.position = _grid.GetCellCenterFromPosition(_homePosition);
         _grid.SetWalkable(_homePosition, false);
         SetIgnoredByRaycasts(false);

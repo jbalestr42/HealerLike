@@ -9,10 +9,14 @@ namespace Skills
 public class TestSummonSkill : SummonSkill
 {
     public GridManager testGrid;
+    public Board testBoard;
+    public Entity.EntityType testCasterType = Entity.EntityType.Computer;
     public bool spawnFails;
     public readonly List<GameObject> spawned = new List<GameObject>();
 
     protected override GridManager grid => testGrid;
+    protected override Board board => testBoard;
+    protected override Entity.EntityType casterType => testCasterType;
 
     protected override GameObject Spawn(Vector3 position)
     {
@@ -22,7 +26,15 @@ public class TestSummonSkill : SummonSkill
         }
         GameObject summon = new GameObject("Summon");
         summon.transform.position = position;
-        testGrid.SetWalkable(position, false);
+        if (testBoard != null)
+        {
+            testBoard.TryGetCoord(position, out Vector2Int coord);
+            testBoard.Occupy(coord, summon, BoardLayout.GetCellType(testCasterType));
+        }
+        else
+        {
+            testGrid.SetWalkable(position, false);
+        }
         spawned.Add(summon);
         return summon;
     }
@@ -181,6 +193,79 @@ public class SummonSkillTests
     public void CooldownDuration_IsTheDataCooldown()
     {
         Assert.AreEqual(5f, _skill.cooldownDuration);
+    }
+
+    // On the board of the fight, the default one: the player on the 4 left columns, the enemies on the 4 right ones
+    Board CreateBoard(out BoardLayout layout)
+    {
+        GameObject boardGo = new GameObject("Board");
+        _created.Add(boardGo);
+        Board board = boardGo.AddComponent<Board>();
+        layout = ScriptableObject.CreateInstance<BoardLayout>();
+        _created.Add(layout);
+        board.SetLayout(layout);
+        _skill.testBoard = board;
+        return board;
+    }
+
+    readonly List<Object> _created = new List<Object>();
+
+    [TearDown]
+    public void DestroyCreated()
+    {
+        foreach (Object created in _created)
+        {
+            Object.DestroyImmediate(created);
+        }
+        _created.Clear();
+    }
+
+    [Test]
+    public void Execute_OnABoard_OnTheFreeCellOfTheCasterSideNearestToIt()
+    {
+        Board board = CreateBoard(out _);
+        // An enemy on the front column of its side, the empty column on its left
+        _caster.transform.position = board.GetUnitPosition(new Vector2Int(5, 1));
+        board.Occupy(new Vector2Int(5, 1), _caster, BoardCellType.Enemy);
+
+        _skill.Execute(_caster);
+
+        Assert.IsTrue(board.TryGetCoordOf(_skill.spawned[0], out Vector2Int coord));
+        Assert.AreEqual(BoardCellType.Enemy, board.GetCellType(coord), coord.ToString());
+        Assert.AreEqual(1f, Vector2Int.Distance(new Vector2Int(5, 1), coord), 0.0001f, "a neighbour");
+        Assert.AreEqual(board.GetUnitPosition(coord), _skill.spawned[0].transform.position);
+    }
+
+    [Test]
+    public void Execute_OnABoard_AnAllyOfThePlayerSummonsOnThePlayerSide()
+    {
+        Board board = CreateBoard(out _);
+        _skill.testCasterType = Entity.EntityType.Player;
+        // On the front column of the player, next to the empty column
+        _caster.transform.position = board.GetUnitPosition(new Vector2Int(3, 1));
+        board.Occupy(new Vector2Int(3, 1), _caster, BoardCellType.Player);
+
+        _skill.Execute(_caster);
+
+        Assert.IsTrue(board.TryGetCoordOf(_skill.spawned[0], out Vector2Int coord));
+        Assert.AreEqual(BoardCellType.Player, board.GetCellType(coord), coord.ToString());
+    }
+
+    [Test]
+    public void Execute_OnABoard_NoFreeCellOfTheSide_DoesNotSummon()
+    {
+        Board board = CreateBoard(out BoardLayout layout);
+        foreach (Vector2Int cell in layout.GetCells(BoardCellType.Enemy))
+        {
+            GameObject blocker = new GameObject("Blocker");
+            _created.Add(blocker);
+            board.Occupy(cell, blocker, BoardCellType.Enemy);
+        }
+
+        bool used = _skill.Execute(_caster);
+
+        Assert.IsFalse(used);
+        Assert.AreEqual(0, _skill.aliveCount);
     }
 }
 

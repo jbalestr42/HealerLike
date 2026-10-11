@@ -25,6 +25,8 @@ public class Board : MonoBehaviour
     public IReadOnlyDictionary<Vector2Int, GameObject> tiles => _tiles;
 
     readonly Dictionary<Vector2Int, GameObject> _occupants = new Dictionary<Vector2Int, GameObject>();
+    // The side of each unit on the board, for it to find a cell of its side when the board changes
+    readonly Dictionary<GameObject, BoardCellType> _sides = new Dictionary<GameObject, BoardCellType>();
 
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int ColorId = Shader.PropertyToID("_Color");
@@ -37,11 +39,50 @@ public class Board : MonoBehaviour
         }
     }
 
-    // The board of the fight, the default one when null: the tiles are laid again
-    public void SetLayout(BoardLayout newLayout)
+    // The board of the fight, the default one when null: the tiles are laid again. Each unit keeps its cell when it
+    // is still a cell of its side, else goes to the free cell of its side nearest to where it stood. Returns the
+    // units left without a cell, no longer on the board
+    public List<GameObject> SetLayout(BoardLayout newLayout)
     {
+        List<(GameObject unit, BoardCellType side, Vector2Int coord, Vector3 position)> units = new List<(GameObject, BoardCellType, Vector2Int, Vector3)>();
+        foreach (KeyValuePair<Vector2Int, GameObject> occupant in _occupants)
+        {
+            if (occupant.Value != null)
+            {
+                units.Add((occupant.Value, _sides[occupant.Value], occupant.Key, occupant.Value.transform.position));
+            }
+        }
+        ReleaseAll();
+
         _layout = newLayout;
         BuildTiles();
+
+        // The units still on a cell of their side first, so the others never take their cell
+        List<GameObject> displaced = new List<GameObject>();
+        foreach ((GameObject unit, BoardCellType side, Vector2Int coord, Vector3 position) unit in units)
+        {
+            if (GetCellType(unit.coord) == unit.side)
+            {
+                Occupy(unit.coord, unit.unit, unit.side);
+            }
+        }
+        foreach ((GameObject unit, BoardCellType side, Vector2Int coord, Vector3 position) unit in units)
+        {
+            if (_sides.ContainsKey(unit.unit))
+            {
+                continue;
+            }
+            if (TryGetNearestFreeCell(unit.side, unit.position, out Vector2Int coord))
+            {
+                Occupy(coord, unit.unit, unit.side);
+                unit.unit.transform.position = GetUnitPosition(coord);
+            }
+            else
+            {
+                displaced.Add(unit.unit);
+            }
+        }
+        return displaced;
     }
 
     public BoardCellType GetCellType(Vector2Int coord)
@@ -84,6 +125,7 @@ public class Board : MonoBehaviour
         if (_occupants.TryGetValue(coord, out GameObject occupant) && occupant == null)
         {
             _occupants.Remove(coord);
+            RemoveDestroyedSides();
         }
         return occupant != null ? occupant : null;
     }
@@ -97,6 +139,7 @@ public class Board : MonoBehaviour
         }
         Release(unit);
         _occupants[coord] = unit;
+        _sides[unit] = side;
         return true;
     }
 
@@ -121,16 +164,38 @@ public class Board : MonoBehaviour
         {
             _occupants.Remove(coord);
         }
+        if (unit != null)
+        {
+            _sides.Remove(unit);
+        }
     }
 
     public void Release(Vector2Int coord)
     {
-        _occupants.Remove(coord);
+        if (_occupants.TryGetValue(coord, out GameObject unit))
+        {
+            Release(unit);
+            _occupants.Remove(coord);
+        }
     }
 
     public void ReleaseAll()
     {
         _occupants.Clear();
+        _sides.Clear();
+    }
+
+    void RemoveDestroyedSides()
+    {
+        List<GameObject> destroyed = new List<GameObject>();
+        foreach (GameObject unit in _sides.Keys)
+        {
+            if (unit == null)
+            {
+                destroyed.Add(unit);
+            }
+        }
+        destroyed.ForEach(unit => _sides.Remove(unit));
     }
 
     // The free cell of the side nearest to the position (on the ground), false when the side has none left. Two
@@ -161,6 +226,25 @@ public class Board : MonoBehaviour
                 found = true;
             }
         }
+        return found;
+    }
+
+    // Where a unit of the side placed at position goes: the cell under position when it is a free cell of the side,
+    // else the free cell of the side nearest to it, false when the side has none left
+    public bool TryGetPlacementCell(Vector3 position, BoardCellType side, out Vector2Int cell)
+    {
+        if (TryGetCoord(position, out cell) && IsFree(cell, side))
+        {
+            return true;
+        }
+        return TryGetNearestFreeCell(side, position, out cell);
+    }
+
+    // The same as TryGetPlacementCell, where the unit stands on that cell (position itself when there is none)
+    public bool TryGetPlacementPosition(Vector3 position, BoardCellType side, out Vector3 placement)
+    {
+        bool found = TryGetPlacementCell(position, side, out Vector2Int cell);
+        placement = found ? GetUnitPosition(cell) : position;
         return found;
     }
 

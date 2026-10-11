@@ -147,6 +147,111 @@ public class DraggableEntityTests
         Assert.IsFalse(_grid.IsWalkable(coordB.x, coordB.y));
         Assert.IsTrue(_grid.IsWalkable(coordA.x, coordA.y));
     }
+    // A unit of the player standing on its cell of the board, wired the way Start() would
+    DraggableEntity CreateOnBoard(Board board, ref GameObject go, Vector2Int coord)
+    {
+        go = new GameObject("Draggable");
+        DraggableEntity draggable = go.AddComponent<DraggableEntity>();
+        go.transform.position = board.GetUnitPosition(coord);
+        TestHelpers.SetPrivateField(draggable, "_board", board);
+        TestHelpers.SetPrivateField(draggable, "_colliders", new Collider[0]);
+        TestHelpers.SetPrivateField(draggable, "_originalLayers", new int[0]);
+        TestHelpers.SetPrivateField(draggable, "_homePosition", go.transform.position);
+        board.Occupy(coord, go, BoardCellType.Player);
+        return draggable;
+    }
+
+    Board CreateBoard()
+    {
+        GameObject boardGo = new GameObject("Board");
+        _boardObjects.Add(boardGo);
+        Board board = boardGo.AddComponent<Board>();
+        BoardLayout layout = ScriptableObject.CreateInstance<BoardLayout>();
+        _boardObjects.Add(layout);
+        board.SetLayout(layout);
+        return board;
+    }
+
+    readonly System.Collections.Generic.List<Object> _boardObjects = new System.Collections.Generic.List<Object>();
+
+    [TearDown]
+    public void DestroyBoard()
+    {
+        foreach (Object created in _boardObjects)
+        {
+            Object.DestroyImmediate(created);
+        }
+        _boardObjects.Clear();
+    }
+
+    [Test]
+    public void OnABoard_StartDrag_FreesItsCell()
+    {
+        Board board = CreateBoard();
+        DraggableEntity a = CreateOnBoard(board, ref _goA, new Vector2Int(1, 1));
+
+        a.StartDrag(new RaycastHit());
+
+        Assert.IsTrue(board.IsFree(new Vector2Int(1, 1), BoardCellType.Player));
+    }
+
+    [Test]
+    public void OnABoard_MoveToNearestFreeCell_NeverOnTheEnemySide()
+    {
+        Board board = CreateBoard();
+        DraggableEntity a = CreateOnBoard(board, ref _goA, new Vector2Int(1, 1));
+        a.StartDrag(new RaycastHit());
+
+        // The cursor over an enemy cell
+        a.MoveToNearestFreeCell(board.GetCellCenter(new Vector2Int(6, 2)));
+
+        Assert.AreEqual(board.GetUnitPosition(new Vector2Int(3, 2)), _goA.transform.position);
+    }
+
+    [Test]
+    public void OnABoard_EndDrag_OccupiesTheDropCellAndFreesTheOldOne()
+    {
+        Board board = CreateBoard();
+        DraggableEntity a = CreateOnBoard(board, ref _goA, new Vector2Int(1, 1));
+        a.StartDrag(new RaycastHit());
+        a.MoveToNearestFreeCell(board.GetCellCenter(new Vector2Int(3, 0)));
+
+        a.EndDrag(new RaycastHit());
+
+        Assert.AreSame(_goA, board.GetOccupant(new Vector2Int(3, 0)));
+        Assert.IsTrue(board.IsFree(new Vector2Int(1, 1), BoardCellType.Player));
+        Assert.AreEqual(board.GetUnitPosition(new Vector2Int(3, 0)), a.homePosition);
+    }
+
+    [Test]
+    public void OnABoard_CancelDrag_BackOnItsCell()
+    {
+        Board board = CreateBoard();
+        DraggableEntity a = CreateOnBoard(board, ref _goA, new Vector2Int(1, 1));
+        a.StartDrag(new RaycastHit());
+        a.MoveToNearestFreeCell(board.GetCellCenter(new Vector2Int(3, 0)));
+
+        a.CancelDrag();
+
+        Assert.AreSame(_goA, board.GetOccupant(new Vector2Int(1, 1)));
+        Assert.AreEqual(board.GetUnitPosition(new Vector2Int(1, 1)), _goA.transform.position);
+        Assert.IsTrue(board.IsFree(new Vector2Int(3, 0), BoardCellType.Player));
+    }
+
+    [Test]
+    public void OnABoard_EndDragOverACellOfAnotherUnit_BackOnItsCell()
+    {
+        Board board = CreateBoard();
+        DraggableEntity a = CreateOnBoard(board, ref _goA, new Vector2Int(1, 1));
+        CreateOnBoard(board, ref _goB, new Vector2Int(2, 2));
+        a.StartDrag(new RaycastHit());
+        _goA.transform.position = board.GetUnitPosition(new Vector2Int(2, 2));
+
+        a.EndDrag(new RaycastHit());
+
+        Assert.AreSame(_goA, board.GetOccupant(new Vector2Int(1, 1)));
+        Assert.AreSame(_goB, board.GetOccupant(new Vector2Int(2, 2)));
+    }
 }
 
 }

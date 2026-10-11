@@ -59,25 +59,66 @@ public class EntityManager : Singleton<EntityManager>
         return _entities[entityType];
     }
 
+    // On the board: on the cell under position when it is a free cell of the side of the entity, else on the nearest
+    // free cell of its side, nothing when the side has none left. Without board, on the grid cell under position
+    // when it is free
     public GameObject SpawnEntity(EntityData data, Vector3 position, Entity.EntityType entityType)
     {
+        if (_board != null)
+        {
+            BoardCellType side = BoardLayout.GetCellType(entityType);
+            if (!_board.TryGetPlacementCell(position, side, out Vector2Int cell))
+            {
+                return null;
+            }
+            GameObject unit = CreateEntity(data, _board.GetUnitPosition(cell), entityType);
+            _board.Occupy(cell, unit, side);
+            return unit;
+        }
+
         PlayerBehaviour player = PlayerBehaviour.instance;
         Vector2Int coord = player.grid.GetCoordFromPosition(position);
 
         if (player.grid.IsWalkable(coord.x, coord.y))
         {
             player.grid.SetWalkable(coord.x, coord.y, false);
-            GameObject entity = Instantiate(_entityBasePrefab, Vector3.zero, Quaternion.identity, _parentEntities[entityType].transform);
-            entity.GetComponent<Entity>().data = data;
-            entity.GetComponent<Entity>().entityType = entityType;
-            entity.GetComponent<Entity>().Init();
-            entity.name = $"{data.title} (Entity)";
-            entity.transform.position = position;
-            _entities[entityType].Add(entity);
-
-            return entity;
+            return CreateEntity(data, position, entityType);
         }
         return null;
+    }
+
+    GameObject CreateEntity(EntityData data, Vector3 position, Entity.EntityType entityType)
+    {
+        GameObject entity = Instantiate(_entityBasePrefab, Vector3.zero, Quaternion.identity, _parentEntities[entityType].transform);
+        entity.GetComponent<Entity>().data = data;
+        entity.GetComponent<Entity>().entityType = entityType;
+        entity.GetComponent<Entity>().Init();
+        entity.name = $"{data.title} (Entity)";
+        entity.transform.position = position;
+        _entities[entityType].Add(entity);
+        return entity;
+    }
+
+    // Where an entity of this side placed at position would stand (see Board.TryGetPlacementPosition), on the grid
+    // without board
+    public bool TryGetPlacementPosition(Vector3 position, Entity.EntityType entityType, out Vector3 placement)
+    {
+        if (_board != null)
+        {
+            return _board.TryGetPlacementPosition(position, BoardLayout.GetCellType(entityType), out placement);
+        }
+        GridManager grid = PlayerBehaviour.instance.grid;
+        placement = grid.GetNearestWalkablePosition(position);
+        return grid.GetNearestWalkableCell(position) != null;
+    }
+
+    // Takes the entity off the field without killing it (e.g. back to the inventory): no death, no lost items
+    public void TakeBack(GameObject entity, Entity.EntityType entityType)
+    {
+        if (entity != null)
+        {
+            RemoveEntity(entity, entityType);
+        }
     }
 
     // Spawns every entity of the pattern around center, returns the ones actually spawned
@@ -111,7 +152,6 @@ public class EntityManager : Singleton<EntityManager>
             GameObject entity = SpawnEntity(unit.data, targetBoard.GetUnitPosition(coord), entityType);
             if (entity != null)
             {
-                targetBoard.Occupy(coord, entity, side);
                 spawned.Add(entity.GetComponent<Entity>());
             }
         }
@@ -154,12 +194,15 @@ public class EntityManager : Singleton<EntityManager>
 
     void RemoveEntity(GameObject entity, Entity.EntityType entityType)
     {
-        PlayerBehaviour player = PlayerBehaviour.instance;
-        Vector2Int coord = player.grid.GetCoordFromPosition(entity.transform.position);
-        player.grid.SetWalkable(coord.x, coord.y, true);
         if (_board != null)
         {
             _board.Release(entity);
+        }
+        else
+        {
+            PlayerBehaviour player = PlayerBehaviour.instance;
+            Vector2Int coord = player.grid.GetCoordFromPosition(entity.transform.position);
+            player.grid.SetWalkable(coord.x, coord.y, true);
         }
         _entities[entityType].Remove(entity);
         Destroy(entity);

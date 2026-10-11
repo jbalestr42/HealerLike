@@ -737,6 +737,23 @@ public class AscensionGameType : AGameType, IEventRoomHost
         _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => x.GetComponent<Entity>().Reset());
     }
 
+    // The units left without a cell by a new board go back to the unit inventory, their items to the player
+    void ReturnToInventory(List<GameObject> units)
+    {
+        foreach (GameObject unit in units)
+        {
+            Entity entity = unit.GetComponent<Entity>();
+            if (entity.entityType != Entity.EntityType.Player)
+            {
+                EntityManager.instance.TakeBack(unit, entity.entityType);
+                continue;
+            }
+            _gameView.playerInventory.TakeItemsOf(entity);
+            _gameView.entityInventory.AddEntity(entity.data);
+            EntityManager.instance.TakeBack(unit, entity.entityType);
+        }
+    }
+
     // The enemies spawned, none without a wave
     public List<Entity> LoadEnemies(WavePatternData waveData)
     {
@@ -749,7 +766,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
         Board board = EntityManager.instance.board;
         if (board != null)
         {
-            board.SetLayout(waveData.layout);
+            ReturnToInventory(board.SetLayout(waveData.layout));
             return EntityManager.instance.SpawnWave(waveData, board, Entity.EntityType.Computer);
         }
         return EntityManager.instance.SpawnWave(waveData, transform.position, Entity.EntityType.Computer);

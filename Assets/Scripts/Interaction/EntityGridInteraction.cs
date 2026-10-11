@@ -30,10 +30,15 @@ public class EntityGridInteraction : AInteraction
         SpawnAt(hit.point);
     }
 
-    // Same as clicking the position, e.g. for a cell chosen by code: the entity goes on the nearest free cell
+    // Same as clicking the position, e.g. for a cell chosen by code: the entity goes on the nearest free cell of its
+    // side
     public void SpawnAt(Vector3 position)
     {
-        GameObject entity = EntityManager.instance.SpawnEntity(_data, PlayerBehaviour.instance.grid.GetNearestWalkablePosition(position), _entityType);
+        GameObject entity = null;
+        if (EntityManager.instance.TryGetPlacementPosition(position, _entityType, out Vector3 placement))
+        {
+            entity = EntityManager.instance.SpawnEntity(_data, placement, _entityType);
+        }
         if (entity != null && _onEntitySpawned != null)
         {
             _onEntitySpawned(entity.GetComponent<Entity>());
@@ -49,7 +54,8 @@ public class EntityGridInteraction : AInteraction
     {
         if (_entity)
         {
-            _entity.transform.position = PlayerBehaviour.instance.grid.GetNearestWalkablePosition(hit.point);
+            EntityManager.instance.TryGetPlacementPosition(hit.point, _entityType, out Vector3 placement);
+            _entity.transform.position = placement;
         }
     }
 

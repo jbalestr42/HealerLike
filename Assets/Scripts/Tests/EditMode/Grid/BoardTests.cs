@@ -194,6 +194,133 @@ public class BoardTests
         Assert.IsFalse(_board.TryGetNearestFreeCell(BoardCellType.Player, Vector3.zero, out _));
     }
 
+    // A unit standing on its cell of the board, like EntityManager puts it
+    GameObject PlaceUnit(Vector2Int coord, BoardCellType side)
+    {
+        GameObject unit = CreateUnit();
+        unit.transform.position = _board.GetUnitPosition(coord);
+        Assert.IsTrue(_board.Occupy(coord, unit, side));
+        return unit;
+    }
+
+    BoardLayout CreateLayout()
+    {
+        BoardLayout layout = ScriptableObject.CreateInstance<BoardLayout>();
+        _created.Add(layout);
+        return layout;
+    }
+
+    [Test]
+    public void SetLayout_AUnitStillOnACellOfItsSide_KeepsItsCell()
+    {
+        GameObject unit = PlaceUnit(new Vector2Int(2, 1), BoardCellType.Player);
+        Vector3 position = unit.transform.position;
+
+        List<GameObject> displaced = _board.SetLayout(CreateLayout());
+
+        CollectionAssert.IsEmpty(displaced);
+        Assert.AreSame(unit, _board.GetOccupant(new Vector2Int(2, 1)));
+        Assert.AreEqual(position, unit.transform.position);
+    }
+
+    [Test]
+    public void SetLayout_ACellNoLongerOfItsSide_TheUnitGoesToTheNearestFreeCellOfItsSide()
+    {
+        GameObject unit = PlaceUnit(new Vector2Int(3, 1), BoardCellType.Player);
+        BoardLayout layout = CreateLayout();
+        for (int y = 0; y < 4; y++)
+        {
+            layout.SetCell(3, y, BoardCellType.None);
+        }
+
+        List<GameObject> displaced = _board.SetLayout(layout);
+
+        CollectionAssert.IsEmpty(displaced);
+        Assert.IsTrue(_board.TryGetCoordOf(unit, out Vector2Int coord));
+        Assert.AreEqual(new Vector2Int(2, 1), coord);
+        Assert.AreEqual(_board.GetUnitPosition(coord), unit.transform.position);
+    }
+
+    [Test]
+    public void SetLayout_TheUnitsKeepingTheirCellAreNeverPushedByTheMovedOnes()
+    {
+        GameObject moved = PlaceUnit(new Vector2Int(3, 1), BoardCellType.Player);
+        GameObject kept = PlaceUnit(new Vector2Int(2, 1), BoardCellType.Player);
+        BoardLayout layout = CreateLayout();
+        layout.SetCell(3, 1, BoardCellType.None);
+
+        _board.SetLayout(layout);
+
+        Assert.AreSame(kept, _board.GetOccupant(new Vector2Int(2, 1)));
+        Assert.IsTrue(_board.TryGetCoordOf(moved, out Vector2Int coord));
+        Assert.AreNotEqual(new Vector2Int(2, 1), coord);
+        Assert.AreEqual(BoardCellType.Player, layout.GetCell(coord));
+    }
+
+    [Test]
+    public void SetLayout_NoFreeCellLeftForAUnit_ItIsReturnedOffTheBoard()
+    {
+        GameObject first = PlaceUnit(new Vector2Int(0, 0), BoardCellType.Player);
+        GameObject second = PlaceUnit(new Vector2Int(1, 0), BoardCellType.Player);
+        BoardLayout layout = CreateLayout();
+        layout.Resize(1, 1);
+
+        List<GameObject> displaced = _board.SetLayout(layout);
+
+        Assert.AreSame(first, _board.GetOccupant(new Vector2Int(0, 0)));
+        CollectionAssert.AreEqual(new[] { second }, displaced);
+        Assert.IsFalse(_board.TryGetCoordOf(second, out _));
+    }
+
+    [Test]
+    public void SetLayout_EachUnitStaysOnItsSide()
+    {
+        GameObject enemy = PlaceUnit(new Vector2Int(5, 0), BoardCellType.Enemy);
+        BoardLayout layout = CreateLayout();
+        for (int y = 0; y < 4; y++)
+        {
+            layout.SetCell(5, y, BoardCellType.Player);
+        }
+
+        _board.SetLayout(layout);
+
+        Assert.IsTrue(_board.TryGetCoordOf(enemy, out Vector2Int coord));
+        Assert.AreEqual(new Vector2Int(6, 0), coord);
+    }
+
+    [Test]
+    public void TryGetPlacementCell_TheCellUnderThePositionWhenFree()
+    {
+        Assert.IsTrue(_board.TryGetPlacementCell(_board.GetCellCenter(new Vector2Int(0, 3)) + new Vector3(0.4f, 0f, -0.4f), BoardCellType.Player, out Vector2Int cell));
+
+        Assert.AreEqual(new Vector2Int(0, 3), cell);
+    }
+
+    [Test]
+    public void TryGetPlacementCell_ATakenCellOrACellOfAnotherSide_TheNearestFreeCellOfTheSide()
+    {
+        PlaceUnit(new Vector2Int(0, 3), BoardCellType.Player);
+
+        Assert.IsTrue(_board.TryGetPlacementCell(_board.GetCellCenter(new Vector2Int(0, 3)) + new Vector3(0.4f, 0f, 0f), BoardCellType.Player, out Vector2Int taken));
+        Assert.IsTrue(_board.TryGetPlacementCell(_board.GetCellCenter(new Vector2Int(5, 0)), BoardCellType.Player, out Vector2Int enemySide));
+
+        Assert.AreEqual(new Vector2Int(1, 3), taken, "on the right of the taken cell, nearer to the cursor");
+        Assert.AreEqual(new Vector2Int(3, 0), enemySide);
+    }
+
+    [Test]
+    public void TryGetPlacementPosition_WhereTheUnitStandsOnThatCell_FalseWithoutFreeCell()
+    {
+        Assert.IsTrue(_board.TryGetPlacementPosition(_board.GetCellCenter(new Vector2Int(6, 2)), BoardCellType.Enemy, out Vector3 placement));
+        Assert.AreEqual(_board.GetUnitPosition(new Vector2Int(6, 2)), placement);
+
+        foreach (Vector2Int cell in _layout.GetCells(BoardCellType.Enemy))
+        {
+            _board.Occupy(cell, CreateUnit(), BoardCellType.Enemy);
+        }
+        Assert.IsFalse(_board.TryGetPlacementPosition(Vector3.zero, BoardCellType.Enemy, out _));
+    }
+
     [Test]
     public void TryGetCoord_TheCellUnderThePosition()
     {
