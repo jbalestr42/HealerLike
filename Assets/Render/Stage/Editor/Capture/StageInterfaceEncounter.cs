@@ -61,11 +61,13 @@ namespace HealerLike.Render.Stage
             _session.output.Check(false, "A usable targeting spell is available");
         }
 
-        // Casts every usable spell card once: an instant spell casts on its press, a targeted one on the most
-        // injured ally it accepts, or else the first creature it accepts; one with no target is cancelled
+        // Taps every usable spell card once: a targeted spell is released on the most injured ally it accepts, or
+        // else the first creature it accepts, and one left without a target is cancelled. A cast counts only when
+        // it spent mana
         IEnumerator Assist(System.Action<int> cast)
         {
             AscensionGameType ascension = Object.FindAnyObjectByType<AscensionGameType>();
+            Character character = _session.manager.player.character;
             foreach (Button card in _session.actions.Cards("spell-list"))
             {
                 if (ascension == null || LegacyUiReader.AscensionState(ascension) != AscensionGameType.State.OnGoingBattle)
@@ -78,31 +80,33 @@ namespace HealerLike.Render.Stage
                     continue;
                 }
 
-                yield return _session.actions.SelectCard(card);
+                float mana = character.mana.Value;
+                yield return _session.actions.BringIntoView(card);
+                yield return _session.actions.PointerTap(card);
                 yield return Wait(0.2f);
                 AInteraction spell = _session.interaction.GetInteraction();
-                if (spell == null)
-                {
-                    cast(1);
-                    continue;
-                }
-
-                Entity target = Target(spell);
+                Entity target = spell != null ? Target(spell) : null;
                 if (target != null)
                 {
-                    _session.actions.WorldTap(
-                        _session.manager.gameCamera.WorldToScreenPoint(RenderTargets.Point(target.gameObject)));
-                    yield return null;
+                    Collider collider = target.GetComponent<Collider>();
+                    Vector3 point = _session.manager.gameCamera.WorldToScreenPoint(collider.bounds.center);
+                    if (point.z > 0f && !_session.actions.touch.IsOverInterface(point))
+                    {
+                        yield return _session.actions.TouchGesture(point);
+                        yield return Wait(0.15f);
+                    }
                 }
 
-                if (_session.interaction.GetInteraction() == null)
-                {
-                    cast(1);
-                }
-                else if (StageInterfaceOutput.IsVisible(_session.actions.root.Q("cancel-button")))
+                if (_session.interaction.GetInteraction() != null
+                    && StageInterfaceOutput.IsVisible(_session.actions.root.Q("cancel-button")))
                 {
                     _session.actions.Submit("cancel-button");
                     yield return null;
+                }
+
+                if (character.mana.Value < mana)
+                {
+                    cast(1);
                 }
             }
         }
@@ -113,7 +117,7 @@ namespace HealerLike.Render.Stage
             foreach (GameObject ally in _session.manager.entityManager.GetEntities(Entity.EntityType.Player))
             {
                 Entity entity = ally.GetComponent<Entity>();
-                if (entity != null && spell.IsValidTarget(ally) && (best == null
+                if (entity != null && entity.GetComponent<Collider>() != null && spell.IsValidTarget(ally) && (best == null
                     || entity.health.percent < best.health.percent))
                 {
                     best = entity;
@@ -127,7 +131,7 @@ namespace HealerLike.Render.Stage
 
             foreach (GameObject enemy in _session.manager.entityManager.GetEntities(Entity.EntityType.Computer))
             {
-                if (spell.IsValidTarget(enemy))
+                if (enemy.GetComponent<Collider>() != null && spell.IsValidTarget(enemy))
                 {
                     return enemy.GetComponent<Entity>();
                 }
@@ -160,7 +164,7 @@ namespace HealerLike.Render.Stage
             }
 
             _session.output.manifest.checks.Add("First encounter won with " + casts
-                + " spells cast through Toolkit cards");
+                + " spells cast through Toolkit cards, counted by the mana each spent");
 
             yield return _session.Capture("10-reward");
             List<Button> cards = _session.actions.Cards("upgrade-list");
