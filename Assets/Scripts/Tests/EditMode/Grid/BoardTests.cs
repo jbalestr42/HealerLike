@@ -90,11 +90,11 @@ public class BoardTests
     }
 
     [Test]
-    public void GetUnitPosition_HalfACellAboveTheCenterOfTheCell_TheBoardCenteredOnItsTransform()
+    public void GetUnitPosition_OnTheGroundAtTheCenterOfTheCell_TheBoardCenteredOnItsTransform()
     {
         // 9 x 4 cells of 1 around (0.5, 0, 0): from x = -4 to 5, from z = -2 to 2
-        Assert.AreEqual(new Vector3(-3.5f, 0.5f, -1.5f), _board.GetUnitPosition(new Vector2Int(0, 0)));
-        Assert.AreEqual(new Vector3(1.5f, 0.5f, 0.5f), _board.GetUnitPosition(new Vector2Int(5, 2)));
+        Assert.AreEqual(new Vector3(-3.5f, 0f, -1.5f), _board.GetUnitPosition(new Vector2Int(0, 0)));
+        Assert.AreEqual(new Vector3(1.5f, 0f, 0.5f), _board.GetUnitPosition(new Vector2Int(5, 2)));
     }
 
     [Test]

@@ -107,6 +107,41 @@ public class BoardLayout : ScriptableObject
         return coords;
     }
 
+    // The column of the cells of the side nearest to the other side, where the two sides meet: its first column on
+    // the left when the other side is on its left (or has no cell), its last one otherwise, 0 when it has no cell
+    public int GetFrontColumn(BoardCellType side)
+    {
+        List<Vector2Int> cells = GetCells(side);
+        if (cells.Count == 0)
+        {
+            return 0;
+        }
+        int minX = int.MaxValue;
+        int maxX = int.MinValue;
+        foreach (Vector2Int cell in cells)
+        {
+            minX = Mathf.Min(minX, cell.x);
+            maxX = Mathf.Max(maxX, cell.x);
+        }
+        BoardCellType other = side == BoardCellType.Player ? BoardCellType.Enemy : BoardCellType.Player;
+        // The other side on the left: the left column of this one
+        return GetMeanX(GetCells(other), float.MinValue) <= GetMeanX(cells, minX) ? minX : maxX;
+    }
+
+    static float GetMeanX(List<Vector2Int> cells, float fallback)
+    {
+        if (cells.Count == 0)
+        {
+            return fallback;
+        }
+        float sum = 0f;
+        foreach (Vector2Int cell in cells)
+        {
+            sum += cell.x;
+        }
+        return sum / cells.Count;
+    }
+
     // Each cell keeps its type at the same x and y, the new ones are None
     public void Resize(int newWidth, int newHeight)
     {

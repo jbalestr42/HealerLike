@@ -15,7 +15,7 @@ public interface IEventRoomHost
     // The items of the game having every included tag and none of the excluded ones (e.g. the cursed items)
     IReadOnlyList<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null);
 
-    // The unit joins the ones the player can place on the grid
+    // The unit joins the ones the player can place on the board
     void AddUnit(EntityData unit);
 
     // The item goes to the character, for the rest of the run

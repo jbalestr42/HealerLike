@@ -25,11 +25,11 @@ public class BoostEntitiesOnRelativeCellBuff : ABuff<BoostEntitiesOnRelativeCell
 
     public override void Add(GameObject source, GameObject target)
     {
-        GridManager grid = PlayerBehaviour.instance.grid;
+        float cellSize = Board.currentCellSize;
 
         foreach (Vector2Int offset in RelativeCellPattern.GetOffsets(data.pattern, data.range))
         {
-            Vector3 localOffset = new Vector3(offset.x * grid.size, 0f, offset.y * grid.size);
+            Vector3 localOffset = new Vector3(offset.x * cellSize, 0f, offset.y * cellSize);
             Vector3 cellPosition = source.transform.position + localOffset;
 
             GameObject cell = GameObject.Instantiate(data.boostCellPrefab, cellPosition, Quaternion.identity, source.transform);

@@ -176,6 +176,40 @@ public class BoardLayoutTests
     }
 
     [Test]
+    public void GetFrontColumn_TheColumnOfEachSideNearestToTheOther()
+    {
+        Assert.AreEqual(3, _layout.GetFrontColumn(BoardCellType.Player));
+        Assert.AreEqual(5, _layout.GetFrontColumn(BoardCellType.Enemy));
+    }
+
+    [Test]
+    public void GetFrontColumn_TheSidesSwapped()
+    {
+        for (int x = 0; x < 9; x++)
+        {
+            for (int y = 0; y < 4; y++)
+            {
+                BoardCellType type = _layout.GetCell(x, y);
+                _layout.SetCell(x, y, type == BoardCellType.Player ? BoardCellType.Enemy : type == BoardCellType.Enemy ? BoardCellType.Player : type);
+            }
+        }
+
+        Assert.AreEqual(5, _layout.GetFrontColumn(BoardCellType.Player));
+        Assert.AreEqual(3, _layout.GetFrontColumn(BoardCellType.Enemy));
+    }
+
+    [Test]
+    public void GetFrontColumn_ASideWithoutCell_Is0()
+    {
+        foreach (Vector2Int cell in _layout.GetCells(BoardCellType.Enemy))
+        {
+            _layout.SetCell(cell.x, cell.y, BoardCellType.None);
+        }
+
+        Assert.AreEqual(0, _layout.GetFrontColumn(BoardCellType.Enemy));
+    }
+
+    [Test]
     public void DefaultLayoutAsset_Is9x4WithFourColumnsPerSide()
     {
         BoardLayout layout = AssetDatabase.LoadAssetAtPath<BoardLayout>(DefaultLayoutPath);

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// A unit offered by a reward: once picked, it joins the units the player can place on the grid
+// A unit offered by a reward: once picked, it joins the units the player can place on the board
 public class SelectEntityUpgradeButton : MonoBehaviour
 {
     [SerializeField] TMPro.TMP_Text _title;

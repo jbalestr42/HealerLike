@@ -24,10 +24,10 @@ MonoBehaviour:
   fixedTeamCharacter: {fileID: 11400000, guid: 3fcc0e34157a2a24da1715d7b4c02567, type: 2}
   fixedTeamDies: 1
   eachRewardItem: 1
+  onlyItems: []
+  skipFightsWithoutItem: 0
   initialTeams: 0
   castSpells: 1
   timeScale: 20
   maxDuration: 180
   eliteMaxDuration: 180
-  frontColumn: 6
-  rowsPerColumn: 5

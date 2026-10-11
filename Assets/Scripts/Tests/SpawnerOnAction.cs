@@ -15,14 +15,10 @@ public class SpawnerOnAction : MonoBehaviour
 
     public void LoadWave(WavePatternData waveData)
     {
-        foreach ((int x, int y, EntityData data) unit in waveData.GetUnits())
+        foreach (Entity entity in EntityManager.instance.SpawnWave(waveData, EntityManager.instance.board, Entity.EntityType.Computer))
         {
-            GameObject entity = EntityManager.instance.SpawnEntity(unit.data, waveData.GetSlotPosition(transform.position, unit.x, unit.y), Entity.EntityType.Computer);
-            if (entity != null)
-            {
-                entity.transform.parent = transform;
-                entities.Add(entity);
-            }
+            entity.transform.parent = transform;
+            entities.Add(entity.gameObject);
         }
     }
 

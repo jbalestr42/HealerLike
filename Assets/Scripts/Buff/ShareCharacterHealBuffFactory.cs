@@ -101,7 +101,6 @@ public class ShareCharacterHealBuff : ABuff<ShareCharacterHealBuffData>
 
     protected virtual float GetCellSize()
     {
-        PlayerBehaviour player = PlayerBehaviour.existingInstance;
-        return player != null && player.grid != null ? player.grid.size : 1f;
+        return Board.currentCellSize;
     }
 }

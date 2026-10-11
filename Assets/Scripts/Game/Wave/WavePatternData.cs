@@ -39,43 +39,7 @@ public class WavePatternData : ScriptableObject
 
     // The column of the Enemy cells nearest to the Player cells, where the wave meets the team: the column 0 without
     // board
-    public int frontColumn
-    {
-        get
-        {
-            if (_layout == null)
-            {
-                return 0;
-            }
-            List<Vector2Int> enemyCells = _layout.GetCells(BoardCellType.Enemy);
-            if (enemyCells.Count == 0)
-            {
-                return 0;
-            }
-            int minX = int.MaxValue;
-            int maxX = int.MinValue;
-            foreach (Vector2Int cell in enemyCells)
-            {
-                minX = Mathf.Min(minX, cell.x);
-                maxX = Mathf.Max(maxX, cell.x);
-            }
-            return GetMeanX(_layout.GetCells(BoardCellType.Player), minX) <= GetMeanX(enemyCells, minX) ? minX : maxX;
-        }
-    }
-
-    static float GetMeanX(List<Vector2Int> cells, float fallback)
-    {
-        if (cells.Count == 0)
-        {
-            return fallback;
-        }
-        float sum = 0f;
-        foreach (Vector2Int cell in cells)
-        {
-            sum += cell.x;
-        }
-        return sum / cells.Count;
-    }
+    public int frontColumn => _layout != null ? _layout.GetFrontColumn(BoardCellType.Enemy) : 0;
 
     // The wave takes the size of the board, each unit keeping its cell
     public void SetLayout(BoardLayout layout)
@@ -176,36 +140,6 @@ public class WavePatternData : ScriptableObject
         _width = newWidth;
         _height = newHeight;
         _cells = cells;
-    }
-
-    // World position of a slot when the Enemy cells of the board are centered on center (without board, the grid
-    // centered on it)
-    public Vector3 GetSlotPosition(Vector3 center, int x, int y)
-    {
-        if (_layout == null)
-        {
-            return center - new Vector3(_width / 2f, 0f, _height / 2f) + new Vector3(x, 0f, y);
-        }
-        return _layout.GetCellCenter(center - GetEnemyAreaOffset(), new Vector2Int(x, y));
-    }
-
-    // From the center of the board to the center of its Enemy cells
-    Vector3 GetEnemyAreaOffset()
-    {
-        List<Vector2Int> enemyCells = _layout.GetCells(BoardCellType.Enemy);
-        if (enemyCells.Count == 0)
-        {
-            return Vector3.zero;
-        }
-        Vector2Int min = enemyCells[0];
-        Vector2Int max = enemyCells[0];
-        foreach (Vector2Int cell in enemyCells)
-        {
-            min = Vector2Int.Min(min, cell);
-            max = Vector2Int.Max(max, cell);
-        }
-        // The board centered on the world origin
-        return (_layout.GetCellCenter(Vector3.zero, min) + _layout.GetCellCenter(Vector3.zero, max)) * 0.5f;
     }
 
     int GetIndex(int x, int y)

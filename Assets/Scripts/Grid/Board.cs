@@ -31,6 +31,17 @@ public class Board : MonoBehaviour
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int ColorId = Shader.PropertyToID("_Color");
 
+    // The size of a cell of the board of the scene, 1 without one (e.g. in a test)
+    public static float currentCellSize
+    {
+        get
+        {
+            EntityManager manager = EntityManager.existingInstance;
+            Board board = manager != null ? manager.board : null;
+            return board != null && board.layout != null ? board.layout.cellSize : 1f;
+        }
+    }
+
     void Start()
     {
         if (_tiles.Count == 0)
@@ -96,10 +107,10 @@ public class Board : MonoBehaviour
         return layout.GetCellCenter(transform.position, coord);
     }
 
-    // Where a unit stands on the cell: half a cell above the ground, like on the placement grid
+    // Where a unit stands on the cell: on the ground, at its center
     public Vector3 GetUnitPosition(Vector2Int coord)
     {
-        return GetCellCenter(coord) + Vector3.up * (layout.cellSize * 0.5f);
+        return GetCellCenter(coord);
     }
 
     // The cell under the position, false outside the board

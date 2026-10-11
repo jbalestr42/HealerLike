@@ -522,7 +522,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
         CloseRewards();
     }
 
-    // The unit joins the ones the player can place on the grid
+    // The unit joins the ones the player can place on the board
     public void OnEntitySelected(EntityData entity)
     {
         AddUnit(entity);
@@ -762,14 +762,10 @@ public class AscensionGameType : AGameType, IEventRoomHost
             return new List<Entity>();
         }
 
-        // On the board of the wave when the scene has one
+        // On the board of the wave
         Board board = EntityManager.instance.board;
-        if (board != null)
-        {
-            ReturnToInventory(board.SetLayout(waveData.layout));
-            return EntityManager.instance.SpawnWave(waveData, board, Entity.EntityType.Computer);
-        }
-        return EntityManager.instance.SpawnWave(waveData, transform.position, Entity.EntityType.Computer);
+        ReturnToInventory(board.SetLayout(waveData.layout));
+        return EntityManager.instance.SpawnWave(waveData, board, Entity.EntityType.Computer);
     }
 
     #region IEventRoomHost

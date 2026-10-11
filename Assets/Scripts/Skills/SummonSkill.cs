@@ -51,24 +51,13 @@ public class SummonSkill : ACooldownSkill<SummonSkillData>
 
     public override float cooldownDuration => data.cooldown;
 
-    protected virtual GridManager grid => PlayerBehaviour.instance.grid;
-    // The board of the scene, the grid only without one
     protected virtual Board board => EntityManager.instance.board;
     protected virtual Entity.EntityType casterType => GetComponent<Entity>().entityType;
 
     // The free cell of the caster's side closest to it
     bool TryGetSummonPosition(out Vector3 position)
     {
-        Board summonBoard = board;
-        if (summonBoard != null)
-        {
-            return summonBoard.TryGetPlacementPosition(transform.position, BoardLayout.GetCellType(casterType), out position);
-        }
-
-        GridCell cell = grid.GetNearestWalkableCell(transform.position);
-        // On the caster's plane, like the other entities of its side
-        position = cell != null ? new Vector3(cell.center.x, transform.position.y, cell.center.z) : transform.position;
-        return cell != null;
+        return board.TryGetPlacementPosition(transform.position, BoardLayout.GetCellType(casterType), out position);
     }
 
     protected virtual GameObject Spawn(Vector3 position)

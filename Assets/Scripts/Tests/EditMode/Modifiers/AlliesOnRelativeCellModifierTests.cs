@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Attributes.Modifiers
 {
 
-// The allies and the grid come from the EntityManager and PlayerBehaviour singletons in the game
+// The allies and the board come from the EntityManager singleton in the game
 public class TestAlliesOnRelativeCellModifier : AlliesOnRelativeCellModifier
 {
     public List<GameObject> allies = new List<GameObject>();
@@ -36,7 +36,7 @@ public class AlliesOnRelativeCellModifierTests
         _units.DestroyAll();
     }
 
-    // A unit on the cell (x, y) of the grid
+    // A unit on the cell (x, y) of the board
     Entity CreateAt(string name, int x, int y)
     {
         Entity entity = _units.Create(100f, 100f, name);

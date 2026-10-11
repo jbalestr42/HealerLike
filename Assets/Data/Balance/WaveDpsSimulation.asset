@@ -15,12 +15,18 @@ MonoBehaviour:
   healerBots: []
   waves: []
   floors: 
+  onlyPoolFloors: 0
+  poolFloorMargin: 1
   seedCount: 3
   mapSettings: {fileID: 0}
   fixedTeam: {fileID: 11400000, guid: 1a85ff87415019e49b11104e944139a1, type: 2}
   fixedTeamCharacter: {fileID: 11400000, guid: 3fcc0e34157a2a24da1715d7b4c02567, type: 2}
+  fixedTeamDies: 0
+  eachRewardItem: 0
+  onlyItems: []
+  skipFightsWithoutItem: 0
+  initialTeams: 0
+  castSpells: 1
   timeScale: 20
   maxDuration: 30
   eliteMaxDuration: 60
-  frontColumn: 6
-  rowsPerColumn: 5

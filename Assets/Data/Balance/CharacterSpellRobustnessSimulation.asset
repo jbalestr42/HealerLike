@@ -19,14 +19,18 @@ MonoBehaviour:
   waves:
   - {fileID: 11400000, guid: ba41c8c11d88f7748bd8fcde9b0f8ef8, type: 2}
   floors: 
+  onlyPoolFloors: 0
+  poolFloorMargin: 1
   seedCount: 3
   mapSettings: {fileID: 0}
   fixedTeam: {fileID: 0}
   fixedTeamCharacter: {fileID: 0}
+  fixedTeamDies: 0
+  eachRewardItem: 0
+  onlyItems: []
+  skipFightsWithoutItem: 0
   initialTeams: 1
   castSpells: 1
   timeScale: 20
   maxDuration: 180
   eliteMaxDuration: 180
-  frontColumn: 6
-  rowsPerColumn: 5

@@ -102,7 +102,7 @@ public class SandboxGameType : AGameType
             _entities.DestroyEntity(enemy, Entity.EntityType.Computer);
         }
 
-        foreach (Entity entity in _entities.SpawnWave(waveData, transform.position, Entity.EntityType.Computer))
+        foreach (Entity entity in _entities.SpawnWave(waveData, _entities.board, Entity.EntityType.Computer))
         {
             OnEntitySpawned(entity);
         }

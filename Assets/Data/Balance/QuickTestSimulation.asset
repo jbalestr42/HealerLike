@@ -20,9 +20,18 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d6a62ca494014f16a3f7d75a4c2410a0, type: 2}
   - {fileID: 11400000, guid: fa27bfdb8534459b9bc966b982f8a5b2, type: 2}
   floors: 0000000006000000i
+  onlyPoolFloors: 0
+  poolFloorMargin: 1
   seedCount: 1
   mapSettings: {fileID: 11400000, guid: 2382ba3ade5a45043ace836e6bf1cc19, type: 2}
+  fixedTeam: {fileID: 0}
+  fixedTeamCharacter: {fileID: 0}
+  fixedTeamDies: 0
+  eachRewardItem: 0
+  onlyItems: []
+  skipFightsWithoutItem: 0
+  initialTeams: 0
+  castSpells: 1
   timeScale: 10
   maxDuration: 180
-  frontColumn: 6
-  rowsPerColumn: 5
+  eliteMaxDuration: 180

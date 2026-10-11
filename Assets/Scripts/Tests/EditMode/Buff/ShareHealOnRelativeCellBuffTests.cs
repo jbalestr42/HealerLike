@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Buff
 {
 
-// The allies and the grid come from the EntityManager and PlayerBehaviour singletons in the game
+// The allies and the board come from the EntityManager singleton in the game
 public class TestShareHealOnRelativeCellBuff : ShareHealOnRelativeCellBuff
 {
     public List<GameObject> allies = new List<GameObject>();
@@ -43,7 +43,7 @@ public class ShareHealOnRelativeCellBuffTests
         _units.DestroyAll();
     }
 
-    // A wounded unit on the cell (x, y) of the grid
+    // A wounded unit on the cell (x, y) of the board
     Entity CreateAt(string name, int x, int y)
     {
         Entity entity = _units.Create(50f, 100f, name);

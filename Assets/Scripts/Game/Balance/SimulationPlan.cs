@@ -53,11 +53,6 @@ public class SimulationPlan : ScriptableObject
     // The same for an elite or a boss
     [Min(1f)] public float eliteMaxDuration = 180f;
 
-    [Header("Formation")]
-    // Grid column of the units closest to the enemies (the tanks), the next columns going left
-    public int frontColumn = 6;
-    [Min(1)] public int rowsPerColumn = 5;
-
     // The waves of the plan, each in the room type of its wave pool. A listed wave in no pool (e.g. the dummies
     // measuring a team) is played as a combat
     public List<SimulatedWave> GetWaves(GameData data)

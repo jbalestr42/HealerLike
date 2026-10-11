@@ -24,30 +24,6 @@ public class WavePatternDataTests
         Object.DestroyImmediate(_wave);
     }
 
-    [Test]
-    public void GetSlotPosition_FirstSlot_IsOffsetByHalfThePatternSize()
-    {
-        Vector3 center = new Vector3(5f, 0.5f, 0f);
-
-        Vector3 position = _wave.GetSlotPosition(center, 0, 0);
-
-        Assert.AreEqual(new Vector3(3.5f, 0.5f, -1f), position);
-    }
-
-    [Test]
-    public void GetSlotPosition_NextSlots_AreOneUnitApartOnXAndZ()
-    {
-        Vector3 origin = _wave.GetSlotPosition(Vector3.zero, 0, 0);
-
-        Assert.AreEqual(origin + new Vector3(2f, 0f, 1f), _wave.GetSlotPosition(Vector3.zero, 2, 1));
-    }
-
-    [Test]
-    public void GetSlotPosition_KeepsTheCenterHeight()
-    {
-        Assert.AreEqual(2f, _wave.GetSlotPosition(new Vector3(0f, 2f, 0f), 1, 1).y);
-    }
-
     EntityData CreateUnit(string name)
     {
         EntityData unit = ScriptableObject.CreateInstance<EntityData>();
@@ -225,17 +201,6 @@ public class WavePatternDataTests
         _wave.SetEntity(7, 3, back);
 
         CollectionAssert.AreEqual(new[] { (0, 1, front), (2, 3, back) }, _wave.GetUnitsByRank());
-    }
-
-    [Test]
-    public void GetSlotPosition_WithABoard_TheEnemyCellsCenteredOnTheCenter()
-    {
-        _wave.SetLayout(CreateLayout());
-        Vector3 center = new Vector3(5f, 0.5f, 0f);
-
-        // The 4 x 4 enemy cells of 1 around the center: from x = 3 to 7, from z = -2 to 2
-        Assert.AreEqual(new Vector3(3.5f, 0.5f, -1.5f), _wave.GetSlotPosition(center, 5, 0));
-        Assert.AreEqual(new Vector3(6.5f, 0.5f, 1.5f), _wave.GetSlotPosition(center, 8, 3));
     }
 
     [Test]

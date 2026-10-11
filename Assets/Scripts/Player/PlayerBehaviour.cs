@@ -12,15 +12,8 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
     [SerializeField] Character _character;
     public Character character { get { return _character; } set { _character = value; } }
 
-    [SerializeField] GridManager _grid;
-    public GridManager grid { get { return _grid; } set { _grid = value; } }
-
-    [SerializeField] GridGenerator _gridGenerator;
-    public GridGenerator gridGenerator { get { return _gridGenerator; } set { _gridGenerator = value; } }
-
     void Start()
     {
-        _grid.Generate();
         _skillInputs.ForEach(input => input.asset.Enable());
     }
 

@@ -1,28 +1,26 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
 namespace Entities
 {
 
+// The units of the player dragged on the board: the default one, the player on the 4 left columns
 public class DraggableEntityTests
 {
-    GameObject _gridGo;
-    GameObject _ground;
-    GridManager _grid;
+    GameObject _boardGo;
+    Board _board;
+    BoardLayout _layout;
     GameObject _goA;
     GameObject _goB;
 
     [SetUp]
     public void SetUp()
     {
-        _gridGo = new GameObject("GridManager");
-        _ground = new GameObject("Ground");
-        _grid = _gridGo.AddComponent<GridManager>();
-        TestHelpers.SetPrivateField(_grid, "_ground", _ground);
-        _grid.width = 4;
-        _grid.height = 3;
-        _grid.size = 1f;
-        _grid.Generate();
+        _boardGo = new GameObject("Board");
+        _board = _boardGo.AddComponent<Board>();
+        _layout = ScriptableObject.CreateInstance<BoardLayout>();
+        _board.SetLayout(_layout);
     }
 
     [TearDown]
@@ -30,63 +28,33 @@ public class DraggableEntityTests
     {
         Object.DestroyImmediate(_goA);
         Object.DestroyImmediate(_goB);
-        Object.DestroyImmediate(_gridGo);
-        Object.DestroyImmediate(_ground);
+        Object.DestroyImmediate(_boardGo);
+        Object.DestroyImmediate(_layout);
     }
 
-    // Builds a DraggableEntity standing on coord, wired the way Start() would (without its
-    // PlayerBehaviour singleton lookup), with its cell flagged as occupied like EntityManager does.
+    // A unit of the player standing on its cell, wired the way Start() would (without its EntityManager singleton
+    // lookup)
     DraggableEntity CreateDraggable(ref GameObject go, Vector2Int coord)
     {
         go = new GameObject("Draggable");
         DraggableEntity draggable = go.AddComponent<DraggableEntity>();
-        Vector3 center = _grid.GetCellCenterFromCoord(coord);
-        go.transform.position = center;
-        TestHelpers.SetPrivateField(draggable, "_grid", _grid);
+        go.transform.position = _board.GetUnitPosition(coord);
+        TestHelpers.SetPrivateField(draggable, "_board", _board);
         TestHelpers.SetPrivateField(draggable, "_colliders", new Collider[0]);
         TestHelpers.SetPrivateField(draggable, "_originalLayers", new int[0]);
-        TestHelpers.SetPrivateField(draggable, "_homePosition", center);
-        _grid.SetWalkable(coord, false);
+        TestHelpers.SetPrivateField(draggable, "_homePosition", go.transform.position);
+        _board.Occupy(coord, go, BoardCellType.Player);
         return draggable;
     }
 
     [Test]
-    public void StartDrag_FreesTheHomeCell()
+    public void StartDrag_FreesItsCell()
     {
         DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
 
         a.StartDrag(new RaycastHit());
 
-        Assert.IsTrue(_grid.IsWalkable(1, 1));
-    }
-
-    [Test]
-    public void CancelDrag_GoesBackHomeAndOccupiesTheHomeCell()
-    {
-        DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
-        a.StartDrag(new RaycastHit());
-        _goA.transform.position = _grid.GetCellCenterFromCoord(new Vector2Int(3, 0));
-
-        a.CancelDrag();
-
-        Assert.AreEqual(_grid.GetCellCenterFromCoord(new Vector2Int(1, 1)), _goA.transform.position);
-        Assert.IsFalse(_grid.IsWalkable(1, 1));
-        Assert.IsTrue(_grid.IsWalkable(3, 0));
-    }
-
-    [Test]
-    public void EndDrag_OccupiesTheDropCellAndFreesTheOldHome()
-    {
-        DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
-        a.StartDrag(new RaycastHit());
-        Vector3 dropCenter = _grid.GetCellCenterFromCoord(new Vector2Int(3, 0));
-        _goA.transform.position = dropCenter;
-
-        a.EndDrag(new RaycastHit());
-
-        Assert.AreEqual(dropCenter, a.homePosition);
-        Assert.IsFalse(_grid.IsWalkable(3, 0));
-        Assert.IsTrue(_grid.IsWalkable(1, 1));
+        Assert.IsTrue(_board.IsFree(new Vector2Int(1, 1), BoardCellType.Player));
     }
 
     [Test]
@@ -94,11 +62,10 @@ public class DraggableEntityTests
     {
         DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
         a.StartDrag(new RaycastHit());
-        Vector3 target = _grid.GetCellCenterFromCoord(new Vector2Int(3, 2));
 
-        a.MoveToNearestFreeCell(target + new Vector3(0.2f, 0f, -0.2f));
+        a.MoveToNearestFreeCell(_board.GetCellCenter(new Vector2Int(3, 2)) + new Vector3(0.2f, 0f, -0.2f));
 
-        Assert.AreEqual(target, _goA.transform.position);
+        Assert.AreEqual(_board.GetUnitPosition(new Vector2Int(3, 2)), _goA.transform.position);
     }
 
     [Test]
@@ -107,150 +74,93 @@ public class DraggableEntityTests
         DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(0, 0));
         CreateDraggable(ref _goB, new Vector2Int(2, 1));
         a.StartDrag(new RaycastHit());
-        Vector3 occupied = _grid.GetCellCenterFromCoord(new Vector2Int(2, 1));
 
         // Cursor on the right side of the occupied cell: the free cell on its right is the closest
-        a.MoveToNearestFreeCell(occupied + new Vector3(0.4f, 0f, 0f));
+        a.MoveToNearestFreeCell(_board.GetCellCenter(new Vector2Int(2, 1)) + new Vector3(0.4f, 0f, 0f));
 
-        Assert.AreEqual(_grid.GetCellCenterFromCoord(new Vector2Int(3, 1)), _goA.transform.position);
+        Assert.AreEqual(_board.GetUnitPosition(new Vector2Int(3, 1)), _goA.transform.position);
     }
 
     [Test]
-    public void MoveToNearestFreeCell_OwnHomeCell_CanGoBackOnIt()
+    public void MoveToNearestFreeCell_OwnCell_CanGoBackOnIt()
     {
         DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
         a.StartDrag(new RaycastHit());
-        _goA.transform.position = _grid.GetCellCenterFromCoord(new Vector2Int(3, 0));
+        a.MoveToNearestFreeCell(_board.GetCellCenter(new Vector2Int(3, 0)));
 
-        a.MoveToNearestFreeCell(_grid.GetCellCenterFromCoord(new Vector2Int(1, 1)));
+        a.MoveToNearestFreeCell(_board.GetCellCenter(new Vector2Int(1, 1)));
 
-        Assert.AreEqual(_grid.GetCellCenterFromCoord(new Vector2Int(1, 1)), _goA.transform.position);
+        Assert.AreEqual(_board.GetUnitPosition(new Vector2Int(1, 1)), _goA.transform.position);
+    }
+
+    [Test]
+    public void MoveToNearestFreeCell_NeverOnTheEnemySide()
+    {
+        DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
+        a.StartDrag(new RaycastHit());
+
+        // The cursor over an enemy cell
+        a.MoveToNearestFreeCell(_board.GetCellCenter(new Vector2Int(6, 2)));
+
+        Assert.AreEqual(_board.GetUnitPosition(new Vector2Int(3, 2)), _goA.transform.position);
+    }
+
+    [Test]
+    public void EndDrag_OccupiesTheDropCellAndFreesTheOldOne()
+    {
+        DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
+        a.StartDrag(new RaycastHit());
+        a.MoveToNearestFreeCell(_board.GetCellCenter(new Vector2Int(3, 0)));
+
+        a.EndDrag(new RaycastHit());
+
+        Assert.AreSame(_goA, _board.GetOccupant(new Vector2Int(3, 0)));
+        Assert.IsTrue(_board.IsFree(new Vector2Int(1, 1), BoardCellType.Player));
+        Assert.AreEqual(_board.GetUnitPosition(new Vector2Int(3, 0)), a.homePosition);
     }
 
     [Test]
     public void EndDrag_OverAnotherUnit_LeavesItInPlaceAndDropsOnTheClosestFreeCell()
     {
-        Vector2Int coordA = new Vector2Int(0, 0);
-        Vector2Int coordB = new Vector2Int(2, 1);
-        DraggableEntity a = CreateDraggable(ref _goA, coordA);
-        DraggableEntity b = CreateDraggable(ref _goB, coordB);
+        DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(0, 0));
+        DraggableEntity b = CreateDraggable(ref _goB, new Vector2Int(2, 1));
         a.StartDrag(new RaycastHit());
-        a.MoveToNearestFreeCell(_grid.GetCellCenterFromCoord(coordB) + new Vector3(0f, 0f, 0.4f));
+        a.MoveToNearestFreeCell(_board.GetCellCenter(new Vector2Int(2, 1)) + new Vector3(0f, 0f, 0.4f));
 
         a.EndDrag(new RaycastHit());
 
-        Vector3 above = _grid.GetCellCenterFromCoord(new Vector2Int(2, 2));
-        Assert.AreEqual(above, a.homePosition);
-        Assert.AreEqual(_grid.GetCellCenterFromCoord(coordB), b.homePosition);
-        Assert.AreEqual(_grid.GetCellCenterFromCoord(coordB), _goB.transform.position);
-        Assert.IsFalse(_grid.IsWalkable(2, 2));
-        Assert.IsFalse(_grid.IsWalkable(coordB.x, coordB.y));
-        Assert.IsTrue(_grid.IsWalkable(coordA.x, coordA.y));
-    }
-    // A unit of the player standing on its cell of the board, wired the way Start() would
-    DraggableEntity CreateOnBoard(Board board, ref GameObject go, Vector2Int coord)
-    {
-        go = new GameObject("Draggable");
-        DraggableEntity draggable = go.AddComponent<DraggableEntity>();
-        go.transform.position = board.GetUnitPosition(coord);
-        TestHelpers.SetPrivateField(draggable, "_board", board);
-        TestHelpers.SetPrivateField(draggable, "_colliders", new Collider[0]);
-        TestHelpers.SetPrivateField(draggable, "_originalLayers", new int[0]);
-        TestHelpers.SetPrivateField(draggable, "_homePosition", go.transform.position);
-        board.Occupy(coord, go, BoardCellType.Player);
-        return draggable;
-    }
-
-    Board CreateBoard()
-    {
-        GameObject boardGo = new GameObject("Board");
-        _boardObjects.Add(boardGo);
-        Board board = boardGo.AddComponent<Board>();
-        BoardLayout layout = ScriptableObject.CreateInstance<BoardLayout>();
-        _boardObjects.Add(layout);
-        board.SetLayout(layout);
-        return board;
-    }
-
-    readonly System.Collections.Generic.List<Object> _boardObjects = new System.Collections.Generic.List<Object>();
-
-    [TearDown]
-    public void DestroyBoard()
-    {
-        foreach (Object created in _boardObjects)
-        {
-            Object.DestroyImmediate(created);
-        }
-        _boardObjects.Clear();
+        Assert.AreSame(_goA, _board.GetOccupant(new Vector2Int(2, 2)), "the cell above, the closest to the cursor");
+        Assert.AreSame(_goB, _board.GetOccupant(new Vector2Int(2, 1)));
+        Assert.AreEqual(_board.GetUnitPosition(new Vector2Int(2, 1)), b.homePosition);
+        Assert.IsTrue(_board.IsFree(new Vector2Int(0, 0), BoardCellType.Player));
     }
 
     [Test]
-    public void OnABoard_StartDrag_FreesItsCell()
+    public void EndDrag_OnATakenCell_BackOnItsCell()
     {
-        Board board = CreateBoard();
-        DraggableEntity a = CreateOnBoard(board, ref _goA, new Vector2Int(1, 1));
-
+        DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
+        CreateDraggable(ref _goB, new Vector2Int(2, 2));
         a.StartDrag(new RaycastHit());
-
-        Assert.IsTrue(board.IsFree(new Vector2Int(1, 1), BoardCellType.Player));
-    }
-
-    [Test]
-    public void OnABoard_MoveToNearestFreeCell_NeverOnTheEnemySide()
-    {
-        Board board = CreateBoard();
-        DraggableEntity a = CreateOnBoard(board, ref _goA, new Vector2Int(1, 1));
-        a.StartDrag(new RaycastHit());
-
-        // The cursor over an enemy cell
-        a.MoveToNearestFreeCell(board.GetCellCenter(new Vector2Int(6, 2)));
-
-        Assert.AreEqual(board.GetUnitPosition(new Vector2Int(3, 2)), _goA.transform.position);
-    }
-
-    [Test]
-    public void OnABoard_EndDrag_OccupiesTheDropCellAndFreesTheOldOne()
-    {
-        Board board = CreateBoard();
-        DraggableEntity a = CreateOnBoard(board, ref _goA, new Vector2Int(1, 1));
-        a.StartDrag(new RaycastHit());
-        a.MoveToNearestFreeCell(board.GetCellCenter(new Vector2Int(3, 0)));
+        _goA.transform.position = _board.GetUnitPosition(new Vector2Int(2, 2));
 
         a.EndDrag(new RaycastHit());
 
-        Assert.AreSame(_goA, board.GetOccupant(new Vector2Int(3, 0)));
-        Assert.IsTrue(board.IsFree(new Vector2Int(1, 1), BoardCellType.Player));
-        Assert.AreEqual(board.GetUnitPosition(new Vector2Int(3, 0)), a.homePosition);
+        Assert.AreSame(_goA, _board.GetOccupant(new Vector2Int(1, 1)));
+        Assert.AreSame(_goB, _board.GetOccupant(new Vector2Int(2, 2)));
     }
 
     [Test]
-    public void OnABoard_CancelDrag_BackOnItsCell()
+    public void CancelDrag_BackOnItsCell()
     {
-        Board board = CreateBoard();
-        DraggableEntity a = CreateOnBoard(board, ref _goA, new Vector2Int(1, 1));
+        DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
         a.StartDrag(new RaycastHit());
-        a.MoveToNearestFreeCell(board.GetCellCenter(new Vector2Int(3, 0)));
+        a.MoveToNearestFreeCell(_board.GetCellCenter(new Vector2Int(3, 0)));
 
         a.CancelDrag();
 
-        Assert.AreSame(_goA, board.GetOccupant(new Vector2Int(1, 1)));
-        Assert.AreEqual(board.GetUnitPosition(new Vector2Int(1, 1)), _goA.transform.position);
-        Assert.IsTrue(board.IsFree(new Vector2Int(3, 0), BoardCellType.Player));
-    }
-
-    [Test]
-    public void OnABoard_EndDragOverACellOfAnotherUnit_BackOnItsCell()
-    {
-        Board board = CreateBoard();
-        DraggableEntity a = CreateOnBoard(board, ref _goA, new Vector2Int(1, 1));
-        CreateOnBoard(board, ref _goB, new Vector2Int(2, 2));
-        a.StartDrag(new RaycastHit());
-        _goA.transform.position = board.GetUnitPosition(new Vector2Int(2, 2));
-
-        a.EndDrag(new RaycastHit());
-
-        Assert.AreSame(_goA, board.GetOccupant(new Vector2Int(1, 1)));
-        Assert.AreSame(_goB, board.GetOccupant(new Vector2Int(2, 2)));
+        Assert.AreSame(_goA, _board.GetOccupant(new Vector2Int(1, 1)));
+        Assert.AreEqual(_board.GetUnitPosition(new Vector2Int(1, 1)), _goA.transform.position);
+        Assert.IsTrue(_board.IsFree(new Vector2Int(3, 0), BoardCellType.Player));
     }
 }
 
