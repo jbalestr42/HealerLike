@@ -90,14 +90,10 @@ public class ToolkitGameActions : IDisposable
             return;
         }
 
+        // The run starts with the gameplay scene, and a finished one leaves his end screen over the Game view, so
+        // here there is only a battle to start. A new expedition goes through the end panel's "Return to menu".
         GameHUD hud = _context.legacy.gameHUD;
-        bool isStart = LegacyUiReader.GameState(_context.game) == GameManager.GameState.None;
-        if (isStart)
-        {
-            // GameManager starts the run when the gameplay scene loads: a finished run starts anew by reloading it
-            LoadScene(_host.gameplayScene);
-        }
-        else if (hud.nextWaveButton.interactable)
+        if (hud.nextWaveButton.interactable)
         {
             hud.nextWaveButton.onClick.Invoke();
         }
