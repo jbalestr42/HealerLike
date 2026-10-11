@@ -36,6 +36,7 @@ public class SkillDescriptionReaderTests
     [TestCase(typeof(ApplyBuffPeriodicallySkillFactory), HeadKind.Bud)]
     [TestCase(typeof(MarkedStrikeSkillFactory), HeadKind.Bud)]
     [TestCase(typeof(FuseSkillFactory), HeadKind.Bud)]
+    [TestCase(typeof(PurifySkillFactory), HeadKind.GiftBoonDefence)]
     public void Read_UnassignedFactoryData_KeepsTheKnownHeadWithoutThrowing(System.Type type, HeadKind expected)
     {
         ASkillFactory skill = (ASkillFactory)ScriptableObject.CreateInstance(type);
@@ -58,6 +59,40 @@ public class SkillDescriptionReaderTests
         Assert.AreEqual(11f, description.cadence);
         Assert.AreEqual(1, description.hits);
         Assert.IsEmpty(description.shots);
+    }
+
+    [Test]
+    public void Read_Purify_GivesABoonOfItsFirstBuffsAspectAtItsOwnRate()
+    {
+        FlatModifierFactory damage = Create<FlatModifierFactory>();
+        damage.data = new FlatModifierData
+        {
+            type = AttributeType.Damage, modifierType = AttributeModifierType.Add, value = 5f
+        };
+        BuffHandlerFactory handler = Create<BuffHandlerFactory>();
+        handler.data = new BuffHandlerData
+        {
+            durationType = DurationType.Duration, duration = 3f,
+            buffFactoryList = new List<ABuffFactory> { damage }
+        };
+        PurifySkillFactory skill = Create<PurifySkillFactory>();
+        skill.data = new PurifySkillData { rate = 7f, buffHandlerFactories = new List<ABuffHandlerFactory> { null, handler } };
+        SkillDescription description = SkillDescriptionReader.Read(skill, null);
+        Assert.AreEqual(HeadKind.GiftBoonOffence, description.head);
+        Assert.AreEqual(EffectFamily.Boon, description.accent);
+        Assert.AreEqual(7f, description.cadence);
+        Assert.IsEmpty(description.shots);
+    }
+
+    [Test]
+    public void Read_PurifyWithoutBuffs_StillACleansingDefenceGift()
+    {
+        PurifySkillFactory skill = Create<PurifySkillFactory>();
+        skill.data = new PurifySkillData { rate = 4f };
+        SkillDescription description = SkillDescriptionReader.Read(skill, null);
+        Assert.AreEqual(HeadKind.GiftBoonDefence, description.head);
+        Assert.AreEqual(EffectFamily.Boon, description.accent);
+        Assert.AreEqual(4f, description.cadence);
     }
 
     [Test]

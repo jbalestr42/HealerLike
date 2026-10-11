@@ -90,6 +90,22 @@ namespace HealerLike.Render.Grammar
                     description.cadence = strike.data.interval + strike.data.delay;
                 }
             }
+            else if (skill is PurifySkillFactory purify)
+            {
+                // A purifier takes a debuff off an ally and gives an ally one buff of its list, at its own rate: a
+                // boon gift, its aspect read from the first buff of the list, defensive when the list is empty
+                description.accent = EffectFamily.Boon;
+                description.head = HeadKind.GiftBoonDefence;
+                if (purify.data != null)
+                {
+                    ABuffHandlerFactory handler = purify.data.buffHandlerFactories?.Find(entry => entry != null);
+                    if (handler != null)
+                    {
+                        description.head = Gift(EffectFamily.Boon, EffectDerivation.Group(handler));
+                    }
+                    description.cadence = purify.data.rate;
+                }
+            }
             else if (skill is FuseSkillFactory fuse)
             {
                 // A lit fuse blows up once, on every opponent, after a delay drawn between its two bounds: the
