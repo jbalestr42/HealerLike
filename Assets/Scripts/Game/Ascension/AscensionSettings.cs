@@ -22,6 +22,12 @@ public class AscensionLevel
     // fight, a smaller rest heal)
     public List<AItemFactory> characterItems = new List<AItemFactory>();
 
+    [Header("Enemies")]
+    // Given to every enemy of the fights in the enemyItemRooms (e.g. more health in the normal fights)
+    public List<AItemFactory> enemyItems = new List<AItemFactory>();
+    // The rooms whose enemies get the enemyItems, every fight when empty
+    public List<MapNodeType> enemyItemRooms = new List<MapNodeType>();
+
     [Header("Rest")]
     // Applied to a unit resurrected at a rest room once placed on the board (e.g. a part of its health lost)
     public List<AConsumerFactory> resurrectConsumers = new List<AConsumerFactory>();
@@ -65,6 +71,20 @@ public class AscensionSettings : ScriptableObject
         foreach (AscensionLevel active in GetActiveLevels(level))
         {
             items.AddRange(active.characterItems.FindAll(item => item != null));
+        }
+        return items;
+    }
+
+    // The enemy items of the levels up to this one given in a fight of this room type (Combat for a normal fight)
+    public List<AItemFactory> GetEnemyItems(int level, MapNodeType roomType)
+    {
+        List<AItemFactory> items = new List<AItemFactory>();
+        foreach (AscensionLevel active in GetActiveLevels(level))
+        {
+            if (active.enemyItemRooms.Count == 0 || active.enemyItemRooms.Contains(roomType))
+            {
+                items.AddRange(active.enemyItems.FindAll(item => item != null));
+            }
         }
         return items;
     }

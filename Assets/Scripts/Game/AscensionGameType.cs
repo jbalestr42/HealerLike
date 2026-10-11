@@ -64,6 +64,8 @@ public class AscensionGameType : AGameType, IEventRoomHost
     int ascensionLevel => _run != null ? _run.ascensionLevel : 0;
 
     WavePatternData _currentWave;
+    // The kind of fight of the wave: Combat, Elite or Boss (an event played as a combat is a Combat)
+    MapNodeType _currentFightType;
 
     // Rooms climbed so far, the room being played included
     public int currentRound => _run != null ? _run.currentFloor + 1 : 0;
@@ -185,7 +187,12 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 _gameView.entityInventory.Show(true);
 
                 RefillManaForCombat(PlayerBehaviour.instance.character.mana);
-                LoadEnemies(_currentWave);
+                List<Entity> enemies = LoadEnemies(_currentWave);
+                if (ascension != null)
+                {
+                    List<AItemFactory> enemyItems = ascension.GetEnemyItems(ascensionLevel, _currentFightType);
+                    enemies.ForEach(enemy => GiveItems(enemy, enemyItems));
+                }
                 EnableAllEntities(false);
                 SetState(State.WaitForRoundToStart);
                 OnRoundStart.Invoke();
@@ -300,6 +307,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
             case MapNodeType.Combat:
             case MapNodeType.Elite:
                 _currentWave = DataManager.instance.GetWavePattern(node.type, node.floor, _random);
+                _currentFightType = node.type;
                 SetState(State.InitializeRound);
                 break;
 
@@ -313,6 +321,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
             case MapNodeType.Boss:
                 _currentWave = DataManager.instance.GetWavePattern(node.type, node.floor, _random);
+                _currentFightType = node.type;
                 SetState(State.InitializeRound);
                 break;
 
@@ -330,6 +339,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
         {
             Debug.LogWarning("[AscensionGameType] No event to draw in the map settings, the event room is played as a combat");
             _currentWave = DataManager.instance.GetWavePattern(MapNodeType.Combat, node.floor, _random);
+            _currentFightType = MapNodeType.Combat;
             SetState(State.InitializeRound);
             return;
         }
@@ -407,6 +417,15 @@ public class AscensionGameType : AGameType, IEventRoomHost
             character.inventoryHandler.AddItem(item.GetItem(), -1);
         }
         character.ApplyBuffs();
+    }
+
+    // In the inventory of the unit, outside its slots like its innate items
+    public static void GiveItems(Entity entity, List<AItemFactory> items)
+    {
+        foreach (AItemFactory item in items)
+        {
+            entity.inventoryHandler.AddItem(item.GetItem(), -1);
+        }
     }
 
     // Beating the boss wins the run, the other fights lead to a reward
@@ -718,14 +737,15 @@ public class AscensionGameType : AGameType, IEventRoomHost
         _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => x.GetComponent<Entity>().Reset());
     }
 
-    public void LoadEnemies(WavePatternData waveData)
+    // The enemies spawned, none without a wave
+    public List<Entity> LoadEnemies(WavePatternData waveData)
     {
         if (waveData == null)
         {
-            return;
+            return new List<Entity>();
         }
 
-        EntityManager.instance.SpawnWave(waveData, transform.position, Entity.EntityType.Computer);
+        return EntityManager.instance.SpawnWave(waveData, transform.position, Entity.EntityType.Computer);
     }
 
     #region IEventRoomHost
