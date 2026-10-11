@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d15777e3648a9ae47bbc3ae04f8e2986, type: 3}
+  m_Name: AscensionSettings
+  m_EditorClassIdentifier: HealerLike.Runtime::AscensionSettings
+  levels:
+  - title: Ambush
+    description: Elites appear more often on the map.
+  - title: Hardened Foes
+    description: Enemies of normal fights have 10% more health.
+  - title: Drained
+    description: Each fight gives back 30% of your max mana instead of 40%.
+  - title: Restless
+    description: Healing at a Rest restores a third less health.
+  - title: Obstacle
+    description: A block takes the center cell of your board. No unit can stand there.
+  - title: Sharpened Blades
+    description: Enemies of normal fights deal 10% more damage.
+  - title: Costly Spells
+    description: Your spells cost 10% more mana.
+  - title: Weak Return
+    description: A unit resurrected at a Rest comes back with half of its health.
+  - title: Frenzy
+    description: Enemies attack 10% faster.
+  - title: Faltering Faith
+    description: Your heal power is reduced by 10%.

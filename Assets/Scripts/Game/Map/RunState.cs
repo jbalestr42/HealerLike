@@ -30,9 +30,14 @@ public class RunState
     List<EntityData> _deadAllies = new List<EntityData>();
     public IReadOnlyList<EntityData> deadAllies => _deadAllies;
 
-    public RunState(RunMap map)
+    // 0 without any malus, see AscensionSettings
+    int _ascensionLevel;
+    public int ascensionLevel => _ascensionLevel;
+
+    public RunState(RunMap map, int ascensionLevel = 0)
     {
         _map = map;
+        _ascensionLevel = ascensionLevel;
     }
 
     public void AddDeadAlly(EntityData ally)

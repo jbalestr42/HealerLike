@@ -137,7 +137,8 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 _random = new System.Random(seed);
                 _seedUsed = seed;
                 _runId = System.DateTime.Now.ToString("yyyyMMdd-HHmmss");
-                _run = new RunState(MapGenerator.Generate(_mapSettings, seed));
+                _run = new RunState(MapGenerator.Generate(_mapSettings, seed), GetAscensionLevel(DataManager.instance.data.ascension, CharacterSelection.ascensionLevel));
+                Debug.Log($"[AscensionGameType] Ascension level: {_run.ascensionLevel}");
 
                 SetState(State.ShowMap);
                 break;
@@ -352,6 +353,12 @@ public class AscensionGameType : AGameType, IEventRoomHost
         ResourceModifier manaModifier = new ResourceModifier { source = characterMana.gameObject };
         manaModifier.consumers.Add(new RuntimeConsumer(characterMana.Max * Mathf.Max(0f, refill), canBeCritical: false));
         characterMana.AddResourceModifier(manaModifier);
+    }
+
+    // The level chosen on the menu, within the levels of the game; 0 when the game has no ascension levels
+    public static int GetAscensionLevel(AscensionSettings ascension, int chosenLevel)
+    {
+        return ascension != null ? ascension.ClampLevel(chosenLevel) : 0;
     }
 
     // Beating the boss wins the run, the other fights lead to a reward

@@ -40,6 +40,9 @@ public class GameData : ScriptableObject
 
     public List<CharacterData> characters = new List<CharacterData>();
 
+    // Difficulty levels the characters unlock by winning a run
+    public AscensionSettings ascension;
+
     public List<AItemFactory> items = new List<AItemFactory>();
 
     // Units found by their tags (e.g. the ones a class can recruit)
