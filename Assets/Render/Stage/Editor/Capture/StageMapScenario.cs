@@ -114,6 +114,7 @@ namespace HealerLike.Render.Stage
             _session.manifest.unobserved.Add("Toolkit end title after a won run: \""
                 + _session.actions.root.Q<Label>("gameover-title").text + "\"");
             yield return _session.Capture("14-run-complete");
+            yield return RunOverStart();
             _session.output.Check(_session.actions.legacyModuleReadTouches,
                 "Selected StandaloneInputModule consumed the map's synthetic touch samples");
             bool attemptedHealing = _session.manifest.spells.Exists(spell => spell.isHealing);
@@ -134,6 +135,42 @@ namespace HealerLike.Render.Stage
                 + "not exercised");
             _session.manifest.unobserved.Add("The full authored ten-floor run is shown but not played to its boss; "
                 + "special-room progression uses the labelled five-floor generation fixture");
+        }
+
+        // A won run leaves GameManager with no run going, the state in which the Toolkit's in-game Start expedition
+        // reloads the gameplay scene. That branch also needs the Game view current, and his end screen stays on top,
+        // so what a player can reach here is recorded rather than assumed; the end panel's own button is checked
+        IEnumerator RunOverStart()
+        {
+            yield return Wait(0.3f);
+            GameManager game = Object.FindAnyObjectByType<GameManager>();
+            _session.output.Check(game != null && LegacyUiReader.GameState(game) == GameManager.GameState.None,
+                "A won run leaves GameManager with no run going");
+            Button start = _session.actions.root.Q<Button>("start-button");
+            Button restart = _session.actions.root.Q<Button>("restart-button");
+            ViewType view = LegacyUiReader.CurrentView(Object.FindAnyObjectByType<UIManager>());
+            _session.manifest.unobserved.Add("In-game Start expedition after a won run: "
+                + (StageInterfaceOutput.IsVisible(start) ? "shown" : "hidden") + ", "
+                + (start.enabledInHierarchy ? "enabled" : "disabled") + ", picked at its center: "
+                + PickedName(start) + "; legacy current view " + view + ", so the reload branch "
+                + (view == ViewType.Game ? "is" : "is not") + " reachable from this screen");
+            _session.output.Check(restart != null && StageInterfaceOutput.IsVisible(restart)
+                && restart.enabledInHierarchy && PickedName(restart) == restart.name,
+                "After a won run the end panel's Return to menu is the reachable way on");
+        }
+
+        static string PickedName(VisualElement element)
+        {
+            VisualElement picked = element.panel.Pick(element.worldBound.center);
+            for (VisualElement target = picked; target != null; target = target.parent)
+            {
+                if (target == element)
+                {
+                    return element.name;
+                }
+            }
+
+            return picked != null ? (string.IsNullOrEmpty(picked.name) ? picked.GetType().Name : picked.name) : "nothing";
         }
 
         // Entering a rest room restores mana, then parks the run on Julien's choice screen (Heal, or Resurrect when
