@@ -87,6 +87,26 @@ namespace HealerLike.Render.Stage
                 + (StageTarget.isSelected ? "" : " (plain boot)"));
         }
 
+        // The run starts with Main (GameManager.Start) and plays CharacterSelection.selected, a random class without
+        // one. These captures seeded that pick (271828) when they still pressed an in-game start, which drew the
+        // Cleric; the seed now comes too late, so they name the class they were written against: the one whose
+        // spells include a name long enough to wrap (Divine Intervention)
+        static readonly string[] clericModes = { "compact-ui", "mobile-interface", "creature-presentation" };
+        public static readonly string CaptureClassPath = "Assets/Data/Characters/ClericCharacter/ClericCharacter.asset";
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void SelectCaptureClass()
+        {
+            if (Array.IndexOf(clericModes, Mode) < 0)
+            {
+                return;
+            }
+
+            CharacterSelection.selected = AssetDatabase.LoadAssetAtPath<CharacterData>(CaptureClassPath);
+            Debug.Log("[StagePlay] Mode " + Mode + " plays "
+                + (CharacterSelection.selected != null ? CharacterSelection.selected.name : "a random class (none found)"));
+        }
+
         // RENDER_SIMULATE_NO_VERTEX_BUFFERS=1 plays the session as a device without vertex storage buffers (an
         // OpenGL ES 3.1 phone at its guaranteed minimum), so a capture shows the board with the ground simulation
         // and the compute grass off. Read at every play start, since entering play mode reloads the domain.
