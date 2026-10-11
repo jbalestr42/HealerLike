@@ -136,7 +136,45 @@ namespace HealerLike.Render.Stage
                 throw new InvalidOperationException("The class screen has no card for " + (classTitle ?? "a class"));
             }
 
-            yield return SelectCardByTouch(card);
+            yield return SelectClassCardByTouch(card);
+        }
+
+        // A class card lists its kit as chips that open the kit popover; with Julien's October class units the card
+        // outgrows the screen and its center sits on a chip, so the pick presses the card's title row instead
+        public IEnumerator SelectClassCardByTouch(Button card)
+        {
+            yield return BringIntoView(card);
+            VisualElement title = card.Q<Label>("card-title");
+            if (title == null || !StageInterfaceOutput.IsVisible(title))
+            {
+                yield return PointerTap(card);
+                yield break;
+            }
+
+            // The card can be taller than the list: bring its title, not its center, into the viewport
+            ScrollView scroll = card.GetFirstAncestorOfType<ScrollView>();
+            if (scroll != null)
+            {
+                scroll.ScrollTo(title);
+                yield return null;
+                yield return null;
+            }
+
+            VisualElement picked = card.panel.Pick(title.worldBound.center);
+            VisualElement owner = picked;
+            while (owner != null && !(owner is Button))
+            {
+                owner = owner.parent;
+            }
+
+            if (owner != card)
+            {
+                throw new InvalidOperationException("The class card's title row is covered: " + card.name + " picks "
+                    + (picked != null ? picked.name + " (" + picked.GetType().Name + ")" : "nothing") + " at "
+                    + title.worldBound);
+            }
+
+            yield return TouchGesture(ScreenPoint(title));
         }
 
         // The named class card, or the first class card when no title is given (never the Random card)
