@@ -15,6 +15,7 @@ MonoBehaviour:
   model: {fileID: 0}
   title: Cleric
   text: 'A classic healer: strong direct heals, shields and a last resort invincibility'
+  classTag: {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
   attributes:
   - key: 10
     value: 25
@@ -29,7 +30,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5ae526315401c9343a385aee24faf7e0, type: 2}
   - {fileID: 11400000, guid: e85cf5282617a01438e560dff6d97937, type: 2}
   - {fileID: 11400000, guid: e18e77831fceb7342a21e20e32807f03, type: 2}
-  classTag: {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
   skills:
   - {fileID: 11400000, guid: 1ebca72647271b94ca5968b1b500f88d, type: 2}
   - {fileID: 11400000, guid: 3001a223ad5ed954f89da100bd2bf009, type: 2}
