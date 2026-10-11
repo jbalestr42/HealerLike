@@ -102,12 +102,9 @@ public class ModelScaleTests
                     {
                         continue;
                     }
-                    foreach (EntitySlot slot in wave.slots)
+                    foreach ((int x, int y, EntityData entity) unit in wave.GetUnits())
                     {
-                        if (slot.entity != null)
-                        {
-                            bosses.Add(slot.entity);
-                        }
+                        bosses.Add(unit.entity);
                     }
                 }
             }
