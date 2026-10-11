@@ -65,6 +65,25 @@ public class AscensionSettingsTests
         CollectionAssert.AreEqual(_settings.levels, _settings.GetActiveLevels(10));
     }
 
+    [Test]
+    public void GetMalusText_LevelZero_SaysThereIsNoMalus()
+    {
+        Assert.AreEqual("No malus.", _settings.GetMalusText(0));
+    }
+
+    [Test]
+    public void GetMalusText_ListsEveryActiveMalusWithItsLevel()
+    {
+        Assert.AreEqual("1. <b>Level 1</b>: Malus 1\n2. <b>Level 2</b>: Malus 2", _settings.GetMalusText(2));
+    }
+
+    [Test]
+    public void GetTooltip_StartsWithTheLevelThenItsMaluses()
+    {
+        Assert.AreEqual("<b>Ascension 1</b>\n1. <b>Level 1</b>: Malus 1", _settings.GetTooltip(1));
+        StringAssert.StartsWith("<b>Ascension 3</b>", _settings.GetTooltip(8));
+    }
+
     [TestCase(1, 0, false)]
     [TestCase(1, 1, true)]
     [TestCase(3, 2, false)]

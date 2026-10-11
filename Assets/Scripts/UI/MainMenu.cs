@@ -23,14 +23,18 @@ public class MainMenu : MonoBehaviour
             {
                 canvas = FindObjectOfType<Canvas>();
             }
-            _characterSelectPanel = CharacterSelectPanel.Create(canvas.transform, _gameData.characters, OnCharacterChosen, null);
+            // Read each time the menu opens, so a level unlocked by the last run can be picked
+            AscensionProgress progress = AscensionProgress.Load(AscensionProgress.defaultPath);
+            _characterSelectPanel = CharacterSelectPanel.Create(canvas.transform, _gameData.characters, OnCharacterChosen, null, _gameData.ascension,
+                character => progress.GetUnlockedLevel(AscensionProgress.GetKey(character)));
         }
         _characterSelectPanel.gameObject.SetActive(true);
     }
 
-    void OnCharacterChosen(CharacterData character)
+    void OnCharacterChosen(CharacterData character, int ascensionLevel)
     {
         CharacterSelection.selected = character;
+        CharacterSelection.ascensionLevel = ascensionLevel;
         SceneManager.LoadScene("Main");
     }
 }

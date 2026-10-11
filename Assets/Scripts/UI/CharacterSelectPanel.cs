@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // Character select screen of the menu, built from the game characters: one card per character, picked
-// with the Select button at its bottom. Hovering a skill icon or a unit shows its details in a tooltip.
+// with the Select button at its bottom. Hovering a skill icon or a unit shows its details in a tooltip. With
+// ascension levels, each card picks the level to play at, from 0 to the highest one its character unlocked.
 public class CharacterSelectPanel : MonoBehaviour
 {
     static readonly Color BackgroundColor = new Color(0f, 0f, 0f, 0.85f);
@@ -19,18 +20,33 @@ public class CharacterSelectPanel : MonoBehaviour
     // Gap between the tooltip and the hovered element
     const float TooltipOffset = 8f;
 
+    const float AscensionButtonSize = 44f;
+
     GameObject _tooltip;
     TMP_Text _tooltipText;
+
+    AscensionSettings _ascension;
+    Func<CharacterData, int> _getUnlockedLevel;
+    readonly Dictionary<CharacterData, int> _ascensionLevels = new Dictionary<CharacterData, int>();
 
     public GameObject tooltip => _tooltip;
     public string tooltipText => _tooltipText.text;
 
     public static CharacterSelectPanel Create(Transform parent, List<CharacterData> characters, Action<CharacterData> onChosen, Action onBack)
     {
+        return Create(parent, characters, (character, ascensionLevel) => onChosen(character), onBack, null, null);
+    }
+
+    // The character is chosen with the ascension level picked on its card, 0 without ascension levels
+    public static CharacterSelectPanel Create(Transform parent, List<CharacterData> characters, Action<CharacterData, int> onChosen, Action onBack,
+        AscensionSettings ascension, Func<CharacterData, int> getUnlockedLevel)
+    {
         GameObject root = CreateUIObject("CharacterSelectPanel", parent);
         Stretch(root.GetComponent<RectTransform>());
         root.AddComponent<Image>().color = BackgroundColor;
         CharacterSelectPanel panel = root.AddComponent<CharacterSelectPanel>();
+        panel._ascension = ascension;
+        panel._getUnlockedLevel = getUnlockedLevel;
 
         VerticalLayoutGroup rootLayout = root.AddComponent<VerticalLayoutGroup>();
         rootLayout.childAlignment = TextAnchor.MiddleCenter;
@@ -56,14 +72,18 @@ public class CharacterSelectPanel : MonoBehaviour
         {
             if (character != null)
             {
-                panel.CreateCard(cards.transform, character, CreatePreview(character, root.transform), () => onChosen(character));
+                panel.CreateCard(cards.transform, character, CreatePreview(character, root.transform), () => onChosen(character, panel.GetAscensionLevel(character)));
             }
         }
 
         List<CharacterData> choices = characters.FindAll(character => character != null);
         if (choices.Count > 0)
         {
-            CreateButton(root.transform, "Random", new Vector2(200f, 60f), () => onChosen(choices[UnityEngine.Random.Range(0, choices.Count)]));
+            CreateButton(root.transform, "Random", new Vector2(200f, 60f), () =>
+            {
+                CharacterData character = choices[UnityEngine.Random.Range(0, choices.Count)];
+                onChosen(character, panel.GetAscensionLevel(character));
+            });
         }
         // No way back when the panel is the first screen
         if (onBack != null)
@@ -73,6 +93,22 @@ public class CharacterSelectPanel : MonoBehaviour
         // Last, so it's drawn over the cards
         panel.CreateTooltip(root.transform);
         return panel;
+    }
+
+    // The level picked on the card of the character, 0 without ascension levels
+    public int GetAscensionLevel(CharacterData character)
+    {
+        return character != null && _ascensionLevels.TryGetValue(character, out int level) ? level : 0;
+    }
+
+    // Between 0 and the highest level of the game
+    public int GetUnlockedLevel(CharacterData character)
+    {
+        if (_ascension == null || _getUnlockedLevel == null)
+        {
+            return 0;
+        }
+        return _ascension.ClampLevel(_getUnlockedLevel(character));
     }
 
     // The character built with its stats only (attributes, mana, starting items), so the card shows its real
@@ -123,8 +159,65 @@ public class CharacterSelectPanel : MonoBehaviour
 
         // Takes the room left, so the button is always at the bottom of the card
         CreateUIObject("Space", card.transform).AddComponent<LayoutElement>().flexibleHeight = 1f;
+        if (_ascension != null && _ascension.maxLevel > 0)
+        {
+            CreateAscensionPicker(card.transform, character);
+        }
         GameObject select = CreateButton(card.transform, "Select", new Vector2(200f, 60f), onSelect);
         select.AddComponent<LayoutElement>().preferredHeight = 60f;
+    }
+
+    // < Ascension N >, starting at the highest level unlocked, the maluses of the level shown on hover
+    void CreateAscensionPicker(Transform parent, CharacterData character)
+    {
+        int unlockedLevel = GetUnlockedLevel(character);
+        _ascensionLevels[character] = unlockedLevel;
+
+        GameObject row = CreateUIObject("Ascension", parent);
+        HorizontalLayoutGroup layout = row.AddComponent<HorizontalLayoutGroup>();
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.spacing = 10f;
+        layout.childControlWidth = false;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
+        row.AddComponent<LayoutElement>().preferredHeight = AscensionButtonSize;
+
+        Button previous = null;
+        Button next = null;
+        TMP_Text label = null;
+        Action refresh = () =>
+        {
+            int level = GetAscensionLevel(character);
+            label.text = $"Ascension {level}";
+            previous.interactable = level > 0;
+            next.interactable = level < unlockedLevel;
+        };
+
+        Vector2 buttonSize = new Vector2(AscensionButtonSize, AscensionButtonSize);
+        previous = CreateButton(row.transform, "<", buttonSize, () =>
+        {
+            _ascensionLevels[character] = Mathf.Max(0, GetAscensionLevel(character) - 1);
+            refresh();
+        }).GetComponent<Button>();
+        previous.name = "Previous";
+
+        GameObject levelObject = CreateUIObject("Level", row.transform);
+        levelObject.GetComponent<RectTransform>().sizeDelta = new Vector2(180f, AscensionButtonSize);
+        // Invisible, only there to catch the hover
+        levelObject.AddComponent<Image>().color = Color.clear;
+        label = CreateText(levelObject.transform, "", 24, HeaderColor, FontStyles.Bold);
+        Stretch(label.rectTransform);
+        AddTooltip(levelObject, () => _ascension.GetTooltip(GetAscensionLevel(character)));
+
+        next = CreateButton(row.transform, ">", buttonSize, () =>
+        {
+            _ascensionLevels[character] = Mathf.Min(unlockedLevel, GetAscensionLevel(character) + 1);
+            refresh();
+        }).GetComponent<Button>();
+        next.name = "Next";
+
+        refresh();
     }
 
     // One icon per skill, its details shown on hover
@@ -195,8 +288,14 @@ public class CharacterSelectPanel : MonoBehaviour
 
     void AddTooltip(GameObject target, string text)
     {
+        AddTooltip(target, () => text);
+    }
+
+    // The text read on each hover, e.g. when it changes with a choice on the card
+    void AddTooltip(GameObject target, Func<string> getText)
+    {
         HoverTooltipTrigger trigger = target.AddComponent<HoverTooltipTrigger>();
-        trigger.onEnter = rectTransform => ShowTooltip(text, rectTransform);
+        trigger.onEnter = rectTransform => ShowTooltip(getText(), rectTransform);
         trigger.onExit = HideTooltip;
     }
 

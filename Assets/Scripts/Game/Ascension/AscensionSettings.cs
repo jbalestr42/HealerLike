@@ -33,6 +33,29 @@ public class AscensionSettings : ScriptableObject
         return levels.GetRange(0, ClampLevel(level));
     }
 
+    // The maluses of the level, one per line, for a tooltip
+    public string GetMalusText(int level)
+    {
+        List<AscensionLevel> active = GetActiveLevels(level);
+        if (active.Count == 0)
+        {
+            return "No malus.";
+        }
+
+        List<string> lines = new List<string>(active.Count);
+        for (int i = 0; i < active.Count; i++)
+        {
+            lines.Add($"{i + 1}. <b>{active[i].title}</b>: {active[i].description}");
+        }
+        return string.Join("\n", lines);
+    }
+
+    // The level and its maluses, e.g. on the character cards and in the game HUD
+    public string GetTooltip(int level)
+    {
+        return $"<b>Ascension {ClampLevel(level)}</b>\n{GetMalusText(level)}";
+    }
+
     // The malus of the level malusLevel (1 based) applies in a run played at runLevel
     public static bool IsActive(int malusLevel, int runLevel)
     {

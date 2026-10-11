@@ -28,6 +28,10 @@ public class GameHUD : MonoBehaviour
     public UnityEngine.UI.Toggle markEntityToggle { get { return _markEntityToggle; } }
     [SerializeField] ResourceView _manaBar;
 
+    // Optional, the ascension level of the run and its maluses
+    [SerializeField] AscensionIndicator _ascensionIndicator;
+    public AscensionIndicator ascensionIndicator { get { return _ascensionIndicator; } }
+
 
     void Start()
     {

@@ -139,6 +139,10 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 _runId = System.DateTime.Now.ToString("yyyyMMdd-HHmmss");
                 _run = new RunState(MapGenerator.Generate(_mapSettings, seed), GetAscensionLevel(DataManager.instance.data.ascension, CharacterSelection.ascensionLevel));
                 Debug.Log($"[AscensionGameType] Ascension level: {_run.ascensionLevel}");
+                if (_gameView.gameHUD.ascensionIndicator != null)
+                {
+                    _gameView.gameHUD.ascensionIndicator.Show(DataManager.instance.data.ascension, _run.ascensionLevel);
+                }
 
                 SetState(State.ShowMap);
                 break;

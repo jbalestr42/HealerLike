@@ -375,6 +375,169 @@ public class CharacterSelectPanelTests
 
         Assert.IsTrue(back);
     }
+
+    AscensionSettings CreateAscension(int levelCount)
+    {
+        AscensionSettings ascension = CreateTracked<AscensionSettings>();
+        for (int i = 1; i <= levelCount; i++)
+        {
+            ascension.levels.Add(new AscensionLevel { title = "Malus " + i, description = "Harder " + i });
+        }
+        return ascension;
+    }
+
+    CharacterSelectPanel CreateWithAscension(List<CharacterData> characters, int unlockedLevel, System.Action<CharacterData, int> onChosen = null)
+    {
+        return CharacterSelectPanel.Create(_canvas.transform, characters, onChosen ?? ((character, level) => { }), null, CreateAscension(10), _ => unlockedLevel);
+    }
+
+    Transform GetAscensionPicker(CharacterSelectPanel panel, int cardIndex)
+    {
+        return panel.transform.Find("Cards").GetChild(cardIndex).Find("Ascension");
+    }
+
+    string GetAscensionLabel(Transform picker)
+    {
+        return picker.Find("Level").GetComponentInChildren<TMP_Text>().text;
+    }
+
+    [Test]
+    public void WithoutAscension_CardsHaveNoLevelPicker()
+    {
+        CharacterSelectPanel panel = CharacterSelectPanel.Create(_canvas.transform, new List<CharacterData> { CreateCharacter("Cleric") }, _ => { }, null);
+
+        Assert.IsNull(GetAscensionPicker(panel, 0));
+    }
+
+    [Test]
+    public void AscensionPicker_StartsAtTheHighestUnlockedLevel()
+    {
+        CharacterData cleric = CreateCharacter("Cleric");
+        CharacterSelectPanel panel = CreateWithAscension(new List<CharacterData> { cleric }, 3);
+
+        Assert.AreEqual(3, panel.GetAscensionLevel(cleric));
+        Assert.AreEqual("Ascension 3", GetAscensionLabel(GetAscensionPicker(panel, 0)));
+    }
+
+    [Test]
+    public void AscensionPicker_IsJustBeforeTheSelectButton()
+    {
+        CharacterSelectPanel panel = CreateWithAscension(new List<CharacterData> { CreateCharacter("Cleric") }, 0);
+
+        Transform card = panel.transform.Find("Cards").GetChild(0);
+        Assert.AreEqual("Ascension", card.GetChild(card.childCount - 2).name);
+    }
+
+    [Test]
+    public void AscensionPicker_GoesDownToZeroButNeverAboveTheUnlockedLevel()
+    {
+        CharacterData cleric = CreateCharacter("Cleric");
+        CharacterSelectPanel panel = CreateWithAscension(new List<CharacterData> { cleric }, 2);
+        Transform picker = GetAscensionPicker(panel, 0);
+        Button previous = picker.Find("Previous").GetComponent<Button>();
+        Button next = picker.Find("Next").GetComponent<Button>();
+
+        Assert.IsFalse(next.interactable);
+        previous.onClick.Invoke();
+        Assert.AreEqual(1, panel.GetAscensionLevel(cleric));
+        Assert.AreEqual("Ascension 1", GetAscensionLabel(picker));
+        previous.onClick.Invoke();
+        Assert.AreEqual(0, panel.GetAscensionLevel(cleric));
+        Assert.IsFalse(previous.interactable);
+        previous.onClick.Invoke();
+        Assert.AreEqual(0, panel.GetAscensionLevel(cleric));
+
+        next.onClick.Invoke();
+        next.onClick.Invoke();
+        next.onClick.Invoke();
+        Assert.AreEqual(2, panel.GetAscensionLevel(cleric));
+    }
+
+    [Test]
+    public void AscensionPicker_NothingUnlocked_StaysAtZero()
+    {
+        CharacterData cleric = CreateCharacter("Cleric");
+        CharacterSelectPanel panel = CreateWithAscension(new List<CharacterData> { cleric }, 0);
+        Transform picker = GetAscensionPicker(panel, 0);
+
+        Assert.IsFalse(picker.Find("Previous").GetComponent<Button>().interactable);
+        Assert.IsFalse(picker.Find("Next").GetComponent<Button>().interactable);
+        Assert.AreEqual("Ascension 0", GetAscensionLabel(picker));
+    }
+
+    [Test]
+    public void AscensionPicker_UnlockedLevelAboveTheGameLevels_StopsAtTheHighestLevel()
+    {
+        CharacterData cleric = CreateCharacter("Cleric");
+        CharacterSelectPanel panel = CreateWithAscension(new List<CharacterData> { cleric }, 25);
+
+        Assert.AreEqual(10, panel.GetAscensionLevel(cleric));
+    }
+
+    [Test]
+    public void AscensionPicker_EachCharacterHasItsOwnLevel()
+    {
+        CharacterData cleric = CreateCharacter("Cleric");
+        CharacterData druid = CreateCharacter("Druid");
+        AscensionSettings ascension = CreateAscension(10);
+        CharacterSelectPanel panel = CharacterSelectPanel.Create(_canvas.transform, new List<CharacterData> { cleric, druid }, (character, level) => { }, null,
+            ascension, character => character == cleric ? 4 : 1);
+
+        Assert.AreEqual(4, panel.GetAscensionLevel(cleric));
+        Assert.AreEqual(1, panel.GetAscensionLevel(druid));
+
+        GetAscensionPicker(panel, 0).Find("Previous").GetComponent<Button>().onClick.Invoke();
+
+        Assert.AreEqual(3, panel.GetAscensionLevel(cleric));
+        Assert.AreEqual(1, panel.GetAscensionLevel(druid));
+    }
+
+    [Test]
+    public void ClickingSelect_ChoosesTheCharacterWithThePickedLevel()
+    {
+        CharacterData cleric = CreateCharacter("Cleric");
+        CharacterData chosen = null;
+        int chosenLevel = -1;
+        CharacterSelectPanel panel = CreateWithAscension(new List<CharacterData> { cleric }, 3, (character, level) =>
+        {
+            chosen = character;
+            chosenLevel = level;
+        });
+
+        GetAscensionPicker(panel, 0).Find("Previous").GetComponent<Button>().onClick.Invoke();
+        panel.transform.Find("Cards").GetChild(0).Find("Select").GetComponent<Button>().onClick.Invoke();
+
+        Assert.AreSame(cleric, chosen);
+        Assert.AreEqual(2, chosenLevel);
+    }
+
+    [Test]
+    public void ClickingRandom_PlaysTheLevelPickedOnTheCardOfTheCharacter()
+    {
+        CharacterData cleric = CreateCharacter("Cleric");
+        int chosenLevel = -1;
+        CharacterSelectPanel panel = CreateWithAscension(new List<CharacterData> { cleric }, 5, (character, level) => chosenLevel = level);
+
+        panel.transform.Find("Random").GetComponent<Button>().onClick.Invoke();
+
+        Assert.AreEqual(5, chosenLevel);
+    }
+
+    [Test]
+    public void HoveringTheLevel_ShowsTheMalusesOfThePickedLevel()
+    {
+        CharacterSelectPanel panel = CreateWithAscension(new List<CharacterData> { CreateCharacter("Cleric") }, 2);
+        Transform picker = GetAscensionPicker(panel, 0);
+        HoverTooltipTrigger trigger = picker.Find("Level").GetComponent<HoverTooltipTrigger>();
+
+        trigger.onEnter((RectTransform)trigger.transform);
+        StringAssert.Contains("Malus 2", panel.tooltipText);
+
+        picker.Find("Previous").GetComponent<Button>().onClick.Invoke();
+        trigger.onEnter((RectTransform)trigger.transform);
+        StringAssert.Contains("Malus 1", panel.tooltipText);
+        StringAssert.DoesNotContain("Malus 2", panel.tooltipText);
+    }
 }
 
 }
