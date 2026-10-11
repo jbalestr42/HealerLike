@@ -108,6 +108,13 @@ namespace HealerLike.Render.Stage
             while (boss ? !_session.ascension.IsOver()
                 : !StageInterfaceOutput.IsVisible(_session.actions.root.Q("upgrade-panel")))
             {
+                // A defeat is framed before it fails the run, so the end screen it shows can be looked at
+                if (!boss && StageInterfaceOutput.IsVisible(_session.actions.root.Q("gameover-panel")))
+                {
+                    yield return Wait(0.5f);
+                    yield return _session.Capture(prefix + "-defeat");
+                }
+
                 // A won boss fight shows the game-over panel too, so the boss survives on the run state instead
                 _session.output.Check(boss ? LegacyUiReader.AscensionState(_session.ascension)
                     != AscensionGameType.State.GameOver
