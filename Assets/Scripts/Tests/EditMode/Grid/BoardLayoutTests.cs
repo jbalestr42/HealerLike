@@ -271,6 +271,43 @@ public class BoardLayoutTests
         Assert.IsFalse(_layout.TryGetCenterCell(BoardCellType.Enemy, out _));
     }
 
+    // The player on a round of 12 cells in the middle, an empty ring of 1 cell around it, the enemies on a round ring
+    // of 2 cells around that one; the top row first
+    static readonly string[] RingRows =
+    {
+        "...EEEE...",
+        ".EEEEEEEE.",
+        ".EE....EE.",
+        "EE..PP..EE",
+        "EE.PPPP.EE",
+        "EE.PPPP.EE",
+        "EE..PP..EE",
+        ".EE....EE.",
+        ".EEEEEEEE.",
+        "...EEEE...",
+    };
+
+    [Test]
+    public void RingLayoutAsset_ThePlayerInTheMiddleInsideAnEmptyRingInsideTheEnemyRing()
+    {
+        BoardLayout layout = AssetDatabase.LoadAssetAtPath<BoardLayout>("Assets/Data/Board/RingBoardLayout.asset");
+
+        Assert.IsNotNull(layout);
+        Assert.AreEqual(10, layout.width);
+        Assert.AreEqual(10, layout.height);
+        for (int x = 0; x < 10; x++)
+        {
+            for (int y = 0; y < 10; y++)
+            {
+                char cell = RingRows[9 - y][x];
+                BoardCellType expected = cell == 'P' ? BoardCellType.Player : cell == 'E' ? BoardCellType.Enemy : BoardCellType.None;
+                Assert.AreEqual(expected, layout.GetCell(x, y), $"({x}, {y})");
+            }
+        }
+        Assert.AreEqual(12, layout.GetCells(BoardCellType.Player).Count);
+        Assert.AreEqual(48, layout.GetCells(BoardCellType.Enemy).Count);
+    }
+
     [Test]
     public void DefaultLayoutAsset_Is9x4WithFourColumnsPerSide()
     {
