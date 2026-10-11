@@ -55,6 +55,108 @@ public class BoardTests
     }
 
     [Test]
+    public void SetCenterBlocked_TheCenterCellOfTheSideIsBlocked_NoUnitCanStandThere()
+    {
+        Vector2Int center = new Vector2Int(1, 1);
+
+        _board.SetCenterBlocked(BoardCellType.Player, true);
+
+        Assert.IsTrue(_board.IsBlocked(center));
+        Assert.AreEqual(1, _board.blockers.Count);
+        Assert.IsFalse(_board.IsFree(center, BoardCellType.Player));
+        Assert.IsFalse(_board.Occupy(center, CreateUnit(), BoardCellType.Player));
+        Assert.IsFalse(_board.IsBlocked(new Vector2Int(6, 1)), "the enemy side is not blocked");
+    }
+
+    [Test]
+    public void SetCenterBlocked_TheBlockerIsLaidOnTheCell_WithNothingToClickOrHit()
+    {
+        _board.SetCenterBlocked(BoardCellType.Player, true);
+
+        GameObject blocker = _board.blockers[new Vector2Int(1, 1)];
+        Vector3 center = _board.GetCellCenter(new Vector2Int(1, 1));
+        Assert.AreEqual(center.x, blocker.transform.position.x, 0.0001f);
+        Assert.AreEqual(center.z, blocker.transform.position.z, 0.0001f);
+        Assert.IsNull(blocker.GetComponentInChildren<Collider>());
+        Assert.IsNull(blocker.GetComponentInChildren<Entity>());
+    }
+
+    [Test]
+    public void SetCenterBlocked_PlacementAndNearestFreeCell_SkipTheBlockedCell()
+    {
+        Vector2Int center = new Vector2Int(1, 1);
+        _board.SetCenterBlocked(BoardCellType.Player, true);
+
+        Assert.IsTrue(_board.TryGetPlacementCell(_board.GetCellCenter(center), BoardCellType.Player, out Vector2Int cell));
+        Assert.AreNotEqual(center, cell);
+        Assert.AreEqual(BoardCellType.Player, _board.GetCellType(cell));
+        Assert.AreEqual(1f, Vector2Int.Distance(center, cell), 0.0001f, "a neighbour");
+    }
+
+    [Test]
+    public void SetCenterBlocked_TheUnitOnTheCenter_GoesToTheNearestFreeCellOfItsSide()
+    {
+        Vector2Int center = new Vector2Int(1, 1);
+        GameObject unit = CreateUnit();
+        unit.transform.position = _board.GetUnitPosition(center);
+        _board.Occupy(center, unit, BoardCellType.Player);
+
+        List<GameObject> displaced = _board.SetCenterBlocked(BoardCellType.Player, true);
+
+        Assert.IsEmpty(displaced);
+        Assert.IsTrue(_board.TryGetCoordOf(unit, out Vector2Int coord));
+        Assert.AreEqual(1f, Vector2Int.Distance(center, coord), 0.0001f, "a neighbour");
+        Assert.AreEqual(_board.GetUnitPosition(coord), unit.transform.position);
+    }
+
+    [Test]
+    public void SetCenterBlocked_EveryOtherCellTaken_TheUnitOnTheCenterIsLeftWithoutACell()
+    {
+        GameObject unit = CreateUnit();
+        foreach (Vector2Int cell in _layout.GetCells(BoardCellType.Player))
+        {
+            _board.Occupy(cell, cell == new Vector2Int(1, 1) ? unit : CreateUnit(), BoardCellType.Player);
+        }
+
+        List<GameObject> displaced = _board.SetCenterBlocked(BoardCellType.Player, true);
+
+        CollectionAssert.AreEqual(new[] { unit }, displaced);
+        Assert.IsFalse(_board.TryGetCoordOf(unit, out _));
+    }
+
+    [Test]
+    public void SetCenterBlocked_KeptOnTheNextLayout_OnItsOwnCenter()
+    {
+        BoardLayout narrow = ScriptableObject.CreateInstance<BoardLayout>();
+        _created.Add(narrow);
+        // The player on the 3 left columns only
+        for (int y = 0; y < narrow.height; y++)
+        {
+            narrow.SetCell(3, y, BoardCellType.None);
+        }
+        _board.SetCenterBlocked(BoardCellType.Player, true);
+
+        _board.SetLayout(narrow);
+
+        Assert.AreEqual(1, _board.blockers.Count);
+        Assert.IsTrue(_board.IsBlocked(new Vector2Int(1, 1)), "(1, 1) and (1, 2) as near to (1, 1.5): the first");
+        _board.SetLayout(_layout);
+        Assert.IsTrue(_board.IsBlocked(new Vector2Int(1, 1)));
+    }
+
+    [Test]
+    public void SetCenterBlocked_Unblocked_TheCellIsFreeAgain()
+    {
+        _board.SetCenterBlocked(BoardCellType.Player, true);
+
+        _board.SetCenterBlocked(BoardCellType.Player, false);
+
+        Assert.IsFalse(_board.IsBlocked(new Vector2Int(1, 1)));
+        Assert.IsEmpty(_board.blockers);
+        Assert.IsTrue(_board.IsFree(new Vector2Int(1, 1), BoardCellType.Player));
+    }
+
+    [Test]
     public void SetLayout_AnotherBoard_TheTilesLaidAgain()
     {
         BoardLayout small = ScriptableObject.CreateInstance<BoardLayout>();

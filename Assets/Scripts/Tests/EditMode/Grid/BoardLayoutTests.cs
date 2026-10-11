@@ -210,6 +210,68 @@ public class BoardLayoutTests
     }
 
     [Test]
+    public void TryGetCenterCell_NoExactCenter_AlwaysTheFirstOfTheNearestCellsColumnAfterColumn()
+    {
+        // The player on 4 x 4 cells: (1, 1), (1, 2), (2, 1) and (2, 2) as near to the middle (1.5, 1.5)
+        Assert.IsTrue(_layout.TryGetCenterCell(BoardCellType.Player, out Vector2Int center));
+        Assert.AreEqual(new Vector2Int(1, 1), center);
+        Assert.IsTrue(_layout.TryGetCenterCell(BoardCellType.Enemy, out Vector2Int enemyCenter));
+        Assert.AreEqual(new Vector2Int(6, 1), enemyCenter);
+    }
+
+    [Test]
+    public void TryGetCenterCell_AnExactCenter_IsThatCell()
+    {
+        // The player on 3 columns of 5 rows: the middle on (1, 2)
+        _layout.Resize(5, 5);
+        for (int x = 0; x < 5; x++)
+        {
+            for (int y = 0; y < 5; y++)
+            {
+                _layout.SetCell(x, y, x < 3 ? BoardCellType.Player : BoardCellType.Enemy);
+            }
+        }
+
+        Assert.IsTrue(_layout.TryGetCenterCell(BoardCellType.Player, out Vector2Int center));
+        Assert.AreEqual(new Vector2Int(1, 2), center);
+    }
+
+    [Test]
+    public void TryGetCenterCell_TheMiddleOnNoCellOfTheSide_TheNearestCellOfTheSide()
+    {
+        // The player in a ring around (1, 1), its middle
+        foreach (Vector2Int cell in _layout.GetCells(BoardCellType.Player))
+        {
+            _layout.SetCell(cell.x, cell.y, BoardCellType.None);
+        }
+        for (int x = 0; x < 3; x++)
+        {
+            for (int y = 0; y < 3; y++)
+            {
+                if (x != 1 || y != 1)
+                {
+                    _layout.SetCell(x, y, BoardCellType.Player);
+                }
+            }
+        }
+
+        Assert.IsTrue(_layout.TryGetCenterCell(BoardCellType.Player, out Vector2Int center));
+        Assert.AreEqual(BoardCellType.Player, _layout.GetCell(center));
+        Assert.AreEqual(new Vector2Int(0, 1), center, "first of the 4 cells at 1 from the middle");
+    }
+
+    [Test]
+    public void TryGetCenterCell_ASideWithoutCell_IsFalse()
+    {
+        foreach (Vector2Int cell in _layout.GetCells(BoardCellType.Enemy))
+        {
+            _layout.SetCell(cell.x, cell.y, BoardCellType.None);
+        }
+
+        Assert.IsFalse(_layout.TryGetCenterCell(BoardCellType.Enemy, out _));
+    }
+
+    [Test]
     public void DefaultLayoutAsset_Is9x4WithFourColumnsPerSide()
     {
         BoardLayout layout = AssetDatabase.LoadAssetAtPath<BoardLayout>(DefaultLayoutPath);

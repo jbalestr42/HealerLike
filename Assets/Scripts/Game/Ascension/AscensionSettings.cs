@@ -28,6 +28,10 @@ public class AscensionLevel
     // The rooms whose enemies get the enemyItems, every fight when empty
     public List<MapNodeType> enemyItemRooms = new List<MapNodeType>();
 
+    [Header("Board")]
+    // A block takes the center cell of the player's side of the board, every fight
+    public bool blocksPlayerCenter;
+
     [Header("Rest")]
     // Applied to a unit resurrected at a rest room once placed on the board (e.g. a part of its health lost)
     public List<AConsumerFactory> resurrectConsumers = new List<AConsumerFactory>();
@@ -87,6 +91,12 @@ public class AscensionSettings : ScriptableObject
             }
         }
         return items;
+    }
+
+    // A level up to this one blocks the center cell of the player's side
+    public bool BlocksPlayerCenter(int level)
+    {
+        return GetActiveLevels(level).Exists(active => active.blocksPlayerCenter);
     }
 
     public List<AConsumerFactory> GetResurrectConsumers(int level)

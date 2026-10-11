@@ -117,6 +117,30 @@ public class AscensionSettingsTests
     }
 
     [Test]
+    public void BlocksPlayerCenter_FromTheLevelThatBlocksIt()
+    {
+        _settings.levels[1].blocksPlayerCenter = true;
+
+        Assert.IsFalse(_settings.BlocksPlayerCenter(0));
+        Assert.IsFalse(_settings.BlocksPlayerCenter(1));
+        Assert.IsTrue(_settings.BlocksPlayerCenter(2));
+        Assert.IsTrue(_settings.BlocksPlayerCenter(3));
+    }
+
+    [Test]
+    public void Game_Level4BlocksTheCenterOfThePlayerBoard_NoOtherLevel()
+    {
+        GameData gameData = AssetDatabase.LoadAssetAtPath<GameData>(GameDataPath);
+
+        for (int i = 0; i < gameData.ascension.levels.Count; i++)
+        {
+            Assert.AreEqual(i == 3, gameData.ascension.levels[i].blocksPlayerCenter, gameData.ascension.levels[i].title);
+        }
+        Assert.IsFalse(gameData.ascension.BlocksPlayerCenter(3));
+        Assert.IsTrue(gameData.ascension.BlocksPlayerCenter(4));
+    }
+
+    [Test]
     public void Game_HasTenLevelsWithATitleAndADescription()
     {
         GameData gameData = AssetDatabase.LoadAssetAtPath<GameData>(GameDataPath);

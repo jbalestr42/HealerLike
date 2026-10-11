@@ -3430,6 +3430,9 @@ MonoBehaviour:
   _enemyColor: {r: 0.75, g: 0.3, b: 0.25, a: 1}
   _tileScale: 0.92
   _tileHeight: 0.01
+  _blockerPrefab: {fileID: 0}
+  _blockerMaterial: {fileID: 2100000, guid: 7cd0613fc3cb9fb4fb2e02056c84a590, type: 2}
+  _blockerColor: {r: 0.35, g: 0.33, b: 0.3, a: 1}
 --- !u!4 &1446339252
 Transform:
   m_ObjectHideFlags: 0

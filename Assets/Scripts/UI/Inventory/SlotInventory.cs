@@ -77,8 +77,12 @@ public class SlotInventory : MonoBehaviour
     {
     }
 
+    // Shows the items of inventoryHandler: each in its slot, the ones without slot (e.g. given by the ascension) in
+    // the first free one, more slots added when they are all taken. Can be called before Start, when the panel is
+    // shown for the first time
     public void RefreshInventory()
     {
+        Init();
         _slotItems.Clear();
         foreach (Transform child in transform)
         {
@@ -100,7 +104,11 @@ public class SlotInventory : MonoBehaviour
 
             if (!itemData.isValidIndex)
             {
-                itemData.inventoryIndex = i;
+                itemData.inventoryIndex = _inventoryHandler.GetFirstFreeIndex();
+            }
+            while (_slotItems.Count <= itemData.inventoryIndex)
+            {
+                CreateSlotInventoryItem(_slotItems.Count);
             }
             GameObject go = Instantiate(_inventoryItemPrefab, _slotItems[itemData.inventoryIndex].transform);
             InventoryItem inventoryItem = go.GetComponent<InventoryItem>();

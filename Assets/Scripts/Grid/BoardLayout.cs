@@ -107,6 +107,37 @@ public class BoardLayout : ScriptableObject
         return coords;
     }
 
+    // The cell of the side nearest to the middle of its cells, false when it has none. Several cells as near (e.g. 4
+    // columns of 4 rows): always the same one, the first column after column
+    public bool TryGetCenterCell(BoardCellType side, out Vector2Int center)
+    {
+        center = default;
+        List<Vector2Int> cells = GetCells(side);
+        if (cells.Count == 0)
+        {
+            return false;
+        }
+        Vector2Int min = cells[0];
+        Vector2Int max = cells[0];
+        foreach (Vector2Int cell in cells)
+        {
+            min = Vector2Int.Min(min, cell);
+            max = Vector2Int.Max(max, cell);
+        }
+        Vector2 middle = (Vector2)(min + max) * 0.5f;
+        float nearestSqrDistance = float.MaxValue;
+        foreach (Vector2Int cell in cells)
+        {
+            float sqrDistance = (cell - middle).sqrMagnitude;
+            if (sqrDistance < nearestSqrDistance - 0.0001f)
+            {
+                center = cell;
+                nearestSqrDistance = sqrDistance;
+            }
+        }
+        return true;
+    }
+
     // The column of the cells of the side nearest to the other side, where the two sides meet: its first column on
     // the left when the other side is on its left (or has no cell), its last one otherwise, 0 when it has no cell
     public int GetFrontColumn(BoardCellType side)

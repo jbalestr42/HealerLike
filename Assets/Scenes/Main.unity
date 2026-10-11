@@ -1327,6 +1327,26 @@ PrefabInstance:
       propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
       value: 1801810542
       objectReference: {fileID: 0}
+    - target: {fileID: 6493653489003301176, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493653489003301176, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493653489003301176, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493653489003301176, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 515
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493653489003301176, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -64
+      objectReference: {fileID: 0}
     - target: {fileID: 7077222750997751808, guid: 8ad492c3d237b254cacf0b5da3fa5b70, type: 3}
       propertyPath: 'm_ActiveFontFeatures.Array.data[0]'
       value: 1801810542
@@ -2308,6 +2328,9 @@ MonoBehaviour:
   _enemyColor: {r: 0.75, g: 0.3, b: 0.25, a: 1}
   _tileScale: 0.92
   _tileHeight: 0.01
+  _blockerPrefab: {fileID: 0}
+  _blockerMaterial: {fileID: 2100000, guid: 7cd0613fc3cb9fb4fb2e02056c84a590, type: 2}
+  _blockerColor: {r: 0.35, g: 0.33, b: 0.3, a: 1}
 --- !u!4 &1266009736
 Transform:
   m_ObjectHideFlags: 0

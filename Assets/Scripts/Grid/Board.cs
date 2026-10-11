@@ -16,6 +16,10 @@ public class Board : MonoBehaviour
     [SerializeField, Range(0.1f, 1f)] float _tileScale = 0.92f;
     // Above the ground, for the tiles to be seen over it
     [SerializeField] float _tileHeight = 0.01f;
+    // Laid on a blocked cell, a block when empty
+    [SerializeField] GameObject _blockerPrefab;
+    [SerializeField] Material _blockerMaterial;
+    [SerializeField] Color _blockerColor = new Color(0.35f, 0.33f, 0.3f);
 
     BoardLayout _layout;
     public BoardLayout layout => _layout != null ? _layout : _defaultLayout;
@@ -27,6 +31,12 @@ public class Board : MonoBehaviour
     readonly Dictionary<Vector2Int, GameObject> _occupants = new Dictionary<Vector2Int, GameObject>();
     // The side of each unit on the board, for it to find a cell of its side when the board changes
     readonly Dictionary<GameObject, BoardCellType> _sides = new Dictionary<GameObject, BoardCellType>();
+
+    // The sides whose center cell is blocked, on every layout
+    readonly HashSet<BoardCellType> _blockedCenters = new HashSet<BoardCellType>();
+    // The cells no unit can stand on and what is laid on them: not a unit, nothing to target or move
+    readonly Dictionary<Vector2Int, GameObject> _blockers = new Dictionary<Vector2Int, GameObject>();
+    public IReadOnlyDictionary<Vector2Int, GameObject> blockers => _blockers;
 
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int ColorId = Shader.PropertyToID("_Color");
@@ -47,7 +57,29 @@ public class Board : MonoBehaviour
         if (_tiles.Count == 0)
         {
             BuildTiles();
+            BuildBlockers();
         }
+    }
+
+    // Blocks the center cell of the side (see BoardLayout.TryGetCenterCell) on this layout and the next ones, or frees
+    // it. The unit on it goes to the free cell of its side nearest to it; returns the units left without a cell, no
+    // longer on the board
+    public List<GameObject> SetCenterBlocked(BoardCellType side, bool blocked)
+    {
+        if (blocked)
+        {
+            _blockedCenters.Add(side);
+        }
+        else
+        {
+            _blockedCenters.Remove(side);
+        }
+        return SetLayout(_layout);
+    }
+
+    public bool IsBlocked(Vector2Int coord)
+    {
+        return _blockers.ContainsKey(coord);
     }
 
     // The board of the fight, the default one when null: the tiles are laid again. Each unit keeps its cell when it
@@ -67,15 +99,13 @@ public class Board : MonoBehaviour
 
         _layout = newLayout;
         BuildTiles();
+        BuildBlockers();
 
-        // The units still on a cell of their side first, so the others never take their cell
+        // The units still on a free cell of their side first, so the others never take their cell
         List<GameObject> displaced = new List<GameObject>();
         foreach ((GameObject unit, BoardCellType side, Vector2Int coord, Vector3 position) unit in units)
         {
-            if (GetCellType(unit.coord) == unit.side)
-            {
-                Occupy(unit.coord, unit.unit, unit.side);
-            }
+            Occupy(unit.coord, unit.unit, unit.side);
         }
         foreach ((GameObject unit, BoardCellType side, Vector2Int coord, Vector3 position) unit in units)
         {
@@ -124,10 +154,10 @@ public class Board : MonoBehaviour
         return layout.TryGetCoord(transform.position, position, out coord);
     }
 
-    // A cell of a side (Player or Enemy) with no unit on it
+    // A cell of a side (Player or Enemy) with no unit on it, not blocked
     public bool IsFree(Vector2Int coord, BoardCellType side)
     {
-        return side != BoardCellType.None && GetCellType(coord) == side && GetOccupant(coord) == null;
+        return side != BoardCellType.None && GetCellType(coord) == side && !IsBlocked(coord) && GetOccupant(coord) == null;
     }
 
     // The unit on the cell, null when there is none (or it was destroyed)
@@ -222,7 +252,7 @@ public class Board : MonoBehaviour
         float nearestSqrDistance = float.MaxValue;
         foreach (Vector2Int coord in layout.GetCells(side))
         {
-            if (GetOccupant(coord) != null)
+            if (!IsFree(coord, side))
             {
                 continue;
             }
@@ -259,24 +289,74 @@ public class Board : MonoBehaviour
         return found;
     }
 
-    // A tile on each cell of the player or the enemies, none on the cells of nobody
-    void BuildTiles()
+    static void DestroyAll(Dictionary<Vector2Int, GameObject> objects)
     {
-        foreach (GameObject tile in _tiles.Values)
+        foreach (GameObject laid in objects.Values)
         {
-            if (tile != null)
+            if (laid != null)
             {
                 if (Application.isPlaying)
                 {
-                    Destroy(tile);
+                    Destroy(laid);
                 }
                 else
                 {
-                    DestroyImmediate(tile);
+                    DestroyImmediate(laid);
                 }
             }
         }
-        _tiles.Clear();
+        objects.Clear();
+    }
+
+    // A block on the center cell of each blocked side of the layout
+    void BuildBlockers()
+    {
+        DestroyAll(_blockers);
+        if (layout == null)
+        {
+            return;
+        }
+        foreach (BoardCellType side in _blockedCenters)
+        {
+            if (layout.TryGetCenterCell(side, out Vector2Int center))
+            {
+                _blockers[center] = CreateBlocker(center);
+            }
+        }
+    }
+
+    GameObject CreateBlocker(Vector2Int coord)
+    {
+        GameObject blocker;
+        float size = layout.cellSize * _tileScale * 0.8f;
+        if (_blockerPrefab != null)
+        {
+            blocker = Instantiate(_blockerPrefab, transform);
+            blocker.transform.position = GetCellCenter(coord);
+        }
+        else
+        {
+            blocker = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            blocker.transform.SetParent(transform, false);
+            // Nothing to click or hit: not in the way of the clicks on the ground nor of the projectiles
+            Collider blockerCollider = blocker.GetComponent<Collider>();
+            if (blockerCollider != null)
+            {
+                DestroyImmediate(blockerCollider);
+            }
+            float height = layout.cellSize * 0.6f;
+            blocker.transform.localScale = new Vector3(size, height, size);
+            blocker.transform.position = GetCellCenter(coord) + Vector3.up * (height * 0.5f);
+            SetColor(blocker.GetComponent<Renderer>(), _blockerMaterial, _blockerColor);
+        }
+        blocker.name = $"Blocker ({coord.x}, {coord.y})";
+        return blocker;
+    }
+
+    // A tile on each cell of the player or the enemies, none on the cells of nobody
+    void BuildTiles()
+    {
+        DestroyAll(_tiles);
         if (layout == null)
         {
             return;
@@ -320,19 +400,24 @@ public class Board : MonoBehaviour
         float size = layout.cellSize * _tileScale;
         tile.transform.localScale = new Vector3(size, size, 1f);
 
-        Renderer tileRenderer = tile.GetComponent<Renderer>();
-        if (tileRenderer != null)
-        {
-            if (_tileMaterial != null)
-            {
-                tileRenderer.sharedMaterial = _tileMaterial;
-            }
-            MaterialPropertyBlock block = new MaterialPropertyBlock();
-            tileRenderer.GetPropertyBlock(block);
-            block.SetColor(BaseColorId, color);
-            block.SetColor(ColorId, color);
-            tileRenderer.SetPropertyBlock(block);
-        }
+        SetColor(tile.GetComponent<Renderer>(), _tileMaterial, color);
         return tile;
+    }
+
+    static void SetColor(Renderer renderer, Material material, Color color)
+    {
+        if (renderer == null)
+        {
+            return;
+        }
+        if (material != null)
+        {
+            renderer.sharedMaterial = material;
+        }
+        MaterialPropertyBlock block = new MaterialPropertyBlock();
+        renderer.GetPropertyBlock(block);
+        block.SetColor(BaseColorId, color);
+        block.SetColor(ColorId, color);
+        renderer.SetPropertyBlock(block);
     }
 }

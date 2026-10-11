@@ -151,6 +151,10 @@ public class AscensionGameType : AGameType, IEventRoomHost
                     GiveItems(PlayerBehaviour.instance.character, ascension.GetCharacterItems(runAscensionLevel));
                 }
                 _gameView.entityInventory.Init(PlayerBehaviour.instance.character.entityPool);
+                if (ascension != null)
+                {
+                    ReturnToInventory(EntityManager.instance.board.SetCenterBlocked(BoardCellType.Player, ascension.BlocksPlayerCenter(runAscensionLevel)));
+                }
 
                 int seed = _seed != 0 ? _seed : System.Environment.TickCount;
                 Debug.Log($"[AscensionGameType] Run seed: {seed}");
@@ -419,7 +423,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
         character.ApplyBuffs();
     }
 
-    // In the inventory of the unit, outside its slots like its innate items
+    // In the inventory of the unit, without slot: shown in its first free slots (see SlotInventory.RefreshInventory)
     public static void GiveItems(Entity entity, List<AItemFactory> items)
     {
         foreach (AItemFactory item in items)
