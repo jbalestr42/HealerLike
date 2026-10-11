@@ -30,8 +30,7 @@ namespace HealerLike.Render.Stage
                 yield return _session.Resize(1080, 1920);
                 _session.mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
                 UnityEngine.Random.InitState(271828);
-                yield return _session.actions.PointerTap("start-button");
-                yield return Wait(0.8f);
+                // The run starts with the scene: the first room is picked on the map it offers
                 yield return StageMapActions.SelectFirst(_session.actions, true);
                 yield return Wait(0.5f);
                 yield return _session.Capture("01-preparation");

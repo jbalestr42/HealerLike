@@ -92,9 +92,10 @@ public class ToolkitGameActions : IDisposable
 
         GameHUD hud = _context.legacy.gameHUD;
         bool isStart = LegacyUiReader.GameState(_context.game) == GameManager.GameState.None;
-        if (isStart && hud.startGameButton.interactable)
+        if (isStart)
         {
-            hud.startGameButton.onClick.Invoke();
+            // GameManager starts the run when the gameplay scene loads: a finished run starts anew by reloading it
+            LoadScene(_host.gameplayScene);
         }
         else if (hud.nextWaveButton.interactable)
         {

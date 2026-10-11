@@ -45,11 +45,10 @@ namespace HealerLike.Render.Stage
                 _session.mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
                 _output.manifest.interventions.Add("Authored map settings retained; capture-only map seed fixed to "
                     + "271828");
-                yield return _session.actions.PointerTap("start-button");
-                yield return Wait(0.8f);
-                _output.Check(_session.actions.legacyModuleReadTouches,
-                    "Begin journey consumed actual multi-frame legacy input samples");
+                // The run starts with the scene: the first touch of the journey is the room pick
                 yield return StageMapActions.SelectFirst(_session.actions, true);
+                _output.Check(_session.actions.legacyModuleReadTouches,
+                    "Room pick consumed actual multi-frame legacy input samples");
                 _output.manifest.checks.Add("Entered first combat through actual multi-frame Toolkit map touch");
                 yield return portraits.Portraits("01-portrait");
                 yield return _session.Resize(844, 390);

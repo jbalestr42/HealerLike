@@ -192,7 +192,7 @@ namespace HealerLike.Render.Stage
 
             if (shouldStartGame)
             {
-                _hud.startGameButton.onClick.Invoke();
+                // GameManager starts the run with the scene; the first room is chosen once its map is offered
                 // Legacy visual captures use a Toolkit navigation submit, not a measured touch gesture.
                 StageInterfaceActions actions = new StageInterfaceActions
                     { ui = Object.FindAnyObjectByType<ToolkitGameUI>() };

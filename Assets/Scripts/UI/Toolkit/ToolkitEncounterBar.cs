@@ -49,14 +49,15 @@ public class ToolkitEncounterBar
         _view.Show("spell-section", !isStart);
         _view.Show("wave-button", !isStart && isPreparing && !_context.hasInteraction);
         _view.Show("party-panel", !isStart);
-        _view.SetButton("start-button", "Start expedition", isAvailable && hud.startGameButton.interactable);
+        // The run starts with the scene (GameManager.Start), so an expedition can only be started once none is running
+        _view.SetButton("start-button", "Start expedition", isAvailable && isStart);
         _view.Show("currency-label", false);
         _view.SetText("wave-label", GetRoomText());
         _view.SetText("phase-label", GetPhaseText(isStart, isPreparing));
         _view.SetText("status-label", GetStatusText(isStart, isPreparing));
         if (isStart)
         {
-            _view.SetButton("wave-button", "Start expedition", isAvailable && hud.startGameButton.interactable);
+            _view.SetButton("wave-button", "Start expedition", isAvailable && isStart);
         }
         else
         {

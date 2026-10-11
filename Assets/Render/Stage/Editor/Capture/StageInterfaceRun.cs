@@ -47,18 +47,16 @@ namespace HealerLike.Render.Stage
                 UnityEngine.Random.InitState(271828);
                 _session.mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
                 _output.manifest.checks.Add("Authored map settings retained; capture-only map seed fixed to 271828");
-                yield return _session.actions.PointerTap("start-button");
-                yield return Wait(1f);
-                _output.Check(_session.actions.legacyModuleReadTouches,
-                    "Selected StandaloneInputModule consumed held touch samples for Begin journey");
+                yield return StageMapActions.WaitForSelection(_session.actions);
                 _output.Check(
                     LegacyUiReader.GameState(Object.FindAnyObjectByType<GameManager>())
-                    == GameManager.GameState.Running, "Toolkit begin journey started real gameplay");
-                yield return StageMapActions.WaitForSelection(_session.actions);
+                    == GameManager.GameState.Running, "The scene started real gameplay");
                 yield return _session.Capture("01b-phone-map");
                 yield return _session.Resize(1440, 900);
                 yield return _session.Capture("01c-desktop-map");
                 yield return StageMapActions.SelectFirst(_session.actions, true);
+                _output.Check(_session.actions.legacyModuleReadTouches,
+                    "Selected StandaloneInputModule consumed held touch samples for the room pick");
                 yield return _session.Resize(1080, 1920);
                 _output.manifest.checks.Add("First map room selected through actual multi-frame Toolkit touch input");
                 // The roster row is always on screen: there is no party drawer to open

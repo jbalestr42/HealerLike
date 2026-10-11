@@ -55,8 +55,6 @@ namespace HealerLike.Render.Stage
             _session.output.Check(Object.FindObjectsByType<ToolkitGameUI>().Length == 1,
                 "New expedition has exactly one Toolkit host");
             _session.mapFixture = new StageMapFixture(Object.FindAnyObjectByType<AscensionGameType>(), false);
-            yield return _session.actions.PointerTap("start-button");
-            yield return Wait(0.8f);
             yield return StageMapActions.SelectFirst(_session.actions, true);
             _session.output.Check(_session.actions.legacyModuleReadTouches,
                 "New expedition uses the selected legacy module for touch input");

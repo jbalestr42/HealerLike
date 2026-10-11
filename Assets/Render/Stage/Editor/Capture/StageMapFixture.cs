@@ -13,6 +13,12 @@ namespace HealerLike.Render.Stage
             BindingFlags.Instance | BindingFlags.NonPublic);
         static readonly FieldInfo seedField = typeof(AscensionGameType).GetField("_seed",
             BindingFlags.Instance | BindingFlags.NonPublic);
+        static readonly FieldInfo runField = typeof(AscensionGameType).GetField("_run",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        static readonly FieldInfo randomField = typeof(AscensionGameType).GetField("_random",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        static readonly FieldInfo seedUsedField = typeof(AscensionGameType).GetField("_seedUsed",
+            BindingFlags.Instance | BindingFlags.NonPublic);
         readonly AscensionGameType _owner;
         readonly MapGenerationSettings _original;
         readonly int _originalSeed;
@@ -60,6 +66,31 @@ namespace HealerLike.Render.Stage
 
             settingsField.SetValue(owner, settings);
             seedField.SetValue(owner, Seed);
+            Regenerate(owner, settings);
+        }
+
+        // The run starts with the scene (GameManager.Start), so the map is usually generated before the capture can
+        // install its configuration: while the first room is still to choose, the map is generated again from it
+        static void Regenerate(AscensionGameType owner, MapGenerationSettings settings)
+        {
+            if (owner.state != AscensionGameType.State.SelectRoom || owner.run == null || owner.run.currentNode != null)
+            {
+                return;
+            }
+
+            if (runField == null || randomField == null || seedUsedField == null)
+            {
+                throw new InvalidOperationException("Ascension run generation capture contract changed.");
+            }
+
+            randomField.SetValue(owner, new System.Random(Seed));
+            seedUsedField.SetValue(owner, Seed);
+            runField.SetValue(owner, new RunState(MapGenerator.Generate(settings, Seed)));
+            MapView mapView = UnityEngine.Object.FindAnyObjectByType<MapView>(FindObjectsInactive.Include);
+            if (mapView != null)
+            {
+                mapView.Display(owner.run, true);
+            }
         }
 
         public void Dispose()

@@ -407,7 +407,7 @@ namespace HealerLike.Render.Stage
 
             yield return Wait(1.5f);
             StageInterfaceActions actions = new StageInterfaceActions { ui = hud };
-            actions.Submit("start-button");
+            // The run started with the scene: the first room is chosen on the map it offers
             yield return StageMapActions.SelectFirst(actions, false);
             yield return Wait(2f);
             PlayerBehaviour player = Object.FindAnyObjectByType<PlayerBehaviour>();
