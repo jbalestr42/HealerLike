@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using TMPro;
 using UnityEngine;
 
 // Presentation reads the existing gameplay/UI state; commands still use the original public actions.
@@ -59,6 +61,55 @@ public static class LegacyUiReader
         }
 
         return source.upgradeButtons;
+    }
+
+    // The buttons EventView built for the choices on screen, in his order
+    public static IReadOnlyList<UnityEngine.UI.Button> EventChoices(EventView source)
+    {
+        if (!HasSource(source, "EventView.choiceButtons"))
+        {
+            return Array.Empty<UnityEngine.UI.Button>();
+        }
+
+        return source.choiceButtons;
+    }
+
+    // EventView keeps its two texts in private serialized fields and exposes neither. Read through the field
+    // until he adds `title` and `description` getters (a two line change on his side), then call those instead.
+    public static string EventTitle(EventView source)
+    {
+        return EventText(source, "_title");
+    }
+
+    public static string EventDescription(EventView source)
+    {
+        return EventText(source, "_description");
+    }
+
+    static bool _reportedMissingEventField;
+
+    static string EventText(EventView source, string field)
+    {
+        if (!HasSource(source, "EventView." + field))
+        {
+            return string.Empty;
+        }
+
+        FieldInfo info = typeof(EventView).GetField(field, BindingFlags.NonPublic | BindingFlags.Instance);
+        if (info == null)
+        {
+            if (!_reportedMissingEventField)
+            {
+                _reportedMissingEventField = true;
+                Debug.LogError($"[LegacyUiReader] EventView no longer has a field named {field}, the event panel shows no screen text");
+            }
+
+            return string.Empty;
+        }
+
+        TMP_Text text = info.GetValue(source) as TMP_Text;
+        // His Display switches the description off when it is empty, a stale text must not be read
+        return text != null && text.gameObject.activeSelf ? text.text : string.Empty;
     }
 
     public static UseCharacterSkillButton SkillButton(CharacterSkillSlot source)

@@ -57,18 +57,88 @@ namespace UI.Toolkit
             Assert.IsTrue(_worldCanvas.enabled);
         }
 
+        Canvas CreateEventCanvas(out GraphicRaycaster raycaster)
+        {
+            Canvas eventCanvas = CreateCanvas(_go.transform, RenderMode.ScreenSpaceOverlay);
+            raycaster = eventCanvas.gameObject.AddComponent<GraphicRaycaster>();
+            TestHelpers.WithLoggingDisabled(() => eventCanvas.gameObject.AddComponent<EventView>());
+            return eventCanvas;
+        }
+
         [Test]
         public void Hide_EventViewCanvas_KeepsItAndItsRaycasterEnabled()
         {
-            Canvas eventCanvas = CreateCanvas(_go.transform, RenderMode.ScreenSpaceOverlay);
-            GraphicRaycaster eventRaycaster = eventCanvas.gameObject.AddComponent<GraphicRaycaster>();
-            TestHelpers.WithLoggingDisabled(() => eventCanvas.gameObject.AddComponent<EventView>());
+            Canvas eventCanvas = CreateEventCanvas(out GraphicRaycaster eventRaycaster);
 
             _legacyCanvases.Hide(_context);
 
-            Assert.IsTrue(eventCanvas.enabled, "The event and rest rooms are chosen on Julien's screen.");
+            Assert.IsTrue(eventCanvas.enabled, "His screen stays until ToolkitEventPanel has a card to press.");
             Assert.IsTrue(eventRaycaster.enabled);
             Assert.IsFalse(_screenCanvas.enabled, "The other legacy screens are still hidden.");
+        }
+
+        [Test]
+        public void SetEventScreenVisible_False_HidesHisCanvasAndRaycasterOnly()
+        {
+            Canvas eventCanvas = CreateEventCanvas(out GraphicRaycaster eventRaycaster);
+            _legacyCanvases.Hide(_context);
+
+            _legacyCanvases.SetEventScreenVisible(false);
+
+            Assert.IsFalse(eventCanvas.enabled, "ToolkitEventPanel draws the choices in its place.");
+            Assert.IsFalse(eventRaycaster.enabled);
+            Assert.IsTrue(_worldCanvas.enabled);
+        }
+
+        [Test]
+        public void SetEventScreenVisible_True_BringsHisCanvasAndRaycasterBackAsTheSceneHadThem()
+        {
+            Canvas eventCanvas = CreateEventCanvas(out GraphicRaycaster eventRaycaster);
+            _legacyCanvases.Hide(_context);
+            _legacyCanvases.SetEventScreenVisible(false);
+
+            _legacyCanvases.SetEventScreenVisible(true);
+
+            Assert.IsTrue(eventCanvas.enabled, "The fallback: with no Toolkit card his screen is the way out of the room.");
+            Assert.IsTrue(eventRaycaster.enabled);
+            Assert.IsFalse(_screenCanvas.enabled, "Only the event screen comes back.");
+        }
+
+        [Test]
+        public void SetEventScreenVisible_CanvasThatWasOffInTheScene_StaysOff()
+        {
+            Canvas eventCanvas = CreateEventCanvas(out GraphicRaycaster _);
+            eventCanvas.enabled = false;
+            _legacyCanvases.Hide(_context);
+
+            _legacyCanvases.SetEventScreenVisible(true);
+
+            Assert.IsFalse(eventCanvas.enabled);
+        }
+
+        [Test]
+        public void SetEventScreenVisible_BeforeHide_ChangesNothing()
+        {
+            Canvas eventCanvas = CreateEventCanvas(out GraphicRaycaster eventRaycaster);
+
+            _legacyCanvases.SetEventScreenVisible(false);
+
+            Assert.IsTrue(eventCanvas.enabled);
+            Assert.IsTrue(eventRaycaster.enabled);
+        }
+
+        [Test]
+        public void Restore_AfterThePanelHidHisCanvas_PutsItBackAndALateCallCannotHideItAgain()
+        {
+            Canvas eventCanvas = CreateEventCanvas(out GraphicRaycaster eventRaycaster);
+            _legacyCanvases.Hide(_context);
+            _legacyCanvases.SetEventScreenVisible(false);
+
+            _legacyCanvases.Restore();
+            _legacyCanvases.SetEventScreenVisible(false);
+
+            Assert.IsTrue(eventCanvas.enabled, "Restore forgets the event canvas, a late call must not hide it again.");
+            Assert.IsTrue(eventRaycaster.enabled);
         }
 
         [Test]

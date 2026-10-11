@@ -8,8 +8,9 @@ using UiButton = UnityEngine.UI.Button;
 
 namespace HealerLike.Render.Stage
 {
-    // Plays a rest room then an event room of the merged game under the Toolkit HUD, taking the game's uGUI choices
-    // by touch, and reads what each choice changed in the run. Also measures how often the authored map settings
+    // Plays a rest room then an event room of the merged game under the Toolkit HUD, taking the choices by touch
+    // on the Toolkit event cards (his uGUI buttons are the fallback), and reads what each choice changed in the
+    // run. Also measures how often the authored map settings
     // draw an event room.
     public sealed class StageEventRoomRun : AStageRun
     {
@@ -25,6 +26,8 @@ namespace HealerLike.Render.Stage
             public List<string> interventions = new List<string>();
             public List<string> enabledHudButtons = new List<string>();
             public List<string> choiceHits = new List<string>();
+            public List<string> eventSurfaces = new List<string>();
+            public List<string> cards = new List<string>();
             public List<string> hudHits = new List<string>();
             public List<string> clicks = new List<string>();
             public List<string> cardEffects = new List<string>();
@@ -148,11 +151,13 @@ namespace HealerLike.Render.Stage
             _output.Check(LegacyUiReader.AscensionState(ascension) == AscensionGameType.State.Rest,
                 "Entering the rest room waits on Julien's choice screen");
             yield return _session.Capture("01-rest-choices");
+            choice.CheckCards("rest");
             UiButton resurrect = choice.Choice("Resurrect");
             yield return choice.CheckSeam("rest", resurrect);
             yield return choice.Tap(resurrect);
             yield return choice.WaitForChoices("Resurrect");
             yield return _session.Capture("02-resurrect-choices");
+            choice.CheckCards("resurrect");
 
             _manifest.unitsBeforeResurrect = units.entityButtons.Count;
             UiButton target = choice.Choice(ally.title);
@@ -181,6 +186,7 @@ namespace HealerLike.Render.Stage
             _output.Check(LegacyUiReader.AscensionState(ascension) == AscensionGameType.State.PlayEvent,
                 "Entering the event room waits on Julien's choice screen");
             yield return _session.Capture("04-library-choices");
+            choice.CheckCards("library");
             UiButton item = null;
             foreach (UiButton button in choice.view.choiceButtons)
             {

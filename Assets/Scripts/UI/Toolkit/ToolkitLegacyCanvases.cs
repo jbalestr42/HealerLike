@@ -7,6 +7,7 @@ public class ToolkitLegacyCanvases
 {
     Dictionary<Canvas, bool> _canvases = new Dictionary<Canvas, bool>();
     Dictionary<GraphicRaycaster, bool> _raycasters = new Dictionary<GraphicRaycaster, bool>();
+    List<Canvas> _eventCanvases = new List<Canvas>();
 
     // The legacy menu controller opens its own character select from Start; the Toolkit menu replaces that
     // screen, so the controller is switched off before any Start of its scene runs. It is not switched back on:
@@ -70,36 +71,81 @@ public class ToolkitLegacyCanvases
 
         _canvases.Clear();
         _raycasters.Clear();
+        _eventCanvases.Clear();
     }
 
-    // The game's event and rest choice screen has no Toolkit counterpart yet, so it keeps its own canvas:
-    // hiding it would leave those rooms with no way to choose and the run stuck
+    // The event and rest choice screen is drawn by ToolkitEventPanel, but only while it has a card to press, so
+    // his canvas is recorded here and left as the scene had it. The panel hides it with SetEventScreenVisible(false)
+    // once its cards are up. The default is his screen: when our HUD does not get as far as the panel, the room
+    // still has a way to choose and the run cannot stall behind a hidden canvas.
     void HideScreenCanvases(GameObject root)
     {
         foreach (Canvas canvas in root.GetComponentsInChildren<Canvas>(true))
         {
-            if (canvas.renderMode != RenderMode.WorldSpace && canvas.GetComponentInParent<EventView>(true) == null)
+            if (canvas.renderMode == RenderMode.WorldSpace)
             {
-                HideCanvas(canvas);
+                continue;
+            }
+
+            if (canvas.GetComponentInParent<EventView>(true) != null)
+            {
+                Remember(canvas);
+                if (!_eventCanvases.Contains(canvas))
+                {
+                    _eventCanvases.Add(canvas);
+                }
+
+                continue;
+            }
+
+            HideCanvas(canvas);
+        }
+    }
+
+    // False hides his event canvas and its raycasters, true brings them back to the state Hide found them in.
+    // Does nothing for a canvas Hide has not seen.
+    public void SetEventScreenVisible(bool visible)
+    {
+        foreach (Canvas canvas in _eventCanvases)
+        {
+            if (canvas == null)
+            {
+                continue;
+            }
+
+            bool wasEnabled;
+            canvas.enabled = visible && _canvases.TryGetValue(canvas, out wasEnabled) && wasEnabled;
+            foreach (GraphicRaycaster raycaster in canvas.GetComponents<GraphicRaycaster>())
+            {
+                bool raycasterWasEnabled;
+                raycaster.enabled = visible && _raycasters.TryGetValue(raycaster, out raycasterWasEnabled)
+                    && raycasterWasEnabled;
             }
         }
     }
 
-    void HideCanvas(Canvas canvas)
+    void Remember(Canvas canvas)
     {
         if (!_canvases.ContainsKey(canvas))
         {
             _canvases.Add(canvas, canvas.enabled);
         }
 
-        canvas.enabled = false;
         foreach (GraphicRaycaster raycaster in canvas.GetComponents<GraphicRaycaster>())
         {
             if (!_raycasters.ContainsKey(raycaster))
             {
                 _raycasters.Add(raycaster, raycaster.enabled);
             }
+        }
+    }
 
+    void HideCanvas(Canvas canvas)
+    {
+        Remember(canvas);
+        canvas.enabled = false;
+        foreach (GraphicRaycaster raycaster in canvas.GetComponents<GraphicRaycaster>())
+        {
             raycaster.enabled = false;
         }
     }

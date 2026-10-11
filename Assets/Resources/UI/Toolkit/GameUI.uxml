@@ -9,6 +9,7 @@
     <ui:Template name="SheetScreen" src="Screens/SheetScreen.uxml" />
     <ui:Template name="MapScreen" src="Screens/MapScreen.uxml" />
     <ui:Template name="RewardScreen" src="Screens/RewardScreen.uxml" />
+    <ui:Template name="EventScreen" src="Screens/EventScreen.uxml" />
     <ui:Template name="PauseScreen" src="Screens/PauseScreen.uxml" />
     <ui:Template name="GameOverScreen" src="Screens/GameOverScreen.uxml" />
     <ui:Template name="ClassSelectScreen" src="Screens/ClassSelectScreen.uxml" />
@@ -29,6 +30,7 @@
         <ui:Instance template="SheetScreen" name="sheet-panel" class="modal-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="MapScreen" name="map-panel" class="modal-layer map-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="RewardScreen" name="upgrade-panel" class="modal-layer is-hidden" picking-mode="Position" />
+        <ui:Instance template="EventScreen" name="event-panel" class="modal-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="PauseScreen" name="pause-panel" class="modal-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="GameOverScreen" name="gameover-panel" class="modal-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="ClassSelectScreen" name="class-panel" class="modal-layer is-hidden" picking-mode="Position" />

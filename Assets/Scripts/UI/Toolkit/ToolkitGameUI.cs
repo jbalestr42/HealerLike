@@ -34,6 +34,7 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitPartyPanel _partyPanel = new ToolkitPartyPanel();
     ToolkitSpellBar _spellBar = new ToolkitSpellBar();
     ToolkitRewardPanel _rewardPanel = new ToolkitRewardPanel();
+    ToolkitEventPanel _eventPanel = new ToolkitEventPanel();
     ToolkitMapPanel _mapPanel = new ToolkitMapPanel();
     ToolkitDetailPanel _detailPanel = new ToolkitDetailPanel();
     ToolkitInventoryPanel _inventoryPanel = new ToolkitInventoryPanel();
@@ -216,6 +217,7 @@ public class ToolkitGameUI : MonoBehaviour
         _partyPanel.Init(_context, _view, _detailPanel);
         _spellBar.Init(_context, _view);
         _rewardPanel.Init(this, _context, _view);
+        _eventPanel.Init(this, _context, _view, _hideLegacyCanvases ? _legacyCanvases : null);
         _mapPanel.Init(_context, _view);
         if (_hideLegacyCanvases)
         {
@@ -280,6 +282,9 @@ public class ToolkitGameUI : MonoBehaviour
         _view.Show("upgrade-panel", _context.IsCurrentView(ViewType.Upgrade));
         _view.Show("gameover-panel", _context.IsCurrentView(ViewType.GameOver));
         _sheetPanel.Refresh();
+        // Before the early returns below: his event canvas comes down only when this panel draws a card in its
+        // place, and a refresh that stopped short of the panel would leave that decision stale
+        _eventPanel.Refresh();
         if (_context.isMenu)
         {
             _encounterBar.RefreshMenu(_mobileLayout.isPopoverOpen);

@@ -18,13 +18,17 @@ namespace UI.Toolkit
             Replaced,
             // No Toolkit counterpart: his canvas must stay visible and clickable or the run gets stuck
             Exempt,
+            // A Toolkit panel draws this screen, but the hiding pass leaves his canvas as the scene had it: the panel
+            // hides it itself, and only while it has a card to press
+            Fallback,
         }
 
         // The registry is the point of this test: it is the list a human has to touch when Julien adds a screen.
         // Adding a line means deciding, for his new view, whether a Toolkit panel draws it (then write that panel
         // first) or whether his canvas stays (then make ToolkitLegacyCanvases leave it alone). A test that merely
         // passed after a new view would let that view vanish behind the Toolkit with no choice on screen, which
-        // is what happened to EventView. Keys are the owning view's type name, or the menu controller's for the
+        // is what happened to EventView before ToolkitEventPanel. Keys are the owning view's type name, or the menu
+        // controller's for the
         // menu canvas that has no view.
         static readonly Dictionary<string, Disposition> Registry = new Dictionary<string, Disposition>
         {
@@ -32,7 +36,7 @@ namespace UI.Toolkit
             { nameof(UpgradeView), Disposition.Replaced },
             { nameof(MapView), Disposition.Replaced },
             { nameof(GameOverView), Disposition.Replaced },
-            { nameof(EventView), Disposition.Exempt },
+            { nameof(EventView), Disposition.Fallback },
             { nameof(MainMenu), Disposition.Replaced },
         };
 
@@ -152,9 +156,9 @@ namespace UI.Toolkit
                 foreach (Canvas canvas in canvases)
                 {
                     string owner = Owner(canvas);
-                    if (Registry[owner] == Disposition.Exempt && canvas.enabled != before[canvas])
+                    if (Registry[owner] != Disposition.Replaced && canvas.enabled != before[canvas])
                     {
-                        drift.Add($"{owner} is exempt but the hiding pass hid {Path(canvas.transform)}");
+                        drift.Add($"{owner} is {Registry[owner]} but the hiding pass hid {Path(canvas.transform)}");
                     }
                     else if (Registry[owner] == Disposition.Replaced && canvas.enabled)
                     {

@@ -9,9 +9,12 @@ using UiButton = UnityEngine.UI.Button;
 
 namespace HealerLike.Render.Stage
 {
-    // The game's event and rest choices are uGUI buttons on their own overlay canvas, under the live Toolkit HUD.
-    // A choice is taken by the same multi-frame touch as every Toolkit button, read by the StandaloneInputModule;
-    // nothing invokes onClick or EventView.Select directly.
+    // The game's event and rest choices are uGUI buttons on their own overlay canvas. ToolkitEventPanel draws them
+    // as Toolkit cards and hides that canvas, so the touch lands on the card and reaches his button by onClick;
+    // his button is still what the run listens to, and it is where the click count is read. Only when the panel
+    // had nothing to press does the touch go to his canvas, and the seam check says which surface took it.
+    // A choice is taken by the same multi-frame touch as every Toolkit button; nothing invokes onClick or
+    // EventView.Select directly from here.
     public sealed class StageEventChoice
     {
         readonly StageCaptureSession _session;
@@ -44,6 +47,14 @@ namespace HealerLike.Render.Stage
                 yield return null;
             }
 
+            // The panel redraws on the HUD's 0.1 second refresh, one card per button of his screen
+            float cardDeadline = Time.realtimeSinceStartup + 2f;
+            while (_session.actions.Cards("event-list").Count != view.choiceButtons.Count
+                && Time.realtimeSinceStartup < cardDeadline)
+            {
+                yield return null;
+            }
+
             // The layout group places the new buttons on the next canvas update
             yield return AStageRun.Wait(0.3f);
         }
@@ -71,6 +82,59 @@ namespace HealerLike.Render.Stage
             }
 
             throw new InvalidOperationException("No choice named " + label + " on Julien's screen");
+        }
+
+        public bool isToolkitPanelDrawing
+        {
+            get { return StageInterfaceOutput.IsVisible(_session.actions.root.Q("event-panel")); }
+        }
+
+        static string LabelOf(UiButton button)
+        {
+            return button.name.StartsWith("Choice ", StringComparison.Ordinal)
+                ? button.name.Substring("Choice ".Length)
+                : button.name;
+        }
+
+        // The Toolkit card drawn for the choice of that label, null when there is none
+        public UnityEngine.UIElements.Button Card(string label)
+        {
+            foreach (UnityEngine.UIElements.Button card in _session.actions.Cards("event-list"))
+            {
+                Label title = card.Q<Label>("card-title");
+                if (title != null && title.text == label)
+                {
+                    return card;
+                }
+            }
+
+            return null;
+        }
+
+        // One card per choice of his screen, each with his availability and a description our label can draw
+        public void CheckCards(string room)
+        {
+            IReadOnlyList<UiButton> buttons = view.choiceButtons;
+            int cardCount = _session.actions.Cards("event-list").Count;
+            _session.output.Check(cardCount == buttons.Count, room + ": the Toolkit panel draws one card per choice of "
+                + "Julien's screen (" + cardCount + " cards, " + buttons.Count + " choices)");
+            foreach (UiButton button in buttons)
+            {
+                string label = LabelOf(button);
+                UnityEngine.UIElements.Button card = Card(label);
+                _session.output.Check(card != null && card.enabledInHierarchy == button.interactable,
+                    room + ": the card of " + label + " exists and is enabled exactly when his choice is available");
+                if (card == null)
+                {
+                    continue;
+                }
+
+                string description = card.Q<Label>("card-description").text;
+                string status = card.Q<Label>("card-status").text;
+                _manifest.cards.Add(room + " " + label + " [" + status + "]: " + description.Replace("\n", " / "));
+                _session.output.Check(!description.Contains("<size") && !description.Contains("<b>"),
+                    room + ": the card of " + label + " carries none of his raw tags (" + description + ")");
+            }
         }
 
         public static Vector2 ScreenPoint(UiButton button)
@@ -122,12 +186,31 @@ namespace HealerLike.Render.Stage
             });
             _manifest.enabledHudButtons.Add(room + ": " + (enabled.Count > 0 ? string.Join(", ", enabled) : "none"));
 
+            bool isOurs = isToolkitPanelDrawing;
+            _manifest.eventSurfaces.Add(room + ": " + (isOurs ? "Toolkit event panel" : "Julien's canvas, the fallback"));
+            _session.output.Check(isOurs, room + ": the Toolkit event panel took over from Julien's canvas");
+            Canvas eventCanvas = target.GetComponentInParent<Canvas>().rootCanvas;
+            _session.output.Check(eventCanvas.enabled != isOurs, room + ": exactly one of the two screens is on, "
+                + "his canvas is " + (eventCanvas.enabled ? "on" : "off"));
             Vector2 choicePoint = ScreenPoint(target);
             List<RaycastResult> hits = Hits(choicePoint);
             _manifest.choiceHits.Add(room + " " + target.name + " at " + choicePoint + ": " + Describe(hits));
-            _session.output.Check(hits.Count > 0 && hits[0].gameObject.transform.IsChildOf(target.transform),
-                room + ": the first EventSystem hit at Julien's choice is that choice, not the Toolkit panel ("
-                + Describe(hits) + ")");
+            if (isOurs)
+            {
+                // His canvas is off: its position is stale once the layout stops, so this only proves no hit is his
+                _session.output.Check(!hits.Exists(hit => hit.gameObject.transform.IsChildOf(target.transform)),
+                    room + ": none of the EventSystem hits at Julien's choice is his button while the panel is up ("
+                    + Describe(hits) + ")");
+                UnityEngine.UIElements.Button card = Card(LabelOf(target));
+                _session.output.Check(card != null && StageInterfaceOutput.IsVisible(card),
+                    room + ": the card of " + target.name + " is visible");
+            }
+            else
+            {
+                _session.output.Check(hits.Count > 0 && hits[0].gameObject.transform.IsChildOf(target.transform),
+                    room + ": the first EventSystem hit at Julien's choice is that choice, not the Toolkit panel ("
+                    + Describe(hits) + ")");
+            }
 
             List<UiButton> before = new List<UiButton>(view.choiceButtons);
             AscensionGameType.State state = LegacyUiReader.AscensionState(ascension);
@@ -248,7 +331,13 @@ namespace HealerLike.Render.Stage
             UnityEngine.Events.UnityAction count = () => clicks++;
             button.onClick.AddListener(count);
             string name = button.name;
-            Vector2 point = ScreenPoint(button);
+            UnityEngine.UIElements.Button card = isToolkitPanelDrawing ? Card(LabelOf(button)) : null;
+            if (card != null)
+            {
+                yield return _session.actions.BringIntoView(card);
+            }
+
+            Vector2 point = card != null ? StageInterfaceActions.ScreenPoint(card) : ScreenPoint(button);
             try
             {
                 yield return _session.actions.TouchGesture(point);
