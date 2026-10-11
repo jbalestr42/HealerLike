@@ -27,6 +27,12 @@ namespace Oisif.Editor
         static int FrameDepth;
         static readonly Color DarkerFrame = new Color(0f, 0f, 0f, 0.12f);
 
+        // In a list in the Inspector, Unity draws the foldout arrow of an element left of it, over the handle of the
+        // element: the foldout of the element is moved right by this much
+        const float ListElementFoldoutShift = 13f;
+        // Set while drawing an element of a list, until its foldout (if any) is drawn
+        bool _isDrawingListElement;
+
         // True while the object is drawn inside the inspector of another one
         public static bool isDrawingInline => InlineStack.Count > 0;
 
@@ -191,7 +197,7 @@ namespace Oisif.Editor
 
         void DrawChildren(SerializedProperty property, GUIContent label)
         {
-            property.isExpanded = EditorGUILayout.Foldout(property.isExpanded, label, true);
+            property.isExpanded = DrawFoldout(property.isExpanded, label);
             if (!property.isExpanded)
             {
                 return;
@@ -366,7 +372,15 @@ namespace Oisif.Editor
                     GUILayout.Space(-1f);
                     if (!DrawKeyValue(element))
                     {
-                        DrawProperty(element, GetElementLabel(element));
+                        _isDrawingListElement = true;
+                        try
+                        {
+                            DrawProperty(element, GetElementLabel(element));
+                        }
+                        finally
+                        {
+                            _isDrawingListElement = false;
+                        }
                     }
                     GUILayout.Space(3f);
                     EditorGUILayout.EndVertical();
@@ -487,22 +501,48 @@ namespace Oisif.Editor
         }
 
         // A foldout arrow alone when there is no label, the label clickable otherwise
-        static bool DrawFoldout(bool isExpanded, GUIContent label)
+        bool DrawFoldout(bool isExpanded, GUIContent label)
         {
+            float shift = TakeListElementFoldoutShift();
             if (label == null || label == GUIContent.none || string.IsNullOrEmpty(label.text))
             {
                 // Unity draws the arrow shifted by the indent but clicks it at its rect: the indent is put in the
                 // rect, the arrow drawn without indent
                 float indent = EditorGUI.indentLevel * 15f;
-                Rect rect = GUILayoutUtility.GetRect(indent + 14f, EditorGUIUtility.singleLineHeight, GUILayout.Width(indent + 14f));
-                rect.xMin += indent;
+                // Shifted, the arrow is the one of the Inspector, drawn and clicked left of its rect: the room of the
+                // shift is enough for it, the rect starting after it
+                float width = shift > 0f ? shift : 14f;
+                Rect rect = GUILayoutUtility.GetRect(indent + width, EditorGUIUtility.singleLineHeight, GUILayout.Width(indent + width));
+                rect.xMin += shift > 0f ? indent + width : indent;
                 int indentLevel = EditorGUI.indentLevel;
                 EditorGUI.indentLevel = 0;
                 bool expanded = EditorGUI.Foldout(rect, isExpanded, GUIContent.none, true);
                 EditorGUI.indentLevel = indentLevel;
                 return expanded;
             }
-            return EditorGUILayout.Foldout(isExpanded, label, true);
+            if (shift <= 0f)
+            {
+                return EditorGUILayout.Foldout(isExpanded, label, true);
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(shift);
+            bool isLabelExpanded = EditorGUILayout.Foldout(isExpanded, label, true);
+            EditorGUILayout.EndHorizontal();
+            return isLabelExpanded;
+        }
+
+        // The shift of the foldout of a list element, once: the foldouts inside the element are indented already.
+        // Only in hierarchy mode (the Inspector), where Unity draws the arrow left of the field; elsewhere (e.g. an
+        // editor window) the arrow is drawn inside it, after the handle
+        float TakeListElementFoldoutShift()
+        {
+            if (!_isDrawingListElement)
+            {
+                return 0f;
+            }
+            _isDrawingListElement = false;
+            return EditorGUIUtility.hierarchyMode ? ListElementFoldoutShift : 0f;
         }
 
         // A field without label after the arrow, which already holds the indent
