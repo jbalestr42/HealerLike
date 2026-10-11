@@ -20,8 +20,27 @@ namespace HealerLike.Render.Stage
                 (b.userData as ToolkitCardModel)?.source is CharacterSkillSlot slot && slot.data.name == "Heal");
             CharacterSkillSlot slot = (CharacterSkillSlot)((ToolkitCardModel)spell.userData).source;
             float before = character.mana.Value;
+            // Julien's 4c088cfd: the character's skills are off outside a battle, the round's preparation included,
+            // so the usable-spell checks below run once the battle has started
+            yield return _s.actions.PointerTap(spell);
+            yield return Wait(0.2f);
+            _s.output.Check(_s.interaction.GetInteraction() == null && character.mana.Value == before,
+                "A spell tap during preparation starts no targeting and spends no mana");
+            yield return _s.Capture("10-preparation-spell-off");
+            if (StageInterfaceOutput.IsVisible(_s.actions.root.Q("detail-panel")))
+            {
+                _s.actions.Submit("detail-close-button");
+                yield return Wait(0.2f);
+            }
+
+            yield return _s.actions.PointerTap("wave-button");
+            yield return Wait(0.6f);
+            _s.output.Check(!StageInterfaceOutput.IsVisible(_s.actions.root.Q("wave-button")),
+                "Start battle disappears during real combat");
+            yield return _s.Capture("15-combat");
+            before = character.mana.Value;
             yield return new StageCompactReview(_s).KeyboardEscapeOwnership(spell);
-            yield return _gestures.Hold(spell, "10-spell-hold", false);
+            yield return _gestures.Hold(spell, "10-spell-hold", false, true);
             Observe("spell-hold");
             _s.output.Check(character.mana.Value == before && _s.interaction.GetInteraction() == null,
                 "Held usable spell and duplicate release never cast or spend mana");
@@ -76,7 +95,7 @@ namespace HealerLike.Render.Stage
             _s.output.Check(ToolkitSpellState.Read(slot, character).remaining > 0,
                 "Cooldown overlay reads positive remaining fraction from existing fill");
             yield return _s.Capture("12-cooldown");
-            yield return _gestures.Hold(spell, "13-disabled-spell-hold", false);
+            yield return _gestures.Hold(spell, "13-disabled-spell-hold", false, true);
             // Explicit capture fixture: drain through a public resource consumer, then restore using Refill.
             ConsumerFactory consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
             consumer.data = new ConsumerData { value = new FlatValue { data = new FlatValueData { value = 10000 } } };
@@ -88,7 +107,7 @@ namespace HealerLike.Render.Stage
             Observe("mana-shortage-fixture");
             yield return _s.Capture("14-mana-shortage");
             float shortage = character.mana.Value;
-            yield return _gestures.Hold(spell, "14b-shortage-inspection", false);
+            yield return _gestures.Hold(spell, "14b-shortage-inspection", false, true);
             _s.output.Check(character.mana.Value == shortage && _s.interaction.GetInteraction() == null,
                 "Unavailable spell stays inspectable without activation");
             yield return new StageCompactReview(_s).ControllerInspect(spell);
@@ -97,11 +116,7 @@ namespace HealerLike.Render.Stage
                 "Existing cooldown recovers and clears the dark remaining sector");
             yield return _s.Capture("14c-cooldown-recovered-shortage");
             character.mana.Refill();
-            yield return _s.actions.PointerTap("wave-button");
-            yield return Wait(0.6f);
-            _s.output.Check(!StageInterfaceOutput.IsVisible(_s.actions.root.Q("wave-button")),
-                "Start battle disappears during real combat");
-            yield return _s.Capture("15-combat");
+            yield return Wait(0.2f);
             Rect beforeTargeting = _s.actions.ui.normalizedWorldViewport;
             yield return _s.actions.PointerTap(spell);
             yield return Wait(0.2f);

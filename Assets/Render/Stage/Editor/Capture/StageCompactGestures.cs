@@ -10,7 +10,8 @@ namespace HealerLike.Render.Stage
     {
         readonly StageCaptureSession _session;
         public StageCompactGestures(StageCaptureSession session) { _session = session; }
-        public IEnumerator Hold(Button button, string image, bool persistent)
+        // inBattle: the game camera follows the fight on its own, so only the reserved viewport is held still
+        public IEnumerator Hold(Button button, string image, bool persistent, bool inBattle = false)
         {
             yield return _session.actions.BringIntoView(button);
             Vector2 point = StageInterfaceActions.ScreenPoint(button);
@@ -22,9 +23,17 @@ namespace HealerLike.Render.Stage
                 yield return Still(touch, point, 0.55f);
                 _session.output.Check(StageInterfaceOutput.IsVisible(_session.actions.root.Q("detail-panel")),
                     "Native held pointer opens details: " + image);
-                _session.output.Check(viewport == _session.actions.ui.normalizedWorldViewport
-                    && Vector3.Distance(camera, _session.manager.gameCamera.transform.position) < 0.01f,
-                    "Inspection leaves viewport and camera stable: " + image);
+                if (inBattle)
+                {
+                    _session.output.Check(viewport == _session.actions.ui.normalizedWorldViewport,
+                        "Inspection leaves the viewport stable while the battle camera moves: " + image);
+                }
+                else
+                {
+                    _session.output.Check(viewport == _session.actions.ui.normalizedWorldViewport
+                        && Vector3.Distance(camera, _session.manager.gameCamera.transform.position) < 0.01f,
+                        "Inspection leaves viewport and camera stable: " + image);
+                }
                 yield return _session.Capture(image, "Multi-frame StandaloneInputModule touch hold, real Toolkit pointer callbacks");
                 yield return touch.Frame(TouchPhase.Ended, point);
                 yield return touch.Frame(TouchPhase.Ended, point); // duplicate release must be harmless
