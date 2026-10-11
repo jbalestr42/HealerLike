@@ -13,6 +13,9 @@ public class InventoryHandler
     List<InventoryItemData> _items = new List<InventoryItemData>();
     public List<InventoryItemData> items => _items;
 
+    // Its items are shown but the player can't move them out, nor drop items in (e.g. the inventory of an enemy)
+    public bool isLocked { get; set; }
+
     public UnityEvent<InventoryItemData, bool> OnItemAdded = new UnityEvent<InventoryItemData, bool>();
     public UnityEvent<InventoryItemData> OnItemRemoved = new UnityEvent<InventoryItemData>();
 

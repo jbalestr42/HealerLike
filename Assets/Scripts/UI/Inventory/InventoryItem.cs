@@ -14,6 +14,10 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     Transform _root;
     AItem _item;
     bool _isToolTipShown;
+    bool _isDragged;
+
+    // Not out of a locked inventory (see InventoryHandler.isLocked)
+    public bool canBeMoved => _inventoryHandler == null || !_inventoryHandler.isLocked;
 
     public void Init(Transform root, InventoryHandler inventoryHandler, AItem item)
     {
@@ -63,6 +67,13 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (!canBeMoved)
+        {
+            // No drag at all: the item stays in its slot and nothing receives it
+            eventData.pointerDrag = null;
+            return;
+        }
+        _isDragged = true;
         if (_isToolTipShown)
         {
             ShowToolTip(false);
@@ -78,11 +89,19 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
     public void OnDrag(PointerEventData eventData)
     {
-        transform.position = Input.mousePosition;
+        if (_isDragged)
+        {
+            transform.position = Input.mousePosition;
+        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (!_isDragged)
+        {
+            return;
+        }
+        _isDragged = false;
         transform.SetParent(_destinationTransform);
         _background.raycastTarget = true;
     }

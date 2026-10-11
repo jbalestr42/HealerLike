@@ -23,7 +23,17 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         Computer,
         Any
     }
-    public EntityType entityType { get; set; }
+    EntityType _entityType;
+    // Only the player moves the items of its own units: the ones of the enemies are shown, never taken
+    public EntityType entityType
+    {
+        get { return _entityType; }
+        set
+        {
+            _entityType = value;
+            _inventoryHandler.isLocked = value != EntityType.Player;
+        }
+    }
 
     ResourceAttribute _health;
     public ResourceAttribute health { get { return _health; } }

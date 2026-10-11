@@ -14,12 +14,17 @@ public class SlotInventoryItem : MonoBehaviour, IDropHandler
 
     #region IDropHandler
 
+    // Never into a locked inventory (e.g. the one of an enemy), nor an item that can't be moved
     public void OnDrop(PointerEventData eventData)
     {
-        if (IsEmpty())
+        if (!IsEmpty() || (inventoryHandler != null && inventoryHandler.isLocked))
         {
-            GameObject go = eventData.pointerDrag;
-            InventoryItem inventoryItem = go.GetComponent<InventoryItem>();
+            return;
+        }
+        GameObject go = eventData.pointerDrag;
+        InventoryItem inventoryItem = go != null ? go.GetComponent<InventoryItem>() : null;
+        if (inventoryItem != null && inventoryItem.canBeMoved)
+        {
             inventoryItem.ChangeInventory(transform, inventoryHandler, index);
         }
     }

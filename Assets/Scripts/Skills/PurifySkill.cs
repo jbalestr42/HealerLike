@@ -16,9 +16,12 @@ public class PurifySkillData : SkillDataBase
 }
 
 // Purifier: on each use, removes one debuff from a random debuffed ally, then gives a random buff of its list to a
-// random ally
-public class PurifySkill : ACooldownSkill<PurifySkillData>
+// random ally. That ally is drawn ahead of the use, for its line to be shown before (see SkillTargetLines)
+public class PurifySkill : ACooldownSkill<PurifySkillData>, ISkillTargetPreview
 {
+    // The ally the next buff goes to, drawn again once it is given or the ally dies
+    Entity _upcomingAlly;
+
     public override float cooldownDuration => data.rate;
 
     public override bool Execute(GameObject source)
@@ -74,7 +77,8 @@ public class PurifySkill : ACooldownSkill<PurifySkillData>
         }
 
         ABuffHandlerFactory buff = buffs[UnityEngine.Random.Range(0, buffs.Count)];
-        Entity ally = allies[UnityEngine.Random.Range(0, allies.Count)];
+        Entity ally = GetUpcomingAlly(allies);
+        _upcomingAlly = null;
         BuffManager buffManager = ally.GetComponent<BuffManager>();
         if (buffManager == null)
         {
@@ -83,6 +87,16 @@ public class PurifySkill : ACooldownSkill<PurifySkillData>
 
         buffManager.AddHandler(buff, gameObject, ally.gameObject);
         return buff;
+    }
+
+    // The ally drawn for the next buff while it is one of the allies, else a new one drawn at random
+    Entity GetUpcomingAlly(List<Entity> allies)
+    {
+        if (_upcomingAlly == null || !allies.Contains(_upcomingAlly))
+        {
+            _upcomingAlly = allies.Count > 0 ? allies[UnityEngine.Random.Range(0, allies.Count)] : null;
+        }
+        return _upcomingAlly;
     }
 
     List<Entity> GetLivingAllies()
@@ -105,4 +119,19 @@ public class PurifySkill : ACooldownSkill<PurifySkillData>
         EntityManager entityManager = EntityManager.existingInstance;
         return entityManager != null && self != null ? entityManager.GetEntities(self.entityType) : new List<GameObject>();
     }
+
+    #region ISkillTargetPreview
+
+    // The ally of the next buff, null without buff to give or living ally
+    public GameObject GetUpcomingTarget()
+    {
+        if (!data.buffHandlerFactories.Exists(buff => buff != null))
+        {
+            return null;
+        }
+        Entity ally = GetUpcomingAlly(GetLivingAllies());
+        return ally != null ? ally.gameObject : null;
+    }
+
+    #endregion
 }

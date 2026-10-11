@@ -225,6 +225,54 @@ public class PurifySkillTests
     }
 
     [Test]
+    public void GetUpcomingTarget_IsTheAllyTheNextBuffGoesTo()
+    {
+        Entity other = CreateUnit("Other", 100f);
+        _skill.allies = new List<GameObject> { _purifier.gameObject, _ally.gameObject, other.gameObject };
+
+        for (int i = 0; i < 20; i++)
+        {
+            // A new blessing on each use, to know who got it
+            ABuffHandlerFactory blessing = CreateHandler("Blessing " + i);
+            _skill.data.buffHandlerFactories = new List<ABuffHandlerFactory> { blessing };
+            GameObject upcoming = _skill.GetUpcomingTarget();
+            Assert.AreSame(upcoming, _skill.GetUpcomingTarget(), "the same until the use");
+
+            _skill.Execute(_purifier.gameObject);
+
+            CollectionAssert.Contains(GetHandlers(upcoming.GetComponent<Entity>()), blessing, $"use {i}");
+        }
+    }
+
+    [Test]
+    public void GetUpcomingTarget_TheAllyDied_AnotherLivingAlly()
+    {
+        _skill.data.buffHandlerFactories = new List<ABuffHandlerFactory> { CreateHandler("Blessing") };
+        _skill.allies = new List<GameObject> { _purifier.gameObject, _ally.gameObject };
+        GameObject upcoming = _skill.GetUpcomingTarget();
+        GameObject other = upcoming == _ally.gameObject ? _purifier.gameObject : _ally.gameObject;
+
+        upcoming.GetComponent<Entity>().health.SetValue(0f);
+
+        Assert.AreSame(other, _skill.GetUpcomingTarget());
+    }
+
+    [Test]
+    public void GetUpcomingTarget_WithoutBuffToGive_None()
+    {
+        Assert.IsNull(_skill.GetUpcomingTarget());
+    }
+
+    [Test]
+    public void GetUpcomingTarget_WithoutLivingAlly_None()
+    {
+        _skill.data.buffHandlerFactories = new List<ABuffHandlerFactory> { CreateHandler("Blessing") };
+        _skill.allies = new List<GameObject>();
+
+        Assert.IsNull(_skill.GetUpcomingTarget());
+    }
+
+    [Test]
     public void Cooldown_IsTheRate()
     {
         _skill.data.rate = 5f;
