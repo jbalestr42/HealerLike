@@ -386,9 +386,10 @@ namespace HealerLike.Render.Grammar
         }
 
         // The instant class heals are skills, not handlers: 1 x HealPower scaled by the skill multiplier.
-        // Heal (Cleric): 25 x 1.5 = 37.5, 0.375 Solid. Heal Group (Cleric): 25 x 0.8 = 20, 0.2 Solid
+        // Since Julien's 72227060: Heal (Cleric): 25 x 0.8 = 20, 0.2 Solid. Heal Group (Cleric): 25 x 0.4 = 10, 0.1,
+        // at LightMagnitudeMax, so Light
         [TestCase("CharacterSkills/HealSingleTarget/HealSingleTarget", EffectMagnitude.Solid)]
-        [TestCase("CharacterSkills/HealMultiTarget/HealMultiTarget", EffectMagnitude.Solid)]
+        [TestCase("CharacterSkills/HealMultiTarget/HealMultiTarget", EffectMagnitude.Light)]
         public void Magnitude_LiveClassHealSkills_SizedByTheirOwningClass(string path, EffectMagnitude expected)
         {
             ACharacterSkillFactory factory = AssetDatabase.LoadAssetAtPath<ACharacterSkillFactory>(
