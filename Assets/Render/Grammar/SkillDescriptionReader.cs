@@ -90,6 +90,20 @@ namespace HealerLike.Render.Grammar
                     description.cadence = strike.data.interval + strike.data.delay;
                 }
             }
+            else if (skill is FuseSkillFactory fuse)
+            {
+                // A lit fuse blows up once, on every opponent, after a delay drawn between its two bounds: the
+                // creature reads that mean delay as its clock and the explosion as its accent
+                description.hits = LookDerivation.ManyHits;
+                if (fuse.data != null)
+                {
+                    description.cadence = (fuse.data.minDelay + Mathf.Max(fuse.data.minDelay, fuse.data.maxDelay)) * 0.5f;
+                    if (fuse.data.explosion != null)
+                    {
+                        description.accent = EffectDerivation.ConsumerFamily(fuse.data.explosion, false);
+                    }
+                }
+            }
             else if (skill != null)
             {
                 Debug.LogError($"[SkillDescriptionReader] No reading for {skill.GetType().Name}");

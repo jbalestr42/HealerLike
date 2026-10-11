@@ -35,6 +35,7 @@ public class SkillDescriptionReaderTests
     [TestCase(typeof(ApplyBuffOnTargetSkillFactory), HeadKind.Bud)]
     [TestCase(typeof(ApplyBuffPeriodicallySkillFactory), HeadKind.Bud)]
     [TestCase(typeof(MarkedStrikeSkillFactory), HeadKind.Bud)]
+    [TestCase(typeof(FuseSkillFactory), HeadKind.Bud)]
     public void Read_UnassignedFactoryData_KeepsTheKnownHeadWithoutThrowing(System.Type type, HeadKind expected)
     {
         ASkillFactory skill = (ASkillFactory)ScriptableObject.CreateInstance(type);
@@ -57,6 +58,29 @@ public class SkillDescriptionReaderTests
         Assert.AreEqual(11f, description.cadence);
         Assert.AreEqual(1, description.hits);
         Assert.IsEmpty(description.shots);
+    }
+
+    [Test]
+    public void Read_Fuse_MeanDelayIsItsClock_ExplosionOnEveryOpponentIsItsAccent()
+    {
+        ConsumerFactory explosion = Create<ConsumerFactory>();
+        explosion.data = new ConsumerData { value = new FlatValue { data = new FlatValueData { value = 20f } } };
+        FuseSkillFactory skill = Create<FuseSkillFactory>();
+        skill.data = new FuseSkillData { minDelay = 6f, maxDelay = 10f, explosion = explosion };
+        SkillDescription description = SkillDescriptionReader.Read(skill, null);
+        Assert.AreEqual(8f, description.cadence);
+        Assert.AreEqual(EffectFamily.Damage, description.accent);
+        Assert.AreEqual(LookDerivation.ManyHits, description.hits);
+        Assert.IsEmpty(description.shots);
+    }
+
+    [Test]
+    public void Read_Fuse_MaxBelowMin_BurnsForTheMinDelay()
+    {
+        FuseSkillFactory skill = Create<FuseSkillFactory>();
+        skill.data = new FuseSkillData { minDelay = 5f, maxDelay = 2f };
+        SkillDescription description = SkillDescriptionReader.Read(skill, null);
+        Assert.AreEqual(5f, description.cadence);
     }
 
     [Test]
