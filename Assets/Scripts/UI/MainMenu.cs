@@ -21,7 +21,7 @@ public class MainMenu : MonoBehaviour
             Canvas canvas = GetComponentInParent<Canvas>();
             if (canvas == null)
             {
-                canvas = FindObjectOfType<Canvas>();
+                canvas = FindAnyObjectByType<Canvas>();
             }
             // Read each time the menu opens, so a level unlocked by the last run can be picked
             AscensionProgress progress = AscensionProgress.Load(AscensionProgress.defaultPath);

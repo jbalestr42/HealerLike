@@ -98,7 +98,7 @@ public class MarkedStrikeViewTests
     static List<GameObject> FindImpacts()
     {
         List<GameObject> impacts = new List<GameObject>();
-        foreach (GameObject go in Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        foreach (GameObject go in Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include))
         {
             if (go.name == "Impact(Clone)")
             {
