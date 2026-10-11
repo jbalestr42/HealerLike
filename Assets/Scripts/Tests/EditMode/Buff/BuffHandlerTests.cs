@@ -87,15 +87,64 @@ public class BuffHandlerTests
     }
 
     [Test]
-    public void Update_Periodic_AccumulatesAndClampsPeriodDurationTimer()
+    public void Update_Periodic_KeepsTheTimeBeyondThePeriod()
     {
         BuffHandler handler = CreateHandler(DurationType.Infinite, isPeriodic: true, periodDuration: 2f);
 
         handler.Update(1f);
         Assert.AreEqual(1f, handler.periodDurationTimer);
 
-        handler.Update(5f);
-        Assert.AreEqual(2f, handler.periodDurationTimer);
+        handler.Update(1.5f);
+        Assert.AreEqual(2.5f, handler.periodDurationTimer);
+    }
+
+    [Test]
+    public void ConsumePeriod_KeepsTheTimeBeyondThePeriodForTheNextOne()
+    {
+        BuffHandler handler = CreateHandler(DurationType.Duration, duration: 10f, isPeriodic: true, periodDuration: 2f);
+        handler.Update(2.5f);
+
+        handler.ConsumePeriod();
+
+        Assert.AreEqual(0.5f, handler.periodDurationTimer, 0.0001f);
+        Assert.AreEqual(2.5f, handler.durationTimer);
+        Assert.IsFalse(handler.isPeriodDone);
+    }
+
+    [Test]
+    public void ConsumePeriod_WithoutPeriodDuration_RestartsThePeriod()
+    {
+        BuffHandler handler = CreateHandler(DurationType.Infinite, isPeriodic: true, periodDuration: 0f);
+        handler.Update(0.3f);
+
+        handler.ConsumePeriod();
+
+        Assert.AreEqual(0f, handler.periodDurationTimer);
+    }
+
+    // Ticks of a 1s period over 6s, applied once per update like the BuffManager does
+    static int CountTicks(float deltaTime)
+    {
+        BuffHandler handler = CreateHandler(DurationType.Infinite, isPeriodic: true, periodDuration: 1f);
+        int ticks = 0;
+        for (float played = 0f; played < 6f - 0.0001f; played += deltaTime)
+        {
+            handler.Update(deltaTime);
+            if (handler.isPeriodDone)
+            {
+                ticks++;
+                handler.ConsumePeriod();
+            }
+        }
+        return ticks;
+    }
+
+    [Test]
+    public void PeriodicTicks_AsManyWithLongUpdatesAsWithShortOnes()
+    {
+        Assert.AreEqual(6, CountTicks(0.125f));
+        Assert.AreEqual(6, CountTicks(0.25f));
+        Assert.AreEqual(6, CountTicks(0.75f));
     }
 
     [Test]

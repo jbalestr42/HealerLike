@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/CharacterSkill/BuffCharacterSkill")]
 public class BuffCharacterSkillFactory : CharacterSkillFactory<BuffCharacterSkill, BuffCharacterSkillData> {}
@@ -10,7 +10,7 @@ public class BuffCharacterSkillFactory : CharacterSkillFactory<BuffCharacterSkil
 [Serializable]
 public class BuffCharacterSkillData : BaseCharacterSkillData
 {
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(buffHandlerFactory)")]
+    [CreateDataButton]
     public List<ABuffHandlerFactory> buffHandlerFactory;
 }
 

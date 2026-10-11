@@ -12,13 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e52fbd628c57d84c99ff338110a1558, type: 3}
   m_Name: InvincibilityBuffFactory
   m_EditorClassIdentifier: HealerLike.Runtime::InvincibilityBuffFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: f91cdbeb-d6a1-4f01-a29f-423453fab13c

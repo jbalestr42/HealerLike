@@ -2,7 +2,8 @@
     "name": "HealerLike.Models",
     "rootNamespace": "",
     "references": [
-        "HealerLike.Runtime"
+        "HealerLike.Runtime",
+        "Oisif.Inspector"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

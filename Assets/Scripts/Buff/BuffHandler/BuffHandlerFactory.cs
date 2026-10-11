@@ -38,11 +38,8 @@ public class BuffHandler : ABuffHandler<BuffHandlerData>
             
             if (data.isPeriodic)
             {
+                // Not clamped: the time beyond the period counts for the next one, whatever the frame rate
                 periodDurationTimer += deltaTime;
-                if (periodDurationTimer > data.periodDuration)
-                {
-                    periodDurationTimer = data.periodDuration;
-                }
             }
         }
     }
@@ -52,6 +49,8 @@ public class BuffHandler : ABuffHandler<BuffHandlerData>
     }
 
     public override void ResetPeriodDuration() => periodDurationTimer = 0f;
+
+    public override void ConsumePeriod() => periodDurationTimer = data.periodDuration > 0f ? Mathf.Max(0f, periodDurationTimer - data.periodDuration) : 0f;
     public override DurationType durationType => data.durationType;
     public override float duration => data.duration;
     public override float remainingDuration => data.durationType == DurationType.Duration ? Mathf.Max(0f, data.duration - durationTimer) : 0f;

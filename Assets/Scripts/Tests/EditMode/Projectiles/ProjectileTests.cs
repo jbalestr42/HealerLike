@@ -54,6 +54,19 @@ public class ProjectileTests
 
         Assert.AreSame(onHitConsumers, _projectile.onHitConsumers);
     }
+
+    [Test]
+    public void SetTarget_DestroyedUnit_LeavesNoTarget_AndTheProjectileIsDestroyed()
+    {
+        GameObject killed = new GameObject("Killed");
+        Object.DestroyImmediate(killed);
+
+        Assert.DoesNotThrow(() => _projectile.SetTarget(killed));
+
+        Assert.IsTrue(_projectile.target == null);
+        Assert.IsNull(_projectile.targetPoint);
+        Assert.IsTrue(_projectile.ShouldDestroyProjectile());
+    }
 }
 
 }

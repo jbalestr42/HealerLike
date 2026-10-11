@@ -12,12 +12,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20bebae220cab764f8d86d406b4dae1f, type: 3}
   m_Name: IgnoreSelfValidatorFactory
   m_EditorClassIdentifier: HealerLike.Runtime::IgnoreSelfValidatorFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []

@@ -500,6 +500,27 @@ public class ResourceAttributeTests
     }
 
     [Test]
+    public void ModifierAddedByAListener_IsAppliedOnTheNextUpdate()
+    {
+        bool added = false;
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) =>
+        {
+            if (!added)
+            {
+                added = true;
+                AddModifier(new FakeConsumer(-5f));
+            }
+        });
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+        Assert.AreEqual(90f, _health.Value);
+
+        Drain();
+        Assert.AreEqual(85f, _health.Value);
+    }
+
+    [Test]
     public void CriticalHit_MultipliesDamage_WhenChanceGuaranteesIt()
     {
         AttributeManager sourceAttributeManager = _sourceGo.GetComponent<AttributeManager>();

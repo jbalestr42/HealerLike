@@ -1,11 +1,14 @@
 ﻿using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ASkillStepFactory : SerializedScriptableObject
+public abstract class ASkillStepFactory : ScriptableObject
 {
     public abstract ASkillStep AddSkillStep(GameObject source);
+
+    // The step shoots at the targets of the entity, itself or one of its inner steps
+    public virtual bool shootsAtTargets => false;
 }
 
 public class SkillStepFactory<SkillStepType, SkillStepData> : ASkillStepFactory, IGameDataSource
@@ -13,7 +16,6 @@ public class SkillStepFactory<SkillStepType, SkillStepData> : ASkillStepFactory,
                                 where SkillStepData : SkillStepDataBase
 {
     [InlineProperty]
-    [HideLabel]
     public SkillStepData data;
     public object sourceData { get { return data; } }
 
@@ -29,7 +31,8 @@ public abstract class ASkillStep
     public GameObject source;
 
     public abstract void Init();
-    public abstract bool Update(ASkill skill, float deltaTime);
+    // True once the step is done. Spends what it needs of deltaTime, the rest goes to the next step
+    public abstract bool Update(ASkill skill, ref float deltaTime);
     public abstract void Reset();
 
     // Seconds the step lasts, 0 for an instant one (e.g. a shot)
@@ -52,8 +55,6 @@ public class SkillStepDataBase
 
 public abstract class ASkillStep<SkillStepData> : ASkillStep, IGameDataSource where SkillStepData : SkillStepDataBase
 {
-    [InlineProperty]
-    [HideLabel]
     public SkillStepData data;
     public object sourceData { get { return data; } }
 }

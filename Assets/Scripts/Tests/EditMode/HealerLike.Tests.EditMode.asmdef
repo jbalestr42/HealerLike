@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "HealerLike.Runtime",
+        "Oisif.Inspector",
         "UnityEngine.UI",
         "Unity.TextMeshPro",
         "Unity.Cinemachine",
@@ -16,8 +17,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "nunit.framework.dll",
-        "Sirenix.Serialization.dll"
+        "nunit.framework.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

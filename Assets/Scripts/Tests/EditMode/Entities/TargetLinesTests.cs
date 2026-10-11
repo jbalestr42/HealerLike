@@ -116,6 +116,67 @@ public class TargetLinesTests
 
         Assert.AreEqual(0, _lines.visibleLineCount);
     }
+
+    [Test]
+    public void HasAttack_ShootingSkill_True()
+    {
+        ASkill shoot = _go.AddComponent<ShootProjectileSkill>();
+
+        Assert.IsTrue(TargetLines.HasAttack(new List<ASkill> { shoot }));
+    }
+
+    [Test]
+    public void HasAttack_OnlyABuffSkill_False()
+    {
+        ASkill buff = _go.AddComponent<ApplyBuffOnTargetSkill>();
+
+        Assert.IsFalse(TargetLines.HasAttack(new List<ASkill> { buff }));
+    }
+
+    [Test]
+    public void HasAttack_NoSkill_False()
+    {
+        Assert.IsFalse(TargetLines.HasAttack(new List<ASkill>()));
+    }
+
+    [Test]
+    public void HasAttack_ConfigurableSkillWithAShootingStep_True()
+    {
+        ShootProjectileSkillStepFactory shootStep = ScriptableObject.CreateInstance<ShootProjectileSkillStepFactory>();
+        ConfigurableSkill skill = _go.AddComponent<ConfigurableSkill>();
+        skill.data = new ConfigurableSkillData { skillStepFactories = new List<ASkillStepFactory> { shootStep } };
+
+        bool hasAttack = TargetLines.HasAttack(new List<ASkill> { skill });
+
+        Object.DestroyImmediate(shootStep);
+        Assert.IsTrue(hasAttack);
+    }
+
+    [Test]
+    public void HasAttack_ConfigurableSkillWithoutShootingStep_False()
+    {
+        ConfigurableSkill skill = _go.AddComponent<ConfigurableSkill>();
+        skill.data = new ConfigurableSkillData();
+
+        Assert.IsFalse(TargetLines.HasAttack(new List<ASkill> { skill }));
+    }
+
+    // E.g. the Machine Gunner: a burst of shots, repeated, then a pause
+    [Test]
+    public void HasAttack_ConfigurableSkillShootingInARepeatStep_True()
+    {
+        ShootProjectileSkillStepFactory shootStep = ScriptableObject.CreateInstance<ShootProjectileSkillStepFactory>();
+        RepeatSkillStepFactory repeatStep = ScriptableObject.CreateInstance<RepeatSkillStepFactory>();
+        repeatStep.data = new RepeatSkillStepData { skillStepFactories = new List<ASkillStepFactory> { shootStep }, count = 3 };
+        ConfigurableSkill skill = _go.AddComponent<ConfigurableSkill>();
+        skill.data = new ConfigurableSkillData { skillStepFactories = new List<ASkillStepFactory> { repeatStep } };
+
+        bool hasAttack = TargetLines.HasAttack(new List<ASkill> { skill });
+
+        Object.DestroyImmediate(shootStep);
+        Object.DestroyImmediate(repeatStep);
+        Assert.IsTrue(hasAttack);
+    }
 }
 
 }

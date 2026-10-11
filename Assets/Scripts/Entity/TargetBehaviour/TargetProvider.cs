@@ -68,8 +68,10 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
 
     public TargetBehaviourType targetBehaviourType { get => _targetBehaviour.targetType; set => SetTargetBehaviour(value); }
 
+    // Without the units destroyed since the targets were picked this frame (killed by an earlier update)
     public List<GameObject> GetTargets()
     {
+        _targets?.RemoveAll(target => target == null);
         return _targets;
     }
 

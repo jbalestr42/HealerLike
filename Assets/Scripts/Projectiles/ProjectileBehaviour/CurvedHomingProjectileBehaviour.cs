@@ -26,15 +26,29 @@ public class CurvedHomingProjectileBehaviour : AProjectileBehaviour<CurvedHoming
 
     void OnUpdate()
     {
+        Advance(Time.deltaTime);
+    }
+
+    public void Advance(float deltaTime)
+    {
 		if (projectile.target)
         {
             float normalizedDistance = GetNormalizedDistance(projectile.targetPoint.transform.position, transform.position, projectile.targetPoint.transform.position, _sourcePosition);
 
             Vector3 direction = (projectile.targetPoint.transform.position - transform.position).normalized;
             Vector3 curveDirection = data.curveMultiplier * _minMaxHeightCurve.Evaluate(1f - normalizedDistance) * (Vector3.up * _launchVector.y + Vector3.Cross(Vector3.up, transform.forward) * _launchVector.z);
-            Vector3 deltaPosition = (direction + curveDirection) * (data.speed + (data.additionnalSpeedOverDistance * (data.inverseSpeedOverDistance ? 1f - normalizedDistance : normalizedDistance))) * Time.deltaTime;
+            Vector3 deltaPosition = (direction + curveDirection) * (data.speed + (data.additionnalSpeedOverDistance * (data.inverseSpeedOverDistance ? 1f - normalizedDistance : normalizedDistance))) * deltaTime;
+            // Never goes past the target: a long frame (low frame rate, sped up game) lands on it instead of jumping over it
+            Vector3 toTarget = projectile.targetPoint.transform.position - transform.position;
+            if (deltaPosition.sqrMagnitude >= toTarget.sqrMagnitude)
+            {
+                deltaPosition = toTarget;
+            }
             transform.position += deltaPosition;
-            transform.rotation = Quaternion.LookRotation(deltaPosition);
+            if (deltaPosition != Vector3.zero)
+            {
+                transform.rotation = Quaternion.LookRotation(deltaPosition);
+            }
         }
 	}
 

@@ -12,16 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29b593bfd2467d249a6182b4f319a968, type: 3}
   m_Name: DamageAllEntityOnEntityDieBuffFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 92a7dc32-46c7-4cf9-b8df-8f4b7176e57e
   data:
+    trigger: 0
     damageToAllEntity: {fileID: 11400000, guid: 764721ac81cfef74c84b8992c8f0a11b, type: 2}
     entityType: 1
+    targetOwnerOpponents: 0

@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/HealAllEntitiesOnRoundEndBuff")]
 public class HealAllEntitiesOnRoundEndBuffFactory : BuffFactory<HealAllEntitiesOnRoundEndBuff, HealAllEntitiesOnRoundEndBuffData> { }

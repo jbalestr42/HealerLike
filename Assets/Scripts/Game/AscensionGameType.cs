@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Sirenix.OdinInspector;
 using UnityEngine.Events;
+using Oisif.Inspector;
 
 // A run climbs a Slay the Spire like map: the player picks the next room on the map,
 // fights, rests, loots or plays an event in it, and goes back to the map until the boss
@@ -35,12 +35,12 @@ public class AscensionGameType : AGameType, IEventRoomHost
     [SerializeField] int _seed = 0;
     // Applied to every ally when healing in a rest room
     [SerializeField] AConsumerFactory _restHealConsumer;
-    // Applied to the character in every rest room, whatever the choice
-    [SerializeField] AConsumerFactory _restManaConsumer;
-    [SerializeField, TextArea] string _restDescription = "You recover 30% of your max mana.";
+    [SerializeField, TextArea] string _restDescription = "Take a moment to recover before moving on.";
     [SerializeField, TextArea] string _restHealDescription = "Every unit recovers 30% of its max health.";
     [SerializeField, Min(1)] int _rewardChoiceCount = 3;
     [SerializeField, Min(1)] int _eliteRewardChoiceCount = 4;
+    // Writes every fight to the combat log (Logs/Balance), off in a normal run
+    [SerializeField] bool _recordCombatLog = false;
 
     [Header("In Game")]
     [ShowInInspector, ReadOnly] State _state = State.None;
@@ -52,6 +52,10 @@ public class AscensionGameType : AGameType, IEventRoomHost
     MapView _mapView;
     EventView _eventView;
     System.Random _random;
+    int _seedUsed;
+    string _runId;
+    // Fills the combat log during a fight, null outside of one
+    CombatRecorder _combatRecorder;
 
     RunState _run;
     public RunState run => _run;
@@ -84,6 +88,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
         _upgradeView.OnEntitySelected.AddListener(OnEntitySelected);
         _mapView.OnNodeSelected.AddListener(OnRoomSelected);
         _entities.OnEntityKilled.AddListener(OnEntityKilled);
+        _entities.OnEntitySummoned.AddListener(OnEntitySummoned);
     }
 
     void OnDestroy()
@@ -91,12 +96,15 @@ public class AscensionGameType : AGameType, IEventRoomHost
         if (_entities != null)
         {
             _entities.OnEntityKilled.RemoveListener(OnEntityKilled);
+            _entities.OnEntitySummoned.RemoveListener(OnEntitySummoned);
         }
     }
 
     // A dead ally is lost for the run: its items go back to the player, and it can be resurrected later
     void OnEntityKilled(Entity entity)
     {
+        _combatRecorder?.RecordDeath(entity);
+
         if (_run == null || !IsLostForTheRun(entity, DataManager.instance.GetTagWithName(TagNames.Summon)))
         {
             return;
@@ -129,6 +137,8 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 int seed = _seed != 0 ? _seed : System.Environment.TickCount;
                 Debug.Log($"[AscensionGameType] Run seed: {seed}");
                 _random = new System.Random(seed);
+                _seedUsed = seed;
+                _runId = System.DateTime.Now.ToString("yyyyMMdd-HHmmss");
                 _run = new RunState(MapGenerator.Generate(_mapSettings, seed));
 
                 SetState(State.ShowMap);
@@ -153,6 +163,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 _gameView.characterSkillInventory.Show(true);
                 _gameView.entityInventory.Show(true);
 
+                RefillManaForCombat(PlayerBehaviour.instance.character.mana);
                 LoadEnemies(_currentWave);
                 EnableAllEntities(false);
                 SetState(State.WaitForRoundToStart);
@@ -171,6 +182,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 _gameView.entityInventory.Show(false);
                 _gameView.playerInventory.HideInventory();
                 EnableAllEntities(true);
+                StartCombatLog();
                 // TODO: Show countdown before starting the battle
                 SetState(State.OnGoingBattle);
                 OnBattleStart.Invoke();
@@ -179,6 +191,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
             case State.OnGoingBattle:
                 if (_entities.AreAllEntityDead(Entity.EntityType.Computer))
                 {
+                    FinishCombatLog(true);
                     if (IsRunWon(_run.currentNode.type))
                     {
                         WinRun();
@@ -190,6 +203,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 }
                 else if (_entities.AreAllEntityDead(Entity.EntityType.Player))
                 {
+                    FinishCombatLog(false);
                     SetState(State.GameOver);
                 }
                 break;
@@ -326,6 +340,22 @@ public class AscensionGameType : AGameType, IEventRoomHost
         return closingChoices;
     }
 
+    // Every fight gives back the CombatManaRefill share of the max mana (items included) on top of the mana left,
+    // capped by the max, while the units keep the health they had at the end of the previous fight. A gain like
+    // the others (applied on the mana's next update, the effects listening to the mana gains react to it), but
+    // never critical
+    public static void RefillManaForCombat(ResourceAttribute characterMana)
+    {
+        AttributeManager attributes = characterMana.GetComponent<AttributeManager>();
+        float refill = attributes != null && attributes.Has(AttributeType.CombatManaRefill)
+            ? attributes.Get(AttributeType.CombatManaRefill).Value
+            : AttributeManager.GetDefaultValue(AttributeType.CombatManaRefill);
+
+        ResourceModifier manaModifier = new ResourceModifier { source = characterMana.gameObject };
+        manaModifier.consumers.Add(new RuntimeConsumer(characterMana.Max * Mathf.Max(0f, refill), canBeCritical: false));
+        characterMana.AddResourceModifier(manaModifier);
+    }
+
     // Beating the boss wins the run, the other fights lead to a reward
     public static bool IsRunWon(MapNodeType roomType)
     {
@@ -424,26 +454,63 @@ public class AscensionGameType : AGameType, IEventRoomHost
         _entities.GetEntities(Entity.EntityType.Player).ForEach(x => ApplyConsumer(x.GetComponent<Entity>(), _restHealConsumer));
     }
 
-    #region Rest
+    #region Combat log
 
-    // Mana back whatever the choice, then heal every unit or resurrect a dead one
-    void EnterRestRoom()
+    void StartCombatLog()
     {
-        RestoreMana();
-        SetState(State.Rest);
-        ShowRestChoices();
-    }
-
-    void RestoreMana()
-    {
-        if (_restManaConsumer == null)
+        if (!_recordCombatLog)
         {
-            Debug.LogError("[AscensionGameType] No rest mana consumer set");
             return;
         }
 
-        Character character = PlayerBehaviour.instance.character;
-        ApplyConsumer(character.mana, character.gameObject, _restManaConsumer);
+        CombatStats stats = new CombatStats
+        {
+            runId = _runId,
+            seed = _seedUsed,
+            floor = _run.currentNode.floor,
+            roomType = _run.currentNode.type.ToString(),
+            wave = _currentWave != null ? _currentWave.name : "",
+            character = PlayerBehaviour.instance.character.data.title,
+        };
+        _combatRecorder = new CombatRecorder(stats, () => Time.time, PlayerBehaviour.instance.character.mana);
+        _entities.GetEntities(Entity.EntityType.Player).ForEach(x => _combatRecorder.AddUnit(x.GetComponent<Entity>()));
+        _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => _combatRecorder.AddUnit(x.GetComponent<Entity>()));
+    }
+
+    void OnEntitySummoned(Entity summon)
+    {
+        _combatRecorder?.AddUnit(summon);
+    }
+
+    void FinishCombatLog(bool won)
+    {
+        if (_combatRecorder == null)
+        {
+            return;
+        }
+
+        CombatStats stats = _combatRecorder.Stop(won);
+        _combatRecorder = null;
+        Debug.Log($"[CombatLog] {stats.ToSummary()}");
+        try
+        {
+            CombatLogFile.Append(CombatLogFile.defaultPath, stats);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[CombatLog] Could not write the combat log: {e.Message}");
+        }
+    }
+
+    #endregion
+
+    #region Rest
+
+    // Heal every unit or resurrect a dead one
+    void EnterRestRoom()
+    {
+        SetState(State.Rest);
+        ShowRestChoices();
     }
 
     void ShowRestChoices()

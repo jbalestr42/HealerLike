@@ -29,13 +29,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7901822376538958699}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 16
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7901822376538958486
 MonoBehaviour:
@@ -49,15 +49,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e78566e5841007b45bf31f801627385c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
 --- !u!114 &7901822376538958481
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -70,15 +61,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d944585434f2db740b71cfb19bfe4926, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   _data: {fileID: 11400000, guid: cb4a6b00efbe4a447b0fb71b3f33d66a, type: 2}
 --- !u!114 &7901822376538958480
 MonoBehaviour:
@@ -92,19 +74,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8603f9436f85ad441bfd7c6ea2683472, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   OnEntitySpawned:
     m_PersistentCalls:
       m_Calls: []
   OnEntityKilled:
+    m_PersistentCalls:
+      m_Calls: []
+  OnEntitySummoned:
+    m_PersistentCalls:
+      m_Calls: []
+  OnProjectileSpawned:
     m_PersistentCalls:
       m_Calls: []
   _entityBasePrefab: {fileID: 1773381645329648, guid: d67892d24999b0a45bf3b94be456ef3d, type: 3}
@@ -146,12 +125,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5df442e8ac6e9754a8a48f408dc86032, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []

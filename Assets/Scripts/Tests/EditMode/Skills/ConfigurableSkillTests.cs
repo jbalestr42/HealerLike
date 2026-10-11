@@ -87,6 +87,15 @@ public class ConfigurableSkillTests
     }
 
     [Test]
+    public void LongUpdates_TheTimeBeyondAStepGoesOnInTheNextOnes()
+    {
+        // 4.5s: a whole cycle of 3.5s, then 1s of the next one (2 repeats of the burst)
+        Play(4.5f, 0.75f);
+
+        Assert.AreEqual(2.5f / 3.5f, _skill.cooldownProgress, 0.0001f);
+    }
+
+    [Test]
     public void AfterACycle_TheWholeCooldownIsLeftAgain()
     {
         Play(1.5f);

@@ -93,9 +93,14 @@ public class Character : MonoBehaviour, IBuffable
         _attributeManager.ForceUpdate();
     }
 
+    // On in a battle only: its buffs tick and its skills can be used
     public void Enable(bool isEnabled)
     {
         _buffManager.isEnabled = isEnabled;
+        foreach (CharacterSkillSlot skillSlot in _skillSlots)
+        {
+            skillSlot.isEnabled = isEnabled;
+        }
     }
 
     public void Reset()

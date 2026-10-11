@@ -1,9 +1,9 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ATargetValidatorFactory : SerializedScriptableObject
+public abstract class ATargetValidatorFactory : ScriptableObject
 {
     public abstract ATargetValidator GetTargetValidator();
 }
@@ -11,7 +11,6 @@ public abstract class ATargetValidatorFactory : SerializedScriptableObject
 public class TargetValidatorFactory<TargetValidatorType, DataType> : ATargetValidatorFactory, IGameDataSource where TargetValidatorType : ATargetValidator<DataType>, new()
 {
     [InlineProperty]
-    [HideLabel]
     public DataType data;
     public object sourceData { get { return data; } }
 

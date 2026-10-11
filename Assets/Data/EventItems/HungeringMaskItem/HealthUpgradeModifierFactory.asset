@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f6f9a6995ec2f14b94cf9f6080d8c27, type: 3}
   m_Name: HealthUpgradeModifierFactory
   m_EditorClassIdentifier: HealerLike.Runtime::UpgradeModifierFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: bdd46dc1-0b19-4838-a5fb-078fc81de62b
   data:
     type: 0

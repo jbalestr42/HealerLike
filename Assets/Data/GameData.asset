@@ -12,111 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a6fcb842b0335b4aaffac25a7f9d89f, type: 3}
   m_Name: GameData
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: attributeUpgradeData
-      Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, HealerLike.Runtime],[GameData+AttributeUpgradeData, HealerLike.Runtime]], mscorlib
-    - Name: comparer
-      Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, HealerLike.Runtime]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 12
-      Data: 3
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 2
-    - Name: $v
-      Entry: 7
-      Data: GameData+AttributeUpgradeData, HealerLike.Runtime
-    - Name: startingUpgradeCost
-      Entry: 3
-      Data: 10
-    - Name: costIncreaseFactor
-      Entry: 4
-      Data: 4
-    - Name: bonusPerUpgrade
-      Entry: 4
-      Data: 5
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 3
-    - Name: $v
-      Entry: 7
-      Data: GameData+AttributeUpgradeData, HealerLike.Runtime
-    - Name: startingUpgradeCost
-      Entry: 3
-      Data: 10
-    - Name: costIncreaseFactor
-      Entry: 4
-      Data: 4
-    - Name: bonusPerUpgrade
-      Entry: 4
-      Data: 0.1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 1
-    - Name: $v
-      Entry: 7
-      Data: GameData+AttributeUpgradeData, HealerLike.Runtime
-    - Name: startingUpgradeCost
-      Entry: 3
-      Data: 10
-    - Name: costIncreaseFactor
-      Entry: 4
-      Data: 4
-    - Name: bonusPerUpgrade
-      Entry: 4
-      Data: 0.1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
   playerItemChance: 0.2
   unitRewardChance: 0.25
   attributeUpgradeData:
@@ -136,6 +31,7 @@ MonoBehaviour:
       costIncreaseFactor: 4
       bonusPerUpgrade: 0.1
   wavePools: []
+  staggerFirstAttacks: 1
   characters:
   - {fileID: 11400000, guid: 246613bc00a2adc4faacf8f72aa81ddd, type: 2}
   - {fileID: 11400000, guid: fa67b546fd2076e47a9f5aebfe698f8c, type: 2}
@@ -148,7 +44,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8bf1e981929ef5f4ab415aebf49800b4, type: 2}
   - {fileID: 11400000, guid: 5d22fc0dfaf755047a3f31256be9c665, type: 2}
   - {fileID: 11400000, guid: 96fde92661bad434282310e609822330, type: 2}
-  - {fileID: 11400000, guid: 285265cd5b673c34e99014b4d487cf6e, type: 2}
   - {fileID: 11400000, guid: 99c839410d10b0949a8c13b287954fec, type: 2}
   - {fileID: 11400000, guid: 7a727d3ba171a4a44bc7af8e70c4af88, type: 2}
   - {fileID: 11400000, guid: fc720cd10a4f2274982ec917fd77d9ee, type: 2}
@@ -164,6 +59,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ee7d70a3a0084e1c84c479e98e555383, type: 2}
   - {fileID: 11400000, guid: d9dc3eb567774c0084f294680b1471b4, type: 2}
   - {fileID: 11400000, guid: 67ef52f90f374175814af4224c1d9579, type: 2}
+  - {fileID: 11400000, guid: 10e7a3acb9f60c54aa9701c4a92cf377, type: 2}
   - {fileID: 11400000, guid: eb161c94ac8840a2b249a1316cc11edc, type: 2}
   - {fileID: 11400000, guid: 15106e104b1449589d821c813e8f09b7, type: 2}
   - {fileID: 11400000, guid: e1ac990469704440b33d048ddb2882bf, type: 2}
@@ -219,6 +115,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 255dff38d4e43e54496d1a01bd3b147d, type: 2}
   - {fileID: 11400000, guid: 19f30c8aca7684b4eb7fbd3a5e0f4b16, type: 2}
   - {fileID: 11400000, guid: 3c3340ffc52d73940965e963046a7995, type: 2}
+  - {fileID: 11400000, guid: 7820f298d46f4935ae42f2273e0283ca, type: 2}
+  - {fileID: 11400000, guid: ae81d6cd16e942e488707a00f5b867a2, type: 2}
+  - {fileID: 11400000, guid: 5ae526315401c9343a385aee24faf7e0, type: 2}
+  - {fileID: 11400000, guid: e18e77831fceb7342a21e20e32807f03, type: 2}
+  - {fileID: 11400000, guid: e85cf5282617a01438e560dff6d97937, type: 2}
+  - {fileID: 11400000, guid: 5ce465a22a8990d42a28e1d35530b1b9, type: 2}
   tags:
   - {fileID: 11400000, guid: 89edbaa6345fd89478db1b09b2b2150f, type: 2}
   - {fileID: 11400000, guid: d38ac4ec04597cb4aa6ebb8581d9072e, type: 2}
@@ -234,3 +136,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
   - {fileID: 11400000, guid: b0c7adf21cc30b446ae9d1de7168fb74, type: 2}
   - {fileID: 11400000, guid: 3614776454183994283ae65b8f13ca38, type: 2}
+  - {fileID: 11400000, guid: e16a5cefda409ac49bdb9a9b1e3cb8c2, type: 2}
+  - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}
+  - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
+  - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
+  - {fileID: 11400000, guid: be9c6084f0f587e418806bd83d4ab2fd, type: 2}
+  - {fileID: 11400000, guid: 3e3da7a1624a46a6bb004c4cc819f3a3, type: 2}
+  - {fileID: 11400000, guid: 8c2d734b862d50d4886a7ff7d37eb7e5, type: 2}

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 200499978037cc34d93ebc9c76414b0c, type: 3}
+  m_Name: BalanceSniperEntity
+  m_EditorClassIdentifier: 
+  model: {fileID: 3198502390492704377, guid: 0ba0f6eee23032e4e83d421e739dc905, type: 3}
+  title: Balance Sniper
+  description: 'Balance tools only, never dies: heavy shots at the most wounded enemy'
+  attributes:
+  - key: 0
+    value: 80
+  - key: 1
+    value: 3
+  - key: 2
+    value: 24
+  - key: 3
+    value: 100
+  targetBehaviourType: 3
+  targetValidators: []
+  tags:
+  - {fileID: 11400000, guid: be9c6084f0f587e418806bd83d4ab2fd, type: 2}
+  - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
+  items: []
+  skillFactories:
+  - {fileID: 11400000, guid: 941c580a9a014c62b04129b25e614742, type: 2}

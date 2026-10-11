@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
+using Oisif.Inspector;
 using UnityEngine;
 using UnityEngine.VFX;
 

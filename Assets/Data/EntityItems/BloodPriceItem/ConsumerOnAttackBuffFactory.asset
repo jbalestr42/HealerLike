@@ -11,16 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 82f659544c1f4976a82c1f09eb0c8c7b, type: 3}
   m_Name: ConsumerOnAttackBuffFactory
-  m_EditorClassIdentifier:
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes:
-    ReferencedUnityObjects: []
-    SerializedBytesString:
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
+  m_EditorClassIdentifier: 
   uniqueID: d4ae9976-ac48-43f0-a625-6b762b19e4b1
   data:
     consumerFactory: {fileID: 11400000, guid: c76918eb6dfc4867b9d5930d2b5ad533, type: 2}

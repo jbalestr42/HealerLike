@@ -1,41 +1,34 @@
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/CharacterData")]
 [InlineEditor]
-public class CharacterData : SerializedScriptableObject
+public class CharacterData : ScriptableObject
 {
-    [HorizontalGroup("Data", 75)]
-    [PreviewField(75)]
-    [HideLabel]
-    [AssetsOnly]
+    [Preview(75)]
     public GameObject model;
 
-    [VerticalGroup("Data/Stats")]
-    [LabelWidth(100)]
     public string title;
 
-    [VerticalGroup("Data/Stats")]
-    [LabelWidth(100)]
     public string text;
+
+    // The units tagged with it and Reward can be recruited by the character (rewards, recruitment event)
+    [Space]
+    public GameplayTag classTag;
 
     [Space]
     [SerializeField]
-    [DictionaryDrawerSettings(KeyLabel = "Attribute Type", ValueLabel = "Value")]
     public Dictionary<AttributeType, float> attributes = new Dictionary<AttributeType, float>();
 
     [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<AItemFactory>, AItemFactory>(items)")]
+    [CreateDataButton]
     public List<AItemFactory> items = new List<AItemFactory>();
 
     [Space]
     public List<EntityData> entities = new List<EntityData>();
 
-    // The units tagged with it and Reward can be recruited by the character (rewards, recruitment event)
-    public GameplayTag classTag;
-
     [Space]
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ACharacterSkillFactory>, ACharacterSkillFactory>(skills)")]
+    [CreateDataButton]
     public List<ACharacterSkillFactory> skills = new List<ACharacterSkillFactory>();
 }

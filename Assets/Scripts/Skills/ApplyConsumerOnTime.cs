@@ -1,6 +1,6 @@
 ﻿using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [Serializable]
 public class ApplyConsumerOnTimeData : SkillDataBase

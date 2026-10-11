@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a7542ef3a95ed145ab7352ec730b6a3, type: 3}
   m_Name: MapGenerationSettings
   m_EditorClassIdentifier: HealerLike.Runtime::MapGenerationSettings
-  floorCount: 10
+  floorCount: 15
   columnCount: 3
   pathCount: 6
   startRoomCount: 3
@@ -29,7 +29,7 @@ MonoBehaviour:
     weight: 0.16
     canFollowItself: 1
   - type: 3
-    fixedFloors: 09000000i
+    fixedFloors: 0e000000i
     firstFloor: 5
     weight: 0.12
     canFollowItself: 0

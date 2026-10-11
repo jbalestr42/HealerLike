@@ -1,6 +1,6 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [Serializable]
 public abstract class AValue
@@ -12,7 +12,6 @@ public abstract class AValue
 public abstract class AValue<DataType> : AValue, IGameDataSource
 {
     [InlineProperty]
-    [HideLabel]
     public DataType data;
     public object sourceData { get { return data; } }
 }

@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/Data/SkillSteps/ShootProjectileSkillStep")]
-public class ShootProjectileSkillStepFactory : SkillStepFactory<ShootProjectileSkillStep, ShootProjectileSkillStepData> { }
+public class ShootProjectileSkillStepFactory : SkillStepFactory<ShootProjectileSkillStep, ShootProjectileSkillStepData>
+{
+    public override bool shootsAtTargets => true;
+}
 
 [Serializable]
 public class ShootProjectileSkillStepData : SkillStepDataBase
@@ -19,7 +22,8 @@ public class ShootProjectileSkillStep : ASkillStep<ShootProjectileSkillStepData>
     {
     }
 
-    public override bool Update(ASkill skill, float deltaTime)
+    // A shot takes no time
+    public override bool Update(ASkill skill, ref float deltaTime)
     {
         if (skill.IsRequirementValidated())
         {

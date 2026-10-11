@@ -12,14 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aceb3818c0a80c46a7cb87218546fe2, type: 3}
   m_Name: ResourceValidatorFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     consumer: {fileID: 11400000, guid: 1431f1f8327db4e4883ca4afa6706548, type: 2}

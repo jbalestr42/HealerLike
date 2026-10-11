@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/CharacterSkill/ApplyConsumerCharacterSkill")]
 public class ApplyConsumerCharacterSkillFactory : CharacterSkillFactory<ApplyConsumerCharacterSkill, ApplyConsumerCharacterSkillData> {}

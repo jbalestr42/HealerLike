@@ -182,8 +182,8 @@ public class DruidDataTests
         Assert.AreEqual(DurationType.Duration, handler.data.durationType);
         Assert.IsTrue(handler.data.isPeriodic);
         Assert.AreEqual(1, handler.data.maxStacks);
-        // 15% of the 20 Heal Power per tick
-        AssertHeals(((ApplyConsumerBuffFactory)handler.data.buffFactoryList[0]).data.consumerFactory, 3f);
+        // 25% of the 20 Heal Power per tick
+        AssertHeals(((ApplyConsumerBuffFactory)handler.data.buffFactoryList[0]).data.consumerFactory, 5f);
     }
 
     [Test]
@@ -196,13 +196,13 @@ public class DruidDataTests
         BuffHandlerFactory handler = (BuffHandlerFactory)wildGrowth.data.buffHandlerFactory[0];
         Assert.AreEqual(DurationType.Duration, handler.data.durationType);
         Assert.IsTrue(handler.data.isPeriodic);
-        // 10% of the 20 Heal Power per tick
-        AssertHeals(((ApplyConsumerBuffFactory)handler.data.buffFactoryList[0]).data.consumerFactory, 2f);
+        // 15% of the 20 Heal Power per tick
+        AssertHeals(((ApplyConsumerBuffFactory)handler.data.buffFactoryList[0]).data.consumerFactory, 3f);
     }
 
     // The descriptions read the heal ratio from the data, so a balancing change can't leave them wrong
-    [TestCase("Rejuvenation", "<color=\"green\">3</color> <color=#008080ff>(15% HealPower)</color>")]
-    [TestCase("Wild Growth", "<color=\"green\">2</color> <color=#008080ff>(10% HealPower)</color>")]
+    [TestCase("Rejuvenation", "<color=\"green\">5</color> <color=#008080ff>(25% HealPower)</color>")]
+    [TestCase("Wild Growth", "<color=\"green\">3</color> <color=#008080ff>(15% HealPower)</color>")]
     public void HotDescription_ShowsTheHealAndTheHealPowerPercentOfTheData(string name, string expected)
     {
         Character character = null;

@@ -75,7 +75,7 @@ public class DraggableEntityTests
     }
 
     [Test]
-    public void EndDrag_WithoutSwap_OccupiesTheDropCellAndFreesTheOldHome()
+    public void EndDrag_OccupiesTheDropCellAndFreesTheOldHome()
     {
         DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
         a.StartDrag(new RaycastHit());
@@ -90,65 +90,62 @@ public class DraggableEntityTests
     }
 
     [Test]
-    public void CanMoveTo_FreeCell_ReturnsTrue()
+    public void MoveToNearestFreeCell_FreeCell_MovesOntoIt()
     {
         DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
+        a.StartDrag(new RaycastHit());
+        Vector3 target = _grid.GetCellCenterFromCoord(new Vector2Int(3, 2));
 
-        Assert.IsTrue(a.CanMoveTo(new Vector2Int(2, 2)));
+        a.MoveToNearestFreeCell(target + new Vector3(0.2f, 0f, -0.2f));
+
+        Assert.AreEqual(target, _goA.transform.position);
     }
 
     [Test]
-    public void CanMoveTo_CellOccupiedByAnotherEntity_ReturnsFalse()
+    public void MoveToNearestFreeCell_CellOfAnotherUnit_MovesOntoTheClosestFreeCell()
     {
-        DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
+        DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(0, 0));
         CreateDraggable(ref _goB, new Vector2Int(2, 1));
+        a.StartDrag(new RaycastHit());
+        Vector3 occupied = _grid.GetCellCenterFromCoord(new Vector2Int(2, 1));
 
-        Assert.IsFalse(a.CanMoveTo(new Vector2Int(2, 1)));
+        // Cursor on the right side of the occupied cell: the free cell on its right is the closest
+        a.MoveToNearestFreeCell(occupied + new Vector3(0.4f, 0f, 0f));
+
+        Assert.AreEqual(_grid.GetCellCenterFromCoord(new Vector2Int(3, 1)), _goA.transform.position);
     }
 
     [Test]
-    public void CanMoveTo_SwapTargetHomeCell_ReturnsTrueEvenThoughItIsOccupied()
+    public void MoveToNearestFreeCell_OwnHomeCell_CanGoBackOnIt()
     {
         DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
-        DraggableEntity b = CreateDraggable(ref _goB, new Vector2Int(2, 1));
-        TestHelpers.SetPrivateField(a, "_swapTarget", b);
+        a.StartDrag(new RaycastHit());
+        _goA.transform.position = _grid.GetCellCenterFromCoord(new Vector2Int(3, 0));
 
-        Assert.IsFalse(_grid.IsWalkable(2, 1));
-        Assert.IsTrue(a.CanMoveTo(new Vector2Int(2, 1)));
+        a.MoveToNearestFreeCell(_grid.GetCellCenterFromCoord(new Vector2Int(1, 1)));
+
+        Assert.AreEqual(_grid.GetCellCenterFromCoord(new Vector2Int(1, 1)), _goA.transform.position);
     }
 
     [Test]
-    public void EndDrag_WithSwap_ExchangesHomesAndKeepsBothCellsOccupied()
+    public void EndDrag_OverAnotherUnit_LeavesItInPlaceAndDropsOnTheClosestFreeCell()
     {
-        Vector2Int coordA = new Vector2Int(1, 1);
+        Vector2Int coordA = new Vector2Int(0, 0);
         Vector2Int coordB = new Vector2Int(2, 1);
         DraggableEntity a = CreateDraggable(ref _goA, coordA);
         DraggableEntity b = CreateDraggable(ref _goB, coordB);
         a.StartDrag(new RaycastHit());
-        b.PreviewSwapTo(a.homePosition);
-        TestHelpers.SetPrivateField(a, "_swapTarget", b);
+        a.MoveToNearestFreeCell(_grid.GetCellCenterFromCoord(coordB) + new Vector3(0f, 0f, 0.4f));
 
         a.EndDrag(new RaycastHit());
 
-        Assert.AreEqual(_grid.GetCellCenterFromCoord(coordB), a.homePosition);
-        Assert.AreEqual(_grid.GetCellCenterFromCoord(coordB), _goA.transform.position);
-        Assert.AreEqual(_grid.GetCellCenterFromCoord(coordA), b.homePosition);
-        Assert.AreEqual(_grid.GetCellCenterFromCoord(coordA), _goB.transform.position);
-        Assert.IsFalse(_grid.IsWalkable(coordA.x, coordA.y));
+        Vector3 above = _grid.GetCellCenterFromCoord(new Vector2Int(2, 2));
+        Assert.AreEqual(above, a.homePosition);
+        Assert.AreEqual(_grid.GetCellCenterFromCoord(coordB), b.homePosition);
+        Assert.AreEqual(_grid.GetCellCenterFromCoord(coordB), _goB.transform.position);
+        Assert.IsFalse(_grid.IsWalkable(2, 2));
         Assert.IsFalse(_grid.IsWalkable(coordB.x, coordB.y));
-    }
-
-    [Test]
-    public void CommitSwap_MovesHomeAndOccupiesTheNewCell()
-    {
-        DraggableEntity b = CreateDraggable(ref _goB, new Vector2Int(2, 1));
-        Vector3 newHome = _grid.GetCellCenterFromCoord(new Vector2Int(0, 2));
-
-        b.CommitSwap(newHome);
-
-        Assert.AreEqual(newHome, b.homePosition);
-        Assert.AreEqual(newHome, _goB.transform.position);
-        Assert.IsFalse(_grid.IsWalkable(0, 2));
+        Assert.IsTrue(_grid.IsWalkable(coordA.x, coordA.y));
     }
 }
 

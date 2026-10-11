@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 200499978037cc34d93ebc9c76414b0c, type: 3}
+  m_Name: BalanceGunnerEntity
+  m_EditorClassIdentifier: 
+  model: {fileID: 1081930672269232, guid: 054ffd7425a4bbc4486585bcd1593eab, type: 3}
+  title: Balance Gunner
+  description: 'Balance tools only, never dies: very fast weak shots at the nearest enemy'
+  attributes:
+  - key: 0
+    value: 100
+  - key: 1
+    value: 0.25
+  - key: 2
+    value: 2
+  - key: 3
+    value: 100
+  targetBehaviourType: 1
+  targetValidators: []
+  tags:
+  - {fileID: 11400000, guid: be9c6084f0f587e418806bd83d4ab2fd, type: 2}
+  - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
+  items: []
+  skillFactories:
+  - {fileID: 11400000, guid: c9884898c96443c3996a9002b8968fc0, type: 2}

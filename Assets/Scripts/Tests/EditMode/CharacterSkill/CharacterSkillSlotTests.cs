@@ -43,7 +43,7 @@ public class CharacterSkillSlotTests
         _buttonGo = new GameObject("SkillButton");
         _skillButton = _buttonGo.AddComponent<UseCharacterSkillButton>();
         TestHelpers.SetPrivateField(_skillButton, "_button", _buttonGo.AddComponent<UnityEngine.UI.Button>());
-        TestHelpers.SetPrivateField(_skillButton, "_nameText", _buttonGo.AddComponent<UnityEngine.UI.Text>());
+        TestHelpers.SetPrivateField(_skillButton, "_nameText", _buttonGo.AddComponent<TMPro.TextMeshProUGUI>());
 
         _validatorFactory = ScriptableObject.CreateInstance<BlockingValidatorFactory>();
         _skill = new FakeCharacterSkill { data = new CharacterSkillData { name = "Skill", validators = new List<ACharacterSkillValidatorFactory> { _validatorFactory } } };
@@ -78,6 +78,30 @@ public class CharacterSkillSlotTests
         Assert.AreEqual(2, _skill.useCount);
         Assert.IsFalse(_skillButton.hasCooldown);
         Assert.IsFalse(_skillButton.hasCost);
+    }
+
+    [Test]
+    public void UseSkill_Disabled_IsBlockedEvenWithoutValidators()
+    {
+        _slot.Init(_skill, _skillButton, useValidators: false);
+        _slot.isEnabled = false;
+
+        _slot.UseSkill();
+
+        Assert.IsFalse(_slot.CanUseSkill());
+        Assert.AreEqual(0, _skill.useCount);
+    }
+
+    [Test]
+    public void UseSkill_EnabledAgain_CanBeUsed()
+    {
+        _slot.Init(_skill, _skillButton, useValidators: false);
+        _slot.isEnabled = false;
+        _slot.isEnabled = true;
+
+        _slot.UseSkill();
+
+        Assert.AreEqual(1, _skill.useCount);
     }
 }
 

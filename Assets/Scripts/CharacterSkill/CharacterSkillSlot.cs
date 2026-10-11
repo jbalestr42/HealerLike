@@ -1,18 +1,18 @@
 
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class CharacterSkillSlot : MonoBehaviour
 {
-    [InlineProperty]
-    [HideLabel]
     [SerializeField] CharacterSkillData _data;
     public CharacterSkillData data => _data;
 
     List<ACharacterSkillValidator> _validators = new List<ACharacterSkillValidator>();
     ACharacterSkill _skill;
     UseCharacterSkillButton _skillButton;
+    // Off outside of a battle (the preparation of a round included): the skill can't be used, whatever its validators
+    bool _isEnabled = true;
+    public bool isEnabled { get { return _isEnabled; } set { _isEnabled = value; } }
 
     public UseCharacterSkillButton skillButton { get { return _skillButton; } }
 
@@ -47,8 +47,13 @@ public class CharacterSkillSlot : MonoBehaviour
         _skillButton.Enable(CanUseSkill());
     }
 
-    bool CanUseSkill()
+    // Enabled, and every validator allows it (cost, cooldown, ...)
+    public bool CanUseSkill()
     {
+        if (!_isEnabled)
+        {
+            return false;
+        }
         foreach (ACharacterSkillValidator validator in _validators)
         {
             if (!validator.IsValid(gameObject))

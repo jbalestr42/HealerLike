@@ -12,14 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c9618b70382f334ebd45444ebe8dfc2, type: 3}
   m_Name: InvincibleValidatorFactory
   m_EditorClassIdentifier: HealerLike.Runtime::InvincibleValidatorFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     inverse: 0

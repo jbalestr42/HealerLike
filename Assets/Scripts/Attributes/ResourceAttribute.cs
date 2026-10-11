@@ -33,6 +33,8 @@ public class ResourceAttribute : MonoBehaviour
     public bool preventConsumers { get { return _preventConsumersCount > 0; } set { _preventConsumersCount += value ? 1 : -1; } }
 
     List<ResourceModifier> _resourceModifiers = new List<ResourceModifier>();
+    // The modifiers being processed, swapped with _resourceModifiers so new ones can be added meanwhile
+    List<ResourceModifier> _processedModifiers = new List<ResourceModifier>();
     // Reused for every modifier, so sending OnBeforeValueApplied allocates nothing
     readonly PendingValue _pendingValue = new PendingValue();
 
@@ -54,7 +56,9 @@ public class ResourceAttribute : MonoBehaviour
     {
         if (_resourceModifiers.Count > 0)
         {
-            foreach (ResourceModifier resourceModifier in _resourceModifiers)
+            // Modifiers added while these are processed (by a listener) wait for the next frame
+            (_processedModifiers, _resourceModifiers) = (_resourceModifiers, _processedModifiers);
+            foreach (ResourceModifier resourceModifier in _processedModifiers)
             {
                 if (resourceModifier.consumers.Count > 0)
                 {
@@ -69,7 +73,7 @@ public class ResourceAttribute : MonoBehaviour
                     OnAllConsumerProcessed.Invoke(gameObject, resourceModifier, new ConsumerResult(value, isCritical, overflow));
                 }
             }
-            _resourceModifiers.Clear();
+            _processedModifiers.Clear();
         }
         _value = Mathf.Clamp(_value, 0f, _max.Value);
 

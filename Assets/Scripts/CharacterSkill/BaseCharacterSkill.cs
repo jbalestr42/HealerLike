@@ -1,4 +1,3 @@
-using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,10 +6,8 @@ using UnityEngine.Events;
 [Serializable]
 public class BaseCharacterSkillData : CharacterSkillData
 {
-    [BoxGroup("Common/Split/Left/Target")]
     public bool isSingle;
 
-    [BoxGroup("Common/Split/Left/Target")]
     public Entity.EntityType entityType;
 }
 

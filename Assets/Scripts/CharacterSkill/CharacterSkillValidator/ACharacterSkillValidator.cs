@@ -1,9 +1,9 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class ACharacterSkillValidatorFactory : SerializedScriptableObject
+public abstract class ACharacterSkillValidatorFactory : ScriptableObject
 {
     public abstract ACharacterSkillValidator Create();
 }
@@ -11,7 +11,6 @@ public abstract class ACharacterSkillValidatorFactory : SerializedScriptableObje
 public class CharacterSkillValidatorFactory<CharacterSkillValidatorType, DataType> : ACharacterSkillValidatorFactory, IGameDataSource where CharacterSkillValidatorType : ACharacterSkillValidator<DataType>, new()
 {
     [InlineProperty]
-    [HideLabel]
     public DataType data;
     public object sourceData { get { return data; } }
 

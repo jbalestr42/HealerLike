@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [Serializable]
 public class ConfigurableSkillData : SkillDataBase
 {
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillStepFactory>, ASkillStepFactory>(skillStepFactories)")]
+    [CreateDataButton]
     public List<ASkillStepFactory> skillStepFactories = new List<ASkillStepFactory>();
 }
 
-public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill
+public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill, IAttackSkill
 {
     int _currentStep = 0;
     List<ASkillStep> _skillSteps = new List<ASkillStep>();
@@ -30,10 +30,17 @@ public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill
         Tick(source, Time.deltaTime);
     }
 
+    // The time left by a step goes on in the next ones during the same update, at most one pass over the steps:
+    // a cycle lasts as long whatever the frame rate
     public void Tick(GameObject source, float deltaTime)
     {
-        if (_skillSteps[_currentStep].Update(this, deltaTime))
+        for (int played = 0; played < _skillSteps.Count; played++)
         {
+            if (!_skillSteps[_currentStep].Update(this, ref deltaTime))
+            {
+                return;
+            }
+
             foreach (AOnSkillTriggerFactory factory in data.onSkillTriggerFactory)
             {
                 AOnSkillTrigger onSkillTrigger = factory.GetSkillTrigger();
@@ -97,6 +104,13 @@ public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill
             return Mathf.Clamp01((duration - elapsed) / duration);
         }
     }
+
+    #endregion
+
+    #region IAttackSkill
+
+    // One of its steps shoots at the targets (e.g. a burst of shots then a pause)
+    public bool attacksTargets => data != null && data.skillStepFactories.Exists(factory => factory != null && factory.shootsAtTargets);
 
     #endregion
 }

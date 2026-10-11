@@ -12,19 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e399561e7a75ef84b90e3dfa12cdbd5f, type: 3}
   m_Name: DamageAllEnemy
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     icon: {fileID: 0}
-    name: "Damage All Enemies"
-    description: "Deal <color=\"red\">{data:consumer.data.value.data.value}</color> damage to all enemies"
+    name: Damage All Enemies
+    description: Deal <color="red">{data:consumer.data.value.data.value}</color> damage to all enemies
     validators: []
     isSingle: 0
     entityType: 2

@@ -17,4 +17,19 @@ public static class TagNames
     public const string Library = "Library";
     // Units a class can recruit, along with the tag of the class (e.g. Druid)
     public const string Reward = "Reward";
+    // Parent of the roles below, only used to balance the game (e.g. to give the items to the right unit)
+    public const string Balance = "Balance";
+    // Units that hold the front, and the items making a unit last longer (health, armor, regeneration)
+    public const string Tank = "Tank";
+    // Units dealing the damage, and the items making a unit hit harder or more often
+    public const string Damage = "Damage";
+    // Units and items healing or strengthening the allies
+    public const string Support = "Support";
+    // Units and items only made for the balance simulations (dummies, the team measuring the waves), never met
+    // in a run
+    public const string Simulation = "Simulation";
+    // Harmful buffs put on a unit by its enemies (poison, curse, slow...), the ones a cleanse removes
+    public const string Debuff = "Debuff";
+    // The bosses, whose large health some effects treat apart (e.g. CurrentHealthDamage is weaker on them)
+    public const string Boss = "Boss";
 }

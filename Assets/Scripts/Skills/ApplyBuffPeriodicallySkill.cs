@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [Serializable]
 public class ApplyBuffPeriodicallySkillData : SkillDataBase
 {
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ABuffHandlerFactory>, ABuffHandlerFactory>(periodicBuff)")]
+    [CreateDataButton]
     public List<ABuffHandlerFactory> periodicBuff;
 }
 

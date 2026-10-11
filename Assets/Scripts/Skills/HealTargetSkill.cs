@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [Serializable]
 public class HealTargetSkillData : SkillDataBase
 {
     [CreateDataButton]
     public AConsumerFactory consumerFactory;
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ATargetValidatorFactory>, ATargetValidatorFactory>(targetValidators)")]
+    [CreateDataButton]
     public List<ATargetValidatorFactory> targetValidators;
     public float rate = 5f;
     public float range = 5f;

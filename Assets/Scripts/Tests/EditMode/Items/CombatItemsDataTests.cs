@@ -133,8 +133,9 @@ public class CombatItemsDataTests
         ((IStackableBuff)buff).Stack(_go, _go);
 
         Assert.AreEqual(DurationType.Infinite, breaker.durationType);
-        // Removed with the other temporary buffs at the end of the fight
-        Assert.IsEmpty(breaker.tags);
+        // Removed with the other temporary buffs at the end of the fight, a debuff a cleanse can remove
+        Assert.IsFalse(breaker.HasTag(TagNames.Permanent));
+        Assert.IsTrue(breaker.HasTag(TagNames.Debuff));
         Assert.AreEqual(0, breaker.maxStacks);
         Assert.AreEqual(0f, Get(AttributeType.FlatArmor), 0.0001f);
     }

@@ -1,5 +1,4 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/EmpowerNextAttackOnHealBuff")]
@@ -9,7 +8,7 @@ public class EmpowerNextAttackOnHealBuffFactory : BuffFactory<EmpowerNextAttackO
 public class EmpowerNextAttackOnHealBuffData
 {
     // Damage multiplier of the hits of the first attack after a heal received
-    [MinValue(1)]
+    [Min(1)]
     public float damageMultiplier = 1.5f;
 }
 

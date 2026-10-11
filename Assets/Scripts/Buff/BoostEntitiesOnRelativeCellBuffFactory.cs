@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/BoostEntitiesOnRelativeCellBuff")]
 public class BoostEntitiesOnRelativeCellBuffFactory : BuffFactory<BoostEntitiesOnRelativeCellBuff, BoostEntitiesOnRelativeCellBuffData> { }
@@ -13,7 +13,7 @@ public class BoostEntitiesOnRelativeCellBuffData
     public ABuffHandlerFactory buffHandlerFactory;
     public RelativeCellPatternType pattern;
     public int range = 1;
-    [PreviewField(75)]
+    [Preview(75)]
     public GameObject boostCellPrefab;
 }
 

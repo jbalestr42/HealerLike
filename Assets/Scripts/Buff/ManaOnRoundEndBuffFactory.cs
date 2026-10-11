@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/ManaOnRoundEndBuff")]
 public class ManaOnRoundEndBuffFactory : BuffFactory<ManaOnRoundEndBuff, ManaOnRoundEndBuffData> { }

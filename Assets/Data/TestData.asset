@@ -12,111 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a6fcb842b0335b4aaffac25a7f9d89f, type: 3}
   m_Name: TestData
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: attributeUpgradeData
-      Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[AttributeType, HealerLike.Runtime],[GameData+AttributeUpgradeData, HealerLike.Runtime]], mscorlib
-    - Name: comparer
-      Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[AttributeType, HealerLike.Runtime]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 12
-      Data: 3
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 2
-    - Name: $v
-      Entry: 7
-      Data: GameData+AttributeUpgradeData, HealerLike.Runtime
-    - Name: startingUpgradeCost
-      Entry: 3
-      Data: 10
-    - Name: costIncreaseFactor
-      Entry: 4
-      Data: 4
-    - Name: bonusPerUpgrade
-      Entry: 4
-      Data: 5
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 1
-    - Name: $v
-      Entry: 7
-      Data: GameData+AttributeUpgradeData, HealerLike.Runtime
-    - Name: startingUpgradeCost
-      Entry: 3
-      Data: 10
-    - Name: costIncreaseFactor
-      Entry: 4
-      Data: 4
-    - Name: bonusPerUpgrade
-      Entry: 4
-      Data: 0.1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 3
-    - Name: $v
-      Entry: 7
-      Data: GameData+AttributeUpgradeData, HealerLike.Runtime
-    - Name: startingUpgradeCost
-      Entry: 3
-      Data: 10
-    - Name: costIncreaseFactor
-      Entry: 4
-      Data: 4
-    - Name: bonusPerUpgrade
-      Entry: 4
-      Data: 0.1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
   playerItemChance: 0.15
   unitRewardChance: 0.15
   attributeUpgradeData:
@@ -141,61 +36,84 @@ MonoBehaviour:
     maxFloor: 2
     wavePatterns:
     - {fileID: 11400000, guid: d6a62ca494014f16a3f7d75a4c2410a0, type: 2}
-    - {fileID: 11400000, guid: 55bd537b7a6b4020b407348f851dfc37, type: 2}
+    - {fileID: 11400000, guid: e2513721d2e6c2345aaa6c2232be1141, type: 2}
+    - {fileID: 11400000, guid: e0c2c40dae69459c9bd530a7a5047c01, type: 2}
+    - {fileID: 11400000, guid: 0d33496f829346b387a4fda1cebe79bd, type: 2}
+    - {fileID: 11400000, guid: 48c477b4ba532ef43a5be572f2d597bf, type: 2}
   - roomType: 0
-    minFloor: 3
-    maxFloor: 5
+    minFloor: 1
+    maxFloor: 3
     wavePatterns:
     - {fileID: 11400000, guid: d4ec0ad597364edb8218b9a9cad3364e, type: 2}
-    - {fileID: 11400000, guid: e0c2c40dae69459c9bd530a7a5047c01, type: 2}
+    - {fileID: 11400000, guid: 025635afde458914095ccb545c2ff1b0, type: 2}
   - roomType: 0
-    minFloor: 6
-    maxFloor: 8
+    minFloor: 2
+    maxFloor: 5
     wavePatterns:
     - {fileID: 11400000, guid: 8161e30f498e47aa9369c3e1ce67f21f, type: 2}
-    - {fileID: 11400000, guid: 0d33496f829346b387a4fda1cebe79bd, type: 2}
-    - {fileID: 11400000, guid: e2513721d2e6c2345aaa6c2232be1141, type: 2}
-    - {fileID: 11400000, guid: 4cfe159b8ed188b4497ffa802ed53dca, type: 2}
-  - roomType: 1
-    minFloor: 5
-    maxFloor: 7
-    wavePatterns:
-    - {fileID: 11400000, guid: fa27bfdb8534459b9bc966b982f8a5b2, type: 2}
   - roomType: 0
-    minFloor: 9
-    maxFloor: 10
-    wavePatterns:
-    - {fileID: 11400000, guid: 48c477b4ba532ef43a5be572f2d597bf, type: 2}
-    - {fileID: 11400000, guid: beface40ce100824ab741b4ac2c539e5, type: 2}
-    - {fileID: 11400000, guid: a52669809764a5b4bbd7ad66af7aa539, type: 2}
-  - roomType: 0
-    minFloor: 11
-    maxFloor: 11
+    minFloor: 4
+    maxFloor: 8
     wavePatterns:
     - {fileID: 11400000, guid: 6908f06dc1d046145887e3096a487189, type: 2}
-    - {fileID: 11400000, guid: a92f9a632870a1d49b6a63d524d5e18e, type: 2}
-    - {fileID: 11400000, guid: 99b0f51e2fc4f204bb04f63607f72966, type: 2}
-    - {fileID: 11400000, guid: f08beef215ffd974580a5f027047588f, type: 2}
-  - roomType: 0
-    minFloor: 12
-    maxFloor: 13
-    wavePatterns:
-    - {fileID: 11400000, guid: 025635afde458914095ccb545c2ff1b0, type: 2}
-    - {fileID: 11400000, guid: 751e244b43ca41f43aac44fd6922d25d, type: 2}
-    - {fileID: 11400000, guid: 3076e1cd7c4abca4392ac8d6a7ab5dc2, type: 2}
     - {fileID: 11400000, guid: 3dd9572fccf8ecd448fd7c3c30c43abe, type: 2}
+    - {fileID: 11400000, guid: a92f9a632870a1d49b6a63d524d5e18e, type: 2}
+    - {fileID: 11400000, guid: 4cfe159b8ed188b4497ffa802ed53dca, type: 2}
+    - {fileID: 11400000, guid: 751e244b43ca41f43aac44fd6922d25d, type: 2}
+  - roomType: 0
+    minFloor: 5
+    maxFloor: 8
+    wavePatterns:
+    - {fileID: 11400000, guid: 99b0f51e2fc4f204bb04f63607f72966, type: 2}
+  - roomType: 0
+    minFloor: 6
+    maxFloor: 10
+    wavePatterns:
     - {fileID: 11400000, guid: 1c212a03fe4897f4eba4cde365605551, type: 2}
-  - roomType: 1
+    - {fileID: 11400000, guid: a52669809764a5b4bbd7ad66af7aa539, type: 2}
+  - roomType: 0
     minFloor: 9
-    maxFloor: 13
+    maxFloor: 12
+    wavePatterns:
+    - {fileID: 11400000, guid: beface40ce100824ab741b4ac2c539e5, type: 2}
+    - {fileID: 11400000, guid: f08beef215ffd974580a5f027047588f, type: 2}
+    - {fileID: 11400000, guid: 55bd537b7a6b4020b407348f851dfc37, type: 2}
+  - roomType: 0
+    minFloor: 11
+    maxFloor: 14
+    wavePatterns:
+    - {fileID: 11400000, guid: 969d7bfa63d746d48bd2a49112027a65, type: 2}
+  - roomType: 0
+    minFloor: 11
+    maxFloor: 14
+    wavePatterns:
+    - {fileID: 11400000, guid: d7a7d7f39878447789c5a3ac7311ba43, type: 2}
+  - roomType: 1
+    minFloor: 4
+    maxFloor: 8
+    wavePatterns:
+    - {fileID: 11400000, guid: fa27bfdb8534459b9bc966b982f8a5b2, type: 2}
+  - roomType: 1
+    minFloor: 6
+    maxFloor: 10
     wavePatterns:
     - {fileID: 11400000, guid: a26eb7dc132889f478acfc4fb505fabb, type: 2}
+  - roomType: 1
+    minFloor: 10
+    maxFloor: 13
+    wavePatterns:
+    - {fileID: 11400000, guid: 3076e1cd7c4abca4392ac8d6a7ab5dc2, type: 2}
+  - roomType: 1
+    minFloor: 11
+    maxFloor: 14
+    wavePatterns:
     - {fileID: 11400000, guid: ab19da632284a494c9dd7418db8051c3, type: 2}
   - roomType: 4
     minFloor: 0
     maxFloor: 100
     wavePatterns:
     - {fileID: 11400000, guid: e1dafe1b45569f54f86105fe3b828b76, type: 2}
+  staggerFirstAttacks: 1
   characters:
   - {fileID: 11400000, guid: 246613bc00a2adc4faacf8f72aa81ddd, type: 2}
   - {fileID: 11400000, guid: fa67b546fd2076e47a9f5aebfe698f8c, type: 2}
@@ -207,7 +125,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 059d0c2e8eebcdc45a72f7263323d9c4, type: 2}
   - {fileID: 11400000, guid: 5d22fc0dfaf755047a3f31256be9c665, type: 2}
   - {fileID: 11400000, guid: 96fde92661bad434282310e609822330, type: 2}
-  - {fileID: 11400000, guid: 285265cd5b673c34e99014b4d487cf6e, type: 2}
   - {fileID: 11400000, guid: 99c839410d10b0949a8c13b287954fec, type: 2}
   - {fileID: 11400000, guid: 7a727d3ba171a4a44bc7af8e70c4af88, type: 2}
   - {fileID: 11400000, guid: fc720cd10a4f2274982ec917fd77d9ee, type: 2}
@@ -283,6 +200,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 255dff38d4e43e54496d1a01bd3b147d, type: 2}
   - {fileID: 11400000, guid: 19f30c8aca7684b4eb7fbd3a5e0f4b16, type: 2}
   - {fileID: 11400000, guid: 3c3340ffc52d73940965e963046a7995, type: 2}
+  - {fileID: 11400000, guid: 7820f298d46f4935ae42f2273e0283ca, type: 2}
+  - {fileID: 11400000, guid: ae81d6cd16e942e488707a00f5b867a2, type: 2}
+  - {fileID: 11400000, guid: 5ae526315401c9343a385aee24faf7e0, type: 2}
+  - {fileID: 11400000, guid: e18e77831fceb7342a21e20e32807f03, type: 2}
+  - {fileID: 11400000, guid: e85cf5282617a01438e560dff6d97937, type: 2}
+  - {fileID: 11400000, guid: 5ce465a22a8990d42a28e1d35530b1b9, type: 2}
   tags:
   - {fileID: 11400000, guid: 89edbaa6345fd89478db1b09b2b2150f, type: 2}
   - {fileID: 11400000, guid: d38ac4ec04597cb4aa6ebb8581d9072e, type: 2}
@@ -298,3 +221,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
   - {fileID: 11400000, guid: b0c7adf21cc30b446ae9d1de7168fb74, type: 2}
   - {fileID: 11400000, guid: 3614776454183994283ae65b8f13ca38, type: 2}
+  - {fileID: 11400000, guid: e16a5cefda409ac49bdb9a9b1e3cb8c2, type: 2}
+  - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}
+  - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
+  - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
+  - {fileID: 11400000, guid: be9c6084f0f587e418806bd83d4ab2fd, type: 2}
+  - {fileID: 11400000, guid: 3e3da7a1624a46a6bb004c4cc819f3a3, type: 2}
+  - {fileID: 11400000, guid: 8c2d734b862d50d4886a7ff7d37eb7e5, type: 2}

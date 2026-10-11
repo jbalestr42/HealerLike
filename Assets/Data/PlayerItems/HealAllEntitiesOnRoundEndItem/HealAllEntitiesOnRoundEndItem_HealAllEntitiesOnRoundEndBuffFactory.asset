@@ -12,15 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5753b4ea5c0227342881eae4d40aec3d, type: 3}
   m_Name: HealAllEntitiesOnRoundEndItem_HealAllEntitiesOnRoundEndBuffFactory
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   uniqueID: 9679f8b6-156b-4ac0-bfd3-98ddcf71280f
   data:
     consumerFactory: {fileID: 11400000, guid: 7707f5ccd0a764a41a02cec63f6a4522, type: 2}

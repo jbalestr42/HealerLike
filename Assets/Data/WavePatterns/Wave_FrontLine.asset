@@ -12,48 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_FrontLine
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects:
-    - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: slots
-      Entry: 7
-      Data: 0|EntitySlot[,], Assembly-CSharp
-    - Name: 
-      Entry: 12
-      Data: 2
-    - Name: ranks
-      Entry: 1
-      Data: 1|2
-    - Name: 
-      Entry: 7
-      Data: EntitySlot, Assembly-CSharp
-    - Name: entity
-      Entry: 10
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: EntitySlot, Assembly-CSharp
-    - Name: entity
-      Entry: 10
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-  width: 1
-  height: 2
+  _width: 2
+  _height: 3
+  _cells:
+  - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
+  - {fileID: 0}
+  - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
+  - {fileID: 11400000, guid: 9bfeb902817e465197ea836de7c0b1e8, type: 2}
+  - {fileID: 11400000, guid: 9bfeb902817e465197ea836de7c0b1e8, type: 2}
+  - {fileID: 11400000, guid: 9bfeb902817e465197ea836de7c0b1e8, type: 2}
+  score:
+    dps: 14.563902
+    peakDps: 17.666666
+    survivalTime: 16.00313
+    effectiveHealth: 641.2541
+    threat: 233.06801
+    timedOut: 0
+    fingerprint: 4221e5a6fcb1c4bffb1139fb46327d68

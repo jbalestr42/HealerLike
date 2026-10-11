@@ -1,11 +1,10 @@
 
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class BuffManager : SerializedMonoBehaviour
+public class BuffManager : MonoBehaviour
 {
     [HideInInspector] public UnityEvent<BuffData> OnBuffAdded = new UnityEvent<BuffData>();
     [HideInInspector] public UnityEvent<BuffData> OnBuffRemoved = new UnityEvent<BuffData>();
@@ -29,7 +28,6 @@ public class BuffManager : SerializedMonoBehaviour
     class BuffDataPerId
     {
         // BuffFactory unique Id -> BuffDataPerId
-        [DictionaryDrawerSettings(KeyLabel = "Id", ValueLabel = "Buff Data")]
         [SerializeField] public Dictionary<string, BuffData> buffPerId = new Dictionary<string, BuffData>();
     }
 
@@ -39,6 +37,8 @@ public class BuffManager : SerializedMonoBehaviour
         public ABuffHandlerFactory buffHandlerFactory = null;
         public ABuffHandler buffHandler = null;
         public GameObject target = null;
+        // Who applied the handler, the last one for a handler stacking across sources (it may be destroyed
+        // since): the buffs get it as their source when applied
         public GameObject source = null;
         public int refreshStacks = 0;
         // Stacks asked by AddHandler/RemoveHandler, currentStacks being the ones applied (capped by maxStacks)
@@ -54,15 +54,12 @@ public class BuffManager : SerializedMonoBehaviour
     class BuffHandlerDataPerId
     {
         // BuffHandlerFactory unique Id -> BuffHandlerDataPerId
-        [DictionaryDrawerSettings(KeyLabel = "Id", ValueLabel = "Buff Handler Data")]
         [SerializeField] public Dictionary<string, BuffHandlerData> buffHandlerPerId = new Dictionary<string, BuffHandlerData>();
     }
 
-    // Buff source -> BuffData
-    [DictionaryDrawerSettings(KeyLabel = "Source", ValueLabel = "Data per Id")]
+    // Buff source -> BuffData (this buff manager's own game object for the handlers stacking across sources)
     [SerializeField] Dictionary<GameObject, BuffDataPerId> _buffPerSource = new Dictionary<GameObject, BuffDataPerId>();
     // Buff source -> BuffHandlerData
-    [DictionaryDrawerSettings(KeyLabel = "Source", ValueLabel = "Handler Data per Id")]
     [SerializeField] Dictionary<GameObject, BuffHandlerDataPerId> _buffHandlerPerSource = new Dictionary<GameObject, BuffHandlerDataPerId>();
 
     List<string> _cachedBuffIdsToRemove = new List<string>();
@@ -153,7 +150,7 @@ public class BuffManager : SerializedMonoBehaviour
                             for (int i = 0; i < buffHandlerData.refreshStacks; i++)
                             {
                                 ABuff buff = buffFactory.GetBuff(buffHandlerData.buffHandler);
-                                buff.Instant(source, buffHandlerData.target);
+                                buff.Instant(buffHandlerData.source, buffHandlerData.target);
                             }
                             _cachedIdsToRemove.Add(kvpBuffHandler.Key);
                         }
@@ -203,6 +200,7 @@ public class BuffManager : SerializedMonoBehaviour
 
                         if (buffHandlerData.buffHandler.isPeriodic && buffHandlerData.buffHandler.isPeriodDone)
                         {
+                            bool applied = false;
                             foreach (var buffFactory in buffHandlerFactory.buffFactoryList)
                             {
                                 BuffData buffData = GetBuffData(buffFactory, source);
@@ -210,9 +208,13 @@ public class BuffManager : SerializedMonoBehaviour
                                 if (buff != null && isEnabled)
                                 {
                                     Debug.Log($"[BuffManager:{gameObject.name}] Instant periodic buff " + buffFactory.name);
-                                    buff.Instant(source, buffHandlerData.target);
-                                    buffHandlerData.buffHandler.ResetPeriodDuration();
+                                    buff.Instant(buffHandlerData.source, buffHandlerData.target);
+                                    applied = true;
                                 }
+                            }
+                            if (applied)
+                            {
+                                buffHandlerData.buffHandler.ConsumePeriod();
                             }
                         }
 
@@ -410,24 +412,25 @@ public class BuffManager : SerializedMonoBehaviour
             Debug.LogError($"[BuffManager:{gameObject.name}] uniqueId is null for factory '{buffHandlerFactory.name}'");
         }
 
-        BuffHandlerData buffHandlerData = GetBuffHandlerData(buffHandlerFactory, source);
+        BuffHandlerData buffHandlerData = GetBuffHandlerData(buffHandlerFactory, GetSourceKey(buffHandlerFactory, source));
         if (!buffHandlerData.isInit)
         {
             Debug.Log($"[BuffManager:{gameObject.name}] Init handler " + buffHandlerFactory.name);
             buffHandlerData.buffHandler = buffHandlerFactory.GetBuffHandler();
             buffHandlerData.buffHandlerFactory = buffHandlerFactory;
             buffHandlerData.target = target;
-            buffHandlerData.source = source;
         }
         else
         {
             Debug.Log($"[BuffManager:{gameObject.name}] Refresh handler " + buffHandlerFactory.name);
         }
+        buffHandlerData.source = source;
         buffHandlerData.refreshStacks++;
     }
 
     public void RemoveHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target, bool removeAll = false)
     {
+        source = GetSourceKey(buffHandlerFactory, source);
         if (source == null)
         {
             // The source is already destroyed - RemoveOutdatedSources already force-stopped and
@@ -514,6 +517,13 @@ public class BuffManager : SerializedMonoBehaviour
                 OnBuffRemoved.Invoke(buffData);
             }
         }
+    }
+
+    // Where the handler and its buffs are kept: under their source, or under this buff manager's own game object
+    // when every source feeds the same stacks (so the handler outlives its sources)
+    GameObject GetSourceKey(ABuffHandlerFactory buffHandlerFactory, GameObject source)
+    {
+        return buffHandlerFactory.stackAcrossSources ? gameObject : source;
     }
 
     BuffData GetBuffData(ABuffFactory buffFactory, GameObject source)

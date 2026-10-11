@@ -1,9 +1,9 @@
 using System;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class AConsumerFactory : SerializedScriptableObject
+public abstract class AConsumerFactory : ScriptableObject
 {
     public abstract AConsumer GetConsumer(GameObject source, GameObject target);
 }
@@ -13,7 +13,6 @@ public class ConsumerFactory<ConsumerType, DataType> : AConsumerFactory, IGameDa
                                             where DataType : ConsumerBaseData
 {
     [InlineProperty]
-    [HideLabel]
     public DataType data;
     public object sourceData { get { return data; } }
 

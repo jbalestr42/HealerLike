@@ -47,8 +47,8 @@ public class AttributeManager : MonoBehaviour
     }
 
     // Value an attribute starts from when it's added without one: the multipliers leave the value
-    // untouched (heals received, skill cooldowns and costs) or increase it by half (critical hits), the other
-    // attributes start at 0
+    // untouched (heals received, skill cooldowns and costs) or increase it by half (critical hits), 40% of the
+    // mana comes back before each fight, the other attributes start at 0
     public static float GetDefaultValue(AttributeType type)
     {
         switch (type)
@@ -59,6 +59,8 @@ public class AttributeManager : MonoBehaviour
                 return 1f;
             case AttributeType.CriticalMultiplier:
                 return 1.5f;
+            case AttributeType.CombatManaRefill:
+                return 0.4f;
             default:
                 return 0f;
         }

@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class GameHUD : MonoBehaviour
 {
-    [SerializeField] UnityEngine.UI.Button _startGameButton;
-    public UnityEngine.UI.Button startGameButton { get { return _startGameButton; } }
-
     [SerializeField] UnityEngine.UI.Button _inventoryButton;
     public UnityEngine.UI.Button inventoryButton { get { return _inventoryButton; } }
 

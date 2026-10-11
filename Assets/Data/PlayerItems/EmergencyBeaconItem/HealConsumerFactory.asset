@@ -12,20 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aee98d927598e340ae28ed4c28c0ac7, type: 3}
   m_Name: HealConsumerFactory
   m_EditorClassIdentifier: HealerLike.Runtime::ConsumerFactory
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes: []
   data:
     ignoreDamageReduction: 1
     ignoreConsumerPrevention: 1
+    canBeCritical: 1
     value:
       rid: 4866441223440957629
+    valueOwner: 0
   references:
     version: 2
     RefIds:

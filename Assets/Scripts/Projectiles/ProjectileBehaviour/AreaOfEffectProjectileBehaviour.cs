@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 [Serializable]
 public class AreaOfEffectProjectileBehaviourData
 {
-    [AssetsOnly]
     public AreaOfEffect areaOfEffectPrefab;
     public float radius = 1f;
 }

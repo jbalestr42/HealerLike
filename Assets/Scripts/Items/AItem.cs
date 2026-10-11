@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
-public abstract class AItemFactory : SerializedScriptableObject, ITaggable
+[InlineEditor]
+public abstract class AItemFactory : ScriptableObject, ITaggable
 {
     public abstract AItem GetItem();
     public abstract string title { get; }
@@ -22,7 +23,6 @@ public class ItemFactory<ItemType, DataType> : AItemFactory, IGameDataSource
                                             where DataType : BaseItemData
 {
     [InlineProperty]
-    [HideLabel]
     public DataType data;
     public object sourceData { get { return data; } }
 
@@ -38,22 +38,13 @@ public class ItemFactory<ItemType, DataType> : AItemFactory, IGameDataSource
 [Serializable]
 public class BaseItemData
 {
-    [HorizontalGroup("Split", 75)]
-    [PreviewField(75)]
-    [HideLabel]
-    [AssetsOnly]
+    [Preview(75)]
     public Sprite icon;
 
-    [VerticalGroup("Split/Data")]
-    [LabelWidth(100)]
     public string name;
 
-    [VerticalGroup("Split/Data")]
-    [LabelWidth(100)]
     public string description;
 
-    [VerticalGroup("Split/Data")]
-    [LabelWidth(100)]
     public List<GameplayTag> tags = new List<GameplayTag>();
 }
 

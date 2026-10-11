@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/ManaOnKillBuff")]
 public class ManaOnKillBuffFactory : BuffFactory<ManaOnKillBuff, ManaOnKillBuffData> { }

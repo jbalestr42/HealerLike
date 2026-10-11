@@ -6,26 +6,14 @@ using UnityEngine;
 namespace Game
 {
 
-// The rest room: mana back whatever the choice, then heal every unit or resurrect a dead one
+// The rest room: heal every unit or resurrect a dead one
 public class RestRoomTests
 {
-    const string RestManaConsumerPath = "Assets/Data/Run/RestManaConsumer.asset";
-
-    GameObject _characterGo;
-    ResourceAttribute _mana;
     List<Object> _created = new List<Object>();
-
-    [SetUp]
-    public void SetUp()
-    {
-        _characterGo = new GameObject();
-        _mana = TestHelpers.CreateResourceAttribute(_characterGo, AttributeType.ManaMax, 100f);
-    }
 
     [TearDown]
     public void TearDown()
     {
-        Object.DestroyImmediate(_characterGo);
         foreach (Object created in _created)
         {
             Object.DestroyImmediate(created);
@@ -42,58 +30,6 @@ public class RestRoomTests
         return unit;
     }
 
-    void RestoreManaFrom(float mana)
-    {
-        AConsumerFactory restMana = AssetDatabase.LoadAssetAtPath<AConsumerFactory>(RestManaConsumerPath);
-        Assert.IsNotNull(restMana, RestManaConsumerPath);
-        RestoreManaFrom(mana, restMana);
-    }
-
-    void RestoreManaFrom(float mana, AConsumerFactory consumer)
-    {
-        TestHelpers.SetPrivateField(_mana, "_value", mana);
-        AscensionGameType.ApplyConsumer(_mana, _characterGo, consumer);
-        TestHelpers.InvokePrivate(_mana, "Update");
-    }
-
-    // Always critical, doubling the value
-    void MakeCharacterAlwaysCritical()
-    {
-        AttributeManager attributes = _characterGo.GetComponent<AttributeManager>();
-        attributes.Add(AttributeType.CriticalChance, new Attribute(100f));
-        attributes.Add(AttributeType.HealCriticalChance, new Attribute(100f));
-        attributes.Add(AttributeType.CriticalMultiplier, new Attribute(2f));
-    }
-
-    [Test]
-    public void RestManaConsumer_NeverCritical()
-    {
-        MakeCharacterAlwaysCritical();
-
-        RestoreManaFrom(10f);
-
-        Assert.AreEqual(40f, _mana.Value, 0.001f);
-    }
-
-    [Test]
-    public void SameManaConsumerThatCanBeCritical_IsCritical()
-    {
-        // Makes sure the character really crits in RestManaConsumer_NeverCritical
-        MakeCharacterAlwaysCritical();
-        ConsumerFactory critical = ScriptableObject.CreateInstance<ConsumerFactory>();
-        _created.Add(critical);
-        critical.data = new ConsumerData
-        {
-            ignoreDamageReduction = true,
-            ignoreConsumerPrevention = true,
-            value = new AttributeValue { data = new AttributeValueData { type = AttributeType.ManaMax, multiplier = -0.3f } },
-        };
-
-        RestoreManaFrom(10f, critical);
-
-        Assert.AreEqual(70f, _mana.Value, 0.001f);
-    }
-
     [Test]
     public void RestHealConsumer_NeverCritical()
     {
@@ -101,22 +37,6 @@ public class RestRoomTests
 
         Assert.IsNotNull(restHeal);
         Assert.IsFalse(restHeal.data.canBeCritical);
-    }
-
-    [Test]
-    public void RestManaConsumer_GivesBack30PercentOfTheMaxMana()
-    {
-        RestoreManaFrom(40f);
-
-        Assert.AreEqual(70f, _mana.Value, 0.001f);
-    }
-
-    [Test]
-    public void RestManaConsumer_NeverAboveTheMaxMana()
-    {
-        RestoreManaFrom(90f);
-
-        Assert.AreEqual(100f, _mana.Value, 0.001f);
     }
 
     [Test]

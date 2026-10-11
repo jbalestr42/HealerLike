@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using Unity.VisualScripting;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/SkillSteps/RepeatSkillStep")]
-public class RepeatSkillStepFactory : SkillStepFactory<RepeatSkillStep, RepeatSkillStepData> { }
+public class RepeatSkillStepFactory : SkillStepFactory<RepeatSkillStep, RepeatSkillStepData>
+{
+    public override bool shootsAtTargets => data != null && data.skillStepFactories.Exists(factory => factory != null && factory.shootsAtTargets);
+}
 
 [Serializable]
 public class RepeatSkillStepData : SkillStepDataBase
 {
-    [ListDrawerSettings(OnTitleBarGUI = "@GUIUtils.CreateDataButton<List<ASkillStepFactory>, ASkillStepFactory>(skillStepFactories)")]
+    [CreateDataButton]
     public List<ASkillStepFactory> skillStepFactories = new List<ASkillStepFactory>();
     public int count;
 }
@@ -32,10 +35,15 @@ public class RepeatSkillStep : ASkillStep<RepeatSkillStepData>
         }
     }
 
-    public override bool Update(ASkill skill, float deltaRepeat)
+    // The time left by a step goes on in the next ones during the same update, at most every repeat in one update
+    public override bool Update(ASkill skill, ref float deltaRepeat)
     {
-        if (_skillSteps[_currentStep].Update(skill, deltaRepeat))
+        for (int played = 0; played < _skillSteps.Count * Mathf.Max(1, data.count); played++)
         {
+            if (!_skillSteps[_currentStep].Update(skill, ref deltaRepeat))
+            {
+                return false;
+            }
             _currentStep++;
 
             if (_currentStep >= _skillSteps.Count)

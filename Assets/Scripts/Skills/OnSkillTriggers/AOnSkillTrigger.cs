@@ -1,10 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 [InlineEditor]
-public abstract class AOnSkillTriggerFactory : SerializedScriptableObject
+public abstract class AOnSkillTriggerFactory : ScriptableObject
 {
     public abstract AOnSkillTrigger GetSkillTrigger();
 }
@@ -12,7 +12,6 @@ public abstract class AOnSkillTriggerFactory : SerializedScriptableObject
 public class OnSkillTriggerFactory<OnSkillTriggerType, OnSkillTriggerData> : AOnSkillTriggerFactory, IGameDataSource where OnSkillTriggerType : AOnSkillTrigger<OnSkillTriggerData>, new()
 {
     [InlineProperty]
-    [HideLabel]
     public OnSkillTriggerData data;
     public object sourceData { get { return data; } }
 
@@ -31,8 +30,6 @@ public abstract class AOnSkillTrigger
 
 public abstract class AOnSkillTrigger<OnSkillTriggerData> : AOnSkillTrigger, IGameDataSource
 {
-    [InlineProperty]
-    [HideLabel]
     public OnSkillTriggerData data;
     public object sourceData { get { return data; } }
 }

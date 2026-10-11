@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
-using Sirenix.OdinInspector;
 using UnityEngine;
+using Oisif.Inspector;
 
 // Map generation test scene: draws a run map with a copy of the settings that can be changed while playing,
 // with the sliders of the panel or in the inspector (the settings asset itself is never modified). A changed
@@ -45,7 +45,7 @@ public class MapGenerationPreview : MonoBehaviour
     [SerializeField, Min(1)] int _maxPathCount = 12;
 
     // Copy of the source settings made when playing, the one the sliders change
-    [SerializeField, InlineEditor(InlineEditorObjectFieldModes.Foldout), HideInEditorMode]
+    [SerializeField, InlineEditor]
     MapGenerationSettings _settings;
 
     int _seed;
@@ -136,7 +136,7 @@ public class MapGenerationPreview : MonoBehaviour
         Canvas.ForceUpdateCanvases();
     }
 
-    [Button, HideInEditorMode]
+    [Button(playModeOnly = true)]
     public void NewMap()
     {
         _seed = _seedRandom.Next(1, int.MaxValue);

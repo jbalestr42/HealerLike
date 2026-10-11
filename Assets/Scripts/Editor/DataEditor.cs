@@ -1,16 +1,13 @@
 using System.Collections.Generic;
-using Sirenix.OdinInspector.Editor;
-using Sirenix.Utilities;
-using Sirenix.Utilities.Editor;
+using Oisif.Editor;
 using UnityEditor;
 using UnityEngine;
 
-public class DataEditor : OdinMenuEditorWindow
+// The data of the game by kind (characters, skills, units, items, game data): each one listed, edited and created
+// in one window, the units and items filtered by tags
+public class DataEditor : AssetBrowserWindow
 {
-    private static string[] typesToDisplay = { "Characters", "CharacterSkills", "Entities", "Items", "GameData" };
-    private string _selectedType = "Items";
-
-    Dictionary<string, List<ABaseDataEditor>> _dataEditors = new Dictionary<string, List<ABaseDataEditor>>();
+    static readonly string[] Tabs = { "Characters", "CharacterSkills", "Entities", "Items", "GameData" };
 
     // Filter of the items: tags added from a dropdown, each one needed or excluded (right click to switch)
     enum TagFilterState
@@ -20,22 +17,25 @@ public class DataEditor : OdinMenuEditorWindow
     }
 
     // Tabs whose data have tags, the tag filter shown above them
-    static readonly HashSet<string> TaggableTypes = new HashSet<string> { "Entities", "Items" };
+    static readonly HashSet<string> TaggableTabs = new HashSet<string> { "Entities", "Items" };
 
     const int ChipsPerRow = 4;
     static readonly Color IncludedColor = new Color(0.45f, 0.85f, 0.45f);
     static readonly Color ExcludedColor = new Color(0.95f, 0.45f, 0.45f);
 
-    List<GameplayTag> _tags = new List<GameplayTag>();
+    readonly List<GameplayTag> _tags = new List<GameplayTag>();
     // Reloaded when the project changes, so a tag created while the window is open shows up
     bool _areTagsLoaded = false;
-    // In the order they were added
-    List<GameplayTag> _filterTags = new List<GameplayTag>();
-    // The state of each tag of the filter, same index; lists so the window keeps them through a recompilation
-    List<TagFilterState> _filterStates = new List<TagFilterState>();
+    // In the order they were added; lists so the window keeps them through a recompilation
+    [SerializeField] List<GameplayTag> _filterTags = new List<GameplayTag>();
+    // The state of each tag of the filter, same index
+    [SerializeField] List<TagFilterState> _filterStates = new List<TagFilterState>();
+    string _filteredTab;
 
     [MenuItem("Tools/Data Editor")]
-    private static void OpenEditor() => GetWindow<DataEditor>();
+    static void OpenEditor() => GetWindow<DataEditor>("Data Editor");
+
+    protected override string[] tabs => Tabs;
 
     protected override void OnEnable()
     {
@@ -43,67 +43,74 @@ public class DataEditor : OdinMenuEditorWindow
         EditorApplication.projectChanged += OnProjectChanged;
     }
 
-    protected override void OnDestroy()
+    protected override void OnDisable()
     {
-        base.OnDestroy();
+        base.OnDisable();
         EditorApplication.projectChanged -= OnProjectChanged;
-
-        foreach (var kvp in _dataEditors)
-        {
-            foreach (ABaseDataEditor dataEditor in kvp.Value)
-            {
-                DestroyImmediate(dataEditor.data);
-            }
-        }
     }
 
-    protected override void OnImGUI()
+    protected override List<AssetSection> GetSections(string tab)
     {
-        if (GUIUtils.SelectButtonList(ref _selectedType, typesToDisplay))
+        List<AssetSection> sections = new List<AssetSection>();
+        switch (tab)
         {
-            // Each tab has its own tags (e.g. Player for the items, Druid for the units)
-            _filterTags.Clear();
-            _filterStates.Clear();
-            ForceMenuTreeRebuild();
-        }
-
-        if (TaggableTypes.Contains(_selectedType) && DrawTagFilter())
-        {
-            ForceMenuTreeRebuild();
-        }
-
-        base.OnImGUI();
-    }
-
-    protected override void OnBeginDrawEditors()
-    {
-        if (this.MenuTree != null)
-        {
-            OdinMenuTreeSelection selected = this.MenuTree.Selection;
-
-            SirenixEditorGUI.BeginHorizontalToolbar();
-            {
-                GUILayout.FlexibleSpace();
-
-                ScriptableObject asset = selected.SelectedValue as ScriptableObject;
-                if (asset != null)
+            case "Characters":
+                sections.Add(new AssetSection("Characters", "Assets/Data/Characters", typeof(CharacterData)) { getAssetName = data => ((CharacterData)data).title + "Character" });
+                break;
+            case "CharacterSkills":
+                sections.Add(new AssetSection("Character Skills", "Assets/Data/CharacterSkills", typeof(ACharacterSkillFactory)) { pickDerivedType = true });
+                break;
+            case "Entities":
+                sections.Add(new AssetSection("Entities", "Assets/Data/Entities", typeof(EntityData)) { getAssetName = data => ((EntityData)data).title + "Entity" });
+                break;
+            case "Items":
+                sections.Add(new AssetSection("Entity Items", "Assets/Data/EntityItems", typeof(ItemFactory)) { getAssetName = GetItemName });
+                sections.Add(new AssetSection("Player Items", "Assets/Data/PlayerItems", typeof(ItemFactory)) { getAssetName = GetItemName });
+                // Player items only offered by events (e.g. the Library, add Cursed for the Dark Library)
+                sections.Add(new AssetSection("Event Items", "Assets/Data/EventItems", typeof(ItemFactory))
                 {
-                    if (SirenixEditorGUI.ToolbarButton("Select"))
-                    {
-                        EditorUtility.FocusProjectWindow();
-                        Selection.activeObject = asset;
-                        EditorGUIUtility.PingObject(asset);
-                    }
+                    getAssetName = GetItemName,
+                    initDraft = data => ((ItemFactory)data).data = new ItemData { tags = new List<GameplayTag> { LoadTag(TagNames.Player), LoadTag(TagNames.Library) } },
+                });
+                break;
+            case "GameData":
+                sections.Add(new AssetSection("", "Assets", typeof(GameData)) { canCreate = false, createFolder = false });
+                break;
+        }
 
-                    if (SirenixEditorGUI.ToolbarButton("Delete"))
-                    {
-                        string path = AssetDatabase.GetAssetPath(asset);
-                        AssetDatabase.DeleteAsset(path);
-                        AssetDatabase.SaveAssets();
-                    }
+        if (TaggableTabs.Contains(tab))
+        {
+            List<GameplayTag> includedTags = GetTagsInState(TagFilterState.Included);
+            List<GameplayTag> excludedTags = GetTagsInState(TagFilterState.Excluded);
+            if (includedTags.Count > 0 || excludedTags.Count > 0)
+            {
+                foreach (AssetSection section in sections)
+                {
+                    section.filter = data => TagFilter.Matches(data as ITaggable, includedTags, excludedTags);
                 }
             }
-            SirenixEditorGUI.EndHorizontalToolbar();
+        }
+        return sections;
+    }
+
+    static string GetItemName(ScriptableObject data) => ((ItemFactory)data).title + "Item";
+
+    protected override void DrawHeader(string tab)
+    {
+        // Each tab has its own tags (e.g. Player for the items, Druid for the units)
+        if (_filteredTab != tab)
+        {
+            _filteredTab = tab;
+            if (_filterTags.Count > 0)
+            {
+                _filterTags.Clear();
+                _filterStates.Clear();
+                RefreshList();
+            }
+        }
+        if (TaggableTabs.Contains(tab) && DrawTagFilter())
+        {
+            RefreshList();
         }
     }
 
@@ -151,12 +158,13 @@ public class DataEditor : OdinMenuEditorWindow
         for (int start = 0; start < _filterTags.Count; start += ChipsPerRow)
         {
             Rect rowRect = GUILayoutUtility.GetRect(0, 20);
+            float chipWidth = rowRect.width / ChipsPerRow;
             for (int i = 0; i < ChipsPerRow && start + i < _filterTags.Count; i++)
             {
                 int index = start + i;
                 GameplayTag tag = _filterTags[index];
                 TagFilterState state = _filterStates[index];
-                Rect chipRect = rowRect.Split(i, ChipsPerRow);
+                Rect chipRect = new Rect(rowRect.x + i * chipWidth, rowRect.y, chipWidth, rowRect.height);
                 Rect removeRect = new Rect(chipRect.xMax - 20f, chipRect.y, 20f, chipRect.height);
                 Rect labelRect = new Rect(chipRect.x, chipRect.y, chipRect.width - 20f, chipRect.height);
 
@@ -235,44 +243,5 @@ public class DataEditor : OdinMenuEditorWindow
     static GameplayTag LoadTag(string tagName)
     {
         return AssetDatabase.LoadAssetAtPath<GameplayTag>($"Assets/Prefabs/Tags/{tagName}.asset");
-    }
-
-    protected override OdinMenuTree BuildMenuTree()
-    {
-        var tree = new OdinMenuTree();
-
-        foreach (string type in typesToDisplay)
-        {
-            _dataEditors[type] = new List<ABaseDataEditor>();
-        }
-
-        _dataEditors["Characters"].Add(new BaseDataEditor<CharacterData>("Characters", "Assets/Data/Characters/") { getDataName = (CharacterData data) => data.title + "Character" });
-        _dataEditors["CharacterSkills"].Add(new DerivedTypeDataEditor<ACharacterSkillFactory>("CharacterSkills", "Assets/Data/CharacterSkills/"));
-        _dataEditors["Entities"].Add(new BaseDataEditor<EntityData>("Entities", "Assets/Data/Entities/") { getDataName = (EntityData data) => data.title + "Entity" });
-        _dataEditors["Items"].Add(new BaseDataEditor<ItemFactory>("Entity Items", "Assets/Data/EntityItems/") { getDataName = (ItemFactory item) => item.title + "Item" });
-        _dataEditors["Items"].Add(new BaseDataEditor<ItemFactory>("Player Items", "Assets/Data/PlayerItems/") { getDataName = (ItemFactory item) => item.title + "Item" });
-        // Player items only offered by events (e.g. the Library, add Cursed for the Dark Library)
-        _dataEditors["Items"].Add(new BaseDataEditor<ItemFactory>("Event Items", "Assets/Data/EventItems/")
-        {
-            getDataName = (ItemFactory item) => item.title + "Item",
-            initData = (ItemFactory item) => item.data = new ItemData { tags = new List<GameplayTag> { LoadTag(TagNames.Player), LoadTag(TagNames.Library) } },
-        });
-        _dataEditors["GameData"].Add(new BaseDataEditor<GameData>("", "Assets/") { createFolder = false, canCreate = false });
-
-        List<GameplayTag> includedTags = GetTagsInState(TagFilterState.Included);
-        List<GameplayTag> excludedTags = GetTagsInState(TagFilterState.Excluded);
-        if (includedTags.Count > 0 || excludedTags.Count > 0)
-        {
-            foreach (ABaseDataEditor dataEditor in _dataEditors[_selectedType])
-            {
-                dataEditor.SetTagFilter(includedTags, excludedTags);
-            }
-        }
-
-        foreach (ABaseDataEditor dataEditor in _dataEditors[_selectedType])
-        {
-            dataEditor.AddTree(tree);
-        }
-        return tree;
     }
 }
