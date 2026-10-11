@@ -56,6 +56,13 @@
     border-width: 1px; border-radius: 12px;
 }
 #hud-root.compact-hud .detail-panel.is-hidden { display: none; }
+/* Coiny with its descender sign fixed, as on the start screens: with the shipped face a description that wraps to a
+   third line is drawn into the second and clipped by the popover. Scoped to the two text panels, the party and spell
+   cards keep the original face their heights were tuned for. */
+#hud-root.compact-hud .detail-panel,
+#hud-root.compact-hud #event-panel {
+    -unity-font-definition: url("../../../Render/Font/Coiny/Coiny-Regular-UI.ttf");
+}
 #hud-root.compact-hud .detail-close {
     position: absolute; right: 0; top: 0; width: 44px; height: 44px; min-height: 44px;
     padding: 0; margin: 0; background-color: transparent; border-width: 0; font-size: 24px;
