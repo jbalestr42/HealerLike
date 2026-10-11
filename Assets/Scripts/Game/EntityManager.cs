@@ -19,6 +19,10 @@ public class EntityManager : Singleton<EntityManager>
     [SerializeField]
     GameObject _entityBasePrefab;
 
+    // The board of the fights, the units of a wave standing on its cells
+    [SerializeField] Board _board;
+    public Board board { get { return _board; } set { _board = value; } }
+
     Dictionary<Entity.EntityType, List<GameObject>> _entities;
     public Dictionary<Entity.EntityType, List<GameObject>> entities => _entities;
 
@@ -91,6 +95,29 @@ public class EntityManager : Singleton<EntityManager>
         return spawned;
     }
 
+    // Spawns every entity of the pattern on its cell of the board, returns the ones actually spawned: a cell not free
+    // for the side of the units is skipped
+    public List<Entity> SpawnWave(WavePatternData waveData, Board targetBoard, Entity.EntityType entityType)
+    {
+        List<Entity> spawned = new List<Entity>();
+        BoardCellType side = BoardLayout.GetCellType(entityType);
+        foreach ((int x, int y, EntityData data) unit in waveData.GetUnits())
+        {
+            Vector2Int coord = new Vector2Int(unit.x, unit.y);
+            if (!targetBoard.IsFree(coord, side))
+            {
+                continue;
+            }
+            GameObject entity = SpawnEntity(unit.data, targetBoard.GetUnitPosition(coord), entityType);
+            if (entity != null)
+            {
+                targetBoard.Occupy(coord, entity, side);
+                spawned.Add(entity.GetComponent<Entity>());
+            }
+        }
+        return spawned;
+    }
+
     public void DestroyEntity(GameObject entity, Entity.EntityType entityType)
     {
         if (entity != null)
@@ -130,6 +157,10 @@ public class EntityManager : Singleton<EntityManager>
         PlayerBehaviour player = PlayerBehaviour.instance;
         Vector2Int coord = player.grid.GetCoordFromPosition(entity.transform.position);
         player.grid.SetWalkable(coord.x, coord.y, true);
+        if (_board != null)
+        {
+            _board.Release(entity);
+        }
         _entities[entityType].Remove(entity);
         Destroy(entity);
     }

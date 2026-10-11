@@ -1,0 +1,243 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+// The board of the fights in the world, centered on its transform: a tile on each cell of the player or the enemies,
+// coloured by side, and the unit standing on each cell
+public class Board : MonoBehaviour
+{
+    // Used until a fight gives its own (e.g. before the first wave, in the Sandbox)
+    [SerializeField] BoardLayout _defaultLayout;
+    // Tile laid on each active cell, a quad when empty
+    [SerializeField] GameObject _tilePrefab;
+    [SerializeField] Material _tileMaterial;
+    [SerializeField] Color _playerColor = new Color(0.25f, 0.45f, 0.8f);
+    [SerializeField] Color _enemyColor = new Color(0.75f, 0.3f, 0.25f);
+    // Share of the cell covered by its tile, the rest showing the cells apart
+    [SerializeField, Range(0.1f, 1f)] float _tileScale = 0.92f;
+    // Above the ground, for the tiles to be seen over it
+    [SerializeField] float _tileHeight = 0.01f;
+
+    BoardLayout _layout;
+    public BoardLayout layout => _layout != null ? _layout : _defaultLayout;
+    public BoardLayout defaultLayout { get { return _defaultLayout; } set { _defaultLayout = value; } }
+
+    readonly Dictionary<Vector2Int, GameObject> _tiles = new Dictionary<Vector2Int, GameObject>();
+    public IReadOnlyDictionary<Vector2Int, GameObject> tiles => _tiles;
+
+    readonly Dictionary<Vector2Int, GameObject> _occupants = new Dictionary<Vector2Int, GameObject>();
+
+    static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    static readonly int ColorId = Shader.PropertyToID("_Color");
+
+    void Start()
+    {
+        if (_tiles.Count == 0)
+        {
+            BuildTiles();
+        }
+    }
+
+    // The board of the fight, the default one when null: the tiles are laid again
+    public void SetLayout(BoardLayout newLayout)
+    {
+        _layout = newLayout;
+        BuildTiles();
+    }
+
+    public BoardCellType GetCellType(Vector2Int coord)
+    {
+        return layout != null ? layout.GetCell(coord) : BoardCellType.None;
+    }
+
+    // Center of the cell on the ground
+    public Vector3 GetCellCenter(Vector2Int coord)
+    {
+        return layout.GetCellCenter(transform.position, coord);
+    }
+
+    // Where a unit stands on the cell: half a cell above the ground, like on the placement grid
+    public Vector3 GetUnitPosition(Vector2Int coord)
+    {
+        return GetCellCenter(coord) + Vector3.up * (layout.cellSize * 0.5f);
+    }
+
+    // The cell under the position, false outside the board
+    public bool TryGetCoord(Vector3 position, out Vector2Int coord)
+    {
+        if (layout == null)
+        {
+            coord = default;
+            return false;
+        }
+        return layout.TryGetCoord(transform.position, position, out coord);
+    }
+
+    // A cell of a side (Player or Enemy) with no unit on it
+    public bool IsFree(Vector2Int coord, BoardCellType side)
+    {
+        return side != BoardCellType.None && GetCellType(coord) == side && GetOccupant(coord) == null;
+    }
+
+    // The unit on the cell, null when there is none (or it was destroyed)
+    public GameObject GetOccupant(Vector2Int coord)
+    {
+        if (_occupants.TryGetValue(coord, out GameObject occupant) && occupant == null)
+        {
+            _occupants.Remove(coord);
+        }
+        return occupant != null ? occupant : null;
+    }
+
+    // Puts the unit on the cell if it is a free cell of its side, leaving the one it was on
+    public bool Occupy(Vector2Int coord, GameObject unit, BoardCellType side)
+    {
+        if (unit == null || !IsFree(coord, side))
+        {
+            return false;
+        }
+        Release(unit);
+        _occupants[coord] = unit;
+        return true;
+    }
+
+    // The cell of the unit on the board, false when it is on none
+    public bool TryGetCoordOf(GameObject unit, out Vector2Int coord)
+    {
+        foreach (KeyValuePair<Vector2Int, GameObject> occupant in _occupants)
+        {
+            if (occupant.Value == unit && unit != null)
+            {
+                coord = occupant.Key;
+                return true;
+            }
+        }
+        coord = default;
+        return false;
+    }
+
+    public void Release(GameObject unit)
+    {
+        if (TryGetCoordOf(unit, out Vector2Int coord))
+        {
+            _occupants.Remove(coord);
+        }
+    }
+
+    public void Release(Vector2Int coord)
+    {
+        _occupants.Remove(coord);
+    }
+
+    public void ReleaseAll()
+    {
+        _occupants.Clear();
+    }
+
+    // The free cell of the side nearest to the position (on the ground), false when the side has none left. Two
+    // cells as near: the first one column after column
+    public bool TryGetNearestFreeCell(BoardCellType side, Vector3 position, out Vector2Int nearest)
+    {
+        nearest = default;
+        if (layout == null)
+        {
+            return false;
+        }
+        bool found = false;
+        float nearestSqrDistance = float.MaxValue;
+        foreach (Vector2Int coord in layout.GetCells(side))
+        {
+            if (GetOccupant(coord) != null)
+            {
+                continue;
+            }
+            Vector3 center = GetCellCenter(coord);
+            float dx = center.x - position.x;
+            float dz = center.z - position.z;
+            float sqrDistance = dx * dx + dz * dz;
+            if (sqrDistance < nearestSqrDistance)
+            {
+                nearest = coord;
+                nearestSqrDistance = sqrDistance;
+                found = true;
+            }
+        }
+        return found;
+    }
+
+    // A tile on each cell of the player or the enemies, none on the cells of nobody
+    void BuildTiles()
+    {
+        foreach (GameObject tile in _tiles.Values)
+        {
+            if (tile != null)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(tile);
+                }
+                else
+                {
+                    DestroyImmediate(tile);
+                }
+            }
+        }
+        _tiles.Clear();
+        if (layout == null)
+        {
+            return;
+        }
+
+        for (int x = 0; x < layout.width; x++)
+        {
+            for (int y = 0; y < layout.height; y++)
+            {
+                Vector2Int coord = new Vector2Int(x, y);
+                BoardCellType type = layout.GetCell(coord);
+                if (type != BoardCellType.None)
+                {
+                    _tiles[coord] = CreateTile(coord, type == BoardCellType.Player ? _playerColor : _enemyColor);
+                }
+            }
+        }
+    }
+
+    GameObject CreateTile(Vector2Int coord, Color color)
+    {
+        GameObject tile;
+        if (_tilePrefab != null)
+        {
+            tile = Instantiate(_tilePrefab, transform);
+        }
+        else
+        {
+            tile = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            tile.transform.SetParent(transform, false);
+            tile.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            // Not in the way of the clicks on the ground
+            Collider tileCollider = tile.GetComponent<Collider>();
+            if (tileCollider != null)
+            {
+                DestroyImmediate(tileCollider);
+            }
+        }
+        tile.name = $"Cell ({coord.x}, {coord.y})";
+        tile.transform.position = GetCellCenter(coord) + Vector3.up * _tileHeight;
+        float size = layout.cellSize * _tileScale;
+        tile.transform.localScale = new Vector3(size, size, 1f);
+
+        Renderer tileRenderer = tile.GetComponent<Renderer>();
+        if (tileRenderer != null)
+        {
+            if (_tileMaterial != null)
+            {
+                tileRenderer.sharedMaterial = _tileMaterial;
+            }
+            MaterialPropertyBlock block = new MaterialPropertyBlock();
+            tileRenderer.GetPropertyBlock(block);
+            block.SetColor(BaseColorId, color);
+            block.SetColor(ColorId, color);
+            tileRenderer.SetPropertyBlock(block);
+        }
+        return tile;
+    }
+}

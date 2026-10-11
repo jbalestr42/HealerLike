@@ -745,6 +745,13 @@ public class AscensionGameType : AGameType, IEventRoomHost
             return new List<Entity>();
         }
 
+        // On the board of the wave when the scene has one
+        Board board = EntityManager.instance.board;
+        if (board != null)
+        {
+            board.SetLayout(waveData.layout);
+            return EntityManager.instance.SpawnWave(waveData, board, Entity.EntityType.Computer);
+        }
         return EntityManager.instance.SpawnWave(waveData, transform.position, Entity.EntityType.Computer);
     }
 
