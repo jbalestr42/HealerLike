@@ -18,8 +18,8 @@ namespace UI.Toolkit.Integration
         public void Presentation_ExistingSettersProduceObservedText()
         {
             UseCharacterSkillButton button = root.AddComponent<UseCharacterSkillButton>();
-            UnityEngine.UI.Text cost = CreateChild<UnityEngine.UI.Text>();
-            UnityEngine.UI.Text cooldown = CreateChild<UnityEngine.UI.Text>();
+            TMPro.TMP_Text cost = CreateChild<TMPro.TextMeshProUGUI>();
+            TMPro.TMP_Text cooldown = CreateChild<TMPro.TextMeshProUGUI>();
             TestHelpers.SetPrivateField(button, "_costText", cost);
             TestHelpers.SetPrivateField(button, "_cooldownText", cooldown);
             TestHelpers.SetPrivateField(button, "_cooldownImage", CreateChild<UnityEngine.UI.Image>());

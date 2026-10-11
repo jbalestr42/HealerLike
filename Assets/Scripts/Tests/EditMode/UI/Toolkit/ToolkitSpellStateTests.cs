@@ -23,7 +23,7 @@ namespace UI.Toolkit
                 CharacterSkillSlot slot = root.AddComponent<CharacterSkillSlot>();
                 UseCharacterSkillButton button = root.AddComponent<UseCharacterSkillButton>();
                 TestHelpers.SetPrivateField(button, "_button", CreateChild<Button>());
-                TestHelpers.SetPrivateField(button, "_nameText", CreateChild<Text>());
+                TestHelpers.SetPrivateField(button, "_nameText", CreateChild<TMPro.TextMeshProUGUI>());
                 slot.Init(new ApplyConsumerCharacterSkill { data = new ApplyConsumerCharacterSkillData
                     { name = "Authored cost", validators = new List<ACharacterSkillValidatorFactory> { resource } } }, button, false);
                 Assert.That(ToolkitSpellState.Read(slot, character).cost, Is.Zero, "Unrestricted slot has no active cost validator");
@@ -44,7 +44,7 @@ namespace UI.Toolkit
             UseCharacterSkillButton button = root.AddComponent<UseCharacterSkillButton>();
             Button action = CreateChild<Button>();
             TestHelpers.SetPrivateField(button, "_button", action);
-            TestHelpers.SetPrivateField(button, "_nameText", CreateChild<Text>());
+            TestHelpers.SetPrivateField(button, "_nameText", CreateChild<TMPro.TextMeshProUGUI>());
             Image fill = CreateChild<Image>();
             fill.type = Image.Type.Filled;
             fill.fillMethod = Image.FillMethod.Radial360;

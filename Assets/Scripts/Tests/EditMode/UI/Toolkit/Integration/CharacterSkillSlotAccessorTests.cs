@@ -11,7 +11,7 @@ namespace UI.Toolkit.Integration
             CharacterSkillSlot slot = root.AddComponent<CharacterSkillSlot>();
             UseCharacterSkillButton button = root.AddComponent<UseCharacterSkillButton>();
             TestHelpers.SetPrivateField(button, "_button", CreateChild<UnityEngine.UI.Button>());
-            TestHelpers.SetPrivateField(button, "_nameText", CreateChild<UnityEngine.UI.Text>());
+            TestHelpers.SetPrivateField(button, "_nameText", CreateChild<TMPro.TextMeshProUGUI>());
             ApplyConsumerCharacterSkill skill = new ApplyConsumerCharacterSkill();
             skill.data = new ApplyConsumerCharacterSkillData { name = "Heal" };
 
