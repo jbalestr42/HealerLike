@@ -12,15 +12,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_Charnel
   m_EditorClassIdentifier: HealerLike.Runtime::WavePatternData
-  _width: 2
-  _height: 3
+  _layout: {fileID: 11400000, guid: 92f8e8a31e758ed40881529800bbfeca, type: 2}
+  _width: 9
+  _height: 4
   _cells:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
+  - {fileID: 0}
   - {fileID: 11400000, guid: c769518f4162ae044938f5418afa853a, type: 2}
   - {fileID: 0}
   - {fileID: 11400000, guid: c769518f4162ae044938f5418afa853a, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   score:
     dps: 12.730713
     peakDps: 16
@@ -28,4 +59,4 @@ MonoBehaviour:
     effectiveHealth: 684.7101
     threat: 217.53755
     timedOut: 0
-    fingerprint: 5d9d8ee8cecf70bd2c70bc353d5eb022
+    fingerprint: d174172b07ab3b95476d7a3d6f3af980

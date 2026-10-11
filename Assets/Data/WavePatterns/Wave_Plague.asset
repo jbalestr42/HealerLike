@@ -12,15 +12,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_Plague
   m_EditorClassIdentifier: 
-  _width: 2
-  _height: 3
+  _layout: {fileID: 11400000, guid: 92f8e8a31e758ed40881529800bbfeca, type: 2}
+  _width: 9
+  _height: 4
   _cells:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
   - {fileID: 0}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 77446c7415eb11d4aa733381053fcd35, type: 2}
   - {fileID: 11400000, guid: a9540b7e6e04d1d4f9bfaa8f653333fa, type: 2}
   - {fileID: 11400000, guid: 77446c7415eb11d4aa733381053fcd35, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   score:
     dps: 13.805259
     peakDps: 20.666666
@@ -28,4 +59,4 @@ MonoBehaviour:
     effectiveHealth: 659.2224
     threat: 227.11787
     timedOut: 0
-    fingerprint: 3ef00d7c9b0e930cef1077ce72441f99
+    fingerprint: 9266090989883474d102b503790fa191

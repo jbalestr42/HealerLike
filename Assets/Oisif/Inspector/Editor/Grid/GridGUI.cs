@@ -15,6 +15,12 @@ namespace Oisif.Editor
         public Func<UnityEngine.Object, Texture> getPreview;
         // Name written under the picture, the object name when null
         public Func<UnityEngine.Object, string> getLabel;
+        // False to hide the size fields
+        public bool resizable = true;
+        // Whether the cell (x, y) can hold an object, every cell when null: the others are greyed and take nothing
+        public Func<int, int, bool> isCellEnabled;
+        // Background of the cell (x, y), the default one when null
+        public Func<int, int, Color> getCellColor;
     }
 
     // Draws a list of object references as a grid of width columns and height rows, the cells column after column
@@ -64,7 +70,14 @@ namespace Oisif.Editor
         public static void Draw(SerializedProperty cells, SerializedProperty width, SerializedProperty height, Type objectType, GridGUIOptions options = null)
         {
             options = options ?? new GridGUIOptions();
-            DrawSize(cells, width, height);
+            if (options.resizable)
+            {
+                DrawSize(cells, width, height);
+            }
+            else
+            {
+                DrawClear(cells);
+            }
             EnsureSize(cells, width.intValue * height.intValue);
 
             if (!string.IsNullOrEmpty(options.firstColumnLabel))
@@ -80,7 +93,12 @@ namespace Oisif.Editor
                 {
                     // The row 0 at the bottom
                     Rect cell = new Rect(area.x + x * options.cellSize, area.y + (height.intValue - 1 - y) * options.cellSize, options.cellSize, options.cellSize);
-                    DrawCell(cell, cells.GetArrayElementAtIndex(GetIndex(x, y, height.intValue)), objectType, options);
+                    bool isEnabled = options.isCellEnabled == null || options.isCellEnabled(x, y);
+                    Color? background = options.getCellColor?.Invoke(x, y);
+                    using (new EditorGUI.DisabledScope(!isEnabled))
+                    {
+                        DrawCell(cell, cells.GetArrayElementAtIndex(GetIndex(x, y, height.intValue)), objectType, options, background, isEnabled);
+                    }
                 }
             }
         }
@@ -118,6 +136,22 @@ namespace Oisif.Editor
             }
         }
 
+        static void DrawClear(SerializedProperty cells)
+        {
+            if (GUILayout.Button("Clear", GUILayout.Width(60f)))
+            {
+                ClearCells(cells);
+            }
+        }
+
+        static void ClearCells(SerializedProperty cells)
+        {
+            for (int i = 0; i < cells.arraySize; i++)
+            {
+                cells.GetArrayElementAtIndex(i).objectReferenceValue = null;
+            }
+        }
+
         static void DrawSize(SerializedProperty cells, SerializedProperty width, SerializedProperty height)
         {
             EditorGUILayout.BeginHorizontal();
@@ -125,10 +159,7 @@ namespace Oisif.Editor
             int newHeight = Mathf.Max(1, EditorGUILayout.IntField("Rows", height.intValue));
             if (GUILayout.Button("Clear", GUILayout.Width(60f)))
             {
-                for (int i = 0; i < cells.arraySize; i++)
-                {
-                    cells.GetArrayElementAtIndex(i).objectReferenceValue = null;
-                }
+                ClearCells(cells);
             }
             EditorGUILayout.EndHorizontal();
 
@@ -162,20 +193,25 @@ namespace Oisif.Editor
             }
         }
 
-        static void DrawCell(Rect rect, SerializedProperty cell, Type objectType, GridGUIOptions options)
+        // A disabled cell is only drawn: its object, if any, stays shown but can't be changed
+        static void DrawCell(Rect rect, SerializedProperty cell, Type objectType, GridGUIOptions options, Color? background, bool isEnabled)
         {
             Rect inner = new Rect(rect.x + 2f, rect.y + 2f, rect.width - 4f, rect.height - 4f);
             int id = GUIUtility.GetControlID(CellHash, FocusType.Passive, inner);
             UnityEngine.Object value = cell.objectReferenceValue;
             Event current = Event.current;
-            bool isHovered = inner.Contains(current.mousePosition);
+            bool isHovered = isEnabled && inner.Contains(current.mousePosition);
             // At the bottom: always on an empty cell, over the name of a filled one under the mouse
             Rect selectRect = PreviewField.GetSelectRect(new Vector2(inner.center.x, inner.yMax - 9f));
-            bool showSelect = value == null || isHovered;
+            bool showSelect = isEnabled && (value == null || isHovered);
 
             if (current.type == EventType.Repaint)
             {
-                EditorGUI.DrawRect(inner, value != null ? FilledColor : EmptyColor);
+                EditorGUI.DrawRect(inner, background ?? (value != null ? FilledColor : EmptyColor));
+                if (background.HasValue && value != null)
+                {
+                    EditorGUI.DrawRect(inner, FilledColor);
+                }
                 if (isHovered)
                 {
                     EditorGUI.DrawRect(inner, HoverColor);
@@ -200,6 +236,10 @@ namespace Oisif.Editor
             if (showSelect && current.type == EventType.Repaint)
             {
                 PreviewField.DrawSelectButton(selectRect);
+            }
+            if (!isEnabled)
+            {
+                return;
             }
             if (PreviewField.TryTakePicked(id, objectType, out UnityEngine.Object picked))
             {

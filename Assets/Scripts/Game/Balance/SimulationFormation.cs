@@ -40,8 +40,8 @@ public static class SimulationFormation
         return cells;
     }
 
-    // The cell of each unit of a pattern placed as drawn, by its index in ReferenceTeam.FromWave(pattern): its first
-    // column on the front column (as a wave faces the team, mirrored), its rows centered on centerRow
+    // The cell of each unit of a pattern placed as drawn, by its index in ReferenceTeam.FromWave(pattern): its front
+    // column (the nearest to the team on its board) on the front column (as a wave faces the team, mirrored), its rows centered on centerRow
     public static Dictionary<int, Vector2Int> GetPatternCells(WavePatternData pattern, int frontColumn, int centerRow)
     {
         Dictionary<int, Vector2Int> cells = new Dictionary<int, Vector2Int>();
@@ -51,9 +51,9 @@ public static class SimulationFormation
         }
 
         int index = 0;
-        foreach ((int x, int y, EntityData entity) unit in pattern.GetUnits())
+        foreach ((int rank, int y, EntityData entity) unit in pattern.GetUnitsByRank())
         {
-            cells[index] = new Vector2Int(frontColumn - unit.x, centerRow + unit.y - (pattern.height - 1) / 2);
+            cells[index] = new Vector2Int(frontColumn - unit.rank, centerRow + unit.y - (pattern.height - 1) / 2);
             index++;
         }
         return cells;

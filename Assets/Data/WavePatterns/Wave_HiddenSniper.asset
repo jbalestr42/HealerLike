@@ -12,14 +12,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_HiddenSniper
   m_EditorClassIdentifier: 
-  _width: 2
-  _height: 3
+  _layout: {fileID: 11400000, guid: 92f8e8a31e758ed40881529800bbfeca, type: 2}
+  _width: 9
+  _height: 4
   _cells:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
   - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: a9540b7e6e04d1d4f9bfaa8f653333fa, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 0}
   score:
     dps: 15.515816
@@ -28,4 +59,4 @@ MonoBehaviour:
     effectiveHealth: 522.0163
     threat: 202.13124
     timedOut: 0
-    fingerprint: f8b8b5b9e9fce4b35452e7b8ebdf8bc2
+    fingerprint: cfdd0005560e4118de85cbafbb2acf25

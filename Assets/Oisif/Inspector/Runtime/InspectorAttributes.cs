@@ -110,6 +110,12 @@ namespace Oisif.Inspector
         // Written above the first column (e.g. "Front")
         public string firstColumnLabel = "";
         public float cellSize = 72f;
+        // False to hide the size fields, when the size is set elsewhere (e.g. by another asset)
+        public bool resizable = true;
+        // A method bool(int x, int y) of the owner telling which cells can hold an object, every cell when empty
+        public string cellEnabledMethod = "";
+        // A method Color(int x, int y) of the owner giving the background of each cell, the default one when empty
+        public string cellColorMethod = "";
 
         public GridAttribute(string widthField, string heightField)
         {

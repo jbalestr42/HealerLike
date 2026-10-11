@@ -12,15 +12,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_Bursts
   m_EditorClassIdentifier: HealerLike.Runtime::WavePatternData
-  _width: 2
-  _height: 3
+  _layout: {fileID: 11400000, guid: 92f8e8a31e758ed40881529800bbfeca, type: 2}
+  _width: 9
+  _height: 4
   _cells:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 193efd539cf04721a312c3fc7eaa9163, type: 2}
   - {fileID: 11400000, guid: 1eb0f48ee5b489b4c9c1583922c0b2cc, type: 2}
   - {fileID: 11400000, guid: 193efd539cf04721a312c3fc7eaa9163, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   score:
     dps: 15.848903
     peakDps: 20.666666
@@ -28,4 +59,4 @@ MonoBehaviour:
     effectiveHealth: 768.87897
     threat: 304.1109
     timedOut: 0
-    fingerprint: 903fc1466cf8f7be24fefe9d7f22a6ac
+    fingerprint: b482f1fba437b654329fa823c891ed40

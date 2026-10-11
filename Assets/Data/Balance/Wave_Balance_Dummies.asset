@@ -12,18 +12,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_Balance_Dummies
   m_EditorClassIdentifier: HealerLike.Runtime::WavePatternData
-  _width: 3
-  _height: 3
+  _layout: {fileID: 11400000, guid: 92f8e8a31e758ed40881529800bbfeca, type: 2}
+  _width: 9
+  _height: 4
   _cells:
-  - {fileID: 11400000, guid: a08ef5ec4655a8a42af999a283e79608, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 11400000, guid: a08ef5ec4655a8a42af999a283e79608, type: 2}
   - {fileID: 0}
   - {fileID: 11400000, guid: a08ef5ec4655a8a42af999a283e79608, type: 2}
   - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 11400000, guid: a08ef5ec4655a8a42af999a283e79608, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: a08ef5ec4655a8a42af999a283e79608, type: 2}
   - {fileID: 0}
   - {fileID: 11400000, guid: a08ef5ec4655a8a42af999a283e79608, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   score:
     dps: 0
     peakDps: 0

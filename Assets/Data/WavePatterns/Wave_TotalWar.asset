@@ -12,18 +12,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_TotalWar
   m_EditorClassIdentifier: HealerLike.Runtime::WavePatternData
-  _width: 3
-  _height: 3
+  _layout: {fileID: 11400000, guid: 92f8e8a31e758ed40881529800bbfeca, type: 2}
+  _width: 9
+  _height: 4
   _cells:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
   - {fileID: 11400000, guid: b14f20f6db94a1942b867df24115570f, type: 2}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 193efd539cf04721a312c3fc7eaa9163, type: 2}
   - {fileID: 11400000, guid: 1eb0f48ee5b489b4c9c1583922c0b2cc, type: 2}
   - {fileID: 11400000, guid: d59ff905363b2bf4a92108520332c95f, type: 2}
   - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 1e4ddcb10b35d0e4fbd04e3cc6af63d5, type: 2}
   - {fileID: 11400000, guid: 16f92a7dacfc6af4fac5c774dec0ead7, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   score:
     dps: 21.751844
     peakDps: 28.222221
@@ -31,4 +59,4 @@ MonoBehaviour:
     effectiveHealth: 1564.4985
     threat: 849.2705
     timedOut: 0
-    fingerprint: da8bf6d0105e39a4e8061b8b70d04186
+    fingerprint: d7b79ecc293bf11a5e223cadd7eb0eb8

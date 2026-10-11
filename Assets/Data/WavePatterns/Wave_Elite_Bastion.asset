@@ -12,17 +12,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_Elite_Bastion
   m_EditorClassIdentifier: 
-  _width: 3
-  _height: 3
+  _layout: {fileID: 11400000, guid: 92f8e8a31e758ed40881529800bbfeca, type: 2}
+  _width: 9
+  _height: 4
   _cells:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 851682a182285364fbcae3890e47685d, type: 2}
   - {fileID: 11400000, guid: b14f20f6db94a1942b867df24115570f, type: 2}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 11400000, guid: ba0fe6b69cd947f28df0529b0e2fff3f, type: 2}
   - {fileID: 11400000, guid: 16f92a7dacfc6af4fac5c774dec0ead7, type: 2}
   - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 1e4ddcb10b35d0e4fbd04e3cc6af63d5, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 0}
   score:
     dps: 14.907206
@@ -31,4 +59,4 @@ MonoBehaviour:
     effectiveHealth: 1272.1357
     threat: 473.2651
     timedOut: 0
-    fingerprint: f971c21a438ac5de21a4ca670397e35e
+    fingerprint: 263ea8bfc3f2fa3a3bdd86a89e8873d8

@@ -830,9 +830,27 @@ namespace Oisif.Editor
             {
                 cellSize = grid.cellSize,
                 firstColumnLabel = grid.firstColumnLabel,
+                resizable = grid.resizable,
+                isCellEnabled = GetCellMethod<bool>(info.owner, grid.cellEnabledMethod),
+                getCellColor = GetCellMethod<Color>(info.owner, grid.cellColorMethod),
                 getPreview = GetPreviewTexture,
                 getLabel = obj => obj is IInspectorPreview preview && !string.IsNullOrEmpty(preview.previewLabel) ? preview.previewLabel : obj.name,
             });
+        }
+
+        // The method T name(int x, int y) of the owner, public or not, null when it has none
+        static Func<int, int, T> GetCellMethod<T>(object owner, string name)
+        {
+            if (owner == null || string.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+            MethodInfo method = owner.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, new[] { typeof(int), typeof(int) }, null);
+            if (method == null || method.ReturnType != typeof(T))
+            {
+                return null;
+            }
+            return (x, y) => (T)method.Invoke(method.IsStatic ? null : owner, new object[] { x, y });
         }
 
         static Texture GetPreviewTexture(UnityEngine.Object obj)

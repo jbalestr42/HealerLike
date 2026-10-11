@@ -12,16 +12,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_Siege
   m_EditorClassIdentifier: HealerLike.Runtime::WavePatternData
-  _width: 3
-  _height: 3
+  _layout: {fileID: 11400000, guid: 92f8e8a31e758ed40881529800bbfeca, type: 2}
+  _width: 9
+  _height: 4
   _cells:
   - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: b14f20f6db94a1942b867df24115570f, type: 2}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 11400000, guid: a9540b7e6e04d1d4f9bfaa8f653333fa, type: 2}
   - {fileID: 11400000, guid: 77f9fb43933fe2145adfe39d5a354a24, type: 2}
   - {fileID: 11400000, guid: 9bfeb902817e465197ea836de7c0b1e8, type: 2}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 16f92a7dacfc6af4fac5c774dec0ead7, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   score:
@@ -31,4 +59,4 @@ MonoBehaviour:
     effectiveHealth: 1183.446
     threat: 499.82172
     timedOut: 0
-    fingerprint: f52f0c6fc88382ae91d824aae64578bd
+    fingerprint: 690d8c6233ffc44c4e7e5ede45e26793

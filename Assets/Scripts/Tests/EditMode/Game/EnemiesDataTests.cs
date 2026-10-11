@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
+using UnityEngine;
 
 namespace Game
 {
@@ -29,15 +30,25 @@ public class EnemiesDataTests
     static List<string> GetRank(WavePatternData wave, int rank)
     {
         List<string> titles = new List<string>();
-        for (int i = 0; i < wave.height; i++)
+        foreach ((int rank, int y, EntityData entity) unit in wave.GetUnitsByRank())
         {
-            EntityData entity = wave.GetEntity(rank, i);
-            if (entity != null)
+            if (unit.rank == rank)
             {
-                titles.Add(entity.title);
+                titles.Add(unit.entity.title);
             }
         }
         return titles;
+    }
+
+    // Ranks from the front one to the last one holding a unit
+    static int GetRankCount(WavePatternData wave)
+    {
+        int count = 0;
+        foreach ((int rank, int y, EntityData entity) unit in wave.GetUnitsByRank())
+        {
+            count = Mathf.Max(count, unit.rank + 1);
+        }
+        return count;
     }
 
     // Damage of a flat consumer
@@ -177,12 +188,12 @@ public class EnemiesDataTests
     {
         WavePatternData wave = LoadWave("Wave_Elite_Bastion");
 
-        Assert.AreEqual(3, wave.width);
+        Assert.AreEqual(3, GetRankCount(wave));
         CollectionAssert.AreEqual(new[] { "Soldier", "Colossus" }, GetRank(wave, 0));
         CollectionAssert.AreEqual(new[] { "Bannerman", "Mortar" }, GetRank(wave, 1));
         CollectionAssert.AreEqual(new[] { "Shaman" }, GetRank(wave, 2));
         // In the middle, the Bannerman boosts every unit of the wave
-        Assert.AreEqual("Bannerman", wave.GetEntity(1, 1).title);
+        Assert.AreEqual("Bannerman", wave.GetEntity(wave.frontColumn + 1, 1).title);
     }
 
     [Test]
@@ -217,7 +228,7 @@ public class EnemiesDataTests
     {
         WavePatternData wave = LoadWave("Wave_Elite_Cult");
 
-        Assert.AreEqual(3, wave.width);
+        Assert.AreEqual(3, GetRankCount(wave));
         CollectionAssert.AreEqual(new[] { "Berserker", "Berserker", "Berserker" }, GetRank(wave, 0));
         CollectionAssert.AreEqual(new[] { "Hexer", "Guardian", "Hexer" }, GetRank(wave, 1));
         CollectionAssert.AreEqual(new[] { "War Drum", "Blood Warden" }, GetRank(wave, 2));
@@ -294,7 +305,7 @@ public class EnemiesDataTests
     {
         WavePatternData wave = LoadWave("Wave_FrontLine");
 
-        Assert.AreEqual(2, wave.width);
+        Assert.AreEqual(2, GetRankCount(wave));
         CollectionAssert.AreEqual(new[] { "Soldier", "Soldier" }, GetRank(wave, 0));
         CollectionAssert.AreEqual(new[] { "Archer", "Archer", "Archer" }, GetRank(wave, 1));
     }

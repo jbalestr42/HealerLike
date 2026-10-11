@@ -12,15 +12,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efe4e1f5836d4fb4cbc56b8284243758, type: 3}
   m_Name: Wave_Fuse
   m_EditorClassIdentifier: 
-  _width: 2
-  _height: 3
+  _layout: {fileID: 11400000, guid: 92f8e8a31e758ed40881529800bbfeca, type: 2}
+  _width: 9
+  _height: 4
   _cells:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 11400000, guid: a964e1041d6144d4844f9f224e623125, type: 2}
   - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 11400000, guid: 956eb398886440a58bfbca6b156fb276, type: 2}
   - {fileID: 0}
   - {fileID: 11400000, guid: 956eb398886440a58bfbca6b156fb276, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   score:
     dps: 17.655739
     peakDps: 34.444447
@@ -28,4 +59,4 @@ MonoBehaviour:
     effectiveHealth: 301.31583
     threat: 132.7647
     timedOut: 0
-    fingerprint: 898c1be9bd3394094e54ca11ab045334
+    fingerprint: 01a810e6442978a64f85ba079fd42d30
