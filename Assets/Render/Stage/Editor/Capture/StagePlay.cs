@@ -90,8 +90,10 @@ namespace HealerLike.Render.Stage
         // The run starts with Main (GameManager.Start) and plays CharacterSelection.selected, a random class without
         // one. These captures seeded that pick (271828) when they still pressed an in-game start, which drew the
         // Cleric; the seed now comes too late, so they name the class they were written against: the one whose
-        // spells include a name long enough to wrap (Divine Intervention)
-        static readonly string[] clericModes = { "compact-ui", "mobile-interface", "creature-presentation" };
+        // spells include a name long enough to wrap (Divine Intervention). The expedition map was seeded the same
+        // way; naming its class keeps its fixture route from playing a different party on every run
+        static readonly string[] clericModes =
+            { "compact-ui", "mobile-interface", "creature-presentation", "expedition-map" };
         public static readonly string CaptureClassPath = "Assets/Data/Characters/ClericCharacter/ClericCharacter.asset";
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]

@@ -65,8 +65,10 @@ namespace HealerLike.Render.Stage
 
         public Button SpellButton(string title)
         {
+            // Case-insensitive: Julien's Cleric names its group heal "Heal Group", the look sheets say "Heal group"
             return _session.actions.Cards("spell-list").Find(card => card.enabledInHierarchy
-                && card.Q<Label>("card-title") != null && card.Q<Label>("card-title").text == title);
+                && card.Q<Label>("card-title") != null && string.Equals(card.Q<Label>("card-title").text, title,
+                    System.StringComparison.OrdinalIgnoreCase));
         }
 
         public bool TargetPoint(Entity target, out Vector2 point)
