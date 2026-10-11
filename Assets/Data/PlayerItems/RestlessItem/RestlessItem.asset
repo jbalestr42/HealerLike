@@ -18,6 +18,7 @@ MonoBehaviour:
     description: 'Ascension: healing at a Rest restores 10% less of the max health.'
     tags:
     - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
+    - {fileID: 11400000, guid: 641f92e7979b3dc49a2338af0549bcf7, type: 2}
     buffs:
     - {fileID: 11400000, guid: edf3a99c356617142ac7df492268ad36, type: 2}
     onHitEffects: []

@@ -127,6 +127,24 @@ public class AscensionSettingsTests
         Assert.IsTrue(_settings.BlocksPlayerCenter(3));
     }
 
+    // Cursed like the other bad items, yet never drawn by an event: they are in no item list of the game
+    [Test]
+    public void Game_EveryMalusItemIsCursed_AndOnlyGivenByItsLevel()
+    {
+        GameData gameData = AssetDatabase.LoadAssetAtPath<GameData>(GameDataPath);
+
+        foreach (AscensionLevel level in gameData.ascension.levels)
+        {
+            List<AItemFactory> items = new List<AItemFactory>(level.characterItems);
+            items.AddRange(level.enemyItems);
+            foreach (AItemFactory item in items)
+            {
+                Assert.IsTrue(item.HasTag(TagNames.Cursed), $"{level.title}: {item.name}");
+                CollectionAssert.DoesNotContain(gameData.items, item, $"{level.title}: {item.name}");
+            }
+        }
+    }
+
     [Test]
     public void Game_Level4BlocksTheCenterOfThePlayerBoard_NoOtherLevel()
     {

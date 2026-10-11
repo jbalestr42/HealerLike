@@ -18,6 +18,7 @@ MonoBehaviour:
     description: 'Ascension: each fight gives back 10% less of your max mana.'
     tags:
     - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
+    - {fileID: 11400000, guid: 641f92e7979b3dc49a2338af0549bcf7, type: 2}
     buffs:
     - {fileID: 11400000, guid: 7acf663e7316e4c4b9bca9fd0428ce1b, type: 2}
     onHitEffects: []
