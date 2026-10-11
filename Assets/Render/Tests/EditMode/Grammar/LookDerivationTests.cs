@@ -48,8 +48,9 @@ public class LookDerivationTests
               MassBand.Light, AccessoryKind.MiniHead, EffectFamily.Damage)]
     [TestCase("SoldierEntity", Entity.EntityType.Computer, LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Steady,
               MassBand.Sturdy, AccessoryKind.None, EffectFamily.Damage)]
+    // 150 health since Julien's 8777127c (2026-10): above LightHealth, so the buffer reads Sturdy
     [TestCase("HitArmorBufferEntityEntity", Entity.EntityType.Computer, LookSide.Stone, HeadKind.GiftBoonDefence,
-              CountBand.One, StemBand.Slow, MassBand.Light, AccessoryKind.None, EffectFamily.Boon)]
+              CountBand.One, StemBand.Slow, MassBand.Sturdy, AccessoryKind.None, EffectFamily.Boon)]
     public void Channels_LiveEntity_MatchesTableRow(string folder, Entity.EntityType entityType, LookSide side,
         HeadKind head, CountBand count, StemBand stem, MassBand mass, AccessoryKind accessory, EffectFamily accent)
     {
@@ -143,7 +144,7 @@ public class LookDerivationTests
     [TestCase("NormalEntity", 100f)]
     [TestCase("RandomShootEntity", 200f)]
     [TestCase("SoldierEntity", 150f)]
-    [TestCase("HitArmorBufferEntityEntity", 100f)]
+    [TestCase("HitArmorBufferEntityEntity", 150f)]
     public void Health_EntityData_ReadsHealthMax(string folder, float expected)
     {
         Assert.AreEqual(expected, LookDerivation.Health(RenderTestAssets.LoadEntity(folder)), 0.0001f);

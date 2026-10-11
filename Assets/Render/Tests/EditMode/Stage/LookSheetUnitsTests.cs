@@ -48,7 +48,8 @@ public class LookSheetUnitsTests
     // derivation line reads a thorn collar or twin seeds yet, so they pin what their data draws
     [TestCase("Mender", LookSide.Plant, HeadKind.GiftHeal, CountBand.One, StemBand.Slow, MassBand.Light,
               AccessoryKind.None, EffectFamily.Heal)]
-    [TestCase("Warden", LookSide.Plant, HeadKind.GiftBoonDefence, CountBand.One, StemBand.Slow, MassBand.Light,
+    // Warden and Shieldbearer copy the Hit Armor Buffer, at 150 health since Julien's 8777127c: Sturdy
+    [TestCase("Warden", LookSide.Plant, HeadKind.GiftBoonDefence, CountBand.One, StemBand.Slow, MassBand.Sturdy,
               AccessoryKind.None, EffectFamily.Boon)]
     [TestCase("Mortar", LookSide.Plant, HeadKind.Arch, CountBand.Many, StemBand.Slow, MassBand.Light,
               AccessoryKind.Antenna, EffectFamily.Damage)]
@@ -56,7 +57,7 @@ public class LookSheetUnitsTests
               AccessoryKind.Hook, EffectFamily.Damage)]
     [TestCase("Bramble", LookSide.Plant, HeadKind.Bud, CountBand.One, StemBand.Steady, MassBand.Light,
               AccessoryKind.SmallTorus, EffectFamily.Damage)]
-    [TestCase("Shieldbearer", LookSide.Stone, HeadKind.GiftBoonDefence, CountBand.One, StemBand.Slow, MassBand.Light,
+    [TestCase("Shieldbearer", LookSide.Stone, HeadKind.GiftBoonDefence, CountBand.One, StemBand.Slow, MassBand.Sturdy,
               AccessoryKind.None, EffectFamily.Boon)]
     [TestCase("Brute", LookSide.Stone, HeadKind.Bud, CountBand.One, StemBand.Slow, MassBand.Heavy, AccessoryKind.None,
               EffectFamily.Damage)]

@@ -17,8 +17,9 @@ public class CreatureRosterCompositionTests : GrowthStoneFixture
     {
         string[] guids = AssetDatabase.FindAssets("t:EntityData", new[] { "Assets" });
         // 31 before the class content, plus Zealot, Treant, GroveKeeper, BloodCultist and RisenSkeleton,
-        // then BriarBeast, StranglerVine and the Marker Titan boss
-        Assert.AreEqual(39, guids.Length);
+        // then BriarBeast, StranglerVine and the Marker Titan boss, then Julien's October wave of 18: the class
+        // units, the new enemies and the balance tools' own units
+        Assert.AreEqual(57, guids.Length);
         foreach (string guid in guids)
         {
             EntityData source = AssetDatabase.LoadAssetAtPath<EntityData>(AssetDatabase.GUIDToAssetPath(guid));

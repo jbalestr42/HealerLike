@@ -58,8 +58,8 @@ public class EffectDerivationTests
     // Damage Mul +0.2
     [TestCase("EntityItems/ConclaveItem/New Buff Handler Factory 1", true, EffectFamily.Boon, EffectTempo.ForDuration,
               0f)]
-    // Damage +10, AttackRate Mul -0.5
-    [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", true, EffectFamily.Boon,
+    // +50% attack cooldown only: Julien's e253279c took its +10 damage out, so the trade-off is now a penalty
+    [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", true, EffectFamily.Bane,
               EffectTempo.ForDuration, 0f)]
     [TestCase("EntityItems/ExplodeOnHitItem/BuffHandlerFactory", true, EffectFamily.Boon, EffectTempo.ForDuration, 0f)]
     // Infinite Vulnerability +0.01

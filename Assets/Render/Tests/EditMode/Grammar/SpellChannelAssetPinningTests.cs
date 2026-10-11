@@ -35,7 +35,28 @@ namespace HealerLike.Render.Grammar
         // pinned row below; a handler in neither list fails the coverage test. Empty at the October content: the one
         // metadata-only buff (AddTagBuffFactory, the Taunt Totem's taunt tag) shares its handler with an armor
         // modifier, which draws, and the tag itself reads Plain (see EffectKindDerivationTests)
-        public static readonly string[] AwaitingTreatment = { };
+        // Julien's October 3 to 10 content (class units, blessings, banners, wards, the balance tools' items) came in
+        // with the merge of 3c873214 and has no pinned row yet: listed here until its look gets its treatment pass
+        public static readonly string[] AwaitingTreatment = {
+            "Entities/PurifierEntity/ArmorBlessingBuffHandlerFactory",
+            "Entities/PurifierEntity/DamageBlessingBuffHandlerFactory",
+            "Entities/PurifierEntity/SpeedBlessingBuffHandlerFactory",
+            "EntityItems/BalanceArcItem/BuffHandlerFactory",
+            "EntityItems/BalanceBounceItem/BuffHandlerFactory",
+            "EntityItems/BalanceMortarShellItem/BuffHandlerFactory",
+            "EntityItems/BannerItem/BannerBuffHandlerFactory",
+            "EntityItems/BannerItem/BuffHandlerFactory",
+            "EntityItems/BeaconItem/BuffHandlerFactory",
+            "EntityItems/BloodWardItem/BloodWardBuffHandlerFactory",
+            "EntityItems/BloodWardItem/BuffHandlerFactory",
+            "EntityItems/DevotionItem/BuffHandlerFactory",
+            "EntityItems/DevotionItem/DevotionBuffHandlerFactory",
+            "EntityItems/PactItem/BuffHandlerFactory",
+            "EntityItems/RadiantItem/BuffHandlerFactory",
+            "EntityItems/RadiantItem/RadianceBuffHandlerFactory",
+            "EntityItems/VengeanceItem/BuffHandlerFactory",
+            "EntityItems/VengeanceItem/VengeanceBuffHandlerFactory",
+        };
 
         public static readonly HandlerRow[] HandlerRows = {
             new HandlerRow("Entities/GuardianEntity/BuffHandlerFactory", EffectOperation.Ward,
@@ -91,7 +112,8 @@ namespace HealerLike.Render.Grammar
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
             new HandlerRow("EntityItems/ConclaveItem/New Buff Handler Factory", EffectOperation.Bane,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
-            new HandlerRow("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", EffectOperation.Boon,
+            // +50% attack cooldown only since Julien's e253279c took its +10 damage out: a penalty, so Bane
+            new HandlerRow("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", EffectOperation.Bane,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
             new HandlerRow("EntityItems/ExplodeOnHitItem/BuffHandlerFactory", EffectOperation.Boon,
                 EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
@@ -381,7 +403,8 @@ namespace HealerLike.Render.Grammar
         static List<CharacterData> Characters()
         {
             List<string> paths = new List<string>();
-            foreach (string guid in AssetDatabase.FindAssets("t:CharacterData", new[] { "Assets/Data" }))
+            // The playable classes: Assets/Data/Balance holds a character for the balance tools only, with no skill
+            foreach (string guid in AssetDatabase.FindAssets("t:CharacterData", new[] { "Assets/Data/Characters" }))
             {
                 paths.Add(AssetDatabase.GUIDToAssetPath(guid));
             }
