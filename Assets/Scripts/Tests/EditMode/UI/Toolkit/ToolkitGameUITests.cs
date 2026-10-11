@@ -41,14 +41,11 @@ namespace UI.Toolkit
             }
         }
 
-        IEnumerator StartRun(Button start)
+        // GameManager starts the run with the scene, so the expedition opens on its map: the first room is picked
+        IEnumerator EnterFirstRoom()
         {
-            start.Focus();
-            yield return null;
             LogAssert.ignoreFailingMessages = true;
             Application.logMessageReceived += OnLogMessage;
-            Submit(start);
-            yield return new WaitForSecondsRealtime(0.3f);
             ToolkitGameUI gameUI = Object.FindAnyObjectByType<ToolkitGameUI>();
             AscensionGameType ascension = Object.FindAnyObjectByType<AscensionGameType>();
             Assert.AreEqual(AscensionGameType.State.SelectRoom, LegacyUiReader.AscensionState(ascension));
@@ -156,7 +153,7 @@ namespace UI.Toolkit
         }
 
         [UnityTest]
-        public IEnumerator StartButton_GameplayScene_InitializesPartyAndSpells()
+        public IEnumerator GameplayScene_StartsTheRunAndInitializesPartyAndSpells()
         {
             EditorSceneManager.OpenScene(ToolkitSceneNavigation.GameplayPath);
             yield return new EnterPlayMode();
@@ -167,8 +164,8 @@ namespace UI.Toolkit
             Button start = root.Q<Button>("start-button");
             Assert.IsNotNull(start);
             Assert.IsNotNull(start.panel, "The runtime document must attach to a panel.");
-            Assert.IsTrue(start.enabledInHierarchy);
-            yield return StartRun(start);
+            Assert.IsFalse(start.enabledInHierarchy, "The run starts with the scene: no expedition can be started over it.");
+            yield return EnterFirstRoom();
             Assert.IsNotNull(EventSystem.current);
             Assert.IsTrue(
                 HasToolkitHit(root, root.Q("inventory-button").worldBound.center),
@@ -193,8 +190,7 @@ namespace UI.Toolkit
             yield return new EnterPlayMode();
             yield return WaitFrames(5);
             ToolkitGameUI gameUI = Object.FindAnyObjectByType<ToolkitGameUI>();
-            Button start = gameUI.GetComponent<UIDocument>().rootVisualElement.Q<Button>("start-button");
-            yield return StartRun(start);
+            yield return EnterFirstRoom();
             Canvas legacyCanvas = FindScreenCanvas();
             Assert.IsNotNull(legacyCanvas);
             Assert.IsFalse(legacyCanvas.enabled);
