@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using Oisif.Inspector;
 using UnityEngine;
 using UnityEngine.VFX;

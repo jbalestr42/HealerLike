@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public static class Layers {
+﻿public static class Layers {
     public static readonly int Default = 0;
     public static readonly int TransparentFX = 1;
     public static readonly int IgnoreRaycast = 2;

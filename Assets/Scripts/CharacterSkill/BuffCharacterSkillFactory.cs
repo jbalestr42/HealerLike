@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/CharacterSkill/BuffCharacterSkill")]

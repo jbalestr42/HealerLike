@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
-using UnityEngine;
 
 namespace Game
 {

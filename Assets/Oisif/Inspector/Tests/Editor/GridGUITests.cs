@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Oisif.Editor;
 using NUnit.Framework;
 
 namespace Oisif.Editor.Tests
