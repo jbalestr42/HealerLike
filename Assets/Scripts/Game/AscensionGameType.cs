@@ -381,10 +381,14 @@ public class AscensionGameType : AGameType, IEventRoomHost
     // never critical
     public static void RefillManaForCombat(ResourceAttribute characterMana)
     {
-        float refill = GetAttribute(characterMana.gameObject, AttributeType.CombatManaRefill);
+        RefillMana(characterMana, GetAttribute(characterMana.gameObject, AttributeType.CombatManaRefill));
+    }
 
+    // That share of the max mana back, through the regular resource flow, never critical
+    static void RefillMana(ResourceAttribute characterMana, float share)
+    {
         ResourceModifier manaModifier = new ResourceModifier { source = characterMana.gameObject };
-        manaModifier.consumers.Add(new RuntimeConsumer(characterMana.Max * Mathf.Max(0f, refill), canBeCritical: false));
+        manaModifier.consumers.Add(new RuntimeConsumer(characterMana.Max * Mathf.Max(0f, share), canBeCritical: false));
         characterMana.AddResourceModifier(manaModifier);
     }
 
@@ -613,10 +617,12 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     void ShowRestChoices()
     {
-        string healDescription = GetRestHealDescription(GetRestHeal(PlayerBehaviour.instance.character.gameObject));
+        GameObject character = PlayerBehaviour.instance.character.gameObject;
+        string healDescription = GetRestHealDescription(GetRestHeal(character), GetRestManaRefill(character));
         ShowChoices("Rest", _restDescription, CreateRestChoices(healDescription, _run.deadAllies.Count > 0, () =>
         {
             HealAllies();
+            RefillManaForRest(PlayerBehaviour.instance.character.mana);
             LeaveRestRoom();
         }, ShowResurrectChoices));
     }
@@ -665,9 +671,22 @@ public class AscensionGameType : AGameType, IEventRoomHost
         return Mathf.Max(0f, GetAttribute(character, AttributeType.RestHeal));
     }
 
-    public static string GetRestHealDescription(float share)
+    // The RestManaRefill share of the max mana of the character (items included), 30% by default
+    public static float GetRestManaRefill(GameObject character)
     {
-        return $"Every unit recovers {Mathf.RoundToInt(share * 100f)}% of its max health.";
+        return Mathf.Max(0f, GetAttribute(character, AttributeType.RestManaRefill));
+    }
+
+    public static string GetRestHealDescription(float share, float manaShare)
+    {
+        return $"Every unit recovers {Mathf.RoundToInt(share * 100f)}% of its max health, and you recover {Mathf.RoundToInt(manaShare * 100f)}% of your max mana.";
+    }
+
+    // The RestManaRefill share of the max mana back on top of the mana left, capped by the max, like the refill
+    // before a fight
+    public static void RefillManaForRest(ResourceAttribute characterMana)
+    {
+        RefillMana(characterMana, GetRestManaRefill(characterMana.gameObject));
     }
 
     // That share of its max health back, through the regular resource flow so the heal feedbacks are triggered.

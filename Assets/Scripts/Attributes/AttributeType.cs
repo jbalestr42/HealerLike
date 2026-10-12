@@ -31,4 +31,7 @@ public enum AttributeType
     // Share of the max health every unit recovers when healing in a rest room, 0.3 when the character has no such
     // attribute
     RestHeal,
+    // Share of the max mana given back to the character when healing in a rest room, 0.3 when it has no such
+    // attribute
+    RestManaRefill,
 }

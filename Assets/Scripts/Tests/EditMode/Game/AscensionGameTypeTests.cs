@@ -162,10 +162,30 @@ public class AscensionGameTypeTests
     }
 
     [Test]
-    public void RestHealDescription_ShowsTheShareInPercent()
+    public void RestHealDescription_ShowsTheHealthAndManaSharesInPercent()
     {
-        Assert.AreEqual("Every unit recovers 30% of its max health.", AscensionGameType.GetRestHealDescription(0.3f));
-        Assert.AreEqual("Every unit recovers 20% of its max health.", AscensionGameType.GetRestHealDescription(0.2f));
+        Assert.AreEqual("Every unit recovers 30% of its max health, and you recover 30% of your max mana.", AscensionGameType.GetRestHealDescription(0.3f, 0.3f));
+        Assert.AreEqual("Every unit recovers 20% of its max health, and you recover 45% of your max mana.", AscensionGameType.GetRestHealDescription(0.2f, 0.45f));
+    }
+
+    [Test]
+    public void RestManaRefill_ByDefault_Is30Percent()
+    {
+        Assert.AreEqual(0.3f, AttributeManager.GetDefaultValue(AttributeType.RestManaRefill), 0.0001f);
+
+        GameObject character = CreateCharacter(null);
+        Assert.AreEqual(0.3f, AscensionGameType.GetRestManaRefill(character), 0.0001f);
+        Object.DestroyImmediate(character);
+    }
+
+    [Test]
+    public void RestManaRefill_NeverBelowZero()
+    {
+        GameObject character = CreateCharacter(null);
+        character.GetComponent<AttributeManager>().Add(AttributeType.RestManaRefill, new Attribute(-0.1f));
+
+        Assert.AreEqual(0f, AscensionGameType.GetRestManaRefill(character), 0.0001f);
+        Object.DestroyImmediate(character);
     }
 
     // A character holding only an attribute manager, with the given RewardChoices (none when null)
@@ -258,6 +278,64 @@ public class AscensionGameTypeTests
             TestHelpers.InvokePrivate(mana, "Update");
 
             Assert.AreEqual(55f, mana.Value, 0.001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
+
+    [Test]
+    public void RefillManaForRest_Gives30PercentOfTheMaxBack()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 15f);
+
+            AscensionGameType.RefillManaForRest(mana);
+            TestHelpers.InvokePrivate(mana, "Update");
+
+            Assert.AreEqual(45f, mana.Value, 0.001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
+
+    [Test]
+    public void RefillManaForRest_RestManaRefillAttribute_GivesThatShareBack()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 15f);
+            characterGo.GetComponent<AttributeManager>().Add(AttributeType.RestManaRefill, new Attribute(0.5f));
+
+            AscensionGameType.RefillManaForRest(mana);
+            TestHelpers.InvokePrivate(mana, "Update");
+
+            Assert.AreEqual(65f, mana.Value, 0.001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
+
+    [Test]
+    public void RefillManaForRest_ManaAlmostFull_IsCappedByTheMax()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 90f);
+
+            AscensionGameType.RefillManaForRest(mana);
+            TestHelpers.InvokePrivate(mana, "Update");
+
+            Assert.AreEqual(100f, mana.Value, 0.001f);
         }
         finally
         {

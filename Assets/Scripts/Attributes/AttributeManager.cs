@@ -62,6 +62,7 @@ public class AttributeManager : MonoBehaviour
             case AttributeType.CombatManaRefill:
                 return 0.4f;
             case AttributeType.RestHeal:
+            case AttributeType.RestManaRefill:
                 return 0.3f;
             default:
                 return 0f;

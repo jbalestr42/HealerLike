@@ -36,6 +36,7 @@ public static class EntityInfoFormatter
         { AttributeType.RewardChoices, "Reward Choices" },
         { AttributeType.CombatManaRefill, "Combat Mana Refill" },
         { AttributeType.RestHeal, "Rest Heal" },
+        { AttributeType.RestManaRefill, "Rest Mana Refill" },
     };
 
     static readonly AttributeModifierType[] ModifierTypes = { AttributeModifierType.Add, AttributeModifierType.Multiply, AttributeModifierType.Override };
