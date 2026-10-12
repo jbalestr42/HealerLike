@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -9,7 +10,7 @@ public class GameOverView : AView
 {
     [SerializeField] Button _restartButton;
     // Optional, the result of the run
-    [SerializeField] Text _title;
+    [SerializeField] TMP_Text _title;
 
     void Start()
     {
