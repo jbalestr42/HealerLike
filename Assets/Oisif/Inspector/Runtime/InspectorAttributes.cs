@@ -8,6 +8,12 @@ namespace Oisif.Inspector
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class, Inherited = true)]
     public class InlineEditorAttribute : Attribute {}
 
+    // On a field referencing an object, or a list of them: the objects drawn as simple fields, without the foldout
+    // showing them inline, even when their class has InlineEditor (e.g. a long list where the details aren't useful
+    // and slow the inspector down)
+    [AttributeUsage(AttributeTargets.Field)]
+    public class HideInlineEditorAttribute : Attribute {}
+
     // On a field holding a class: its fields drawn in place of it, without its name, foldout or frame (e.g. the data
     // of an object, which would only repeat it)
     [AttributeUsage(AttributeTargets.Field)]

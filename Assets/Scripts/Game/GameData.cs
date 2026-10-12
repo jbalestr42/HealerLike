@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/GameData")]
 public class GameData : ScriptableObject
@@ -44,11 +45,14 @@ public class GameData : ScriptableObject
 
     public List<WavePool> wavePools = new List<WavePool>();
 
+    [HideInlineEditor]
     public List<CharacterData> characters = new List<CharacterData>();
 
+    [HideInlineEditor]
     public List<AItemFactory> items = new List<AItemFactory>();
 
     // Units found by their tags (e.g. the ones a class can recruit)
+    [HideInlineEditor]
     public List<EntityData> entities = new List<EntityData>();
 
     public List<GameplayTag> tags = new List<GameplayTag>();

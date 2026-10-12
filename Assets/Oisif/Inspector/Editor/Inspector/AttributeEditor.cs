@@ -32,6 +32,8 @@ namespace Oisif.Editor
         const float ListElementFoldoutShift = 13f;
         // Set while drawing an element of a list, until its foldout (if any) is drawn
         bool _isDrawingListElement;
+        // Set while drawing an element of a [HideInlineEditor] list, until the element takes it (not its children)
+        bool _isDrawingHiddenInlineElement;
 
         // True while the object is drawn inside the inspector of another one
         public static bool isDrawingInline => InlineStack.Count > 0;
@@ -104,6 +106,8 @@ namespace Oisif.Editor
             PropertyInfo info = PropertyReflection.Find(property);
             FieldInfo field = info.field;
             label = label ?? new GUIContent(property.displayName, property.tooltip);
+            bool isHiddenInlineElement = _isDrawingHiddenInlineElement;
+            _isDrawingHiddenInlineElement = false;
 
             if (field != null)
             {
@@ -135,7 +139,7 @@ namespace Oisif.Editor
                 }
                 else if (property.propertyType == SerializedPropertyType.ObjectReference)
                 {
-                    DrawObjectField(property, label, field, PropertyReflection.Find(property).type ?? typeof(UnityEngine.Object));
+                    DrawObjectField(property, label, field, PropertyReflection.Find(property).type ?? typeof(UnityEngine.Object), isHiddenInlineElement);
                 }
                 else if (property.propertyType == SerializedPropertyType.ManagedReference)
                 {
@@ -267,6 +271,7 @@ namespace Oisif.Editor
         {
             DrawDecorators(field);
             bool canCreate = field != null && field.IsDefined(typeof(CreateDataButtonAttribute), true);
+            bool hidesInline = field != null && field.IsDefined(typeof(HideInlineEditorAttribute), true);
             Type elementType = PropertyReflection.GetElementType(info.type);
             ListStyles styles = ListStyles.instance;
             int indentLevel = EditorGUI.indentLevel;
@@ -303,7 +308,7 @@ namespace Oisif.Editor
 
             if (list.isExpanded)
             {
-                Rect box = DrawListElements(list, header, indent, styles);
+                Rect box = DrawListElements(list, header, indent, styles, hidesInline);
                 Rect footer = DrawListFooter(list, box, canCreate, elementType, styles);
                 // Only the handle selects an element: any other click, even used by a field, deselects it, but the
                 // footer, whose - removes it
@@ -317,7 +322,7 @@ namespace Oisif.Editor
         }
 
         // The rect of the box holding the elements
-        Rect DrawListElements(SerializedProperty list, Rect header, float indent, ListStyles styles)
+        Rect DrawListElements(SerializedProperty list, Rect header, float indent, ListStyles styles, bool hidesInline)
         {
             int indentLevel = EditorGUI.indentLevel;
             EditorGUILayout.BeginHorizontal();
@@ -373,6 +378,7 @@ namespace Oisif.Editor
                     if (!DrawKeyValue(element))
                     {
                         _isDrawingListElement = true;
+                        _isDrawingHiddenInlineElement = hidesInline;
                         try
                         {
                             DrawProperty(element, GetElementLabel(element));
@@ -380,6 +386,7 @@ namespace Oisif.Editor
                         finally
                         {
                             _isDrawingListElement = false;
+                            _isDrawingHiddenInlineElement = false;
                         }
                     }
                     GUILayout.Space(3f);
@@ -636,7 +643,7 @@ namespace Oisif.Editor
             }, button);
         }
 
-        void DrawObjectField(SerializedProperty property, GUIContent label, FieldInfo field, Type objectType)
+        void DrawObjectField(SerializedProperty property, GUIContent label, FieldInfo field, Type objectType, bool isHiddenInlineElement)
         {
             DrawDecorators(field);
             if (!typeof(UnityEngine.Object).IsAssignableFrom(objectType))
@@ -650,7 +657,7 @@ namespace Oisif.Editor
                 return;
             }
             UnityEngine.Object value = property.objectReferenceValue;
-            bool canInline = value != null && (field != null && field.IsDefined(typeof(InlineEditorAttribute), true) || value.GetType().IsDefined(typeof(InlineEditorAttribute), true));
+            bool canInline = CanDrawInline(value, field, isHiddenInlineElement);
             bool canCreate = field != null && field.IsDefined(typeof(CreateDataButtonAttribute), true);
 
             EditorGUILayout.BeginHorizontal();
@@ -708,6 +715,17 @@ namespace Oisif.Editor
             {
                 DrawInline(value);
             }
+        }
+
+        // An object drawn inline under its field (with a foldout): its field or its class has InlineEditor, and neither
+        // the field nor the list holding it (isHiddenInlineElement) has HideInlineEditor
+        public static bool CanDrawInline(UnityEngine.Object value, FieldInfo field, bool isHiddenInlineElement)
+        {
+            if (value == null || isHiddenInlineElement || field != null && field.IsDefined(typeof(HideInlineEditorAttribute), true))
+            {
+                return false;
+            }
+            return field != null && field.IsDefined(typeof(InlineEditorAttribute), true) || value.GetType().IsDefined(typeof(InlineEditorAttribute), true);
         }
 
         // The field is its preview, after its label
