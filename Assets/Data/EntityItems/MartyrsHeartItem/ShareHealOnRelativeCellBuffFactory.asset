@@ -18,4 +18,3 @@ MonoBehaviour:
     pattern: 0
     range: 1
     minimumSharedHeal: 1
-    cellPrefab: {fileID: 7597546969105273079, guid: 383f192162df7294688f717b54a1bdb6, type: 3}

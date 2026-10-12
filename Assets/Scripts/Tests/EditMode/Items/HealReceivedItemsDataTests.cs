@@ -142,8 +142,11 @@ public class HealReceivedItemsDataTests
         Assert.AreEqual(0.2f, buff.data.ratio, 0.0001f);
         Assert.AreEqual(RelativeCellPatternType.Adjacent, buff.data.pattern);
         Assert.AreEqual(1, buff.data.range);
-        // The zone is shown around the holder
-        Assert.IsNotNull(buff.data.cellPrefab);
+        // The zone is shown around the holder, in green like the heals
+        ShowRelativeCellsBuffFactory zone = GetBuff<ShowRelativeCellsBuffFactory>(LoadItem(EntityItems, "MartyrsHeart"));
+        Assert.AreEqual(buff.data.pattern, zone.data.pattern);
+        Assert.AreEqual(buff.data.range, zone.data.range);
+        Assert.AreEqual("HealCell", zone.data.cellPrefab.name);
     }
 
     [Test]

@@ -25,28 +25,15 @@ public class BoostEntitiesOnRelativeCellBuff : ABuff<BoostEntitiesOnRelativeCell
 
     public override void Add(GameObject source, GameObject target)
     {
-        float cellSize = Board.currentCellSize;
-
-        foreach (Vector2Int offset in RelativeCellPattern.GetOffsets(data.pattern, data.range))
+        _cells = RelativeCellPattern.SpawnCells(source.transform, data.pattern, data.range, Board.currentCellSize, data.boostCellPrefab);
+        foreach (GameObject cell in _cells)
         {
-            Vector3 localOffset = new Vector3(offset.x * cellSize, 0f, offset.y * cellSize);
-            Vector3 cellPosition = source.transform.position + localOffset;
-
-            GameObject cell = GameObject.Instantiate(data.boostCellPrefab, cellPosition, Quaternion.identity, source.transform);
             cell.GetComponent<BoostCell>().Init(source, data.buffHandlerFactory);
-            _cells.Add(cell);
         }
     }
 
     public override void Remove(GameObject source, GameObject target)
     {
-        foreach (GameObject cell in _cells)
-        {
-            if (cell != null)
-            {
-                GameObject.Destroy(cell);
-            }
-        }
-        _cells.Clear();
+        RelativeCellPattern.DestroyCells(_cells);
     }
 }

@@ -81,6 +81,42 @@ public static class RelativeCellPattern
         return found;
     }
 
+    // One instance of the prefab on each cell of the pattern around the owner, children of it so they follow it
+    public static List<GameObject> SpawnCells(Transform owner, RelativeCellPatternType patternType, int range, float cellSize, GameObject cellPrefab)
+    {
+        List<GameObject> cells = new List<GameObject>();
+        if (owner == null || cellPrefab == null)
+        {
+            return cells;
+        }
+        foreach (Vector2Int offset in GetOffsets(patternType, range))
+        {
+            Vector3 cellPosition = owner.position + new Vector3(offset.x * cellSize, 0f, offset.y * cellSize);
+            cells.Add(Object.Instantiate(cellPrefab, cellPosition, Quaternion.identity, owner));
+        }
+        return cells;
+    }
+
+    public static void DestroyCells(List<GameObject> cells)
+    {
+        foreach (GameObject cell in cells)
+        {
+            if (cell == null)
+            {
+                continue;
+            }
+            if (Application.isPlaying)
+            {
+                Object.Destroy(cell);
+            }
+            else
+            {
+                Object.DestroyImmediate(cell);
+            }
+        }
+        cells.Clear();
+    }
+
     // Offset in cells from one position to another on the ground plane
     public static Vector2Int GetCellOffset(Vector3 from, Vector3 to, float cellSize)
     {

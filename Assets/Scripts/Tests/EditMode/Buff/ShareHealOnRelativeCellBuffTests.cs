@@ -171,40 +171,6 @@ public class ShareHealOnRelativeCellBuffTests
 
         CollectionAssert.IsEmpty(TestUnits.GetPendingModifiers(_adjacent));
     }
-
-    [Test]
-    public void Add_WithACellPrefab_ShowsOneCellOnEachCellOfThePattern()
-    {
-        GameObject cellPrefab = new GameObject("Cell");
-        try
-        {
-            _buff = new TestShareHealOnRelativeCellBuff
-            {
-                data = new ShareHealOnRelativeCellBuffData { pattern = RelativeCellPatternType.Row, range = 1, cellPrefab = cellPrefab },
-                cellSize = CellSize,
-            };
-            _buff.Add(_owner.gameObject, _owner.gameObject);
-
-            List<Vector3> cells = new List<Vector3>();
-            foreach (Transform child in _owner.transform)
-            {
-                cells.Add(child.position);
-            }
-            CollectionAssert.AreEquivalent(new[] { new Vector3(CellSize, 0f, 0f), new Vector3(-CellSize, 0f, 0f) }, cells);
-        }
-        finally
-        {
-            Object.DestroyImmediate(cellPrefab);
-        }
-    }
-
-    [Test]
-    public void Add_WithoutACellPrefab_ShowsNothing()
-    {
-        AddBuff(RelativeCellPatternType.Adjacent);
-
-        Assert.AreEqual(0, _owner.transform.childCount);
-    }
 }
 
 }

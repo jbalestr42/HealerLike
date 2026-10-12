@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/ShareHealOnRelativeCellBuff")]
 public class ShareHealOnRelativeCellBuffFactory : BuffFactory<ShareHealOnRelativeCellBuff, ShareHealOnRelativeCellBuffData> { }
@@ -18,15 +17,11 @@ public class ShareHealOnRelativeCellBuffData
     // Smaller shared heals are dropped, so two holders next to each other stop sharing back and forth
     [Min(0)]
     public float minimumSharedHeal = 1f;
-    // Shown on each cell of the pattern around the holder, so the zone can be seen while placing it
-    [Preview(75)]
-    public GameObject cellPrefab;
 }
 
 public class ShareHealOnRelativeCellBuff : ABuff<ShareHealOnRelativeCellBuffData>
 {
     Entity _owner;
-    List<GameObject> _cells = new List<GameObject>();
 
     public override void Instant(GameObject source, GameObject target) { }
 
@@ -34,7 +29,6 @@ public class ShareHealOnRelativeCellBuff : ABuff<ShareHealOnRelativeCellBuffData
     {
         _owner = target.GetComponent<Entity>();
         _owner.OnHealReceived.AddListener(OnHealReceived);
-        ShowCells();
     }
 
     public override void Remove(GameObject source, GameObject target)
@@ -42,30 +36,6 @@ public class ShareHealOnRelativeCellBuff : ABuff<ShareHealOnRelativeCellBuffData
         if (_owner != null)
         {
             _owner.OnHealReceived.RemoveListener(OnHealReceived);
-        }
-
-        foreach (GameObject cell in _cells)
-        {
-            if (cell != null)
-            {
-                GameObject.Destroy(cell);
-            }
-        }
-        _cells.Clear();
-    }
-
-    void ShowCells()
-    {
-        if (data.cellPrefab == null)
-        {
-            return;
-        }
-
-        float cellSize = GetCellSize();
-        foreach (Vector2Int offset in RelativeCellPattern.GetOffsets(data.pattern, data.range))
-        {
-            Vector3 cellPosition = _owner.transform.position + new Vector3(offset.x * cellSize, 0f, offset.y * cellSize);
-            _cells.Add(GameObject.Instantiate(data.cellPrefab, cellPosition, Quaternion.identity, _owner.transform));
         }
     }
 

@@ -89,6 +89,11 @@ public class GridItemsDataTests
         Assert.IsFalse(buff.data.isWhenAlone);
         Assert.AreEqual(RelativeCellPatternType.Adjacent, buff.data.pattern);
         Assert.AreEqual(1, buff.data.range);
+        // The cells where an ally gives armor are shown around the holder
+        ShowRelativeCellsBuffFactory zone = GetBuff<ShowRelativeCellsBuffFactory>(LoadItem(EntityItems, "Phalanx"));
+        Assert.AreEqual(buff.data.pattern, zone.data.pattern);
+        Assert.AreEqual(buff.data.range, zone.data.range);
+        Assert.AreEqual("ArmorCell", zone.data.cellPrefab.name);
     }
 
     [Test]

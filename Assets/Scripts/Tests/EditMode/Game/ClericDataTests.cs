@@ -321,6 +321,12 @@ public class ClericDataTests
         Assert.AreEqual(0.4f, share.data.ratio, 0.0001f);
         Assert.AreEqual(RelativeCellPatternType.Adjacent, share.data.pattern);
         Assert.AreEqual(1, share.data.range);
+        // The allies it heals are shown around it, in green like the heals
+        ShowRelativeCellsBuffFactory zone = (ShowRelativeCellsBuffFactory)((ItemFactory)beacon.items[0]).data.buffs[0].buffFactoryList.Find(buff => buff is ShowRelativeCellsBuffFactory);
+        Assert.IsNotNull(zone, "the zone is not shown");
+        Assert.AreEqual(share.data.pattern, zone.data.pattern);
+        Assert.AreEqual(share.data.range, zone.data.range);
+        Assert.AreEqual("HealCell", zone.data.cellPrefab.name);
     }
 
     // What the Purifier removes: the harmful buffs the enemies put on the units
