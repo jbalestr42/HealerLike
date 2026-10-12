@@ -58,6 +58,12 @@ namespace Oisif.Editor
             float indent = EditorGUI.indentLevel * 15f;
             Rect rect = GUILayoutUtility.GetRect(indent + HandleWidth, EditorGUIUtility.singleLineHeight, GUILayout.Width(indent + HandleWidth));
             rect.xMin += indent;
+            Handle(list, index, rect);
+        }
+
+        // The handle in a given rect, without layout (e.g. a row drawn only when visible)
+        public static void Handle(SerializedProperty list, int index, Rect rect)
+        {
             EditorGUIUtility.AddCursorRect(rect, MouseCursor.Pan);
 
             Event current = Event.current;

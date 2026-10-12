@@ -356,9 +356,23 @@ namespace Oisif.Editor
                 bool canReorder = list.arraySize == 0 || !IsKeyValue(list.GetArrayElementAtIndex(0));
                 int selected = GetSelected(list);
                 List<Rect> rects = new List<Rect>();
+                Rect visible = GetVisibleRect();
                 for (int i = 0; i < list.arraySize; i++)
                 {
                     SerializedProperty element = list.GetArrayElementAtIndex(i);
+                    if (canReorder && IsSimpleRow(element, hidesInline))
+                    {
+                        // Its place taken at every event, the same layout whether it is drawn or not; drawn without
+                        // layout, only when visible (the layout event needs no drawing)
+                        Rect simpleRow = GUILayoutUtility.GetRect(0f, SimpleRowHeight, GUILayout.ExpandWidth(true));
+                        rects.Add(simpleRow);
+                        if (Event.current.type != EventType.Layout && IsRowVisible(simpleRow, visible))
+                        {
+                            DrawSimpleRow(list, element, i, simpleRow, selected, elementType, styles);
+                        }
+                        continue;
+                    }
+
                     Rect row = EditorGUILayout.BeginHorizontal();
                     rects.Add(row);
                     if (Event.current.type == EventType.Repaint && (i == selected || i == ListDrag.GetDraggedIndex(list)))
@@ -416,6 +430,52 @@ namespace Oisif.Editor
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
             return new Rect(header.x, box.y, header.width, box.height);
+        }
+
+        // A row of a long list (e.g. the items of a game data) holding an object field alone, as high as the rows drawn
+        // with the layout (measured: the field, 1 pixel above the row, then the 3 pixels under it)
+        static float SimpleRowHeight => EditorGUIUtility.singleLineHeight + 2f;
+
+        // The part of the inspector on screen, in the coordinates of the rows (GUIClip.visibleRect, internal to Unity);
+        // everything when Unity doesn't give it
+        static readonly System.Reflection.PropertyInfo VisibleRectProperty = typeof(GUI).Assembly.GetType("UnityEngine.GUIClip")?.GetProperty("visibleRect", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+
+        static Rect GetVisibleRect()
+        {
+            object rect = VisibleRectProperty?.GetValue(null);
+            return rect is Rect visible ? visible : new Rect(float.MinValue / 2f, float.MinValue / 2f, float.MaxValue, float.MaxValue);
+        }
+
+        // At least partly on screen
+        public static bool IsRowVisible(Rect row, Rect visible)
+        {
+            return row.yMax >= visible.yMin && row.yMin <= visible.yMax;
+        }
+
+        // An object field alone: an object not drawn inline, so always one line high
+        static bool IsSimpleRow(SerializedProperty element, bool hidesInline)
+        {
+            return element.propertyType == SerializedPropertyType.ObjectReference && !CanDrawInline(element.objectReferenceValue, null, hidesInline);
+        }
+
+        // The handle then the object field, like a row drawn with the layout
+        static void DrawSimpleRow(SerializedProperty list, SerializedProperty element, int index, Rect row, int selected, Type elementType, ListStyles styles)
+        {
+            if (Event.current.type == EventType.Repaint && (index == selected || index == ListDrag.GetDraggedIndex(list)))
+            {
+                styles.element.Draw(row, false, true, true, true);
+            }
+            float lineHeight = EditorGUIUtility.singleLineHeight;
+            // Where the layout puts them: 2 pixels then the handle, the field after its 3 pixels of margin, 1 pixel
+            // above the row, 4 pixels before its end
+            Rect handle = new Rect(row.x + 2f, row.y, ListDrag.HandleWidth, lineHeight);
+            ListDrag.Handle(list, index, handle);
+            if (ListDrag.GetDraggedIndex(list) == index)
+            {
+                SetSelected(list, index);
+            }
+            Rect field = new Rect(handle.xMax + 3f, row.y - 1f, row.xMax - 4f - (handle.xMax + 3f), lineHeight);
+            EditorGUI.ObjectField(field, element, elementType ?? typeof(UnityEngine.Object), GUIContent.none);
         }
 
         // + to add an element (or create an asset), - to remove the selected one, the last one without selection;
