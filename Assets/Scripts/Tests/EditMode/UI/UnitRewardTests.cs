@@ -55,12 +55,13 @@ public class UnitRewardTests
     }
 
     [Test]
-    public void UnitRewardChance_OffersSomeUnitsInTheGameData()
+    public void UnitRewardChance_IsAChanceInTheGameData()
     {
+        // 0 for now: the units only join through the events
         GameData data = UnityEditor.AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/TestData.asset");
 
-        Assert.Greater(data.unitRewardChance, 0f);
-        Assert.Less(data.unitRewardChance, 1f);
+        Assert.GreaterOrEqual(data.unitRewardChance, 0f);
+        Assert.LessOrEqual(data.unitRewardChance, 1f);
     }
 
     [Test]
