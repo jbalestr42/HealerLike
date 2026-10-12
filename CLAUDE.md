@@ -11,10 +11,15 @@ Tests live in `Assets/Scripts/Tests/EditMode/`, one test file per class being te
 `Assets/Scripts/Attributes/Modifiers/PoisonModifierFactory.cs` gets
 `Assets/Scripts/Tests/EditMode/Modifiers/PoisonModifierTests.cs`, in namespace
 `Attributes.Modifiers` - see the namespacing note below). The test assembly is
-`HealerLike.Tests.EditMode` (see its `.asmdef`); it references `HealerLike.Runtime` only, so a new
-class under `Assets/Scripts/` is automatically visible to tests without extra wiring, as long as it
-isn't Editor-only code (that belongs in an `Editor/` subfolder instead, which is NOT visible to the
-runtime or test assemblies).
+`HealerLike.Tests.EditMode` (see its `.asmdef`); it references `HealerLike.Runtime` and
+`HealerLike.Balance`, so a new class under `Assets/Scripts/` is automatically visible to tests without
+extra wiring, as long as it isn't Editor-only code (that belongs in an `Editor/` subfolder instead,
+which is NOT visible to the runtime or test assemblies).
+
+**Balance simulation is kept out of builds:** `Assets/Scripts/Game/Balance` is its own assembly,
+`HealerLike.Balance`, compiled only in the Editor (`defineConstraints: UNITY_EDITOR`, so it still runs in
+play mode in the `BalanceSimulation` scene). The game (`HealerLike.Runtime`) must never use it: anything
+the game needs at runtime goes elsewhere (e.g. the combat log in `Game/CombatLog`).
 
 **Tests assert the intended behaviour, never the current one.** Derive each expected value from
 what the code is supposed to do (its name, description, design, the user's intent), not from

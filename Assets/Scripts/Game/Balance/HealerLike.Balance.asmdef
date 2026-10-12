@@ -1,0 +1,21 @@
+{
+    "name": "HealerLike.Balance",
+    "rootNamespace": "",
+    "references": [
+        "HealerLike.Runtime",
+        "Oisif.Inspector",
+        "Unity.TextMeshPro",
+        "Unity.Cinemachine"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_EDITOR"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

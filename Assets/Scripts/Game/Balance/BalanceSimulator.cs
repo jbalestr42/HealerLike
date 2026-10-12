@@ -29,10 +29,8 @@ public class BalanceSimulator : AGameType
     GUIStyle _progressStyle;
     GUIStyle _detailsStyle;
 
-#if UNITY_EDITOR
     // The simulation in the editor's background tasks (status bar), 0 when none: static to outlive the scene reloads
     static int _editorProgressId;
-#endif
 
     // Folder of the next simulation, each plan written to <plan>.jsonl in it (e.g. the folder of a wave score
     // measure). Null for a balance simulation: Logs/Balance/sim-<plan>-<run>.jsonl
@@ -300,11 +298,7 @@ public class BalanceSimulator : AGameType
     // A tool scene, kept out of the build settings: the editor loads it by its path
     static void ReloadScene()
     {
-#if UNITY_EDITOR
         UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(SceneManager.GetActiveScene().path, new LoadSceneParameters(LoadSceneMode.Single));
-#else
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-#endif
     }
 
     void EndSimulation()
@@ -322,41 +316,34 @@ public class BalanceSimulator : AGameType
     // The progress also shown in the editor's status bar, seen without the Game view
     void StartEditorProgress()
     {
-#if UNITY_EDITOR
         FinishEditorProgress(false);
         ReportEditorProgress();
         // Stopping the play mode in the middle of a simulation cancels it
         Application.quitting -= OnQuitting;
         Application.quitting += OnQuitting;
-#endif
     }
 
     // The status bar only shows the name of a task, which can't be changed: the task is made again under a name
     // holding the progress, "Simulation 3% 120/3744"
     static void ReportEditorProgress()
     {
-#if UNITY_EDITOR
         RemoveEditorProgress();
         int done = SimulationQueue.index;
         _editorProgressId = UnityEditor.Progress.Start($"Simulation {SimulationProgress.DescribeShort(done, SimulationQueue.count)}",
             SimulationProgress.Describe(done, SimulationQueue.count, SimulationQueue.elapsedRealtime));
         UnityEditor.Progress.SetTimeDisplayMode(_editorProgressId, UnityEditor.Progress.TimeDisplayMode.NoTimeShown);
         UnityEditor.Progress.Report(_editorProgressId, SimulationProgress.GetRatio(done, SimulationQueue.count));
-#endif
     }
 
     static void FinishEditorProgress(bool succeeded)
     {
-#if UNITY_EDITOR
         if (_editorProgressId != 0 && UnityEditor.Progress.Exists(_editorProgressId))
         {
             UnityEditor.Progress.Finish(_editorProgressId, succeeded ? UnityEditor.Progress.Status.Succeeded : UnityEditor.Progress.Status.Canceled);
         }
         _editorProgressId = 0;
-#endif
     }
 
-#if UNITY_EDITOR
     static void RemoveEditorProgress()
     {
         if (_editorProgressId != 0 && UnityEditor.Progress.Exists(_editorProgressId))
@@ -365,15 +352,12 @@ public class BalanceSimulator : AGameType
         }
         _editorProgressId = 0;
     }
-#endif
 
-#if UNITY_EDITOR
     static void OnQuitting()
     {
         Application.quitting -= OnQuitting;
         FinishEditorProgress(SimulationQueue.count > 0 && !SimulationQueue.isRunning);
     }
-#endif
 
     void OnEntityKilled(Entity entity)
     {

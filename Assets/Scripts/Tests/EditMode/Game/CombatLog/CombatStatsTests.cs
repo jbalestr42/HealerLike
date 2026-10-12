@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace Game.Balance
+namespace Game.CombatLog
 {
 
 public class CombatStatsTests

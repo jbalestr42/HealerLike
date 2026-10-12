@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "HealerLike.Runtime",
+        "HealerLike.Balance",
         "HealerLike.Utils.Editor",
         "Oisif.Inspector.Editor"
     ],
