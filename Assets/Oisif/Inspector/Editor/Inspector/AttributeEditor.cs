@@ -118,11 +118,11 @@ namespace Oisif.Editor
 
             if (field != null)
             {
-                if (isDrawingInline && field.IsDefined(typeof(HideInInlineEditorsAttribute), true) || !IsShown(field, info.owner))
+                if (isDrawingInline && AttributeCache.Has<HideInInlineEditorsAttribute>(field) || !IsShown(field, info.owner))
                 {
                     return;
                 }
-                InfoBoxAttribute infoBox = field.GetCustomAttribute<InfoBoxAttribute>(true);
+                InfoBoxAttribute infoBox = AttributeCache.Get<InfoBoxAttribute>(field);
                 if (infoBox != null)
                 {
                     string text = PropertyReflection.GetMemberValue(info.owner, infoBox.member, out _) as string;
@@ -133,9 +133,9 @@ namespace Oisif.Editor
                 }
             }
 
-            using (new EditorGUI.DisabledScope(field != null && field.IsDefined(typeof(ReadOnlyAttribute), true)))
+            using (new EditorGUI.DisabledScope(field != null && AttributeCache.Has<ReadOnlyAttribute>(field)))
             {
-                GridAttribute grid = field?.GetCustomAttribute<GridAttribute>(true);
+                GridAttribute grid = AttributeCache.Get<GridAttribute>(field);
                 if (grid != null && property.isArray)
                 {
                     DrawGrid(property, grid, info);
@@ -152,7 +152,7 @@ namespace Oisif.Editor
                 {
                     DrawManagedReference(property, label, field);
                 }
-                else if (property.propertyType == SerializedPropertyType.Generic && field != null && field.IsDefined(typeof(InlinePropertyAttribute), true))
+                else if (property.propertyType == SerializedPropertyType.Generic && field != null && AttributeCache.Has<InlinePropertyAttribute>(field))
                 {
                     DrawDecorators(field);
                     DrawChildrenInPlace(property);
@@ -172,7 +172,7 @@ namespace Oisif.Editor
 
         static bool IsShown(FieldInfo field, object owner)
         {
-            foreach (ShowIfAttribute condition in field.GetCustomAttributes<ShowIfAttribute>(true))
+            foreach (ShowIfAttribute condition in AttributeCache.GetAll<ShowIfAttribute>(field))
             {
                 object value = PropertyReflection.GetMemberValue(owner, condition.member, out bool found);
                 if (!found)
@@ -196,11 +196,11 @@ namespace Oisif.Editor
             {
                 return;
             }
-            foreach (SpaceAttribute space in field.GetCustomAttributes<SpaceAttribute>(true))
+            foreach (SpaceAttribute space in AttributeCache.GetAll<SpaceAttribute>(field))
             {
                 GUILayout.Space(space.height);
             }
-            foreach (HeaderAttribute header in field.GetCustomAttributes<HeaderAttribute>(true))
+            foreach (HeaderAttribute header in AttributeCache.GetAll<HeaderAttribute>(field))
             {
                 EditorGUILayout.LabelField(header.header, EditorStyles.boldLabel);
             }
@@ -277,8 +277,8 @@ namespace Oisif.Editor
         void DrawList(SerializedProperty list, GUIContent label, FieldInfo field, PropertyInfo info)
         {
             DrawDecorators(field);
-            bool canCreate = field != null && field.IsDefined(typeof(CreateDataButtonAttribute), true);
-            bool hidesInline = field != null && field.IsDefined(typeof(HideInlineEditorAttribute), true);
+            bool canCreate = field != null && AttributeCache.Has<CreateDataButtonAttribute>(field);
+            bool hidesInline = field != null && AttributeCache.Has<HideInlineEditorAttribute>(field);
             Type elementType = PropertyReflection.GetElementType(info.type);
             ListStyles styles = ListStyles.instance;
             int indentLevel = EditorGUI.indentLevel;
@@ -657,7 +657,7 @@ namespace Oisif.Editor
             {
                 objectType = typeof(UnityEngine.Object);
             }
-            PreviewAttribute preview = field?.GetCustomAttribute<PreviewAttribute>(true);
+            PreviewAttribute preview = AttributeCache.Get<PreviewAttribute>(field);
             if (preview != null)
             {
                 DrawPreviewField(property, label, objectType, preview.size);
@@ -665,7 +665,7 @@ namespace Oisif.Editor
             }
             UnityEngine.Object value = property.objectReferenceValue;
             bool canInline = CanDrawInline(value, field, isHiddenInlineElement);
-            bool canCreate = field != null && field.IsDefined(typeof(CreateDataButtonAttribute), true);
+            bool canCreate = field != null && AttributeCache.Has<CreateDataButtonAttribute>(field);
 
             EditorGUILayout.BeginHorizontal();
             if (canInline)
@@ -728,11 +728,11 @@ namespace Oisif.Editor
         // the field nor the list holding it (isHiddenInlineElement) has HideInlineEditor
         public static bool CanDrawInline(UnityEngine.Object value, FieldInfo field, bool isHiddenInlineElement)
         {
-            if (value == null || isHiddenInlineElement || field != null && field.IsDefined(typeof(HideInlineEditorAttribute), true))
+            if (value == null || isHiddenInlineElement || field != null && AttributeCache.Has<HideInlineEditorAttribute>(field))
             {
                 return false;
             }
-            return field != null && field.IsDefined(typeof(InlineEditorAttribute), true) || value.GetType().IsDefined(typeof(InlineEditorAttribute), true);
+            return field != null && AttributeCache.Has<InlineEditorAttribute>(field) || AttributeCache.Has<InlineEditorAttribute>(value.GetType());
         }
 
         // The field is its preview, after its label
@@ -904,44 +904,67 @@ namespace Oisif.Editor
             }
         }
 
+        // Found once by type, the inspector drawing them at every event
+        static readonly Dictionary<Type, List<MemberInfo>> ShownMembersByType = new Dictionary<Type, List<MemberInfo>>();
+        static readonly Dictionary<Type, List<(MethodInfo, ButtonAttribute)>> ButtonsByType = new Dictionary<Type, List<(MethodInfo, ButtonAttribute)>>();
+
         static List<MemberInfo> GetShownMembers(Type type)
         {
-            List<MemberInfo> members = new List<MemberInfo>();
+            if (ShownMembersByType.TryGetValue(type, out List<MemberInfo> members))
+            {
+                return members;
+            }
+            members = new List<MemberInfo>();
             for (Type current = type; current != null && current != typeof(MonoBehaviour) && current != typeof(ScriptableObject); current = current.BaseType)
             {
                 foreach (MemberInfo member in current.GetMembers(PropertyReflection.InstanceMembers | BindingFlags.DeclaredOnly))
                 {
-                    if ((member is FieldInfo || member is System.Reflection.PropertyInfo) && member.IsDefined(typeof(ShowInInspectorAttribute), true))
+                    if ((member is FieldInfo || member is System.Reflection.PropertyInfo) && AttributeCache.Has<ShowInInspectorAttribute>(member))
                     {
                         members.Add(member);
                     }
                 }
             }
+            ShownMembersByType[type] = members;
             return members;
+        }
+
+        // The methods without parameter with a Button attribute, of the type and its base types
+        static List<(MethodInfo, ButtonAttribute)> GetButtons(Type type)
+        {
+            if (ButtonsByType.TryGetValue(type, out List<(MethodInfo, ButtonAttribute)> buttons))
+            {
+                return buttons;
+            }
+            buttons = new List<(MethodInfo, ButtonAttribute)>();
+            for (Type current = type; current != null && current != typeof(MonoBehaviour) && current != typeof(ScriptableObject); current = current.BaseType)
+            {
+                foreach (MethodInfo method in current.GetMethods(PropertyReflection.InstanceMembers | BindingFlags.DeclaredOnly))
+                {
+                    ButtonAttribute button = AttributeCache.Get<ButtonAttribute>(method);
+                    if (button != null && method.GetParameters().Length == 0)
+                    {
+                        buttons.Add((method, button));
+                    }
+                }
+            }
+            ButtonsByType[type] = buttons;
+            return buttons;
         }
 
         void DrawButtons()
         {
-            for (Type type = target.GetType(); type != null && type != typeof(MonoBehaviour) && type != typeof(ScriptableObject); type = type.BaseType)
+            foreach ((MethodInfo method, ButtonAttribute button) in GetButtons(target.GetType()))
             {
-                foreach (MethodInfo method in type.GetMethods(PropertyReflection.InstanceMembers | BindingFlags.DeclaredOnly))
+                using (new EditorGUI.DisabledScope(button.playModeOnly && !Application.isPlaying))
                 {
-                    ButtonAttribute button = method.GetCustomAttribute<ButtonAttribute>(true);
-                    if (button == null || method.GetParameters().Length > 0)
+                    if (GUILayout.Button(button.label ?? ObjectNames.NicifyVariableName(method.Name)))
                     {
-                        continue;
-                    }
-
-                    using (new EditorGUI.DisabledScope(button.playModeOnly && !Application.isPlaying))
-                    {
-                        if (GUILayout.Button(button.label ?? ObjectNames.NicifyVariableName(method.Name)))
+                        foreach (UnityEngine.Object edited in targets)
                         {
-                            foreach (UnityEngine.Object edited in targets)
-                            {
-                                Undo.RecordObject(edited, method.Name);
-                                method.Invoke(edited, null);
-                                EditorUtility.SetDirty(edited);
-                            }
+                            Undo.RecordObject(edited, method.Name);
+                            method.Invoke(edited, null);
+                            EditorUtility.SetDirty(edited);
                         }
                     }
                 }
