@@ -340,4 +340,50 @@ public static class EntityInfoFormatter
     }
 
     #endregion
+
+    #region Combat meter
+
+    // The damage and heals the entity really dealt: the current fight (or the last one between fights)
+    // with its last seconds, then the whole run once it fought more than once. A side it never used
+    // (e.g. the heals of an archer) isn't shown
+    public static List<string> GetCombatMeterLines(CombatMeter meter, float time)
+    {
+        List<string> lines = new List<string>();
+        bool showDamage = meter.runDamage > 0f;
+        bool showHeal = meter.runHeal > 0f;
+        string fight = meter.isInFight ? "Fight" : "Last fight";
+        string duration = $" in {FormatDuration(meter.GetFightDuration(time))}";
+
+        if (showDamage)
+        {
+            lines.Add(FormatRate(fight, meter.GetFightDps(time), "DPS", meter.isInFight, meter.GetRecentDps(time), meter.fightDamage, "damage", duration));
+        }
+        if (showHeal)
+        {
+            lines.Add(FormatRate(fight, meter.GetFightHps(time), "HPS", meter.isInFight, meter.GetRecentHps(time), meter.fightHeal, "heal", showDamage ? "" : duration));
+        }
+
+        if (meter.fightCount > 1)
+        {
+            string runDuration = $" in {FormatDuration(meter.GetRunDuration(time))}, {meter.fightCount} fights";
+            if (showDamage)
+            {
+                lines.Add(FormatRate("Run", meter.GetRunDps(time), "DPS", false, 0f, meter.runDamage, "damage", runDuration));
+            }
+            if (showHeal)
+            {
+                lines.Add(FormatRate("Run", meter.GetRunHps(time), "HPS", false, 0f, meter.runHeal, "heal", showDamage ? "" : runDuration));
+            }
+        }
+        return lines;
+    }
+
+    // "Fight: 12.4 DPS (last 5s: 18) · 372 damage in 30.0s"
+    static string FormatRate(string label, float rate, string unit, bool showRecent, float recentRate, float total, string totalName, string duration)
+    {
+        string recent = showRecent ? $" <color={MutedColor}>(last {FormatNumber(CombatMeter.RecentWindow)}s: {FormatNumber(recentRate)})</color>" : "";
+        return $"{label}: <b>{rate.ToString("0.0", CultureInfo.InvariantCulture)}</b> {unit}{recent} · {Mathf.RoundToInt(total)} {totalName}{duration}";
+    }
+
+    #endregion
 }

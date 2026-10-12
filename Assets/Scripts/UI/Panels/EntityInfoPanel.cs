@@ -227,6 +227,10 @@ public class EntityInfoPanel : APanel
         StringBuilder builder = new StringBuilder();
         GameObject owner = _entity.gameObject;
 
+        if (_entity.combatMeter.hasFought)
+        {
+            EntityInfoFormatter.AppendSection(builder, "Combat", EntityInfoFormatter.GetCombatMeterLines(_entity.combatMeter, Time.time));
+        }
         EntityInfoFormatter.AppendSection(builder, "Health", GetHealthLines());
         EntityInfoFormatter.AppendSection(builder, "Targeting", GetTargetingLines());
         EntityInfoFormatter.AppendSection(builder, "Stats", EntityInfoFormatter.GetAttributeLines(_entity.attributeManager, owner));

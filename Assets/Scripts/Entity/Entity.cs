@@ -86,6 +86,10 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     Entity _lastAttacker;
     public Entity lastAttacker { get { return _lastAttacker; } private set { _lastAttacker = value; } }
 
+    // Damage and heals it really dealt, shown in its info panel
+    readonly CombatMeter _combatMeter = new CombatMeter();
+    public CombatMeter combatMeter => _combatMeter;
+
     public void Init()
     {
         _buffManager = GetComponent<BuffManager>();
@@ -171,6 +175,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
             {
                 victim.lastAttacker = attacker;
             }
+            attacker.combatMeter.AddDamage(Time.time, -value);
             attacker.OnDamageDealt.Invoke(target, -value);
         }
     }
@@ -184,12 +189,18 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         }
     }
 
-    // A heal is a positive value, reported to the entity that received it
+    // A heal is a positive value, reported to the entity that received it and counted for the one that sent it
     public static void NotifyHealed(GameObject source, GameObject target, ConsumerResult result)
     {
         if (result.value <= 0f || target == null)
         {
             return;
+        }
+
+        Entity healer = source != null ? source.GetComponent<Entity>() : null;
+        if (healer != null)
+        {
+            healer.combatMeter.AddHeal(Time.time, result.value);
         }
 
         Entity healed = target.GetComponent<Entity>();
@@ -245,6 +256,14 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     public void Enable(bool isEnabled)
     {
         _isDraggable = !isEnabled;
+        if (isEnabled)
+        {
+            _combatMeter.StartFight(Time.time);
+        }
+        else
+        {
+            _combatMeter.EndFight(Time.time);
+        }
         _targetProvider.isEnabled = isEnabled;
         _buffManager.isEnabled = isEnabled;
 

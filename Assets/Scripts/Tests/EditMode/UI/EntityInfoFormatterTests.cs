@@ -356,6 +356,88 @@ public class EntityInfoFormatterTests
     }
 
     #endregion
+
+    #region Combat meter
+
+    [Test]
+    public void GetCombatMeterLines_InAFight_ShowsTheDpsTheLastSecondsAndTheTotal()
+    {
+        CombatMeter meter = new CombatMeter();
+        meter.StartFight(0f);
+        meter.AddDamage(1f, 100f);
+        meter.AddDamage(19f, 50f);
+
+        List<string> lines = EntityInfoFormatter.GetCombatMeterLines(meter, 20f);
+
+        Assert.AreEqual(1, lines.Count);
+        StringAssert.StartsWith("Fight: <b>7.5</b> DPS", lines[0]);
+        StringAssert.Contains("(last 5s: 10)", lines[0]);
+        StringAssert.Contains("150 damage in 20.0s", lines[0]);
+    }
+
+    [Test]
+    public void GetCombatMeterLines_BetweenFights_ShowsTheLastFightWithoutTheLastSeconds()
+    {
+        CombatMeter meter = new CombatMeter();
+        meter.StartFight(0f);
+        meter.AddDamage(1f, 100f);
+        meter.EndFight(10f);
+
+        List<string> lines = EntityInfoFormatter.GetCombatMeterLines(meter, 50f);
+
+        Assert.AreEqual(1, lines.Count);
+        StringAssert.StartsWith("Last fight: <b>10.0</b> DPS", lines[0]);
+        StringAssert.DoesNotContain("last 5s", lines[0]);
+    }
+
+    [Test]
+    public void GetCombatMeterLines_Healer_ShowsOnlyItsHps()
+    {
+        CombatMeter meter = new CombatMeter();
+        meter.StartFight(0f);
+        meter.AddHeal(1f, 40f);
+
+        List<string> lines = EntityInfoFormatter.GetCombatMeterLines(meter, 10f);
+
+        Assert.AreEqual(1, lines.Count);
+        StringAssert.StartsWith("Fight: <b>4.0</b> HPS", lines[0]);
+        StringAssert.Contains("40 heal in 10.0s", lines[0]);
+    }
+
+    [Test]
+    public void GetCombatMeterLines_AfterSeveralFights_AlsoShowsTheRun()
+    {
+        CombatMeter meter = new CombatMeter();
+        meter.StartFight(0f);
+        meter.AddDamage(1f, 100f);
+        meter.AddHeal(1f, 20f);
+        meter.EndFight(10f);
+        meter.StartFight(100f);
+        meter.AddDamage(101f, 200f);
+
+        List<string> lines = EntityInfoFormatter.GetCombatMeterLines(meter, 110f);
+
+        Assert.AreEqual(4, lines.Count);
+        StringAssert.StartsWith("Fight: <b>20.0</b> DPS", lines[0]);
+        StringAssert.StartsWith("Fight: <b>0.0</b> HPS", lines[1]);
+        StringAssert.StartsWith("Run: <b>15.0</b> DPS", lines[2]);
+        StringAssert.Contains("300 damage in 20.0s, 2 fights", lines[2]);
+        StringAssert.StartsWith("Run: <b>1.0</b> HPS", lines[3]);
+    }
+
+    [Test]
+    public void GetCombatMeterLines_FirstFight_HasNoRunLine()
+    {
+        CombatMeter meter = new CombatMeter();
+        meter.StartFight(0f);
+        meter.AddDamage(1f, 100f);
+
+        List<string> lines = EntityInfoFormatter.GetCombatMeterLines(meter, 10f);
+
+        Assert.IsFalse(lines.Exists(line => line.StartsWith("Run")));
+    }
+
+    #endregion
 }
 
 }
