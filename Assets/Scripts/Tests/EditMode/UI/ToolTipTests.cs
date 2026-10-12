@@ -166,6 +166,23 @@ public class ToolTipTests
         Assert.Less(_panel.sizeDelta.x, 500f);
         Assert.Less(_panel.sizeDelta.y, 300f);
     }
+
+    // Each part of the game view is its own canvas: the canvases of the same order are drawn in no given order, so
+    // the tooltip could go behind an inventory
+    [Test]
+    public void GameView_ToolTipCanvasAboveTheOtherCanvases()
+    {
+        GameObject gameView = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/Views/GameView.prefab");
+        Canvas toolTipCanvas = gameView.GetComponentInChildren<ToolTip>(true).GetComponent<Canvas>();
+
+        foreach (Canvas canvas in gameView.GetComponentsInChildren<Canvas>(true))
+        {
+            if (canvas != toolTipCanvas)
+            {
+                Assert.Greater(toolTipCanvas.sortingOrder, canvas.sortingOrder, canvas.name);
+            }
+        }
+    }
 }
 
 }
