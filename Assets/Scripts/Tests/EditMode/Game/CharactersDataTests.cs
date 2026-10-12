@@ -67,6 +67,40 @@ public class CharactersDataTests
         }
     }
 
+    // The skill multipliers are on every character from the start, at 1, so they show in its attributes
+    [Test]
+    public void EveryCharacter_StartsWithSkillCostAndCooldownMultipliersOf1()
+    {
+        foreach (CharacterData character in _gameData.characters)
+        {
+            Assert.IsTrue(character.attributes.TryGetValue(AttributeType.SkillCostMultiplier, out float cost), character.name);
+            Assert.AreEqual(1f, cost, 0.0001f, character.name);
+            Assert.IsTrue(character.attributes.TryGetValue(AttributeType.SkillCooldownMultiplier, out float cooldown), character.name);
+            Assert.AreEqual(1f, cooldown, 0.0001f, character.name);
+        }
+    }
+
+    // A skill shows its mana cost with {cost}, which applies the SkillCostMultiplier, never the raw data value
+    [Test]
+    public void EverySkillWithACost_ShowsItWithTheCostVariable()
+    {
+        List<string> invalid = new List<string>();
+        foreach (CharacterData character in _gameData.characters)
+        {
+            foreach (ACharacterSkillFactory skill in character.skills)
+            {
+                CharacterSkillData data = skill.Create().GetData();
+                bool hasCost = data.validators.Exists(validator => validator is ResourceValidatorFactory);
+                if (hasCost && (!data.description.Contains("{cost}") || data.description.Contains("consumer.data.value")))
+                {
+                    invalid.Add(skill.name);
+                }
+            }
+        }
+
+        CollectionAssert.IsEmpty(invalid, "Skills showing their raw mana cost");
+    }
+
     // The test entity is only meant for the sandbox
     [Test]
     public void NoCharacter_RecruitsTheTestEntity()

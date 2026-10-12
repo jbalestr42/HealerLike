@@ -17,7 +17,7 @@ MonoBehaviour:
     name: Raise Dead
     description: 'Raise a Skeleton on the chosen cell for the current battle, with <color="green">+[{attribute:current:HealPower}x{data:healthPerHealPower}]</color> health and <color="red">+[{attribute:current:HealPower}x{data:damagePerHealPower}]</color> damage from your Heal Power. At most {data:maxAlive} alive at once
 
-      Cost: <color=#8AB5FF>{data:validators|1.data.consumer.data.value.data.value}</color> mana
+      Cost: <color=#8AB5FF>{cost}</color> mana
 
       Cooldown: <color=#FFCF70>{cooldown}s</color>'
     validators:

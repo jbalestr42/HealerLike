@@ -17,7 +17,7 @@ MonoBehaviour:
     name: Heal
     description: 'Heal single target for <color="green">[{attribute:current:HealPower}x{data:multiplier}]</color> <color=#008080ff>([{data:multiplier}x100]% HealPower)</color>
 
-      Cost: <color=#8AB5FF>{data:validators|1.data.consumer.data.value.data.value}</color> mana
+      Cost: <color=#8AB5FF>{cost}</color> mana
 
       Cooldown: <color=#FFCF70>{cooldown}s</color>'
     validators:

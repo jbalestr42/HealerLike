@@ -80,6 +80,8 @@ public class TextConvertor
 
             case "cooldown":
                 return GetCooldown(character, data, defaultValue);
+            case "cost":
+                return GetCost(character, data, defaultValue);
             default:
                 return GetError($"Unkown Variable Type -> {tokens[0]}", defaultValue);
         }
@@ -105,6 +107,28 @@ public class TextConvertor
             }
         }
         return GetError("{cooldown} needs a DurationValidator in the skill validators", defaultValue);
+    }
+
+    /// <summary>
+    /// {cost}: mana cost of the ResourceValidator of a skill, with the SkillCostMultiplier of the character
+    /// applied, the base cost without a character
+    /// </summary>
+    static string GetCost(Character character, object data, string defaultValue)
+    {
+        if (data is not CharacterSkillData skillData || skillData.validators == null)
+        {
+            return data == null ? defaultValue : GetError("{cost} needs the data of a character skill", defaultValue);
+        }
+
+        foreach (ACharacterSkillValidatorFactory validator in skillData.validators)
+        {
+            if (validator is ResourceValidatorFactory resourceValidator)
+            {
+                float cost = ResourceValidator.GetCost(resourceValidator.data, character != null ? character.gameObject : null);
+                return cost.ToString("0.##", CultureInfo.InvariantCulture);
+            }
+        }
+        return GetError("{cost} needs a ResourceValidator in the skill validators", defaultValue);
     }
 
     public static object GetPropertyValue(object obj, string propertyName)

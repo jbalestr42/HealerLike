@@ -23,6 +23,10 @@ MonoBehaviour:
     value: 100
   - key: 19
     value: 0.4
+  - key: 18
+    value: 1
+  - key: 15
+    value: 1
   items:
   - {fileID: 11400000, guid: 82c759f729084ad44a087a4608b18b6b, type: 2}
   entities:

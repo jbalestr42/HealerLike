@@ -251,6 +251,59 @@ public class TextConvertorTests
 
     #endregion
 
+    #region Convert - {cost}
+
+    // A skill with its 8s cooldown first and its mana cost second, the cost isn't always the first validator
+    CharacterSkillData CreateCostSkillData(float cost)
+    {
+        DurationValidatorFactory duration = ScriptableObject.CreateInstance<DurationValidatorFactory>();
+        duration.data = new DurationValidatorData { duration = 8f };
+        ConsumerFactory consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
+        consumer.data = new ConsumerData { value = new FlatValue { data = new FlatValueData { value = cost } } };
+        ResourceValidatorFactory resource = ScriptableObject.CreateInstance<ResourceValidatorFactory>();
+        resource.data = new ResourceValidatorData { consumer = consumer };
+        _assets.Add(duration);
+        _assets.Add(consumer);
+        _assets.Add(resource);
+        return new CharacterSkillData { validators = new List<ACharacterSkillValidatorFactory> { duration, resource } };
+    }
+
+    [Test]
+    public void Convert_Cost_WithoutCharacter_ReturnsTheBaseCost()
+    {
+        Assert.AreEqual("Cost: 20 mana", TextConvertor.Convert("Cost: {cost} mana", null, CreateCostSkillData(20f)));
+    }
+
+    [Test]
+    public void Convert_Cost_CharacterWithoutMultiplier_ReturnsTheBaseCost()
+    {
+        Character character = CreateCharacterWithAttribute(AttributeType.HealPower, 10f);
+
+        Assert.AreEqual("Cost: 20 mana", TextConvertor.Convert("Cost: {cost} mana", character, CreateCostSkillData(20f)));
+        Object.DestroyImmediate(character.gameObject);
+    }
+
+    [Test]
+    public void Convert_Cost_AppliesTheSkillCostMultiplierOfTheCharacter()
+    {
+        // Costly Spells: +10% cost, 20 -> 22 mana
+        Character character = CreateCharacterWithAttribute(AttributeType.SkillCostMultiplier, 1.1f);
+
+        Assert.AreEqual("Cost: 22 mana", TextConvertor.Convert("Cost: {cost} mana", character, CreateCostSkillData(20f)));
+        Object.DestroyImmediate(character.gameObject);
+    }
+
+    [Test]
+    public void Convert_Cost_SkillWithoutResourceValidator_ReturnsDefaultValue()
+    {
+        string result = null;
+        TestHelpers.WithLoggingDisabled(() => result = TextConvertor.Convert("{cost}", null, new CharacterSkillData { validators = new List<ACharacterSkillValidatorFactory>() }));
+
+        Assert.AreEqual("1", result);
+    }
+
+    #endregion
+
     [Test]
     public void Convert_UnknownVariableType_ReturnsDefaultValue()
     {

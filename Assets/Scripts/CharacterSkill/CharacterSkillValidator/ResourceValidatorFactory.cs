@@ -45,6 +45,12 @@ public class ResourceValidator : ACharacterSkillValidator<ResourceValidatorData>
 
     public float GetCost(GameObject owner)
     {
+        return GetCost(data, owner);
+    }
+
+    // The cost of the data with the SkillCostMultiplier of the owner applied, the base cost without one
+    public static float GetCost(ResourceValidatorData data, GameObject owner)
+    {
         return data.consumer.data.value.GetValue(owner) * GetCostMultiplier(owner);
     }
 
