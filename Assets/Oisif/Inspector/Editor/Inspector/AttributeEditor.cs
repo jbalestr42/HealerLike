@@ -103,7 +103,14 @@ namespace Oisif.Editor
         // A property with the attributes of its field, then its children for a class, its elements for a list
         public void DrawProperty(SerializedProperty property, GUIContent label = null)
         {
-            PropertyInfo info = PropertyReflection.Find(property);
+            DrawProperty(property, label, null);
+        }
+
+        // An element of a list gets its type from the list (elementType): it has no field of its own to look for,
+        // and looking for it along its path, at every event for every element, slows the long lists down
+        void DrawProperty(SerializedProperty property, GUIContent label, Type elementType)
+        {
+            PropertyInfo info = elementType != null ? new PropertyInfo { type = elementType } : PropertyReflection.Find(property);
             FieldInfo field = info.field;
             label = label ?? new GUIContent(property.displayName, property.tooltip);
             bool isHiddenInlineElement = _isDrawingHiddenInlineElement;
@@ -139,7 +146,7 @@ namespace Oisif.Editor
                 }
                 else if (property.propertyType == SerializedPropertyType.ObjectReference)
                 {
-                    DrawObjectField(property, label, field, PropertyReflection.Find(property).type ?? typeof(UnityEngine.Object), isHiddenInlineElement);
+                    DrawObjectField(property, label, field, info.type ?? typeof(UnityEngine.Object), isHiddenInlineElement);
                 }
                 else if (property.propertyType == SerializedPropertyType.ManagedReference)
                 {
@@ -308,7 +315,7 @@ namespace Oisif.Editor
 
             if (list.isExpanded)
             {
-                Rect box = DrawListElements(list, header, indent, styles, hidesInline);
+                Rect box = DrawListElements(list, header, indent, styles, hidesInline, elementType);
                 Rect footer = DrawListFooter(list, box, canCreate, elementType, styles);
                 // Only the handle selects an element: any other click, even used by a field, deselects it, but the
                 // footer, whose - removes it
@@ -322,7 +329,7 @@ namespace Oisif.Editor
         }
 
         // The rect of the box holding the elements
-        Rect DrawListElements(SerializedProperty list, Rect header, float indent, ListStyles styles, bool hidesInline)
+        Rect DrawListElements(SerializedProperty list, Rect header, float indent, ListStyles styles, bool hidesInline, Type elementType)
         {
             int indentLevel = EditorGUI.indentLevel;
             EditorGUILayout.BeginHorizontal();
@@ -381,7 +388,7 @@ namespace Oisif.Editor
                         _isDrawingHiddenInlineElement = hidesInline;
                         try
                         {
-                            DrawProperty(element, GetElementLabel(element));
+                            DrawProperty(element, GetElementLabel(element, elementType), elementType);
                         }
                         finally
                         {
@@ -497,11 +504,11 @@ namespace Oisif.Editor
         }
 
         // No index: an object or a value alone, a class by its type (its foldout needs a label)
-        static GUIContent GetElementLabel(SerializedProperty element)
+        static GUIContent GetElementLabel(SerializedProperty element, Type elementType)
         {
             if (element.propertyType == SerializedPropertyType.Generic)
             {
-                Type type = PropertyReflection.Find(element).type;
+                Type type = elementType ?? PropertyReflection.Find(element).type;
                 return new GUIContent(type != null ? DataAssets.GetNiceName(type) : "Element");
             }
             return GUIContent.none;
