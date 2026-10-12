@@ -83,6 +83,9 @@ public class AscensionGameType : AGameType, IEventRoomHost
         _eventView = UIManager.instance.GetView<EventView>(ViewType.Event);
 
         _gameView.gameHUD.nextWaveButton.onClick.AddListener(StartBattle);
+#if UNITY_EDITOR
+        _gameView.gameHUD.CreateEditorButton("Kill Wave").onClick.AddListener(KillEnemyWave);
+#endif
         if (_gameView.gameHUD.mapButton != null)
         {
             _gameView.gameHUD.mapButton.onClick.AddListener(LookAtMap);
@@ -282,6 +285,24 @@ public class AscensionGameType : AGameType, IEventRoomHost
     {
         SetState(State.StartBattle);
     }
+
+#if UNITY_EDITOR
+    // Editor only, to skip a fight: every enemy dies and the fight is won on the next update, started first when the
+    // units are still being placed
+    void KillEnemyWave()
+    {
+        if (_state != State.WaitForRoundToStart && _state != State.StartBattle && _state != State.OnGoingBattle)
+        {
+            return;
+        }
+
+        if (_state == State.WaitForRoundToStart)
+        {
+            StartBattle();
+        }
+        _entities.KillAll(Entity.EntityType.Computer);
+    }
+#endif
 
     public override void StartGame()
     {

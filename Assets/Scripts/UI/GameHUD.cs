@@ -36,6 +36,22 @@ public class GameHUD : MonoBehaviour
         PlayerBehaviour.instance.OnCharacterInit.AddListener(OnCharacterInit);
     }
 
+#if UNITY_EDITOR
+    // A button for testing in the editor only, never in a build: a copy of the next wave button, on its right
+    public UnityEngine.UI.Button CreateEditorButton(string label)
+    {
+        UnityEngine.UI.Button button = Instantiate(_nextWaveButton, _nextWaveButton.transform.parent);
+        button.name = $"{label} (Editor)";
+        // The copy would also call the listeners set on the original in the prefab
+        button.onClick = new UnityEngine.UI.Button.ButtonClickedEvent();
+        button.interactable = true;
+        RectTransform rect = (RectTransform)button.transform;
+        rect.anchoredPosition += new Vector2(rect.sizeDelta.x + 10f, 0f);
+        button.GetComponentInChildren<TMPro.TMP_Text>().text = label;
+        return button;
+    }
+#endif
+
     public void ShowManaBar(bool show)
     {
         _manaBar.gameObject.SetActive(show);

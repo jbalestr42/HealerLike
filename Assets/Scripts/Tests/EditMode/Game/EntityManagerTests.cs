@@ -81,6 +81,57 @@ public class EntityManagerTests
         // Projectile.Init sets the source, and the skills call it after SpawnProjectile returns
         Assert.IsFalse(hasSourceWhenSpawned);
     }
+
+    [Test]
+    public void KillAll_KillsEveryEntityOfTheSide_NotTheOthers()
+    {
+        GameObject boardGo = new GameObject("Board");
+        BoardLayout layout = ScriptableObject.CreateInstance<BoardLayout>();
+        GameObject enemyA = new GameObject("Enemy A");
+        GameObject enemyB = new GameObject("Enemy B");
+        GameObject ally = new GameObject("Ally");
+        try
+        {
+            Board board = boardGo.AddComponent<Board>();
+            board.SetLayout(layout);
+            _entityManager.board = board;
+            // Adding Entity triggers Entity.Reset() (NREs without a full Init())
+            TestHelpers.WithLoggingDisabled(() =>
+            {
+                enemyA.AddComponent<Entity>();
+                enemyB.AddComponent<Entity>();
+                ally.AddComponent<Entity>();
+            });
+            _entityManager.GetEntities(Entity.EntityType.Computer).AddRange(new[] { enemyA, enemyB });
+            _entityManager.GetEntities(Entity.EntityType.Player).Add(ally);
+            System.Collections.Generic.List<Entity> killed = new System.Collections.Generic.List<Entity>();
+            _entityManager.OnEntityKilled.AddListener(killed.Add);
+
+            // Destroy can't run outside the play mode: the entities stay in the scene, but not in the fight
+            UnityEngine.TestTools.LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("Enemy A: Destroy may not be called from edit mode"));
+            UnityEngine.TestTools.LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("Enemy B: Destroy may not be called from edit mode"));
+            _entityManager.KillAll(Entity.EntityType.Computer);
+
+            Assert.IsTrue(_entityManager.AreAllEntityDead(Entity.EntityType.Computer));
+            CollectionAssert.AreEquivalent(new[] { enemyA.GetComponent<Entity>(), enemyB.GetComponent<Entity>() }, killed);
+            CollectionAssert.AreEqual(new[] { ally }, _entityManager.GetEntities(Entity.EntityType.Player));
+        }
+        finally
+        {
+            Object.DestroyImmediate(enemyA);
+            Object.DestroyImmediate(enemyB);
+            Object.DestroyImmediate(ally);
+            Object.DestroyImmediate(boardGo);
+            Object.DestroyImmediate(layout);
+        }
+    }
+
+    [Test]
+    public void KillAll_NoEntityOfTheSide_DoesNothing()
+    {
+        Assert.DoesNotThrow(() => _entityManager.KillAll(Entity.EntityType.Computer));
+        Assert.IsTrue(_entityManager.AreAllEntityDead(Entity.EntityType.Computer));
+    }
 }
 
 }

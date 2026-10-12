@@ -128,6 +128,15 @@ public class EntityManager : Singleton<EntityManager>
         }
     }
 
+    // Every entity of the side dies at once, as if killed (e.g. to skip a fight while testing)
+    public void KillAll(Entity.EntityType entityType)
+    {
+        foreach (GameObject entity in new List<GameObject>(GetEntities(entityType)))
+        {
+            DestroyEntity(entity, entityType);
+        }
+    }
+
     // Tags the entity as a summon, removed at the end of the battle
     public void AddSummon(Entity summon)
     {
