@@ -30,6 +30,9 @@ namespace Oisif.Editor
         // In a list in the Inspector, Unity draws the foldout arrow of an element left of it, over the handle of the
         // element: the foldout of the element is moved right by this much
         const float ListElementFoldoutShift = 13f;
+        // Between the left border of the header of a list and its foldout arrow
+        const float HeaderArrowMargin = 4f;
+
         // Set while drawing an element of a list, until its foldout (if any) is drawn
         bool _isDrawingListElement;
         // Set while drawing an element of a [HideInlineEditor] list, until the element takes it (not its children)
@@ -298,7 +301,11 @@ namespace Oisif.Editor
             EditorGUI.indentLevel = 0;
             try
             {
-                Rect foldout = new Rect(header.x + 18f, header.y + 1f, header.width - 76f, EditorGUIUtility.singleLineHeight);
+                // The arrow against the left of the header, a few pixels from its border. In the Inspector (hierarchy
+                // mode) Unity draws the arrow left of the rect, by the padding of the foldout past the one of a label
+                float arrowShift = EditorGUIUtility.hierarchyMode ? EditorStyles.foldout.padding.left - EditorStyles.label.padding.left : 0f;
+                float foldoutX = header.x + HeaderArrowMargin + arrowShift;
+                Rect foldout = new Rect(foldoutX, header.y + 1f, header.xMax - 58f - foldoutX, EditorGUIUtility.singleLineHeight);
                 list.isExpanded = EditorGUI.Foldout(foldout, list.isExpanded, label, true);
                 // A margin around it, inside the header
                 Rect size = new Rect(header.xMax - 56f, header.y + 2f, 48f, header.height - 4f);
