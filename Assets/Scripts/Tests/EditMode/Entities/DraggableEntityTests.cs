@@ -150,6 +150,24 @@ public class DraggableEntityTests
     }
 
     [Test]
+    public void EndDrag_ItsColliderHitByTheRaycastsAgain()
+    {
+        DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));
+        GameObject colliderGo = new GameObject("Collider");
+        colliderGo.transform.SetParent(_goA.transform);
+        colliderGo.layer = Layers.Entity;
+        TestHelpers.SetPrivateField(a, "_colliders", new Collider[] { colliderGo.AddComponent<BoxCollider>() });
+        TestHelpers.SetPrivateField(a, "_originalLayers", new int[1]);
+        a.StartDrag(new RaycastHit());
+        Assert.AreEqual(Layers.IgnoreRaycast, colliderGo.layer, "ignored by the raycasts while dragged");
+
+        a.EndDrag(new RaycastHit());
+
+        // Otherwise the unit could never be clicked and dragged again
+        Assert.AreEqual(Layers.Entity, colliderGo.layer);
+    }
+
+    [Test]
     public void CancelDrag_BackOnItsCell()
     {
         DraggableEntity a = CreateDraggable(ref _goA, new Vector2Int(1, 1));

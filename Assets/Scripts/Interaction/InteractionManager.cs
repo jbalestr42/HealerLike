@@ -57,23 +57,21 @@ public class InteractionManager : Singleton<InteractionManager>
                     }
                 }
 
-                if (Input.GetMouseButtonUp(0))
-                {
-                    if (_draggable != null)
-                    {
-                        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                        Physics.Raycast(ray, out hit, Mathf.Infinity);
-                        _draggable.EndDrag(hit);
-                        _draggable = null;
-                    }
-                }
-
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
                     CancelSelection();
                     CancelDrag();
                 }
             }
+        }
+
+        // Even over the UI: otherwise the unit would stay mid-drag, off its cell and ignored by the raycasts, so it
+        // could never be picked again. After the press, so a click pressed and released in the same frame ends too
+        if (Input.GetMouseButtonUp(0) && _draggable != null)
+        {
+            ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Physics.Raycast(ray, out hit, Mathf.Infinity);
+            EndDrag(hit);
         }
     }
 
@@ -157,6 +155,16 @@ public class InteractionManager : Singleton<InteractionManager>
         {
             _selectable.UnSelect();
             _selectable = null;
+        }
+    }
+
+    // The dragged unit dropped where it stands (the last cell it was dragged on), or back to its cell
+    public void EndDrag(RaycastHit hit)
+    {
+        if (_draggable != null)
+        {
+            _draggable.EndDrag(hit);
+            _draggable = null;
         }
     }
 
