@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 983a3dfd24fd6f246a3575eb9cbaf5cf, type: 3}
+  m_Name: ItemStyles
+  m_EditorClassIdentifier: HealerLike.Runtime::ItemStyleSet
+  styles:
+  - {fileID: 11400000, guid: d0c6d634824d4ff45ba0e7510a85c804, type: 2}
+  - {fileID: 11400000, guid: fac2d90c2776cef4db53214afdf861e6, type: 2}

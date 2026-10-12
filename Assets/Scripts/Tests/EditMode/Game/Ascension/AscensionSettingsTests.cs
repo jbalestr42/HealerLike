@@ -127,9 +127,9 @@ public class AscensionSettingsTests
         Assert.IsTrue(_settings.BlocksPlayerCenter(3));
     }
 
-    // Cursed like the other bad items, yet never drawn by an event: they are in no item list of the game
+    // Tagged Ascension, not Cursed (no bonus, only a malus), and in no item list of the game
     [Test]
-    public void Game_EveryMalusItemIsCursed_AndOnlyGivenByItsLevel()
+    public void Game_EveryMalusItemIsTaggedAscension_AndOnlyGivenByItsLevel()
     {
         GameData gameData = AssetDatabase.LoadAssetAtPath<GameData>(GameDataPath);
 
@@ -139,10 +139,30 @@ public class AscensionSettingsTests
             items.AddRange(level.enemyItems);
             foreach (AItemFactory item in items)
             {
-                Assert.IsTrue(item.HasTag(TagNames.Cursed), $"{level.title}: {item.name}");
+                Assert.IsTrue(item.HasTag(TagNames.Ascension), $"{level.title}: {item.name}");
+                Assert.IsFalse(item.HasTag(TagNames.Cursed), $"{level.title}: {item.name}");
                 CollectionAssert.DoesNotContain(gameData.items, item, $"{level.title}: {item.name}");
             }
         }
+    }
+
+    // The maluses stand out in the inventories, apart from the cursed items, each with its label in the tooltip
+    [Test]
+    public void AscensionTag_HasAStyleOfItsOwn_AboveTheCursedOne()
+    {
+        GameData gameData = AssetDatabase.LoadAssetAtPath<GameData>(GameDataPath);
+        GameplayTag ascensionTag = AssetDatabase.LoadAssetAtPath<GameplayTag>("Assets/Prefabs/Tags/Ascension.asset");
+        GameplayTag cursedTag = AssetDatabase.LoadAssetAtPath<GameplayTag>("Assets/Prefabs/Tags/Cursed.asset");
+
+        Assert.IsNotNull(gameData.itemStyles);
+        ItemStyle ascension = gameData.itemStyles.GetStyle(new List<GameplayTag> { ascensionTag });
+        ItemStyle cursed = gameData.itemStyles.GetStyle(new List<GameplayTag> { cursedTag });
+        Assert.IsNotNull(ascension);
+        Assert.IsNotNull(cursed);
+        Assert.AreNotEqual(cursed.outlineColor, ascension.outlineColor);
+        Assert.AreEqual("Ascension", ascension.label);
+        Assert.AreEqual("Cursed", cursed.label);
+        Assert.AreEqual(ascension, gameData.itemStyles.GetStyle(new List<GameplayTag> { cursedTag, ascensionTag }));
     }
 
     [Test]

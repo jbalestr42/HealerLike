@@ -29,6 +29,8 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         {
             _descriptionText.text = item.title;
             _icon.sprite = item.icon;
+            // An item with a style (e.g. an ascension malus) stands out like in the item bar of the player
+            PlayerItemIcon.ApplyOutline(_icon, PlayerItemIcon.GetStyle(item));
         }
     }
 
@@ -45,7 +47,7 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         ToolTip toolTip = UIManager.instance.GetView<GameView>(ViewType.Game).toolTip;
         if (show)
         {
-            toolTip.SetText(PlayerItemIcon.GetToolTipText(_item));
+            toolTip.SetText(PlayerItemIcon.GetToolTipText(_item, PlayerItemIcon.GetStyle(_item)));
             toolTip.ShowBelow((RectTransform)transform);
         }
         else

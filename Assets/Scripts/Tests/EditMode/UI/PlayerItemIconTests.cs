@@ -6,84 +6,119 @@ using UnityEngine.UI;
 namespace UI
 {
 
-// A cursed item stands out among the items of the player
+// An item with a style (e.g. cursed, ascension) stands out among the items with the outline and the label of
+// its ItemStyle (found by ItemStyleSet, see ItemStyleSetTests)
 public class PlayerItemIconTests
 {
     class StubItem : AItem
     {
-        readonly List<GameplayTag> _tags;
-
-        public StubItem(params GameplayTag[] tags)
-        {
-            _tags = new List<GameplayTag>(tags);
-        }
-
         public override void Equip(GameObject target) { }
         public override void Unequip(GameObject target) { }
         public override string title => "Stub";
         public override string description => "";
         public override Sprite icon => null;
-        public override List<GameplayTag> tags => _tags;
+        public override List<GameplayTag> tags => new List<GameplayTag>();
     }
 
+    static readonly Color CursedColor = new Color(0.69f, 0.49f, 1f, 1f);
+    static readonly Color AscensionColor = new Color(0.91f, 0.27f, 0.27f, 1f);
+
+    readonly List<Object> _assets = new List<Object>();
     GameObject _go;
-    PlayerItemIcon _icon;
     Image _image;
-    GameplayTag _cursedTag;
-    GameplayTag _playerTag;
+    ItemStyle _cursedStyle;
+    ItemStyle _ascensionStyle;
 
     [SetUp]
     public void SetUp()
     {
         _go = new GameObject("Icon");
-        _icon = _go.AddComponent<PlayerItemIcon>();
         _image = _go.AddComponent<Image>();
-        TestHelpers.SetPrivateField(_icon, "_icon", _image);
 
-        _cursedTag = ScriptableObject.CreateInstance<GameplayTag>();
-        _cursedTag.name = TagNames.Cursed;
-        _playerTag = ScriptableObject.CreateInstance<GameplayTag>();
-        _playerTag.name = "Player";
+        _cursedStyle = CreateStyle(CursedColor, "");
+        _ascensionStyle = CreateStyle(AscensionColor, "Ascension");
     }
 
     [TearDown]
     public void TearDown()
     {
         Object.DestroyImmediate(_go);
-        Object.DestroyImmediate(_cursedTag);
-        Object.DestroyImmediate(_playerTag);
+        foreach (Object asset in _assets)
+        {
+            Object.DestroyImmediate(asset);
+        }
+        _assets.Clear();
     }
 
-    bool HasOutline()
+    ItemStyle CreateStyle(Color color, string label)
+    {
+        ItemStyle style = ScriptableObject.CreateInstance<ItemStyle>();
+        style.outlineColor = color;
+        style.label = label;
+        _assets.Add(style);
+        return style;
+    }
+
+    UnityEngine.UI.Outline GetOutline()
     {
         UnityEngine.UI.Outline outline = _image.GetComponent<UnityEngine.UI.Outline>();
-        return outline != null && outline.enabled;
+        return outline != null && outline.enabled ? outline : null;
     }
 
     [Test]
-    public void Init_CursedItem_HasAnOutline()
+    public void ApplyOutline_CursedStyle_HasItsColor()
     {
-        _icon.Init(new StubItem(_playerTag, _cursedTag));
+        PlayerItemIcon.ApplyOutline(_image, _cursedStyle);
 
-        Assert.IsTrue(HasOutline());
+        Assert.IsNotNull(GetOutline());
+        Assert.AreEqual(CursedColor, GetOutline().effectColor);
     }
 
     [Test]
-    public void Init_RegularItem_NoOutline()
+    public void ApplyOutline_AscensionStyle_HasItsColor()
     {
-        _icon.Init(new StubItem(_playerTag));
+        PlayerItemIcon.ApplyOutline(_image, _ascensionStyle);
 
-        Assert.IsFalse(HasOutline());
+        Assert.IsNotNull(GetOutline());
+        Assert.AreEqual(AscensionColor, GetOutline().effectColor);
     }
 
     [Test]
-    public void Init_RegularAfterCursed_RemovesTheOutline()
+    public void ApplyOutline_NoStyle_NoOutline()
     {
-        _icon.Init(new StubItem(_cursedTag));
+        PlayerItemIcon.ApplyOutline(_image, null);
 
-        _icon.Init(new StubItem(_playerTag));
+        Assert.IsNull(GetOutline());
+    }
 
-        Assert.IsFalse(HasOutline());
+    [Test]
+    public void ApplyOutline_NoStyleAfterAStyle_RemovesTheOutline()
+    {
+        PlayerItemIcon.ApplyOutline(_image, _cursedStyle);
+
+        PlayerItemIcon.ApplyOutline(_image, null);
+
+        Assert.IsNull(GetOutline());
+    }
+
+    [Test]
+    public void GetStyle_OutOfPlayMode_IsNull()
+    {
+        Assert.IsNull(PlayerItemIcon.GetStyle(new StubItem()));
+    }
+
+    [Test]
+    public void GetToolTipText_StyleWithALabel_ShowsItUnderTheName()
+    {
+        string text = PlayerItemIcon.GetToolTipText(new StubItem(), _ascensionStyle);
+
+        Assert.AreEqual($"<b>Stub</b>\n<color=#{ColorUtility.ToHtmlStringRGB(AscensionColor)}>Ascension</color>", text);
+    }
+
+    [Test]
+    public void GetToolTipText_StyleWithoutLabel_ShowsTheNameOnly()
+    {
+        Assert.AreEqual("<b>Stub</b>", PlayerItemIcon.GetToolTipText(new StubItem(), _cursedStyle));
     }
 }
 

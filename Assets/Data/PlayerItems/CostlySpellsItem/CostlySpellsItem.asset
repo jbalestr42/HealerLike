@@ -18,7 +18,7 @@ MonoBehaviour:
     description: 'Ascension: your spells cost 10% more mana.'
     tags:
     - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
-    - {fileID: 11400000, guid: 641f92e7979b3dc49a2338af0549bcf7, type: 2}
+    - {fileID: 11400000, guid: 1d195225eac509b46aae9e15dbe54dfc, type: 2}
     buffs:
     - {fileID: 11400000, guid: 44b30ae5c189c3a409f6294ead2617b6, type: 2}
     onHitEffects: []

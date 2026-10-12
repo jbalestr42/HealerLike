@@ -13,6 +13,8 @@ public static class TagNames
     public const string Taunt = "Taunt";
     // Items with a strong bonus and its curse, only from events, never regular rewards
     public const string Cursed = "Cursed";
+    // Maluses given by the ascension level of the run, to the character or the enemies, never found as items
+    public const string Ascension = "Ascension";
     // Items offered by the Library events, never regular rewards
     public const string Library = "Library";
     // Units a class can recruit, along with the tag of the class (e.g. Druid)

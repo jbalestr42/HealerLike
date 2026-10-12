@@ -18,7 +18,7 @@ MonoBehaviour:
     description: 'Ascension: attacks 10% faster.'
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
-    - {fileID: 11400000, guid: 641f92e7979b3dc49a2338af0549bcf7, type: 2}
+    - {fileID: 11400000, guid: 1d195225eac509b46aae9e15dbe54dfc, type: 2}
     buffs:
     - {fileID: 11400000, guid: 7084a07db2e754d439cfff10ace5468d, type: 2}
     onHitEffects: []

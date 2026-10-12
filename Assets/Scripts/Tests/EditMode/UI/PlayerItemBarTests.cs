@@ -133,13 +133,13 @@ public class PlayerItemBarTests
     [Test]
     public void GetToolTipText_ShowsTheNameThenTheDescription()
     {
-        Assert.AreEqual("<b>Tithe</b>\n+3 mana each time an enemy dies", PlayerItemIcon.GetToolTipText(new StubItem("Tithe", "+3 mana each time an enemy dies")));
+        Assert.AreEqual("<b>Tithe</b>\n+3 mana each time an enemy dies", PlayerItemIcon.GetToolTipText(new StubItem("Tithe", "+3 mana each time an enemy dies"), null));
     }
 
     [Test]
     public void GetToolTipText_WithoutDescription_ShowsTheNameOnly()
     {
-        Assert.AreEqual("<b>Tithe</b>", PlayerItemIcon.GetToolTipText(new StubItem("Tithe")));
+        Assert.AreEqual("<b>Tithe</b>", PlayerItemIcon.GetToolTipText(new StubItem("Tithe"), null));
     }
 }
 
