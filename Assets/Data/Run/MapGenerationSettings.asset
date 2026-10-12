@@ -14,34 +14,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::MapGenerationSettings
   floorCount: 15
   columnCount: 3
-  pathCount: 6
-  startRoomCount: 3
+  pathCount: 3
+  startRoomCount: 1
   maxRoomsPerFloor: 3
   roomTypes:
   - type: 0
     fixedFloors: 00000000i
     firstFloor: 0
-    weight: 1.25
+    weight: 0.5381016
     canFollowItself: 1
   - type: 1
-    fixedFloors: 
-    firstFloor: 4
-    weight: 0.16
-    canFollowItself: 1
+    fixedFloors: 05000000i
+    firstFloor: 5
+    weight: 0.06887698
+    canFollowItself: 0
   - type: 3
     fixedFloors: 0e000000i
     firstFloor: 5
-    weight: 0.12
+    weight: 0.08
     canFollowItself: 0
   - type: 2
-    fixedFloors: 04000000i
-    firstFloor: 3
-    weight: 0.05
+    fixedFloors: 07000000i
+    firstFloor: 7
+    weight: 0.021524064
     canFollowItself: 0
   - type: 5
     fixedFloors: 
     firstFloor: 0
-    weight: 0.25
+    weight: 0.29149732
     canFollowItself: 0
   eventRooms:
   - eventRoom: {fileID: 11400000, guid: 8fce84b80355b6c4faaa6d770cd834f1, type: 2}
