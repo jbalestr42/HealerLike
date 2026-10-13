@@ -10,6 +10,8 @@ public class BuffManager : MonoBehaviour
     [HideInInspector] public UnityEvent<BuffData> OnBuffRemoved = new UnityEvent<BuffData>();
     [HideInInspector] public UnityEvent<BuffHandlerData> OnBuffHandlerStarted = new UnityEvent<BuffHandlerData>();
     [HideInInspector] public UnityEvent<BuffHandlerData> OnBuffHandlerRefreshed = new UnityEvent<BuffHandlerData>();
+    // Each time a handler is given, a new one or one already there being refreshed (e.g. every blessing received)
+    [HideInInspector] public UnityEvent<ABuffHandlerFactory> OnBuffHandlerApplied = new UnityEvent<ABuffHandlerFactory>();
     [HideInInspector] public UnityEvent<BuffHandlerData> OnBuffHandlerStopped = new UnityEvent<BuffHandlerData>();
 
     [Serializable]
@@ -75,6 +77,7 @@ public class BuffManager : MonoBehaviour
         OnBuffRemoved.RemoveAllListeners();
         OnBuffHandlerStarted.RemoveAllListeners();
         OnBuffHandlerRefreshed.RemoveAllListeners();
+        OnBuffHandlerApplied.RemoveAllListeners();
         OnBuffHandlerStopped.RemoveAllListeners();
 
         // Remove() every applied buff, so none outlives its target (e.g. a listener left on a static
@@ -426,6 +429,7 @@ public class BuffManager : MonoBehaviour
         }
         buffHandlerData.source = source;
         buffHandlerData.refreshStacks++;
+        OnBuffHandlerApplied.Invoke(buffHandlerFactory);
     }
 
     public void RemoveHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target, bool removeAll = false)

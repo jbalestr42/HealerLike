@@ -15,6 +15,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     public UnityEvent<Entity> OnKill = new UnityEvent<Entity>();
     // Each heal this entity receives (e.g. to empower its next attack)
     public UnityEvent<GameObject, ConsumerResult> OnHealReceived = new UnityEvent<GameObject, ConsumerResult>();
+    // A runtime tag given (true) or taken back (false), only when it changes (e.g. to react to being blessed)
+    public UnityEvent<GameplayTag, bool> OnTagChanged = new UnityEvent<GameplayTag, bool>();
 
     public enum EntityType
     {
@@ -221,6 +223,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         if (!_runtimeTags.Contains(tag))
         {
             _runtimeTags.Add(tag);
+            OnTagChanged.Invoke(tag, true);
         }
     }
 
@@ -250,7 +253,10 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
 
     public void RemoveTag(GameplayTag tag)
     {
-        _runtimeTags.Remove(tag);
+        if (_runtimeTags.Remove(tag))
+        {
+            OnTagChanged.Invoke(tag, false);
+        }
     }
 
     public void Enable(bool isEnabled)

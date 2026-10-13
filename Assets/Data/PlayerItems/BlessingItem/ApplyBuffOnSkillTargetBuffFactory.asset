@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4aa3c418840b4bc44b5a474b2be04ab0, type: 3}
+  m_Name: ApplyBuffOnSkillTargetBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::ApplyBuffOnSkillTargetBuffFactory
+  uniqueID: 18a9ff56-096c-4d48-8ada-383ca752e7dd
+  data:
+    buffHandlerFactory: {fileID: 11400000, guid: 1e985d169d50f1e46a5514904d0ad7c9, type: 2}
+    entityType: 1

@@ -29,6 +29,7 @@ MonoBehaviour:
     value: 1
   items:
   - {fileID: 11400000, guid: 82c759f729084ad44a087a4608b18b6b, type: 2}
+  - {fileID: 11400000, guid: a9b1d8816da4f9a42b38aba0789330fb, type: 2}
   entities:
   - {fileID: 11400000, guid: 2042951354ead464aa1cd1fefcd8192c, type: 2}
   - {fileID: 11400000, guid: 5ae526315401c9343a385aee24faf7e0, type: 2}

@@ -140,6 +140,22 @@ public class EntityTagTests
 
         Assert.IsFalse(_entity.HasTag(summon));
     }
+
+    [Test]
+    public void OnTagChanged_TellsOnlyWhenTheTagIsGivenOrTakenBack()
+    {
+        GameplayTag blessed = CreateTag("Blessed");
+        List<string> changes = new List<string>();
+        _entity.OnTagChanged.AddListener((tag, isAdded) => changes.Add($"{tag.name}:{isAdded}"));
+
+        _entity.AddTag(blessed);
+        // Already there, then already gone: nothing changes
+        _entity.AddTag(blessed);
+        _entity.RemoveTag(blessed);
+        _entity.RemoveTag(blessed);
+
+        CollectionAssert.AreEqual(new[] { "Blessed:True", "Blessed:False" }, changes);
+    }
 }
 
 }

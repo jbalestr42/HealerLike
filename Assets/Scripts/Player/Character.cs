@@ -1,8 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Character : MonoBehaviour, IBuffable
 {
+    // Each unit one of its skills was used on (e.g. to bless it), once the skill applied its effect
+    public UnityEvent<GameObject> OnSkillAppliedOnTarget = new UnityEvent<GameObject>();
+
     CharacterData _data;
     public CharacterData data { get { return _data; } set { _data = value; } }
 

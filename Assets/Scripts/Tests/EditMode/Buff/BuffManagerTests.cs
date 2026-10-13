@@ -280,6 +280,37 @@ public class BuffManagerTests
     }
 
     [Test]
+    public void AddHandler_TellsEachApplication_ARefreshIncluded()
+    {
+        ABuffHandlerFactory handlerFactory = CreateStackableHandlerFactory(1);
+        List<ABuffHandlerFactory> applied = new List<ABuffHandlerFactory>();
+        _buffManager.OnBuffHandlerApplied.AddListener(applied.Add);
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+        // Already at its max stacks: only refreshed, still a new application
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { handlerFactory, handlerFactory }, applied);
+    }
+
+    [Test]
+    public void RemoveHandler_IsNotAnApplication()
+    {
+        ABuffHandlerFactory handlerFactory = CreateStackableHandlerFactory(1);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+        int appliedCount = 0;
+        _buffManager.OnBuffHandlerApplied.AddListener(_ => appliedCount++);
+
+        _buffManager.RemoveHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        Assert.AreEqual(0, appliedCount);
+    }
+
+    [Test]
     public void MaxStacks_Reached_StillRefreshesTheDuration()
     {
         ABuffHandlerFactory handlerFactory = CreateStackableHandlerFactory(1);

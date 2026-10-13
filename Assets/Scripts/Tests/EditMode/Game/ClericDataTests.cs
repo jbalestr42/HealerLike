@@ -165,11 +165,41 @@ public class ClericDataTests
     }
 
     [Test]
-    public void Cleric_StartsWithTheSacredTome()
+    public void Cleric_StartsWithTheSacredTomeAndTheBlessing()
     {
         ItemFactory sacredTome = AssetDatabase.LoadAssetAtPath<ItemFactory>("Assets/Data/PlayerItems/HealPowerItem/HealPowerItem.asset");
+        ItemFactory blessing = AssetDatabase.LoadAssetAtPath<ItemFactory>("Assets/Data/PlayerItems/BlessingItem/BlessingItem.asset");
 
-        CollectionAssert.AreEqual(new[] { sacredTome }, _cleric.items);
+        CollectionAssert.AreEqual(new[] { sacredTome, blessing }, _cleric.items);
+    }
+
+    [Test]
+    public void Blessing_EachSpellOnAnAlly_BlessesItFor4s()
+    {
+        ItemFactory blessing = AssetDatabase.LoadAssetAtPath<ItemFactory>("Assets/Data/PlayerItems/BlessingItem/BlessingItem.asset");
+        Assert.AreEqual("Blessing", blessing.data.name);
+        Assert.IsFalse(string.IsNullOrEmpty(blessing.data.description));
+        Assert.IsNotNull(blessing.data.icon);
+
+        // Held by the character as long as it has the item
+        ABuffHandlerFactory itemHandler = blessing.data.buffs.Find(handler => handler.buffFactoryList.Exists(buff => buff is ApplyBuffOnSkillTargetBuffFactory));
+        Assert.IsNotNull(itemHandler, "The Blessing gives nothing when a spell is used");
+        Assert.AreEqual(DurationType.Infinite, itemHandler.durationType);
+        ApplyBuffOnSkillTargetBuffFactory onSkill = (ApplyBuffOnSkillTargetBuffFactory)itemHandler.buffFactoryList.Find(buff => buff is ApplyBuffOnSkillTargetBuffFactory);
+        Assert.AreEqual(Entity.EntityType.Player, onSkill.data.entityType, "Only the allies are blessed");
+
+        ABuffHandlerFactory blessed = onSkill.data.buffHandlerFactory;
+        Assert.AreEqual(DurationType.Duration, blessed.durationType);
+        Assert.AreEqual(4f, blessed.duration, 0.001f);
+        // A new spell refreshes it, whoever blessed the unit: the tag can't go away while another blessing lasts
+        Assert.AreEqual(1, blessed.maxStacks);
+        Assert.IsTrue(blessed.stackAcrossSources);
+        Assert.IsNotNull(blessed.icon, "A blessed unit shows it");
+        AddTagBuffFactory addTag = (AddTagBuffFactory)blessed.buffFactoryList.Find(buff => buff is AddTagBuffFactory);
+        Assert.IsNotNull(addTag);
+        Assert.AreEqual("Blessed", addTag.data.tag.name);
+        // The effects reacting to every blessing, even on a unit already blessed, find it by its tag
+        Assert.IsTrue(blessed.HasTag(addTag.data.tag), "The Blessed buff isn't tagged Blessed");
     }
 
     [Test]
