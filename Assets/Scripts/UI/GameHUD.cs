@@ -26,6 +26,8 @@ public class GameHUD : MonoBehaviour
     [SerializeField] UnityEngine.UI.Toggle _markEntityToggle;
     public UnityEngine.UI.Toggle markEntityToggle { get { return _markEntityToggle; } }
     [SerializeField] ResourceView _manaBar;
+    // Optional, the Devotion of the character, hidden when it builds none
+    [SerializeField] DevotionView _devotionBar;
 
     // Optional, the ascension level of the run and its maluses
     [SerializeField] AscensionIndicator _ascensionIndicator;
@@ -35,19 +37,31 @@ public class GameHUD : MonoBehaviour
     // the max mana and the refill change with the items
     public Func<string> manaTooltip;
 
-    bool _isManaTooltipShown;
+    // The Devotion of the character shown, null when it builds none
+    ResourceAttribute _devotion;
+    bool _isTooltipShown;
 
     void Start()
     {
         PlayerBehaviour.instance.OnCharacterInit.AddListener(OnCharacterInit);
-        AddManaTooltip();
+        AddTooltips();
     }
 
-    void AddManaTooltip()
+    void AddTooltips()
     {
-        HoverTooltipTrigger trigger = _manaBar.gameObject.AddComponent<HoverTooltipTrigger>();
-        trigger.onEnter = ShowManaTooltip;
-        trigger.onExit = HideManaTooltip;
+        AddTooltip(_manaBar.gameObject, GetManaTooltipText);
+        if (_devotionBar != null)
+        {
+            AddTooltip(_devotionBar.gameObject, GetDevotionTooltipText);
+        }
+    }
+
+    // The text read on each hover, no tooltip while it is empty
+    void AddTooltip(GameObject target, Func<string> getText)
+    {
+        HoverTooltipTrigger trigger = target.AddComponent<HoverTooltipTrigger>();
+        trigger.onEnter = rectTransform => ShowTooltip(getText(), rectTransform);
+        trigger.onExit = HideTooltip;
     }
 
     // The text of the tooltip on the mana bar, null when there is none
@@ -56,9 +70,21 @@ public class GameHUD : MonoBehaviour
         return manaTooltip?.Invoke();
     }
 
-    void ShowManaTooltip(RectTransform target)
+    // The text of the tooltip on the Devotion, null without a character building it
+    public string GetDevotionTooltipText()
     {
-        string text = GetManaTooltipText();
+        return _devotion != null ? GetDevotionTooltip(_devotion.Value, _devotion.Max) : null;
+    }
+
+    public static string GetDevotionTooltip(float value, float max)
+    {
+        return $"<b>Devotion</b> {Mathf.RoundToInt(value)} / {Mathf.RoundToInt(max)}"
+            + "\nSome of your spells give Devotion, others spend it all for a stronger effect."
+            + "\nBack to 0 at the start of each fight.";
+    }
+
+    void ShowTooltip(string text, RectTransform target)
+    {
         if (string.IsNullOrEmpty(text))
         {
             return;
@@ -67,18 +93,18 @@ public class GameHUD : MonoBehaviour
         ToolTip toolTip = UIManager.instance.GetView<GameView>(ViewType.Game).toolTip;
         toolTip.SetText(text);
         toolTip.ShowBelow(target);
-        _isManaTooltipShown = true;
+        _isTooltipShown = true;
     }
 
     // Only the tooltip it showed: another element may be showing its own
-    void HideManaTooltip()
+    void HideTooltip()
     {
-        if (!_isManaTooltipShown)
+        if (!_isTooltipShown)
         {
             return;
         }
 
-        _isManaTooltipShown = false;
+        _isTooltipShown = false;
         UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.Show(false);
     }
 
@@ -107,6 +133,26 @@ public class GameHUD : MonoBehaviour
     {
         PlayerBehaviour.instance.character.mana.OnValueChanged.AddListener(OnManaChanged);
         OnManaChanged(PlayerBehaviour.instance.character.mana);
+        ShowDevotion(character.devotion);
+    }
+
+    // Kept up to date while the character builds Devotion (not null), hidden otherwise
+    public void ShowDevotion(ResourceAttribute devotion)
+    {
+        _devotion = devotion;
+        if (_devotion != null)
+        {
+            _devotion.OnValueChanged.AddListener(OnDevotionChanged);
+        }
+        OnDevotionChanged(_devotion);
+    }
+
+    void OnDevotionChanged(ResourceAttribute devotion)
+    {
+        if (_devotionBar != null)
+        {
+            _devotionBar.SetDevotion(devotion != null ? Mathf.RoundToInt(devotion.Value) : 0, devotion != null ? Mathf.RoundToInt(devotion.Max) : 0);
+        }
     }
 
     void OnManaChanged(ResourceAttribute health)

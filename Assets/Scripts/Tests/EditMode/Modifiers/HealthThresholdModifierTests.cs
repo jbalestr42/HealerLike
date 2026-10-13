@@ -30,7 +30,7 @@ public class HealthThresholdModifierTests
 
     HealthThresholdModifier CreateModifierAtPercent(float percent, float value, float threshold, bool isBelow = false)
     {
-        ResourceAttribute health = TestHelpers.CreateResourceAttribute(_healthGo, AttributeType.HealthMax, 100f);
+        ResourceAttribute health = TestHelpers.CreateResourceAttribute(_healthGo, ResourceType.Health, AttributeType.HealthMax, 100f);
         TestHelpers.SetPrivateField(health, "_value", 100f * percent);
         TestHelpers.SetPrivateField(_entity, "_health", health);
 

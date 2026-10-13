@@ -33,7 +33,7 @@ public class CombatRecorderTests
     {
         _time = 0f;
         _characterGo = Create();
-        _mana = TestHelpers.CreateResourceAttribute(_characterGo, AttributeType.ManaMax, 100f);
+        _mana = TestHelpers.CreateResourceAttribute(_characterGo, ResourceType.Mana, AttributeType.ManaMax, 100f);
         _enemyGo = Create();
         TestHelpers.CreateAttributeManager(_enemyGo);
     }
@@ -62,7 +62,7 @@ public class CombatRecorderTests
 
     ResourceAttribute CreateHealth(float max)
     {
-        return TestHelpers.CreateResourceAttribute(Create(), AttributeType.HealthMax, max);
+        return TestHelpers.CreateResourceAttribute(Create(), ResourceType.Health, AttributeType.HealthMax, max);
     }
 
     CombatRecorder CreateRecorder()
@@ -155,7 +155,7 @@ public class CombatRecorderTests
     {
         ResourceAttribute knight = CreateHealth(100f);
         GameObject archerGo = Create();
-        ResourceAttribute archer = TestHelpers.CreateResourceAttribute(archerGo, AttributeType.HealthMax, 50f);
+        ResourceAttribute archer = TestHelpers.CreateResourceAttribute(archerGo, ResourceType.Health, AttributeType.HealthMax, 50f);
         CombatRecorder recorder = CreateRecorder();
         recorder.AddAlly("Knight", knight);
         recorder.AddAlly("Archer", archer);

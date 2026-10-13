@@ -37,6 +37,7 @@ public static class EntityInfoFormatter
         { AttributeType.CombatManaRefill, "Combat Mana Refill" },
         { AttributeType.RestHeal, "Rest Heal" },
         { AttributeType.RestManaRefill, "Rest Mana Refill" },
+        { AttributeType.DevotionMax, "Max Devotion" },
     };
 
     static readonly AttributeModifierType[] ModifierTypes = { AttributeModifierType.Add, AttributeModifierType.Multiply, AttributeModifierType.Override };

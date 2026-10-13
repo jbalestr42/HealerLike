@@ -73,8 +73,13 @@ public class CharacterTests
 
     void Init(params AItemFactory[] items)
     {
+        Init(new Dictionary<AttributeType, float> { { AttributeType.ManaMax, 100f }, { AttributeType.HealPower, 25f } }, items);
+    }
+
+    void Init(Dictionary<AttributeType, float> attributes, params AItemFactory[] items)
+    {
         CharacterData data = CreateTracked<CharacterData>();
-        data.attributes = new Dictionary<AttributeType, float> { { AttributeType.ManaMax, 100f }, { AttributeType.HealPower, 25f } };
+        data.attributes = attributes;
         data.items = new List<AItemFactory>(items);
         // No skill: their buttons need the game UI
         data.skills = new List<ACharacterSkillFactory>();
@@ -129,6 +134,41 @@ public class CharacterTests
         healPower.Update();
 
         Assert.AreEqual(35f, healPower.Value, 0.0001f);
+    }
+
+    [Test]
+    public void Init_WithDevotionMax_HasADevotionResource_StartingEmpty()
+    {
+        Init(new Dictionary<AttributeType, float> { { AttributeType.ManaMax, 100f }, { AttributeType.DevotionMax, 5f } });
+
+        Assert.IsNotNull(_character.devotion);
+        Assert.AreEqual(ResourceType.Devotion, _character.devotion.type);
+        Assert.AreEqual(0f, _character.devotion.Value);
+        Assert.AreEqual(5f, _character.devotion.Max);
+        // Two resources on the character, each found by its type
+        Assert.AreSame(_character.mana, ResourceAttribute.Get(_go, ResourceType.Mana));
+        Assert.AreSame(_character.devotion, ResourceAttribute.Get(_go, ResourceType.Devotion));
+        Assert.AreEqual(100f, _character.mana.Value, "The mana starts full");
+    }
+
+    [Test]
+    public void Init_WithoutDevotionMax_HasNoDevotion()
+    {
+        Init();
+
+        Assert.IsNull(_character.devotion);
+        Assert.IsNull(ResourceAttribute.Get(_go, ResourceType.Devotion));
+    }
+
+    [Test]
+    public void Enable_EachFightStartsWithoutDevotion()
+    {
+        Init(new Dictionary<AttributeType, float> { { AttributeType.ManaMax, 100f }, { AttributeType.DevotionMax, 5f } });
+        _character.devotion.SetValue(3f);
+
+        _character.Enable(true);
+
+        Assert.AreEqual(0f, _character.devotion.Value);
     }
 }
 

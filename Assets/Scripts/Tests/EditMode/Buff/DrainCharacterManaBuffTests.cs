@@ -26,11 +26,11 @@ public class DrainCharacterManaBuffTests
     public void SetUp()
     {
         _character = new GameObject("Character");
-        _mana = TestHelpers.CreateResourceAttribute(_character, AttributeType.ManaMax, 100f);
+        _mana = TestHelpers.CreateResourceAttribute(_character, ResourceType.Mana, AttributeType.ManaMax, 100f);
         _source = new GameObject("Siphoner");
         TestHelpers.CreateAttributeManager(_source);
         _target = new GameObject("Target");
-        _targetHealth = TestHelpers.CreateResourceAttribute(_target, AttributeType.HealthMax, 100f);
+        _targetHealth = TestHelpers.CreateResourceAttribute(_target, ResourceType.Health, AttributeType.HealthMax, 100f);
 
         _drain = ScriptableObject.CreateInstance<Attributes.RecordingConsumerFactory>(); // -5 per consumer
         _buff = new TestDrainCharacterManaBuff

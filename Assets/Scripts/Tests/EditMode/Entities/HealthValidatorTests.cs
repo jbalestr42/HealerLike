@@ -23,7 +23,7 @@ public class HealthValidatorTests
         });
         GameObject healthGo = new GameObject("Health");
         healthGo.transform.SetParent(_target.transform);
-        _health = TestHelpers.CreateResourceAttribute(healthGo, AttributeType.HealthMax, 100f);
+        _health = TestHelpers.CreateResourceAttribute(healthGo, ResourceType.Health, AttributeType.HealthMax, 100f);
         TestHelpers.SetPrivateField(entity, "_health", _health);
     }
 

@@ -35,7 +35,7 @@ public class CharacterInfoPanelTests
     {
         _go = new GameObject("Cleric");
         // Mana of 40 / 100, the max mana is a stat of the character
-        ResourceAttribute mana = TestHelpers.CreateResourceAttribute(_go, AttributeType.ManaMax, 100f);
+        ResourceAttribute mana = TestHelpers.CreateResourceAttribute(_go, ResourceType.Mana, AttributeType.ManaMax, 100f);
         mana.SetValue(40f);
         AttributeManager attributeManager = _go.GetComponent<AttributeManager>();
         attributeManager.Add(AttributeType.HealCriticalChance, new Attribute(0.25f));

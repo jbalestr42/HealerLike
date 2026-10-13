@@ -174,6 +174,26 @@ public class ClericDataTests
     }
 
     [Test]
+    public void Cleric_HoldsUpTo5Devotion()
+    {
+        Assert.AreEqual(5f, _cleric.attributes[AttributeType.DevotionMax]);
+    }
+
+    [Test]
+    public void Heal_Gives1Devotion_AndStillCostsMana()
+    {
+        CharacterSkillData heal = GetSkill<ApplyConsumerCharacterSkillFactory>("Heal").Create().GetData();
+
+        ResourceValidatorFactory devotion = (ResourceValidatorFactory)heal.validators.Find(v => v is ResourceValidatorFactory r && r.data.resourceType == ResourceType.Devotion);
+        Assert.IsNotNull(devotion, "Heal gives no Devotion");
+        // A negative cost: a gain
+        Assert.AreEqual(-1f, ResourceValidator.GetCost(devotion.data, null), 0.001f);
+        Assert.IsFalse(devotion.data.consumer.data.canBeCritical);
+        Assert.IsFalse(devotion.data.useCostMultiplier, "The cost items would change the Devotion given");
+        Assert.IsTrue(heal.validators.Exists(v => v is ResourceValidatorFactory r && r.data.resourceType == ResourceType.Mana), "Heal costs no mana");
+    }
+
+    [Test]
     public void Blessing_EachSpellOnAnAlly_BlessesItFor4s()
     {
         ItemFactory blessing = AssetDatabase.LoadAssetAtPath<ItemFactory>("Assets/Data/PlayerItems/BlessingItem/BlessingItem.asset");

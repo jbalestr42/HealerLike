@@ -105,7 +105,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         }
 
         _health = gameObject.AddComponent<ResourceAttribute>();
-        _health.Init(AttributeType.HealthMax);
+        _health.Init(ResourceType.Health, AttributeType.HealthMax);
         _health.OnValueChanged.AddListener(OnHealthChanged);
         _health.OnAllConsumerProcessed.AddListener(OnConsumerProcessed);
 

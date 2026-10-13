@@ -96,6 +96,38 @@ public class CharacterSelectPanelTests
         return CharacterSelectPanel.CreatePreview(character, _canvas.transform);
     }
 
+    float GetCardHeight(CharacterSelectPanel panel, int index)
+    {
+        return ((RectTransform)panel.transform.Find("Cards").GetChild(index)).sizeDelta.y;
+    }
+
+    [Test]
+    public void Cards_ShortTexts_KeepTheirMinimumHeight()
+    {
+        CharacterSelectPanel panel = CharacterSelectPanel.Create(_canvas.transform, new List<CharacterData> { CreateCharacter("Cleric") }, _ => { }, () => { });
+
+        Assert.AreEqual(600f, GetCardHeight(panel, 0), 0.01f);
+    }
+
+    [Test]
+    public void Cards_GrowToTheFullestOne_AllTheSameHeight()
+    {
+        CharacterData cleric = CreateCharacter("Cleric");
+        CharacterData druid = CreateCharacter("Druid");
+        // Far more than a card of 600 can hold
+        cleric.items = new List<AItemFactory>();
+        for (int i = 0; i < 20; i++)
+        {
+            cleric.items.Add(CreateItem("Item " + i, "An item with a long description taking at least a whole line of the card"));
+        }
+
+        CharacterSelectPanel panel = CharacterSelectPanel.Create(_canvas.transform, new List<CharacterData> { cleric, druid }, _ => { }, () => { });
+
+        Assert.Greater(GetCardHeight(panel, 0), 600f);
+        Assert.AreEqual(GetCardHeight(panel, 0), GetCardHeight(panel, 1), 0.01f);
+        Assert.AreEqual(GetCardHeight(panel, 0), ((RectTransform)panel.transform.Find("Cards")).sizeDelta.y, 0.01f);
+    }
+
     [Test]
     public void GetItems_ListsOneItemPerLineWithItsEffect()
     {

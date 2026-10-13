@@ -17,7 +17,7 @@ MonoBehaviour:
     name: Thick Bark
     description: 'Give a single ally <color=#008080ff>+{data:buffHandlerFactory|0.data.buffFactoryList|0.data.value}</color> hit armor: each one fully blocks a hit
 
-      Cost: <color=#8AB5FF>{cost}</color> mana
+      Cost: <color=#8AB5FF>{cost:Mana}</color> mana
 
       Cooldown: <color=#FFCF70>{cooldown}s</color>'
     validators:

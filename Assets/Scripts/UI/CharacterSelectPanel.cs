@@ -16,6 +16,9 @@ public class CharacterSelectPanel : MonoBehaviour
     static readonly Color MutedColor = new Color(0.6f, 0.64f, 0.7f, 1f);
     static readonly Color TooltipColor = new Color(0.08f, 0.09f, 0.12f, 0.97f);
     const float SkillIconSize = 56f;
+    const float CardWidth = 360f;
+    // The cards grow to fit the fullest one, never smaller than this
+    const float MinCardHeight = 600f;
     const float TooltipWidth = 420f;
     // Gap between the tooltip and the hovered element
     const float TooltipOffset = 8f;
@@ -66,7 +69,7 @@ public class CharacterSelectPanel : MonoBehaviour
         cardsLayout.childControlHeight = false;
         cardsLayout.childForceExpandWidth = false;
         cardsLayout.childForceExpandHeight = false;
-        cards.GetComponent<RectTransform>().sizeDelta = new Vector2(1200f, 600f);
+        cards.GetComponent<RectTransform>().sizeDelta = new Vector2(1200f, MinCardHeight);
 
         foreach (CharacterData character in characters)
         {
@@ -75,6 +78,7 @@ public class CharacterSelectPanel : MonoBehaviour
                 panel.CreateCard(cards.transform, character, CreatePreview(character, root.transform), () => onChosen(character, panel.GetAscensionLevel(character)));
             }
         }
+        FitCardsHeight(cards.GetComponent<RectTransform>());
 
         List<CharacterData> choices = characters.FindAll(character => character != null);
         if (choices.Count > 0)
@@ -130,7 +134,7 @@ public class CharacterSelectPanel : MonoBehaviour
     void CreateCard(Transform parent, CharacterData character, Character preview, Action onSelect)
     {
         GameObject card = CreateUIObject(character.title, parent);
-        card.GetComponent<RectTransform>().sizeDelta = new Vector2(360f, 600f);
+        card.GetComponent<RectTransform>().sizeDelta = new Vector2(CardWidth, MinCardHeight);
         card.AddComponent<Image>().color = CardColor;
 
         VerticalLayoutGroup layout = card.AddComponent<VerticalLayoutGroup>();
@@ -165,6 +169,23 @@ public class CharacterSelectPanel : MonoBehaviour
         }
         GameObject select = CreateButton(card.transform, "Select", new Vector2(200f, 60f), onSelect);
         select.AddComponent<LayoutElement>().preferredHeight = 60f;
+    }
+
+    // Every card as high as the fullest one (its texts, skills, items and units), at least MinCardHeight
+    static void FitCardsHeight(RectTransform cards)
+    {
+        float height = MinCardHeight;
+        foreach (RectTransform card in cards)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(card);
+            height = Mathf.Max(height, LayoutUtility.GetPreferredHeight(card));
+        }
+
+        foreach (RectTransform card in cards)
+        {
+            card.sizeDelta = new Vector2(card.sizeDelta.x, height);
+        }
+        cards.sizeDelta = new Vector2(cards.sizeDelta.x, height);
     }
 
     // < Ascension N >, starting at the highest level unlocked, the maluses of the level shown on hover

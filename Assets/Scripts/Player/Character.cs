@@ -13,6 +13,10 @@ public class Character : MonoBehaviour, IBuffable
     ResourceAttribute _mana;
     public ResourceAttribute mana { get { return _mana; } }
 
+    // Null when the character builds no Devotion (no DevotionMax above 0)
+    ResourceAttribute _devotion;
+    public ResourceAttribute devotion { get { return _devotion; } }
+
     AttributeManager _attributeManager;
     public AttributeManager attributeManager { get { return _attributeManager; } set { _attributeManager = value; } }
 
@@ -73,7 +77,15 @@ public class Character : MonoBehaviour, IBuffable
         }
 
         _mana = gameObject.AddComponent<ResourceAttribute>();
-        _mana.Init(AttributeType.ManaMax);
+        _mana.Init(ResourceType.Mana, AttributeType.ManaMax);
+
+        if (_attributeManager.Has(AttributeType.DevotionMax) && _attributeManager.Get(AttributeType.DevotionMax).Value > 0f)
+        {
+            _devotion = gameObject.AddComponent<ResourceAttribute>();
+            _devotion.Init(ResourceType.Devotion, AttributeType.DevotionMax);
+            // Built during the fights, unlike the mana
+            _devotion.SetValue(0f);
+        }
     }
 
     // The items the character starts with (passives, ...), from its data: they buff its attributes, so after
@@ -100,6 +112,11 @@ public class Character : MonoBehaviour, IBuffable
     // On in a battle only: its buffs tick and its skills can be used
     public void Enable(bool isEnabled)
     {
+        // Each fight starts without Devotion, none is left once it ends
+        if (_devotion != null)
+        {
+            _devotion.SetValue(0f);
+        }
         _buffManager.isEnabled = isEnabled;
         foreach (CharacterSkillSlot skillSlot in _skillSlots)
         {

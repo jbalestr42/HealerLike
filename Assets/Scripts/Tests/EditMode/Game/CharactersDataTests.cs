@@ -80,7 +80,8 @@ public class CharactersDataTests
         }
     }
 
-    // A skill shows its mana cost with {cost}, which applies the SkillCostMultiplier, never the raw data value
+    // A skill shows each of its costs with {cost:ResourceType}, which applies the SkillCostMultiplier, never the raw
+    // data value (a gain, a negative cost, needn't be shown)
     [Test]
     public void EverySkillWithACost_ShowsItWithTheCostVariable()
     {
@@ -90,10 +91,13 @@ public class CharactersDataTests
             foreach (ACharacterSkillFactory skill in character.skills)
             {
                 CharacterSkillData data = skill.Create().GetData();
-                bool hasCost = data.validators.Exists(validator => validator is ResourceValidatorFactory);
-                if (hasCost && (!data.description.Contains("{cost}") || data.description.Contains("consumer.data.value")))
+                foreach (ACharacterSkillValidatorFactory validator in data.validators)
                 {
-                    invalid.Add(skill.name);
+                    if (validator is ResourceValidatorFactory resource && ResourceValidator.GetCost(resource.data, null) > 0f
+                        && (!data.description.Contains($"{{cost:{resource.data.resourceType}}}") || data.description.Contains("consumer.data.value")))
+                    {
+                        invalid.Add($"{skill.name} ({resource.data.resourceType})");
+                    }
                 }
             }
         }

@@ -20,7 +20,7 @@ public class TestUnits
         // Entity already requires an AttributeManager: the health lives on its own object
         GameObject healthGo = new GameObject(name + " Health");
         _objects.Add(healthGo);
-        ResourceAttribute health = TestHelpers.CreateResourceAttribute(healthGo, AttributeType.HealthMax, max);
+        ResourceAttribute health = TestHelpers.CreateResourceAttribute(healthGo, ResourceType.Health, AttributeType.HealthMax, max);
         health.SetValue(value);
         TestHelpers.SetPrivateField(entity, "_health", health);
         return entity;

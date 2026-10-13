@@ -34,7 +34,7 @@ public class ResourceAttributeTests
     public void SetUp()
     {
         _targetGo = new GameObject();
-        _health = TestHelpers.CreateResourceAttribute(_targetGo, AttributeType.HealthMax, 100f);
+        _health = TestHelpers.CreateResourceAttribute(_targetGo, ResourceType.Health, AttributeType.HealthMax, 100f);
         _targetAttributeManager = _targetGo.GetComponent<AttributeManager>();
 
         _sourceGo = new GameObject();
@@ -66,6 +66,33 @@ public class ResourceAttributeTests
     {
         Assert.AreEqual(100f, _health.Value);
         Assert.AreEqual(100f, _health.Max);
+        Assert.AreEqual(ResourceType.Health, _health.type);
+    }
+
+    [Test]
+    public void Init_ReadsTheMaxFromTheGivenAttribute()
+    {
+        _targetAttributeManager.Add(AttributeType.DevotionMax, new Attribute(5f));
+        ResourceAttribute devotion = _targetGo.AddComponent<ResourceAttribute>();
+
+        devotion.Init(ResourceType.Devotion, AttributeType.DevotionMax);
+
+        Assert.AreEqual(ResourceType.Devotion, devotion.type);
+        Assert.AreEqual(5f, devotion.Max);
+        Assert.AreEqual(100f, _health.Max, "The other resource keeps its own max");
+    }
+
+    [Test]
+    public void Get_FindsTheResourceOfThatType_NullWithoutOne()
+    {
+        _targetAttributeManager.Add(AttributeType.ManaMax, new Attribute(50f));
+        ResourceAttribute mana = _targetGo.AddComponent<ResourceAttribute>();
+        mana.Init(ResourceType.Mana, AttributeType.ManaMax);
+
+        Assert.AreSame(_health, ResourceAttribute.Get(_targetGo, ResourceType.Health));
+        Assert.AreSame(mana, ResourceAttribute.Get(_targetGo, ResourceType.Mana));
+        Assert.IsNull(ResourceAttribute.Get(_targetGo, ResourceType.Devotion));
+        Assert.IsNull(ResourceAttribute.Get(null, ResourceType.Health));
     }
 
     [Test]

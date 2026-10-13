@@ -65,7 +65,7 @@ public class FuseSkillTests
         // On its own child, with its own AttributeManager holding the max health
         GameObject healthGo = new GameObject("Health");
         healthGo.transform.SetParent(go.transform);
-        ResourceAttribute health = TestHelpers.CreateResourceAttribute(healthGo, AttributeType.HealthMax, 100f);
+        ResourceAttribute health = TestHelpers.CreateResourceAttribute(healthGo, ResourceType.Health, AttributeType.HealthMax, 100f);
         TestHelpers.SetPrivateField(entity, "_health", health);
         _entityManager.GetEntities(entityType).Add(go);
         return go;

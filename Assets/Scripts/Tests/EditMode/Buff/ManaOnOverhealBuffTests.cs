@@ -24,7 +24,7 @@ public class ManaOnOverhealBuffTests
         // Adding Character triggers its editor-only Reset(), which NREs without Init()
         TestHelpers.WithLoggingDisabled(() => _character = _characterGo.AddComponent<Character>());
         _manaGo = new GameObject("Mana");
-        ResourceAttribute mana = TestHelpers.CreateResourceAttribute(_manaGo, AttributeType.ManaMax, 100f);
+        ResourceAttribute mana = TestHelpers.CreateResourceAttribute(_manaGo, ResourceType.Mana, AttributeType.ManaMax, 100f);
         mana.SetValue(50f);
         TestHelpers.SetPrivateField(_character, "_mana", mana);
 

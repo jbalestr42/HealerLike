@@ -81,7 +81,11 @@ public class TextConvertor
             case "cooldown":
                 return GetCooldown(character, data, defaultValue);
             case "cost":
-                return GetCost(character, data, defaultValue);
+                if (tokens.Length < 2 || !Enum.TryParse(tokens[1], out ResourceType resourceType))
+                {
+                    return GetError("Wrong Format -> Available format is {cost:ResourceType} (e.g. {cost:Mana})", defaultValue);
+                }
+                return GetCost(character, data, resourceType, defaultValue);
             default:
                 return GetError($"Unkown Variable Type -> {tokens[0]}", defaultValue);
         }
@@ -110,10 +114,10 @@ public class TextConvertor
     }
 
     /// <summary>
-    /// {cost}: mana cost of the ResourceValidator of a skill, with the SkillCostMultiplier of the character
-    /// applied, the base cost without a character
+    /// {cost:ResourceType}: cost of the ResourceValidator of a skill on that resource (e.g. {cost:Mana}), with the
+    /// SkillCostMultiplier of the character applied when the validator uses it, the base cost without a character
     /// </summary>
-    static string GetCost(Character character, object data, string defaultValue)
+    static string GetCost(Character character, object data, ResourceType resourceType, string defaultValue)
     {
         if (data is not CharacterSkillData skillData || skillData.validators == null)
         {
@@ -122,13 +126,13 @@ public class TextConvertor
 
         foreach (ACharacterSkillValidatorFactory validator in skillData.validators)
         {
-            if (validator is ResourceValidatorFactory resourceValidator)
+            if (validator is ResourceValidatorFactory resourceValidator && resourceValidator.data.resourceType == resourceType)
             {
                 float cost = ResourceValidator.GetCost(resourceValidator.data, character != null ? character.gameObject : null);
                 return cost.ToString("0.##", CultureInfo.InvariantCulture);
             }
         }
-        return GetError("{cost} needs a ResourceValidator in the skill validators", defaultValue);
+        return GetError($"{{cost:{resourceType}}} needs a {resourceType} ResourceValidator in the skill validators", defaultValue);
     }
 
     public static object GetPropertyValue(object obj, string propertyName)

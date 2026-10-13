@@ -22,7 +22,7 @@ public class AscensionGameTypeTests
         TestHelpers.WithLoggingDisabled(() => _entity = _entityGo.AddComponent<Entity>());
 
         _healthGo = new GameObject();
-        _health = TestHelpers.CreateResourceAttribute(_healthGo, AttributeType.HealthMax, 100f);
+        _health = TestHelpers.CreateResourceAttribute(_healthGo, ResourceType.Health, AttributeType.HealthMax, 100f);
         TestHelpers.SetPrivateField(_entity, "_health", _health);
 
         // Same setup as the rest room asset: heal 30% of the max health, never reduced nor prevented
@@ -260,7 +260,7 @@ public class AscensionGameTypeTests
     // A character holding only its mana
     ResourceAttribute CreateMana(GameObject go, float max, float value)
     {
-        ResourceAttribute mana = TestHelpers.CreateResourceAttribute(go, AttributeType.ManaMax, max);
+        ResourceAttribute mana = TestHelpers.CreateResourceAttribute(go, ResourceType.Mana, AttributeType.ManaMax, max);
         mana.SetValue(value);
         TestHelpers.InvokePrivate(mana, "Update");
         return mana;

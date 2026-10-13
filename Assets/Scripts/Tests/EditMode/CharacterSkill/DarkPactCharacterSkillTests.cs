@@ -14,7 +14,7 @@ public class DarkPactCharacterSkillTests
     [SetUp]
     public void SetUp()
     {
-        _mana = CreateResource(AttributeType.ManaMax, 10f, 100f);
+        _mana = CreateResource(ResourceType.Mana, AttributeType.ManaMax, 10f, 100f);
     }
 
     [TearDown]
@@ -27,11 +27,11 @@ public class DarkPactCharacterSkillTests
         _objects.Clear();
     }
 
-    ResourceAttribute CreateResource(AttributeType maxType, float value, float max)
+    ResourceAttribute CreateResource(ResourceType type, AttributeType maxType, float value, float max)
     {
-        GameObject go = new GameObject(maxType.ToString());
+        GameObject go = new GameObject(type.ToString());
         _objects.Add(go);
-        ResourceAttribute resource = TestHelpers.CreateResourceAttribute(go, maxType, max);
+        ResourceAttribute resource = TestHelpers.CreateResourceAttribute(go, type, maxType, max);
         resource.SetValue(value);
         return resource;
     }
@@ -39,8 +39,8 @@ public class DarkPactCharacterSkillTests
     [Test]
     public void Pact_EveryAllyLosesThePercentOfItsMaxHealth_TurnedIntoMana()
     {
-        ResourceAttribute full = CreateResource(AttributeType.HealthMax, 100f, 100f);
-        ResourceAttribute tank = CreateResource(AttributeType.HealthMax, 150f, 200f);
+        ResourceAttribute full = CreateResource(ResourceType.Health, AttributeType.HealthMax, 100f, 100f);
+        ResourceAttribute tank = CreateResource(ResourceType.Health, AttributeType.HealthMax, 150f, 200f);
 
         float sacrificed = DarkPactCharacterSkill.Pact(new List<ResourceAttribute> { full, tank }, _mana, 0.15f, 0.5f);
 
@@ -54,7 +54,7 @@ public class DarkPactCharacterSkillTests
     [Test]
     public void Pact_NeverKills_AWoundedAllyKeeps1Health()
     {
-        ResourceAttribute dying = CreateResource(AttributeType.HealthMax, 5f, 100f);
+        ResourceAttribute dying = CreateResource(ResourceType.Health, AttributeType.HealthMax, 5f, 100f);
 
         float sacrificed = DarkPactCharacterSkill.Pact(new List<ResourceAttribute> { dying }, _mana, 0.15f, 0.5f);
 
@@ -65,9 +65,9 @@ public class DarkPactCharacterSkillTests
     [Test]
     public void Pact_IgnoresInvincibilityAndSkipsTheDead()
     {
-        ResourceAttribute invincible = CreateResource(AttributeType.HealthMax, 100f, 100f);
+        ResourceAttribute invincible = CreateResource(ResourceType.Health, AttributeType.HealthMax, 100f, 100f);
         invincible.preventConsumers = true;
-        ResourceAttribute dead = CreateResource(AttributeType.HealthMax, 0f, 100f);
+        ResourceAttribute dead = CreateResource(ResourceType.Health, AttributeType.HealthMax, 0f, 100f);
 
         DarkPactCharacterSkill.Pact(new List<ResourceAttribute> { invincible, dead }, _mana, 0.15f, 0.5f);
 
@@ -78,7 +78,7 @@ public class DarkPactCharacterSkillTests
     [Test]
     public void Pact_ManaIsCappedAtItsMax()
     {
-        ResourceAttribute tank = CreateResource(AttributeType.HealthMax, 1000f, 1000f);
+        ResourceAttribute tank = CreateResource(ResourceType.Health, AttributeType.HealthMax, 1000f, 1000f);
 
         DarkPactCharacterSkill.Pact(new List<ResourceAttribute> { tank }, _mana, 0.15f, 1f);
 

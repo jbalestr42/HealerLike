@@ -45,7 +45,7 @@ public class ChainLightningProjectileTests
         TestHelpers.SetPrivateField(sourceEntity, "_model", _model);
 
         _healthGo = new GameObject("Health");
-        ResourceAttribute health = TestHelpers.CreateResourceAttribute(_healthGo, AttributeType.HealthMax, 10f);
+        ResourceAttribute health = TestHelpers.CreateResourceAttribute(_healthGo, ResourceType.Health, AttributeType.HealthMax, 10f);
         TestHelpers.SetPrivateField(targetEntity, "_health", health);
         TestHelpers.SetPrivateField(targetEntity, "_targetPoint", _target);
 

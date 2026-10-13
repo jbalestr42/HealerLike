@@ -8,39 +8,59 @@ public class ResourceValidatorFactory : CharacterSkillValidatorFactory<ResourceV
 [Serializable]
 public class ResourceValidatorData
 {
+    // The resource of the character the skill costs, or gives with a negative cost (e.g. each Heal gives 1 Devotion)
+    public ResourceType resourceType = ResourceType.Mana;
     [CreateDataButton]
     public ConsumerFactory consumer;
+    // The SkillCostMultiplier of the owner lowers or raises the cost (e.g. a mana cost, not a Devotion gain)
+    public bool useCostMultiplier = true;
 }
 
-// The skill costs the value of the consumer in mana, with the SkillCostMultiplier of the owner applied
+// The skill costs the value of the consumer in a resource of the character, a negative cost giving it instead. The
+// first validator of a skill with a positive cost shows it on the skill button
 public class ResourceValidator : ACharacterSkillValidator<ResourceValidatorData>
 {
     ResourceAttribute resource;
     GameObject _owner;
+    // The button shows its cost
+    bool _showsCost;
 
     public override void Init(UseCharacterSkillButton skillButton, GameObject owner)
     {
-        resource = owner.GetComponent<Character>().mana;
+        resource = ResourceAttribute.Get(owner, data.resourceType);
         _owner = owner;
 
-        skillButton.hasCost = true;
-        skillButton.SetCost(GetCost(owner));
+        // A gain isn't a cost, and the button has room for a single one
+        if (GetCost(owner) > 0f && !skillButton.hasCost)
+        {
+            _showsCost = true;
+            skillButton.hasCost = true;
+            skillButton.SetCost(GetCost(owner));
+        }
     }
 
     // The multiplier can change during the run (e.g. an item lowering the costs)
     public override void Update(UseCharacterSkillButton skillButton)
     {
-        skillButton.SetCost(GetCost(_owner));
+        if (_showsCost)
+        {
+            skillButton.SetCost(GetCost(_owner));
+        }
     }
 
+    // A character without the resource can't pay for it, a gain never blocks the skill
     public override bool IsValid(GameObject owner)
     {
-        return resource.Value >= GetCost(owner);
+        float cost = GetCost(owner);
+        return cost <= 0f || (resource != null && resource.Value >= cost);
     }
 
     public override void OnSkillUsed(GameObject owner)
     {
-        resource.AddResourceModifier(ResourceModifier.Create(data.consumer, owner, owner, GetCostMultiplier(owner)));
+        if (resource != null)
+        {
+            resource.AddResourceModifier(ResourceModifier.Create(data.consumer, owner, owner, GetCostMultiplier(data, owner)));
+        }
     }
 
     public float GetCost(GameObject owner)
@@ -48,10 +68,16 @@ public class ResourceValidator : ACharacterSkillValidator<ResourceValidatorData>
         return GetCost(data, owner);
     }
 
-    // The cost of the data with the SkillCostMultiplier of the owner applied, the base cost without one
+    // The cost of the data, with the SkillCostMultiplier of the owner applied when it uses it (the base cost without
+    // one)
     public static float GetCost(ResourceValidatorData data, GameObject owner)
     {
-        return data.consumer.data.value.GetValue(owner) * GetCostMultiplier(owner);
+        return data.consumer.data.value.GetValue(owner) * GetCostMultiplier(data, owner);
+    }
+
+    static float GetCostMultiplier(ResourceValidatorData data, GameObject owner)
+    {
+        return data.useCostMultiplier ? GetCostMultiplier(owner) : 1f;
     }
 
     // The SkillCostMultiplier of the owner, 1 without one, never below 0: a skill can be free, never give mana

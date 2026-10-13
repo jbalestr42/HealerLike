@@ -271,7 +271,7 @@ public class TextConvertorTests
     [Test]
     public void Convert_Cost_WithoutCharacter_ReturnsTheBaseCost()
     {
-        Assert.AreEqual("Cost: 20 mana", TextConvertor.Convert("Cost: {cost} mana", null, CreateCostSkillData(20f)));
+        Assert.AreEqual("Cost: 20 mana", TextConvertor.Convert("Cost: {cost:Mana} mana", null, CreateCostSkillData(20f)));
     }
 
     [Test]
@@ -279,7 +279,7 @@ public class TextConvertorTests
     {
         Character character = CreateCharacterWithAttribute(AttributeType.HealPower, 10f);
 
-        Assert.AreEqual("Cost: 20 mana", TextConvertor.Convert("Cost: {cost} mana", character, CreateCostSkillData(20f)));
+        Assert.AreEqual("Cost: 20 mana", TextConvertor.Convert("Cost: {cost:Mana} mana", character, CreateCostSkillData(20f)));
         Object.DestroyImmediate(character.gameObject);
     }
 
@@ -289,15 +289,49 @@ public class TextConvertorTests
         // Costly Spells: +10% cost, 20 -> 22 mana
         Character character = CreateCharacterWithAttribute(AttributeType.SkillCostMultiplier, 1.1f);
 
-        Assert.AreEqual("Cost: 22 mana", TextConvertor.Convert("Cost: {cost} mana", character, CreateCostSkillData(20f)));
+        Assert.AreEqual("Cost: 22 mana", TextConvertor.Convert("Cost: {cost:Mana} mana", character, CreateCostSkillData(20f)));
         Object.DestroyImmediate(character.gameObject);
+    }
+
+    [Test]
+    public void Convert_Cost_IsTheCostOnTheResourceNamed()
+    {
+        CharacterSkillData data = CreateCostSkillData(20f);
+        ConsumerFactory gain = ScriptableObject.CreateInstance<ConsumerFactory>();
+        gain.data = new ConsumerData { value = new FlatValue { data = new FlatValueData { value = -1f } } };
+        ResourceValidatorFactory devotion = ScriptableObject.CreateInstance<ResourceValidatorFactory>();
+        devotion.data = new ResourceValidatorData { resourceType = ResourceType.Devotion, consumer = gain };
+        _assets.Add(gain);
+        _assets.Add(devotion);
+        data.validators.Insert(0, devotion);
+
+        Assert.AreEqual("Cost: 20 mana", TextConvertor.Convert("Cost: {cost:Mana} mana", null, data));
+        Assert.AreEqual("Gain: -1 Devotion", TextConvertor.Convert("Gain: {cost:Devotion} Devotion", null, data));
+    }
+
+    [Test]
+    public void Convert_Cost_WithoutTheResource_ReturnsDefaultValue()
+    {
+        string result = null;
+        TestHelpers.WithLoggingDisabled(() => result = TextConvertor.Convert("{cost}", null, CreateCostSkillData(20f)));
+
+        Assert.AreEqual("1", result);
+    }
+
+    [Test]
+    public void Convert_Cost_SkillWithoutThatResource_ReturnsDefaultValue()
+    {
+        string result = null;
+        TestHelpers.WithLoggingDisabled(() => result = TextConvertor.Convert("{cost:Devotion}", null, CreateCostSkillData(20f)));
+
+        Assert.AreEqual("1", result);
     }
 
     [Test]
     public void Convert_Cost_SkillWithoutResourceValidator_ReturnsDefaultValue()
     {
         string result = null;
-        TestHelpers.WithLoggingDisabled(() => result = TextConvertor.Convert("{cost}", null, new CharacterSkillData { validators = new List<ACharacterSkillValidatorFactory>() }));
+        TestHelpers.WithLoggingDisabled(() => result = TextConvertor.Convert("{cost:Mana}", null, new CharacterSkillData { validators = new List<ACharacterSkillValidatorFactory>() }));
 
         Assert.AreEqual("1", result);
     }

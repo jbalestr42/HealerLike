@@ -46,7 +46,7 @@ public class ApplyConsumerOnEntitiesBuffTests
         // Entity already requires an AttributeManager: the health lives on its own object
         GameObject healthGo = new GameObject("Health");
         _entities.Add(healthGo);
-        ResourceAttribute health = TestHelpers.CreateResourceAttribute(healthGo, AttributeType.HealthMax, 100f);
+        ResourceAttribute health = TestHelpers.CreateResourceAttribute(healthGo, ResourceType.Health, AttributeType.HealthMax, 100f);
         TestHelpers.SetPrivateField(entity, "_health", health);
         return go;
     }

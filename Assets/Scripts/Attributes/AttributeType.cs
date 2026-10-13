@@ -32,4 +32,6 @@ public enum AttributeType
     // Share of the max mana given back to the character when healing in a rest room, 0.3 when it has no such
     // attribute
     RestManaRefill,
+    // Devotion charges the character can hold, 0 (no Devotion) when it has no such attribute
+    DevotionMax,
 }

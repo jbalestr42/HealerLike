@@ -9,6 +9,15 @@ public class PendingValue
     public float value;
 }
 
+// What a resource is, an object may hold several (e.g. the mana and the Devotion of the character)
+public enum ResourceType
+{
+    Health,
+    Mana,
+    // Charges built and spent by some skills of the character (e.g. the Cleric), back to 0 at each fight
+    Devotion,
+}
+
 public class ResourceAttribute : MonoBehaviour
 {
     public UnityEvent<ResourceAttribute> OnValueChanged = new UnityEvent<ResourceAttribute>();
@@ -18,6 +27,9 @@ public class ResourceAttribute : MonoBehaviour
     float _prevValue;
     float _value;
     public float Value { get { return _value; } }
+
+    ResourceType _type;
+    public ResourceType type { get { return _type; } }
 
     Attribute _max;
     public float Max { get { return _max.Value; } }
@@ -40,15 +52,35 @@ public class ResourceAttribute : MonoBehaviour
     // TODO: move in SO
     ResourceConsumerResolver _resourceConsumerResolver = new ResourceConsumerResolver();
 
-    public void Init(AttributeType maxResourceType)
+    // Full, its max read from the given attribute of the owner
+    public void Init(ResourceType type, AttributeType maxType)
     {
+        _type = type;
         AttributeManager attributeManager = GetComponent<AttributeManager>();
-        _max = attributeManager.Get(maxResourceType);
+        _max = attributeManager.Get(maxType);
         _value = _max.Value;
         _lastMax = _max.Value;
         _max.AddOnValueChangedListener(OnValueMaxChanged);
         _resourceConsumerResolver.Init(attributeManager);
         Update();
+    }
+
+    // The resource of that type held by the owner, null when it has none
+    public static ResourceAttribute Get(GameObject owner, ResourceType type)
+    {
+        if (owner == null)
+        {
+            return null;
+        }
+
+        foreach (ResourceAttribute resource in owner.GetComponents<ResourceAttribute>())
+        {
+            if (resource.type == type)
+            {
+                return resource;
+            }
+        }
+        return null;
     }
 
     void Update()

@@ -27,7 +27,7 @@ public class RaiseDeadCharacterSkillTests
     [Test]
     public void Empower_AddsHealthAndDamagePerHealPower()
     {
-        ResourceAttribute health = TestHelpers.CreateResourceAttribute(_summon, AttributeType.HealthMax, 50f);
+        ResourceAttribute health = TestHelpers.CreateResourceAttribute(_summon, ResourceType.Health, AttributeType.HealthMax, 50f);
         AttributeManager attributes = _summon.GetComponent<AttributeManager>();
         attributes.Add(AttributeType.Damage, new Attribute(4f));
         RaiseDeadCharacterSkillData data = new RaiseDeadCharacterSkillData { healthPerHealPower = 3f, damagePerHealPower = 0.1f };

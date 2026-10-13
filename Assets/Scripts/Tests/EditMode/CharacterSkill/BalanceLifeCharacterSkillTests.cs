@@ -25,7 +25,7 @@ public class BalanceLifeCharacterSkillTests
     {
         GameObject unit = new GameObject("Unit");
         _units.Add(unit);
-        ResourceAttribute health = TestHelpers.CreateResourceAttribute(unit, AttributeType.HealthMax, max);
+        ResourceAttribute health = TestHelpers.CreateResourceAttribute(unit, ResourceType.Health, AttributeType.HealthMax, max);
         health.SetValue(value);
         return health;
     }

@@ -27,6 +27,8 @@ MonoBehaviour:
     value: 1
   - key: 15
     value: 1
+  - key: 22
+    value: 5
   items:
   - {fileID: 11400000, guid: 82c759f729084ad44a087a4608b18b6b, type: 2}
   - {fileID: 11400000, guid: a9b1d8816da4f9a42b38aba0789330fb, type: 2}
