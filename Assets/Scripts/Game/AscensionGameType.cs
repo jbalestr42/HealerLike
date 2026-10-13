@@ -144,6 +144,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
             case State.InitializeGame:
                 _gameView.gameHUD.inventoryButton.enabled = true;
                 _gameView.gameHUD.ShowManaBar(true);
+                _gameView.gameHUD.manaTooltip = () => GetManaTooltip(PlayerBehaviour.instance.character.mana);
 
                 int runAscensionLevel = GetAscensionLevel(ascension, CharacterSelection.ascensionLevel);
                 Debug.Log($"[AscensionGameType] Ascension level: {runAscensionLevel}");
@@ -403,6 +404,26 @@ public class AscensionGameType : AGameType, IEventRoomHost
     public static void RefillManaForCombat(ResourceAttribute characterMana)
     {
         RefillMana(characterMana, GetAttribute(characterMana.gameObject, AttributeType.CombatManaRefill));
+    }
+
+    // The tooltip of the mana bar: the mana given back after each fight and at a rest, with the items of the character
+    public static string GetManaTooltip(ResourceAttribute characterMana)
+    {
+        GameObject character = characterMana.gameObject;
+        float combatShare = Mathf.Max(0f, GetAttribute(character, AttributeType.CombatManaRefill));
+        return GetManaTooltip(characterMana.Max, combatShare, GetRestManaRefill(character));
+    }
+
+    public static string GetManaTooltip(float maxMana, float combatShare, float restShare)
+    {
+        return $"<b>Mana</b>\nAfter each fight, you recover {FormatShare(combatShare)} of your max mana: <b>+{Mathf.RoundToInt(maxMana * combatShare)} mana</b> for the next fight."
+            + $"\nResting recovers {FormatShare(restShare)}: <b>+{Mathf.RoundToInt(maxMana * restShare)} mana</b>."
+            + "\nNever more than your max mana.";
+    }
+
+    static string FormatShare(float share)
+    {
+        return $"{Mathf.RoundToInt(share * 100f)}%";
     }
 
     // That share of the max mana back, through the regular resource flow, never critical

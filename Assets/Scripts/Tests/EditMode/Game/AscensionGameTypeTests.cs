@@ -473,6 +473,57 @@ public class AscensionGameTypeTests
             Object.DestroyImmediate(characterGo);
         }
     }
+    [Test]
+    public void GetManaTooltip_ShowsTheShareAndTheManaGivenBackAfterAFightAndAtARest()
+    {
+        string tooltip = AscensionGameType.GetManaTooltip(80f, 0.4f, 0.3f);
+
+        StringAssert.Contains("After each fight", tooltip);
+        StringAssert.Contains("40%", tooltip);
+        StringAssert.Contains("+32 mana", tooltip);
+        StringAssert.Contains("30%", tooltip);
+        StringAssert.Contains("+24 mana", tooltip);
+    }
+
+    [Test]
+    public void GetManaTooltip_DefaultCharacter_UsesTheDefaultRefillsAndItsMaxMana()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 15f);
+
+            string tooltip = AscensionGameType.GetManaTooltip(mana);
+
+            // 40% after a fight, 30% at a rest, of the max mana and not of the mana left
+            StringAssert.Contains("+40 mana", tooltip);
+            StringAssert.Contains("+30 mana", tooltip);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
+
+    [Test]
+    public void GetManaTooltip_CombatManaRefillAttribute_ShowsThatShare()
+    {
+        GameObject characterGo = new GameObject();
+        try
+        {
+            ResourceAttribute mana = CreateMana(characterGo, 100f, 15f);
+            characterGo.GetComponent<AttributeManager>().Add(AttributeType.CombatManaRefill, new Attribute(0.25f));
+
+            string tooltip = AscensionGameType.GetManaTooltip(mana);
+
+            StringAssert.Contains("25%", tooltip);
+            StringAssert.Contains("+25 mana", tooltip);
+        }
+        finally
+        {
+            Object.DestroyImmediate(characterGo);
+        }
+    }
 }
 
 }

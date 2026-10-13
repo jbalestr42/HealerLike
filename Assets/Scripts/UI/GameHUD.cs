@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class GameHUD : MonoBehaviour
@@ -30,10 +31,55 @@ public class GameHUD : MonoBehaviour
     [SerializeField] AscensionIndicator _ascensionIndicator;
     public AscensionIndicator ascensionIndicator { get { return _ascensionIndicator; } }
 
+    // Optional, the text of the tooltip shown when hovering the mana bar (none without it), read on each hover since
+    // the max mana and the refill change with the items
+    public Func<string> manaTooltip;
+
+    bool _isManaTooltipShown;
 
     void Start()
     {
         PlayerBehaviour.instance.OnCharacterInit.AddListener(OnCharacterInit);
+        AddManaTooltip();
+    }
+
+    void AddManaTooltip()
+    {
+        HoverTooltipTrigger trigger = _manaBar.gameObject.AddComponent<HoverTooltipTrigger>();
+        trigger.onEnter = ShowManaTooltip;
+        trigger.onExit = HideManaTooltip;
+    }
+
+    // The text of the tooltip on the mana bar, null when there is none
+    public string GetManaTooltipText()
+    {
+        return manaTooltip?.Invoke();
+    }
+
+    void ShowManaTooltip(RectTransform target)
+    {
+        string text = GetManaTooltipText();
+        if (string.IsNullOrEmpty(text))
+        {
+            return;
+        }
+
+        ToolTip toolTip = UIManager.instance.GetView<GameView>(ViewType.Game).toolTip;
+        toolTip.SetText(text);
+        toolTip.ShowBelow(target);
+        _isManaTooltipShown = true;
+    }
+
+    // Only the tooltip it showed: another element may be showing its own
+    void HideManaTooltip()
+    {
+        if (!_isManaTooltipShown)
+        {
+            return;
+        }
+
+        _isManaTooltipShown = false;
+        UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.Show(false);
     }
 
 #if UNITY_EDITOR
