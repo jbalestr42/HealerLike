@@ -2863,7 +2863,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6015581588152404891}
-  - {fileID: 7216969778104946659}
   m_Father: {fileID: 4999760721763255622}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
@@ -3820,7 +3819,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7216969778104946659}
   m_Father: {fileID: 3430510232554324402}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -3851,6 +3851,7 @@ MonoBehaviour:
   _refreshPeriod: 0.1
   _backgroundColor: {r: 0.05, g: 0.06, b: 0.08, a: 0.85}
   _canChangeTargeting: 0
+  _inventory: {fileID: 7216969778104946659}
 --- !u!1 &7671069143096193939
 GameObject:
   m_ObjectHideFlags: 0
@@ -3884,7 +3885,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3430510232554324402}
+  m_Father: {fileID: 6015581588152404891}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}

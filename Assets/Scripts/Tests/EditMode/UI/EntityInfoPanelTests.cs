@@ -1,6 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Entities;
 using NUnit.Framework;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -68,13 +69,14 @@ public class EntityInfoPanelTests
         CollectionAssert.AreEqual(new[] { "<b>Iron Plating</b> — +3 flat armor" }, EntityInfoPanel.GetEquippedItemLines(_entity));
     }
 
-    EntityInfoPanel BuildPanel(bool canChangeTargeting)
+    EntityInfoPanel BuildPanel(bool canChangeTargeting, RectTransform inventory = null)
     {
         GameObject go = new GameObject("Entity Info", typeof(RectTransform));
         _objects.Add(go);
         EntityInfoPanel panel = go.AddComponent<EntityInfoPanel>();
         TestHelpers.SetPrivateField(panel, "_buttonPrefab", AssetDatabase.LoadAssetAtPath<SandboxButton>("Assets/Prefabs/UI/SandboxButton.prefab"));
         TestHelpers.SetPrivateField(panel, "_canChangeTargeting", canChangeTargeting);
+        TestHelpers.SetPrivateField(panel, "_inventory", inventory);
         TestHelpers.InvokePrivate(panel, "Build");
         return panel;
     }
@@ -93,6 +95,55 @@ public class EntityInfoPanelTests
 
         Assert.IsNotNull(targetButton);
         Assert.IsFalse(targetButton.GetComponentInChildren<UnityEngine.UI.Button>().interactable);
+    }
+
+    // In the game, the slots of the inventory are the first section of the scrolled body, under an "Inventory" title
+    [Test]
+    public void WithInventory_ItIsTheFirstSectionOfTheBody()
+    {
+        RectTransform inventory = new GameObject("Inventory", typeof(RectTransform)).GetComponent<RectTransform>();
+        _objects.Add(inventory.gameObject);
+
+        EntityInfoPanel panel = BuildPanel(false, inventory);
+        RectTransform content = inventory.parent as RectTransform;
+
+        Assert.IsNotNull(content);
+        Assert.AreEqual(content, panel.GetComponentInChildren<UnityEngine.UI.ScrollRect>().content);
+        TMPro.TMP_Text[] texts = content.GetComponentsInChildren<TMPro.TMP_Text>();
+        StringAssert.Contains("Inventory", texts[0].text);
+        Assert.Less(texts[0].transform.GetSiblingIndex(), inventory.GetSiblingIndex());
+        Assert.Less(inventory.GetSiblingIndex(), texts[texts.Length - 1].transform.GetSiblingIndex());
+    }
+
+    // Shown on an entity, the title is on top, then the slots, then the other sections below them
+    [Test]
+    public void WithInventory_TheSlotsAreLaidOutBetweenItsTitleAndTheOtherSections()
+    {
+        RectTransform inventory = new GameObject("Inventory", typeof(RectTransform)).GetComponent<RectTransform>();
+        _objects.Add(inventory.gameObject);
+        inventory.sizeDelta = new Vector2(200f, 80f);
+
+        EntityInfoPanel panel = BuildPanel(false, inventory);
+        float height = (float)typeof(EntityInfoPanel).GetMethod("LayoutBody", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(panel, new object[] { "<b>Health</b>\n100 / 100" });
+
+        TMPro.TMP_Text[] texts = inventory.parent.GetComponentsInChildren<TMPro.TMP_Text>();
+        RectTransform title = texts[0].rectTransform;
+        RectTransform body = texts[texts.Length - 1].rectTransform;
+        Assert.LessOrEqual(inventory.anchoredPosition.y, -title.rect.height);
+        Assert.LessOrEqual(body.anchoredPosition.y, inventory.anchoredPosition.y - inventory.rect.height);
+        Assert.AreEqual(-body.anchoredPosition.y + body.rect.height, height, 0.01f);
+    }
+
+    // The sandbox has no inventory: no inventory title in its body
+    [Test]
+    public void WithoutInventory_TheBodyHasNoInventorySection()
+    {
+        EntityInfoPanel panel = BuildPanel(true);
+
+        foreach (TMPro.TMP_Text text in panel.GetComponentInChildren<UnityEngine.UI.ScrollRect>().content.GetComponentsInChildren<TMPro.TMP_Text>())
+        {
+            Assert.IsFalse((text.text ?? "").Contains("Inventory"));
+        }
     }
 
     [Test]

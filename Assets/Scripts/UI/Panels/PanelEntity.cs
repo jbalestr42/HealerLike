@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 // Panel of the game shown on the selected entity: everything about it (health, stats, targeting, skills,
-// passives, items, effects) in the detailed info panel, and its inventory to equip items on it
+// passives, items, effects) in the detailed info panel, with its inventory to equip items on it at the top
 public class PanelEntity : APanel
 {
     [SerializeField] SlotInventory _inventory;

@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Everything known about the selected entity (health, stats and their modifiers, targeting, skills,
+// Everything known about the selected entity (inventory, health, stats and their modifiers, targeting, skills,
 // passives, items, active effects, on hit effects), refreshed live. Shown by the sandbox, and by the
 // entity panel of the game. The UI is built in code, anchored on the top right corner of its parent.
 public class EntityInfoPanel : APanel
@@ -20,6 +20,9 @@ public class EntityInfoPanel : APanel
     [SerializeField] Color _backgroundColor = new Color(0.05f, 0.06f, 0.08f, 0.85f);
     // Off in the game: the targeting of the unit is shown, but only the sandbox can change it
     [SerializeField] bool _canChangeTargeting = true;
+    // Optional (the game only): the slots to equip items on the entity, moved at the top of the body, in an "Inventory"
+    // section. Keeps its own size (e.g. given by a ContentSizeFitter)
+    [SerializeField] RectTransform _inventory;
 
     RectTransform _rect;
     TMP_Text _title;
@@ -29,6 +32,8 @@ public class EntityInfoPanel : APanel
     public SandboxButton targetButton => _targetButton;
     RectTransform _viewport;
     ScrollRect _scrollRect;
+    RectTransform _content;
+    TMP_Text _inventoryTitle;
     TMP_Text _body;
     bool _isBuilt = false;
 
@@ -111,12 +116,29 @@ public class EntityInfoPanel : APanel
         _viewport.offsetMax = new Vector2(-_padding, -_padding);
         _viewport.GetComponent<Image>().color = Color.clear;
 
-        _body = CreateText("Body", _viewport);
+        // Scrolled content: the inventory, then the text of the other sections
+        _content = new GameObject("Content", typeof(RectTransform)).GetComponent<RectTransform>();
+        _content.SetParent(_viewport, false);
+        SetTopStretch(_content, 0f, 0f);
+
+        if (_inventory != null)
+        {
+            _inventoryTitle = CreateText("Inventory Title", _content);
+            SetTopStretch(_inventoryTitle.rectTransform, 0f, 0f);
+            _inventoryTitle.text = $"<color={EntityInfoFormatter.HeaderColor}><b>Inventory</b></color>";
+
+            _inventory.SetParent(_content, false);
+            _inventory.anchorMin = new Vector2(0f, 1f);
+            _inventory.anchorMax = new Vector2(0f, 1f);
+            _inventory.pivot = new Vector2(0f, 1f);
+        }
+
+        _body = CreateText("Body", _content);
         SetTopStretch(_body.rectTransform, 0f, 0f);
 
         _scrollRect = _viewport.GetComponent<ScrollRect>();
         _scrollRect.viewport = _viewport;
-        _scrollRect.content = _body.rectTransform;
+        _scrollRect.content = _content;
         _scrollRect.horizontal = false;
         _scrollRect.movementType = ScrollRect.MovementType.Clamped;
         _scrollRect.scrollSensitivity = 30f;
@@ -196,11 +218,7 @@ public class EntityInfoPanel : APanel
         ((RectTransform)_targetButton.transform).anchoredPosition = new Vector2(((RectTransform)_targetButton.transform).anchoredPosition.x, -buttonsTop);
         ((RectTransform)_closeButton.transform).anchoredPosition = new Vector2(((RectTransform)_closeButton.transform).anchoredPosition.x, -buttonsTop);
 
-        // The rendered text can go a few pixels below its preferred height
-        _body.text = BuildBody();
-        _body.ForceMeshUpdate();
-        float bodyHeight = Mathf.Max(_body.preferredHeight, _body.textBounds.size.y);
-        _body.rectTransform.sizeDelta = new Vector2(_body.rectTransform.sizeDelta.x, bodyHeight);
+        float bodyHeight = LayoutBody(BuildBody());
 
         // The panel grows with its content, then the body scrolls
         float bodyTop = buttonsTop + _buttonHeight + 8f;
@@ -208,6 +226,33 @@ public class EntityInfoPanel : APanel
         _rect.sizeDelta = new Vector2(_width, height);
         _viewport.offsetMin = new Vector2(_padding, _padding);
         _viewport.offsetMax = new Vector2(-_padding, -bodyTop);
+    }
+
+    // Lays out the scrolled content: the inventory title and its slots, then the text of the other sections. Returns
+    // its height
+    float LayoutBody(string text)
+    {
+        float height = 0f;
+        if (_inventory != null)
+        {
+            float titleHeight = _inventoryTitle.preferredHeight;
+            _inventoryTitle.rectTransform.sizeDelta = new Vector2(_inventoryTitle.rectTransform.sizeDelta.x, titleHeight);
+
+            // The slots can be added while the panel is shown, their size is given by the layout of the inventory
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_inventory);
+            _inventory.anchoredPosition = new Vector2(0f, -titleHeight - 4f);
+            height = titleHeight + 4f + _inventory.rect.height + 10f;
+        }
+
+        // The rendered text can go a few pixels below its preferred height
+        _body.text = text;
+        _body.ForceMeshUpdate();
+        float textHeight = Mathf.Max(_body.preferredHeight, _body.textBounds.size.y);
+        _body.rectTransform.sizeDelta = new Vector2(_body.rectTransform.sizeDelta.x, textHeight);
+        _body.rectTransform.anchoredPosition = new Vector2(0f, -height);
+        height += textHeight;
+        _content.sizeDelta = new Vector2(_content.sizeDelta.x, height);
+        return height;
     }
 
     string BuildTitle()
