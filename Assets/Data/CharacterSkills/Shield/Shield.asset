@@ -9,13 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5a3319670e9bd242a09c0fe204a1c42, type: 3}
+  m_Script: {fileID: 11500000, guid: ae2638455b89f6c4689e2545e8ff0dd5, type: 3}
   m_Name: Shield
   m_EditorClassIdentifier: 
   data:
     icon: {fileID: 21300000, guid: 8727e7dc0cc99c245922ec614e2e826d, type: 3}
     name: Shield
-    description: 'Give a single ally <color=#008080ff>+[{data:buffHandlerFactory|0.data.buffFactoryList|0.data.value}x100]%</color> armor during <color="green">{data:buffHandlerFactory|0.data.duration}s</color>
+    description: 'Spend all your Devotion: give a single ally <color=#008080ff>+[{data:buffHandlerFactory|0.data.buffFactoryList|0.data.value}x100]%</color> armor per Devotion spent, up to <color=#008080ff>[{data:buffHandlerFactory|0.data.buffFactoryList|0.data.value}x{data:buffHandlerFactory|0.data.maxStacks}x100]%</color>, during <color="green">{data:buffHandlerFactory|0.data.duration}s</color>
 
       Cost: <color=#8AB5FF>{cost:Mana}</color> mana
 
@@ -27,3 +27,4 @@ MonoBehaviour:
     entityType: 1
     buffHandlerFactory:
     - {fileID: 11400000, guid: 62e90f83d0ea1224bbe8af4d7a32e9fe, type: 2}
+    spentResource: 2

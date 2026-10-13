@@ -18,7 +18,7 @@ MonoBehaviour:
     duration: 5
     isPeriodic: 0
     periodDuration: 0
-    maxStacks: 0
+    maxStacks: 5
     stackAcrossSources: 0
     buffFactoryList:
     - {fileID: 11400000, guid: b83c5620930e1cd45867fb8221a88da0, type: 2}

@@ -137,6 +137,20 @@ public class ResourceAttribute : MonoBehaviour
         _value = Mathf.Clamp(value, 0f, _max.Value);
     }
 
+    // Reads the value, then empties the resource through a consumer, never critical: the amount returned is the one
+    // to use (e.g. a skill spending all the Devotion), the resource being emptied later doesn't change it
+    public float SpendAll(GameObject source)
+    {
+        float spent = _value;
+        if (spent > 0f)
+        {
+            ResourceModifier spending = new ResourceModifier { source = source };
+            spending.consumers.Add(new RuntimeConsumer(-spent, canBeCritical: false));
+            AddResourceModifier(spending);
+        }
+        return spent;
+    }
+
     public void AddResourceModifier(ResourceModifier resourceModifier)
     {
         _resourceModifiers.Add(resourceModifier);

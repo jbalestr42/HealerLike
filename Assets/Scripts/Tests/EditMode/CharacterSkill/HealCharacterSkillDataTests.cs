@@ -11,7 +11,6 @@ public class HealCharacterSkillDataTests
     static readonly string[] HealSkillPaths =
     {
         "Assets/Data/CharacterSkills/HealSingleTarget/HealSingleTarget.asset",
-        "Assets/Data/CharacterSkills/HealMultiTarget/HealMultiTarget.asset",
     };
 
     GameObject _source;

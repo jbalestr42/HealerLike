@@ -6,8 +6,9 @@ using UnityEngine;
 namespace Game
 {
 
-// Checks the Cleric data: classic healer with the strongest heals, a shield, a last resort
-// invincibility, and units rewarding a well healed team: Zealot, Radiant Archer, Purifier, Paladin and Beacon
+// Checks the Cleric data: the strongest heals, cheap and frequent, building Devotion that the Shield and Judgment
+// spend, a last resort invincibility, and units rewarding a well healed team: Zealot, Radiant Archer, Purifier, Paladin
+// and Beacon
 public class ClericDataTests
 {
     const string CharactersPath = "Assets/Data/Characters/";
@@ -47,11 +48,11 @@ public class ClericDataTests
     }
 
     [Test]
-    public void Cleric_HasHealHealGroupShieldAndDivineIntervention()
+    public void Cleric_HasHealMendingLightShieldJudgmentAndDivineIntervention()
     {
         List<string> names = _cleric.skills.ConvertAll(skill => skill.Create().GetData().name);
 
-        CollectionAssert.AreEqual(new[] { "Heal", "Heal Group", "Shield", "Divine Intervention" }, names);
+        CollectionAssert.AreEqual(new[] { "Heal", "Mending Light", "Shield", "Judgment", "Divine Intervention" }, names);
     }
 
     [Test]
@@ -62,54 +63,100 @@ public class ClericDataTests
             CharacterSkillData data = skill.Create().GetData();
             Assert.IsNotNull(data.icon, data.name);
             Assert.IsFalse(string.IsNullOrEmpty(data.description), data.name);
-            Assert.IsTrue(data.validators.Exists(v => v is ResourceValidatorFactory), data.name + " has no mana cost");
+            Assert.IsTrue(data.validators.Exists(v => v is ResourceValidatorFactory r && r.data.resourceType == ResourceType.Mana), data.name + " has no mana cost");
             Assert.Greater(GetCooldown(data), 0f, data.name);
         }
     }
 
     static float GetCost(CharacterSkillData data)
     {
-        ResourceValidatorFactory validator = (ResourceValidatorFactory)data.validators.Find(v => v is ResourceValidatorFactory);
+        ResourceValidatorFactory validator = (ResourceValidatorFactory)data.validators.Find(v => v is ResourceValidatorFactory r && r.data.resourceType == ResourceType.Mana);
         Assert.IsNotNull(validator, data.name + " has no mana cost");
         return validator.data.consumer.data.value.GetValue(null);
     }
 
-    // Small heals the Cleric casts often: 80% Heal Power for 8 mana, 40% on every ally for 15 mana
-    [TestCase("Heal", 0.8f, 8f)]
-    [TestCase("Heal Group", 0.4f, 15f)]
-    public void Heal_HealsTheRatioOfTheHealPower_ForItsCost(string name, float multiplier, float cost)
+    // Cheap and frequent, weaker than before the Devotion
+    [Test]
+    public void Heal_Heals50PercentOfTheHealPower_For5Mana()
     {
-        ApplyConsumerCharacterSkillFactory heal = GetSkill<ApplyConsumerCharacterSkillFactory>(name);
+        ApplyConsumerCharacterSkillFactory heal = GetSkill<ApplyConsumerCharacterSkillFactory>("Heal");
 
-        Assert.AreEqual(multiplier, heal.data.multiplier, 0.0001f);
-        Assert.AreEqual(cost, GetCost(heal.data), 0.0001f);
+        Assert.AreEqual(0.5f, heal.data.multiplier, 0.0001f);
+        Assert.AreEqual(5f, GetCost(heal.data), 0.0001f);
     }
 
-    // The anticipation spell of the Cleric: cast on the unit about to take a big hit, percent armor only
     [Test]
-    public void Shield_Gives70PercentArmorToASingleAllyFor5s()
+    public void Heal_HasA1_5sCooldown()
     {
-        BuffCharacterSkillFactory shield = GetSkill<BuffCharacterSkillFactory>("Shield");
+        Assert.AreEqual(1.5f, GetCooldown(GetSkill<ApplyConsumerCharacterSkillFactory>("Heal").data), 0.0001f);
+    }
 
+    [Test]
+    public void Judgment_HealsAllAllies_Plus5PercentPerDevotionSpent()
+    {
+        JudgmentCharacterSkillData judgment = GetSkill<JudgmentCharacterSkillFactory>("Judgment").data;
+
+        Assert.IsFalse(judgment.isSingle);
+        Assert.AreEqual(Entity.EntityType.Player, judgment.entityType);
+        Assert.AreEqual(ResourceType.Devotion, judgment.spentResource);
+        Assert.AreEqual(0.2f, judgment.multiplier, 0.0001f);
+        Assert.AreEqual(0.05f, judgment.multiplierPerSpent, 0.0001f);
+        Assert.AreEqual(10f, GetCost(judgment), 0.0001f);
+    }
+
+    [Test]
+    public void MendingLight_Heals25PercentThenJumps3Times_1DevotionPerHeal()
+    {
+        MendingLightCharacterSkillData mending = GetSkill<MendingLightCharacterSkillFactory>("Mending Light").data;
+
+        Assert.IsTrue(mending.isSingle);
+        Assert.AreEqual(Entity.EntityType.Player, mending.entityType);
+        Assert.AreEqual(0.25f, mending.multiplier, 0.0001f);
+        Assert.AreEqual(3, mending.jumps);
+        Assert.AreEqual(ResourceType.Devotion, mending.gainedResource);
+        // A negative consumer value gives the resource
+        GameObject character = new GameObject("Character");
+        try
+        {
+            Assert.AreEqual(1f, mending.gainPerHeal.GetConsumer(character, character).GetValue(), 0.0001f, "Not 1 Devotion per heal");
+        }
+        finally
+        {
+            Object.DestroyImmediate(character);
+        }
+        Assert.AreEqual(8f, GetCost(mending), 0.0001f);
+        Assert.AreEqual(3f, GetCooldown(mending), 0.0001f);
+    }
+
+    // The anticipation spell of the Cleric: cast on the unit about to take a big hit, percent armor only, 15% per
+    // Devotion spent up to 75%
+    [Test]
+    public void Shield_Gives15PercentArmorPerDevotion_UpTo75_ToASingleAllyFor5s()
+    {
+        ShieldCharacterSkillFactory shield = GetSkill<ShieldCharacterSkillFactory>("Shield");
+
+        Assert.AreEqual(ResourceType.Devotion, shield.data.spentResource);
+        Assert.AreEqual(4f, GetCost(shield.data), 0.0001f);
         Assert.IsTrue(shield.data.isSingle);
         Assert.AreEqual(Entity.EntityType.Player, shield.data.entityType);
         Assert.AreEqual(1, shield.data.buffHandlerFactory.Count);
         ABuffHandlerFactory handler = shield.data.buffHandlerFactory[0];
         Assert.AreEqual(DurationType.Duration, handler.durationType);
         Assert.AreEqual(5f, handler.duration, 0.0001f);
+        Assert.AreEqual(5, handler.maxStacks);
         Assert.AreEqual(1, handler.buffFactoryList.Count);
 
         FlatModifierFactory percentArmor = handler.buffFactoryList[0] as FlatModifierFactory;
         Assert.IsNotNull(percentArmor);
         Assert.AreEqual(AttributeType.PercentArmor, percentArmor.data.type);
         Assert.AreEqual(AttributeModifierType.Add, percentArmor.data.modifierType);
-        Assert.AreEqual(0.7f, percentArmor.data.value, 0.0001f);
+        Assert.AreEqual(0.15f, percentArmor.data.value, 0.0001f);
     }
 
     [Test]
     public void Shield_TheDescriptionShowsThePercentArmorOnly()
     {
-        CharacterSkillData data = GetSkill<BuffCharacterSkillFactory>("Shield").data;
+        CharacterSkillData data = GetSkill<ShieldCharacterSkillFactory>("Shield").data;
 
         StringAssert.Contains("buffFactoryList|0.data.value", data.description);
         StringAssert.DoesNotContain("buffFactoryList|1", data.description);
@@ -152,11 +199,9 @@ public class ClericDataTests
         try
         {
             TestHelpers.CreateAttributeManager(healer, AttributeType.HealPower, 10f);
-            foreach (string name in new[] { "Heal", "Heal Group" })
-            {
-                ApplyConsumerCharacterSkillFactory heal = GetSkill<ApplyConsumerCharacterSkillFactory>(name);
-                Assert.IsTrue(heal.data.consumer.GetConsumer(healer, healer).ignoreConsumerPrevention, name);
-            }
+            Assert.IsTrue(GetSkill<ApplyConsumerCharacterSkillFactory>("Heal").data.consumer.GetConsumer(healer, healer).ignoreConsumerPrevention, "Heal");
+            Assert.IsTrue(GetSkill<JudgmentCharacterSkillFactory>("Judgment").data.consumer.GetConsumer(healer, healer).ignoreConsumerPrevention, "Judgment");
+            Assert.IsTrue(GetSkill<MendingLightCharacterSkillFactory>("Mending Light").data.consumer.GetConsumer(healer, healer).ignoreConsumerPrevention, "Mending Light");
         }
         finally
         {

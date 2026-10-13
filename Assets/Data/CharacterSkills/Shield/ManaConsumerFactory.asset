@@ -17,13 +17,13 @@ MonoBehaviour:
     ignoreConsumerPrevention: 0
     canBeCritical: 0
     value:
-      rid: 5275139311471951898
+      rid: 4204219405931380949
     valueOwner: 0
   references:
     version: 2
     RefIds:
-    - rid: 5275139311471951898
+    - rid: 4204219405931380949
       type: {class: FlatValue, ns: , asm: HealerLike.Runtime}
       data:
         data:
-          value: 8
+          value: 4

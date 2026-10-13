@@ -83,6 +83,28 @@ public class ResourceAttributeTests
     }
 
     [Test]
+    public void SpendAll_ReturnsTheValue_ThenEmptiesIt()
+    {
+        _health.SetValue(40f);
+
+        float spent = _health.SpendAll(_sourceGo);
+        Assert.AreEqual(40f, spent, 0.001f);
+        // Read when spent, emptied on the next update
+        Assert.AreEqual(40f, _health.Value, 0.001f);
+        Drain();
+
+        Assert.AreEqual(0f, _health.Value, 0.001f);
+    }
+
+    [Test]
+    public void SpendAll_Empty_SpendsNothing()
+    {
+        _health.SetValue(0f);
+
+        Assert.AreEqual(0f, _health.SpendAll(_sourceGo));
+    }
+
+    [Test]
     public void Get_FindsTheResourceOfThatType_NullWithoutOne()
     {
         _targetAttributeManager.Add(AttributeType.ManaMax, new Attribute(50f));

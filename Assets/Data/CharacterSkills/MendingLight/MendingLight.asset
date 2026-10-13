@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15ec884d7db52f6479fd3457039e3e17, type: 3}
+  m_Name: MendingLight
+  m_EditorClassIdentifier: HealerLike.Runtime::MendingLightCharacterSkillFactory
+  data:
+    icon: {fileID: 21300000, guid: 5b58351cb891f7b41b9970b7afa5ee68, type: 3}
+    name: Mending Light
+    description: 'Heal a single ally for <color="green">[{attribute:current:HealPower}x{data:multiplier}]</color> <color=#008080ff>([{data:multiplier}x100]% HealPower)</color>, then jump right away to the most wounded ally not healed yet, up to <color="green">{data:jumps}</color> times
+
+      Each ally healed gives <color=#FFE680>[{data:gainPerHeal.data.value.data.value}x-1] Devotion</color>
+
+      Cost: <color=#8AB5FF>{cost:Mana}</color> mana
+
+      Cooldown: <color=#FFCF70>{cooldown}s</color>'
+    validators:
+    - {fileID: 11400000, guid: 29eecbae61fb13342ba4e8422ce87eda, type: 2}
+    - {fileID: 11400000, guid: cbe82e8b2e005d84fbec32aaee6e2da9, type: 2}
+    isSingle: 1
+    entityType: 1
+    spendsResource: 0
+    spentResource: 2
+    consumer: {fileID: 11400000, guid: 6eb1ab30de476e74db8c22b4fd9c0538, type: 2}
+    multiplier: 0.25
+    jumps: 3
+    gainedResource: 2
+    gainPerHeal: {fileID: 11400000, guid: 834831333381b2b4cb44d6c1cef6868e, type: 2}
