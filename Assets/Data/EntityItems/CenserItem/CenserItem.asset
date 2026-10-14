@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8940981ac4386e4395c5404eb3a86d1, type: 3}
+  m_Name: CenserItem
+  m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
+  data:
+    icon: {fileID: 21300000, guid: cad492dc6f9a766438b99f4f3897028d, type: 3}
+    name: Censer
+    description: When it gets blessed, blesses the adjacent allies too
+    tags:
+    - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
+    - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
+    - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
+    buffs:
+    - {fileID: 11400000, guid: 12e430facaeca4d4aa8041c0dc50c095, type: 2}
+    onHitEffects: []
+    onHitConsumers: []
+    projectileBehaviours: []
+    skills: []

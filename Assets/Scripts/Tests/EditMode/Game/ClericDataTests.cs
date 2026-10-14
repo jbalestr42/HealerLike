@@ -545,6 +545,44 @@ public class ClericDataTests
         AssertModifier(armor.buffFactoryList[0], AttributeType.FlatArmor, AttributeModifierType.Add, 2f);
     }
 
+    // A Cleric unit item: getting blessed, the unit blesses its adjacent allies. Only when it gets the status: on each
+    // blessing, two Censers side by side would bless each other forever
+    [Test]
+    public void Censer_GettingBlessed_BlessesTheAdjacentAllies_OnlyForTheCleric()
+    {
+        ItemFactory censer = AssetDatabase.LoadAssetAtPath<ItemFactory>("Assets/Data/EntityItems/CenserItem/CenserItem.asset");
+        Assert.IsNotNull(censer);
+        Assert.AreEqual("Censer", censer.data.name);
+        Assert.IsFalse(string.IsNullOrEmpty(censer.data.description));
+        Assert.IsNotNull(censer.data.icon);
+        Assert.IsTrue(censer.HasTag(TagNames.Entity));
+        Assert.IsTrue(censer.HasTag(_cleric.classTag));
+        Assert.IsTrue(AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/GameData.asset").items.Contains(censer), "Never dropped");
+
+        StatusData blessed = AssetDatabase.LoadAssetAtPath<StatusData>(BlessedStatusPath);
+        ABuffHandlerFactory held = censer.data.buffs.Find(handler => handler.buffFactoryList.Exists(buff => buff is ApplyBuffOnTagBuffFactory));
+        Assert.IsNotNull(held);
+        Assert.AreEqual(DurationType.Infinite, held.durationType);
+        ApplyBuffOnTagBuffFactory whenBlessed = (ApplyBuffOnTagBuffFactory)held.buffFactoryList.Find(buff => buff is ApplyBuffOnTagBuffFactory);
+        Assert.AreSame(blessed.tag, whenBlessed.data.tag);
+        Assert.AreEqual(TagTrigger.WhenTagged, whenBlessed.data.trigger);
+
+        ABuffHandlerFactory spread = whenBlessed.data.buffHandlerFactory;
+        Assert.AreEqual(DurationType.Instant, spread.durationType);
+        ApplyStatusOnRelativeCellBuffFactory blessAround = (ApplyStatusOnRelativeCellBuffFactory)spread.buffFactoryList.Find(buff => buff is ApplyStatusOnRelativeCellBuffFactory);
+        Assert.IsNotNull(blessAround);
+        Assert.AreSame(blessed, blessAround.data.status);
+        Assert.AreEqual(RelativeCellPatternType.Adjacent, blessAround.data.pattern);
+        Assert.AreEqual(1, blessAround.data.range);
+
+        // The cells it blesses are shown on the ground around the unit
+        ShowRelativeCellsBuffFactory zone = (ShowRelativeCellsBuffFactory)held.buffFactoryList.Find(buff => buff is ShowRelativeCellsBuffFactory);
+        Assert.IsNotNull(zone, "The blessed cells aren't shown");
+        Assert.AreEqual(blessAround.data.pattern, zone.data.pattern);
+        Assert.AreEqual(blessAround.data.range, zone.data.range);
+        Assert.IsNotNull(zone.data.cellPrefab);
+    }
+
     [Test]
     public void Beacon_CopiesTheHealsOfTheCharacterFor40PercentOnItsAdjacentAllies()
     {
