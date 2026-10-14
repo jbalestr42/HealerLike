@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 using Oisif.Inspector;
 
 [CreateAssetMenu(menuName = "Custom/Data/Buff/BuffEveryNthSkillBuff")]
@@ -18,12 +19,13 @@ public class BuffEveryNthSkillBuffData
 }
 
 // Held by the character (e.g. the Rosary, every fifth spell free): the skills used are counted, the buff given once
-// count - 1 of them are used, until the next one, then counting again
-public class BuffEveryNthSkillBuff : ABuff<BuffEveryNthSkillBuffData>
+// count - 1 of them are used, until the next one, then counting again. The count is shown on the icon of the item
+public class BuffEveryNthSkillBuff : ABuff<BuffEveryNthSkillBuffData>, ICounterBuff
 {
     Character _owner;
     int _used = 0;
     bool _isGiven = false;
+    readonly UnityEvent _onCounterChanged = new UnityEvent();
 
     // Skills used since the last one used with the buff
     public int used => _used;
@@ -60,10 +62,12 @@ public class BuffEveryNthSkillBuff : ABuff<BuffEveryNthSkillBuffData>
         {
             TakeBack();
             _used = 0;
+            _onCounterChanged.Invoke();
             return;
         }
 
         _used++;
+        _onCounterChanged.Invoke();
         if (_used >= data.count - 1 && data.buffHandlerFactory != null)
         {
             _isGiven = true;
@@ -76,4 +80,13 @@ public class BuffEveryNthSkillBuff : ABuff<BuffEveryNthSkillBuffData>
         _isGiven = false;
         _owner.GetComponent<BuffManager>().RemoveHandler(data.buffHandlerFactory, _owner.gameObject, _owner.gameObject);
     }
+
+    #region ICounterBuff
+
+    // The skills used toward the next one with the buff (e.g. 4 of 5: the next spell is free)
+    public int counter => _used;
+    public int counterMax => data.count;
+    public UnityEvent OnCounterChanged => _onCounterChanged;
+
+    #endregion
 }

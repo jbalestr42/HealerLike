@@ -254,6 +254,20 @@ public class BuffManager : MonoBehaviour
         return false;
     }
 
+    // The first buff currently applied from this factory, whatever its source, null if none. Allocates nothing, for
+    // the lookups made on each buff event (e.g. the counter of an item, for its icon)
+    public ABuff GetFirstBuff(ABuffFactory buffFactory)
+    {
+        foreach (var buffPerSource in _buffPerSource)
+        {
+            if (buffPerSource.Value.buffPerId.TryGetValue(buffFactory.uniqueID, out BuffData buffData) && buffData.first != null)
+            {
+                return buffData.first;
+            }
+        }
+        return null;
+    }
+
     // Handlers currently applied, whatever their source
     public List<BuffHandlerData> GetActiveHandlers()
     {

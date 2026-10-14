@@ -57,7 +57,7 @@ public class PlayerItemBar : MonoBehaviour
     void AddIcon(AItem item)
     {
         PlayerItemIcon icon = Instantiate(_iconPrefab, transform);
-        icon.Init(item);
+        icon.Init(item, _character != null ? _character.GetComponent<BuffManager>() : null);
         _icons.Add(icon);
     }
 

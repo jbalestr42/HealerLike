@@ -113,6 +113,31 @@ public class BuffEveryNthSkillBuffTests
 
         Assert.IsTrue(HasTheBuff());
     }
+
+    // Shown on the Rosary icon: the skills used toward the fifth, e.g. 4 when the next one is free
+    [Test]
+    public void Counter_TheSkillsUsedTowardTheCount()
+    {
+        Assert.AreEqual(0, _buff.counter);
+        Assert.AreEqual(5, _buff.counterMax);
+
+        UseSkills(4);
+        Assert.AreEqual(4, _buff.counter);
+
+        UseSkills(1);
+        Assert.AreEqual(0, _buff.counter);
+    }
+
+    [Test]
+    public void OnCounterChanged_EachSkillUsed_TheFreeOneToo()
+    {
+        int changes = 0;
+        _buff.OnCounterChanged.AddListener(() => changes++);
+
+        UseSkills(5);
+
+        Assert.AreEqual(5, changes);
+    }
 }
 
 }

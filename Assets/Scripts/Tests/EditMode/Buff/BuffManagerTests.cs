@@ -623,6 +623,45 @@ public class BuffManagerTests
     }
 
     [Test]
+    public void GetFirstBuff_WithoutTheBuff_IsNull()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+
+        Assert.IsNull(_buffManager.GetFirstBuff(buffFactory));
+    }
+
+    // Once applied by the update, e.g. the counter of an item found from the item icon
+    [Test]
+    public void GetFirstBuff_OnceApplied_TheBuff()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Infinite);
+
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        Assert.IsNull(_buffManager.GetFirstBuff(buffFactory));
+        _buffManager.ForceUpdate();
+
+        Assert.IsInstanceOf<FakeBuff>(_buffManager.GetFirstBuff(buffFactory));
+    }
+
+    [Test]
+    public void GetFirstBuff_OnceRemoved_IsNull()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Infinite);
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        _buffManager.RemoveHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+
+        Assert.IsNull(_buffManager.GetFirstBuff(buffFactory));
+    }
+
+    [Test]
     public void HasHandler_WithoutAnyHandler_IsFalse()
     {
         FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
