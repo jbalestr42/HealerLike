@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using Entities;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Buff
 {
@@ -66,6 +68,96 @@ public class ReviveOnDeathBuffTests
         _buff.Rearm();
 
         Assert.IsTrue(_owner.TryPreventDeath());
+    }
+
+    // Halo: no part of the max health, 1 health
+    [Test]
+    public void Death_FlatHealth_AddedToTheRatio()
+    {
+        _buff.data.healthRatio = 0f;
+        _buff.data.flatHealth = 1f;
+
+        _owner.TryPreventDeath();
+        TestUnits.Process(_owner.health);
+
+        Assert.AreEqual(1f, _owner.health.Value, 0.0001f);
+    }
+
+    [Test]
+    public void Death_FlatHealthAndRatio_BothHealed()
+    {
+        _buff.data.flatHealth = 5f;
+
+        _owner.TryPreventDeath();
+        TestUnits.Process(_owner.health);
+
+        Assert.AreEqual(35f, _owner.health.Value, 0.0001f);
+    }
+
+    // Halo: invincible for a while, from itself
+    [Test]
+    public void Death_WithABuff_TheHolderGetsIt()
+    {
+        BuffHandlerFactory handler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+        handler.data = new BuffHandlerData { durationType = DurationType.Duration, duration = 2f, maxStacks = 1, buffFactoryList = new List<ABuffFactory>(), tags = new List<GameplayTag>() };
+        try
+        {
+            _buff.data.buffHandlerFactory = handler;
+            BuffManager buffManager = _owner.GetComponent<BuffManager>();
+            buffManager.isEnabled = true;
+
+            _owner.TryPreventDeath();
+            buffManager.ForceUpdate();
+
+            BuffManager.BuffHandlerData given = buffManager.GetActiveHandlers().Find(h => h.buffHandlerFactory == handler);
+            Assert.IsNotNull(given);
+            Assert.AreSame(_owner.gameObject, given.source);
+        }
+        finally
+        {
+            Object.DestroyImmediate(handler);
+        }
+    }
+
+    // Halo: kept alive and blessed, from itself
+    [Test]
+    public void Death_WithAStatus_TheHolderGetsIt()
+    {
+        BuffHandlerFactory statusHandler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+        statusHandler.data = new BuffHandlerData { durationType = DurationType.Duration, duration = 4f, maxStacks = 1, buffFactoryList = new List<ABuffFactory>(), tags = new List<GameplayTag>() };
+        StatusData status = ScriptableObject.CreateInstance<StatusData>();
+        status.buffHandlerFactory = statusHandler;
+        try
+        {
+            _buff.data.status = status;
+            BuffManager buffManager = _owner.GetComponent<BuffManager>();
+            buffManager.isEnabled = true;
+
+            _owner.TryPreventDeath();
+            buffManager.ForceUpdate();
+
+            BuffManager.BuffHandlerData given = buffManager.GetActiveHandlers().Find(handler => handler.buffHandlerFactory == statusHandler);
+            Assert.IsNotNull(given);
+            Assert.AreSame(_owner.gameObject, given.source);
+        }
+        finally
+        {
+            Object.DestroyImmediate(status);
+            Object.DestroyImmediate(statusHandler);
+        }
+    }
+
+    // Phylactery: no buff nor status, nothing more
+    [Test]
+    public void Death_WithoutBuffNorStatus_GivesNoBuff()
+    {
+        BuffManager buffManager = _owner.GetComponent<BuffManager>();
+        buffManager.isEnabled = true;
+
+        _owner.TryPreventDeath();
+        buffManager.ForceUpdate();
+
+        CollectionAssert.IsEmpty(buffManager.GetActiveHandlers());
     }
 
     [Test]

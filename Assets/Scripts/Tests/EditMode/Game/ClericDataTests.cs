@@ -583,6 +583,34 @@ public class ClericDataTests
         Assert.IsNotNull(zone.data.cellPrefab);
     }
 
+    // A Cleric unit item: the first death of each fight is prevented, the unit left with 1 health, invincible for 2s
+    // (the time to heal it) and blessed
+    [Test]
+    public void Halo_FirstDeathOfAFight_1HealthInvincibleFor2sAndBlessed_OnlyForTheCleric()
+    {
+        ItemFactory halo = AssetDatabase.LoadAssetAtPath<ItemFactory>("Assets/Data/EntityItems/HaloItem/HaloItem.asset");
+        Assert.IsNotNull(halo);
+        Assert.AreEqual("Halo", halo.data.name);
+        Assert.IsFalse(string.IsNullOrEmpty(halo.data.description));
+        Assert.IsNotNull(halo.data.icon);
+        Assert.IsTrue(halo.HasTag(TagNames.Entity));
+        Assert.IsTrue(halo.HasTag(_cleric.classTag));
+        Assert.IsTrue(AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/GameData.asset").items.Contains(halo), "Never dropped");
+
+        ABuffHandlerFactory held = halo.data.buffs.Find(handler => handler.buffFactoryList.Exists(buff => buff is ReviveOnDeathBuffFactory));
+        Assert.IsNotNull(held);
+        Assert.AreEqual(DurationType.Infinite, held.durationType);
+        ReviveOnDeathBuffFactory revive = (ReviveOnDeathBuffFactory)held.buffFactoryList.Find(buff => buff is ReviveOnDeathBuffFactory);
+        Assert.AreEqual(0f, revive.data.healthRatio);
+        Assert.AreEqual(1f, revive.data.flatHealth);
+        ABuffHandlerFactory invincibility = revive.data.buffHandlerFactory;
+        Assert.IsNotNull(invincibility);
+        Assert.AreEqual(DurationType.Duration, invincibility.durationType);
+        Assert.AreEqual(2f, invincibility.duration, 0.0001f);
+        Assert.IsTrue(invincibility.buffFactoryList.Exists(buff => buff is InvincibilityBuffFactory));
+        Assert.AreSame(AssetDatabase.LoadAssetAtPath<StatusData>(BlessedStatusPath), revive.data.status);
+    }
+
     [Test]
     public void Beacon_CopiesTheHealsOfTheCharacterFor40PercentOnItsAdjacentAllies()
     {

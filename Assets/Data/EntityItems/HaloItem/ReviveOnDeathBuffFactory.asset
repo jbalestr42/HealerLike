@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40119988729b4311a31cd6ac5621b1de, type: 3}
+  m_Name: ReviveOnDeathBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::ReviveOnDeathBuffFactory
+  uniqueID: a3d28847-aece-4a37-b5f0-ec7e14587496
+  data:
+    healthRatio: 0
+    flatHealth: 1
+    buffHandlerFactory: {fileID: 11400000, guid: 19e014e4f4b40b348a3c86e692a5a64c, type: 2}
+    status: {fileID: 11400000, guid: 21c11bc514747d84097073a012941dd5, type: 2}
