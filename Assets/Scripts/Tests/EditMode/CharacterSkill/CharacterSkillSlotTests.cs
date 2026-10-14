@@ -103,6 +103,35 @@ public class CharacterSkillSlotTests
 
         Assert.AreEqual(1, _skill.useCount);
     }
+
+    // Counted by the items reacting to each spell (e.g. the Rosary)
+    [Test]
+    public void UseSkill_Used_TellsTheCharacter()
+    {
+        Character character = null;
+        TestHelpers.WithLoggingDisabled(() => character = _owner.AddComponent<Character>());
+        List<CharacterSkillData> used = new List<CharacterSkillData>();
+        character.OnSkillUsed.AddListener(used.Add);
+        _slot.Init(_skill, _skillButton, useValidators: false);
+
+        _slot.UseSkill();
+
+        CollectionAssert.AreEqual(new[] { _skill.data }, used);
+    }
+
+    [Test]
+    public void UseSkill_Blocked_DoesNotTellTheCharacter()
+    {
+        Character character = null;
+        TestHelpers.WithLoggingDisabled(() => character = _owner.AddComponent<Character>());
+        int used = 0;
+        character.OnSkillUsed.AddListener(skill => used++);
+        _slot.Init(_skill, _skillButton);
+
+        _slot.UseSkill();
+
+        Assert.AreEqual(0, used);
+    }
 }
 
 }

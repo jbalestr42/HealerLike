@@ -633,6 +633,52 @@ public class ClericDataTests
         Assert.AreEqual(Entity.EntityType.Player, onOverheal.data.healedType);
     }
 
+    // A Cleric character item: every fifth spell is free, the free one shown by its icon and kept from a fight to the
+    // next until used
+    [Test]
+    public void Rosary_EveryFifthSpellFree_OnlyForTheCleric()
+    {
+        ItemFactory rosary = AssetDatabase.LoadAssetAtPath<ItemFactory>("Assets/Data/PlayerItems/RosaryItem/RosaryItem.asset");
+        Assert.IsNotNull(rosary);
+        Assert.AreEqual("Rosary", rosary.data.name);
+        Assert.IsFalse(string.IsNullOrEmpty(rosary.data.description));
+        Assert.IsNotNull(rosary.data.icon);
+        Assert.IsTrue(rosary.HasTag(TagNames.Player));
+        Assert.IsTrue(rosary.HasTag(_cleric.classTag));
+        Assert.IsTrue(AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/GameData.asset").items.Contains(rosary), "Never dropped");
+
+        ABuffHandlerFactory held = rosary.data.buffs.Find(handler => handler.buffFactoryList.Exists(buff => buff is BuffEveryNthSkillBuffFactory));
+        Assert.IsNotNull(held);
+        Assert.AreEqual(DurationType.Infinite, held.durationType);
+        BuffEveryNthSkillBuffFactory everyFifth = (BuffEveryNthSkillBuffFactory)held.buffFactoryList.Find(buff => buff is BuffEveryNthSkillBuffFactory);
+        Assert.AreEqual(5, everyFifth.data.count);
+
+        ABuffHandlerFactory freeSpell = everyFifth.data.buffHandlerFactory;
+        Assert.IsNotNull(freeSpell);
+        Assert.AreEqual(DurationType.Infinite, freeSpell.durationType, "taken back by the free spell, not by time");
+        Assert.IsNotNull(freeSpell.icon, "The player sees the next spell is free");
+        Assert.IsTrue(freeSpell.HasTag(TagNames.Permanent), "Lost at the end of the fight before being used");
+        AssertModifier(freeSpell.buffFactoryList[0], AttributeType.SkillCostMultiplier, AttributeModifierType.Override, 0f);
+
+        // In play: the next spell costs nothing
+        GameObject character = new GameObject("Character");
+        try
+        {
+            TestHelpers.CreateAttributeManager(character);
+            BuffManager buffManager = character.AddComponent<BuffManager>();
+            buffManager.isEnabled = true;
+            buffManager.AddHandler(freeSpell, character, character);
+            buffManager.ForceUpdate();
+            character.GetComponent<AttributeManager>().ForceUpdate();
+
+            Assert.AreEqual(0f, ResourceValidator.GetCostMultiplier(character));
+        }
+        finally
+        {
+            Object.DestroyImmediate(character);
+        }
+    }
+
     [Test]
     public void Beacon_CopiesTheHealsOfTheCharacterFor40PercentOnItsAdjacentAllies()
     {

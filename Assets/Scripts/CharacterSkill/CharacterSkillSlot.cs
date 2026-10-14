@@ -74,6 +74,11 @@ public class CharacterSkillSlot : MonoBehaviour
                     {
                         validator.OnSkillUsed(gameObject);
                     }
+                    Character character = GetComponent<Character>();
+                    if (character != null)
+                    {
+                        character.OnSkillUsed.Invoke(_data);
+                    }
                 }
             });
         }

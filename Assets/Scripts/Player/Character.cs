@@ -6,6 +6,8 @@ public class Character : MonoBehaviour, IBuffable
 {
     // Each unit one of its skills was used on (e.g. to bless it), once the skill applied its effect
     public UnityEvent<GameObject> OnSkillAppliedOnTarget = new UnityEvent<GameObject>();
+    // Each skill used, once its cost is paid (not a skill cancelled while aiming)
+    public UnityEvent<CharacterSkillData> OnSkillUsed = new UnityEvent<CharacterSkillData>();
 
     CharacterData _data;
     public CharacterData data { get { return _data; } set { _data = value; } }
