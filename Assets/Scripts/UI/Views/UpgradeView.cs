@@ -32,7 +32,8 @@ public class UpgradeView : AView
 	public void FillChoices(int count)
     {
         GameData data = DataManager.instance.data;
-        List<EntityData> rewardEntities = DataManager.instance.GetRewardEntities(PlayerBehaviour.instance.character.data);
+        CharacterData character = PlayerBehaviour.instance.character.data;
+        List<EntityData> rewardEntities = DataManager.instance.GetRewardEntities(character);
 		for (int i = 0; i < count; i++)
         {
             // TODO: improve with a bit of abstraction when we have more upgrade types
@@ -46,12 +47,12 @@ public class UpgradeView : AView
             else if (type == RewardChoiceType.PlayerItem)
             {
                 upgradeButton = Instantiate(_upgradePlayerItem);
-                upgradeButton.GetComponent<SelectPlayerItemUpgradeButton>().Init(DataManager.instance.GetRandomItem(new List<string> { TagNames.Player }, RewardExcludedTags));
+                upgradeButton.GetComponent<SelectPlayerItemUpgradeButton>().Init(DataManager.instance.GetRandomItem(new List<string> { TagNames.Player }, RewardExcludedTags, character));
             }
             else
             {
                 upgradeButton = Instantiate(_upgradeItem);
-                upgradeButton.GetComponent<SelectItemUpgradeButton>().Init(DataManager.instance.GetRandomItem(new List<string> { TagNames.Entity }, RewardExcludedTags));
+                upgradeButton.GetComponent<SelectItemUpgradeButton>().Init(DataManager.instance.GetRandomItem(new List<string> { TagNames.Entity }, RewardExcludedTags, character));
             }
             upgradeButton.transform.SetParent(_upgradeContainer.transform);
             _upgradeButtons.Add(upgradeButton);

@@ -520,6 +520,31 @@ public class ClericDataTests
         }
     }
 
+    // A Cleric unit item: +2 armor as long as the unit is blessed
+    [Test]
+    public void HolyWater_2ArmorWhileBlessed_OnlyForTheCleric()
+    {
+        ItemFactory holyWater = AssetDatabase.LoadAssetAtPath<ItemFactory>("Assets/Data/EntityItems/HolyWaterItem/HolyWaterItem.asset");
+        Assert.IsNotNull(holyWater);
+        Assert.AreEqual("Holy Water", holyWater.data.name);
+        Assert.IsFalse(string.IsNullOrEmpty(holyWater.data.description));
+        Assert.IsNotNull(holyWater.data.icon);
+        Assert.IsTrue(holyWater.HasTag(TagNames.Entity));
+        Assert.IsTrue(holyWater.HasTag(_cleric.classTag), "Offered to the other classes, where it does nothing");
+        Assert.IsTrue(AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/GameData.asset").items.Contains(holyWater), "Never dropped");
+
+        ABuffHandlerFactory held = holyWater.data.buffs.Find(handler => handler.buffFactoryList.Exists(buff => buff is ApplyBuffOnTagBuffFactory));
+        Assert.IsNotNull(held);
+        Assert.AreEqual(DurationType.Infinite, held.durationType);
+        ApplyBuffOnTagBuffFactory whileBlessed = (ApplyBuffOnTagBuffFactory)held.buffFactoryList.Find(buff => buff is ApplyBuffOnTagBuffFactory);
+        Assert.AreSame(AssetDatabase.LoadAssetAtPath<StatusData>(BlessedStatusPath).tag, whileBlessed.data.tag);
+        Assert.AreEqual(TagTrigger.WhileTagged, whileBlessed.data.trigger);
+        ABuffHandlerFactory armor = whileBlessed.data.buffHandlerFactory;
+        Assert.AreEqual(DurationType.Infinite, armor.durationType, "taken back with the tag");
+        Assert.AreEqual(1, armor.buffFactoryList.Count);
+        AssertModifier(armor.buffFactoryList[0], AttributeType.FlatArmor, AttributeModifierType.Add, 2f);
+    }
+
     [Test]
     public void Beacon_CopiesTheHealsOfTheCharacterFor40PercentOnItsAdjacentAllies()
     {

@@ -849,7 +849,8 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     public IReadOnlyList<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null)
     {
-        return DataManager.instance.GetItems(includedTags, excludedTags);
+        // Only the items for the class of the character
+        return DataManager.instance.GetItems(includedTags, excludedTags, PlayerBehaviour.instance.character.data);
     }
 
     public void AddPlayerItem(AItem item)

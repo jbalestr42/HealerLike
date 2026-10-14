@@ -28,14 +28,16 @@ public class DataManager : Singleton<DataManager>
 
     // Items having every included tag and none of the excluded ones, a tag also matching its descendants
     // (e.g. the player items that aren't cursed). No item when an included tag isn't registered in the game
-    // data, an unknown excluded tag excludes nothing
-    public List<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null)
+    // data, an unknown excluded tag excludes nothing. With a character: only the items for its class (see
+    // ClassItemFilter)
+    public List<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null, CharacterData character = null)
     {
         if (!ResolveTags(includedTags, excludedTags, out List<GameplayTag> included, out List<GameplayTag> excluded))
         {
             return new List<AItemFactory>();
         }
-        return _data.items.FindAll(item => TagFilter.Matches(item, included, excluded));
+        return _data.items.FindAll(item => TagFilter.Matches(item, included, excluded)
+            && (character == null || ClassItemFilter.IsForCharacter(item, character, _data.characters)));
     }
 
     // Same as the items, for the units of the game data
@@ -88,9 +90,9 @@ public class DataManager : Singleton<DataManager>
     }
 
     // One of those items, null when there is none
-    public AItem GetRandomItem(List<string> includedTags, List<string> excludedTags = null)
+    public AItem GetRandomItem(List<string> includedTags, List<string> excludedTags = null, CharacterData character = null)
     {
-        List<AItemFactory> items = GetItems(includedTags, excludedTags);
+        List<AItemFactory> items = GetItems(includedTags, excludedTags, character);
         return items.Count > 0 ? items[Random.Range(0, items.Count)].GetItem() : null;
     }
 

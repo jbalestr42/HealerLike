@@ -10,7 +10,7 @@ public class RewardPools
     public float playerItemChance;
 
     // Same pools as the reward screen: the units of the class of the character tagged Reward, and the unit and
-    // player items but the cursed and library ones
+    // player items but the cursed and library ones and the ones of another class
     public static RewardPools Create(GameData data, CharacterData character)
     {
         RewardPools pools = new RewardPools
@@ -23,9 +23,15 @@ public class RewardPools
         {
             pools.units = data.entities.FindAll(unit => unit != null && unit.HasTag(character.classTag) && unit.HasTag(TagNames.Reward));
         }
-        pools.unitItems = data.items.FindAll(item => IsReward(item, TagNames.Entity));
-        pools.playerItems = data.items.FindAll(item => IsReward(item, TagNames.Player));
+        pools.unitItems = data.items.FindAll(item => IsReward(item, TagNames.Entity) && IsForCharacter(item, data, character));
+        pools.playerItems = data.items.FindAll(item => IsReward(item, TagNames.Player) && IsForCharacter(item, data, character));
         return pools;
+    }
+
+    // Without a character (e.g. listing every reward item), no class filter
+    static bool IsForCharacter(AItemFactory item, GameData data, CharacterData character)
+    {
+        return character == null || ClassItemFilter.IsForCharacter(item, character, data.characters);
     }
 
     static bool IsReward(AItemFactory item, string tagName)

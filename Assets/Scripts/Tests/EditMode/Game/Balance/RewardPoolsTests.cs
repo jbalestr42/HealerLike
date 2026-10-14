@@ -51,6 +51,42 @@ public class RewardPoolsTests
         Assert.IsFalse(all.Exists(item => item.HasTag(TagNames.Cursed) || item.HasTag(TagNames.Library)));
     }
 
+    // The items of its class or of no class, never the ones of another class
+    [TestCaseSource(nameof(CharacterPaths))]
+    public void Create_ItemsOfTheClassOfTheCharacterOrOfNoClass(string characterPath)
+    {
+        GameData data = LoadGameData();
+        CharacterData character = AssetDatabase.LoadAssetAtPath<CharacterData>(characterPath);
+
+        RewardPools pools = RewardPools.Create(data, character);
+
+        List<AItemFactory> all = new List<AItemFactory>(pools.unitItems);
+        all.AddRange(pools.playerItems);
+        foreach (CharacterData other in data.characters)
+        {
+            if (other != character && other.classTag != character.classTag)
+            {
+                Assert.IsFalse(all.Exists(item => item.HasTag(other.classTag) && !item.HasTag(character.classTag)), other.name);
+            }
+        }
+    }
+
+    // Holy Water only works with the Blessed status of the Cleric
+    [Test]
+    public void Create_HolyWater_OnlyForTheCleric()
+    {
+        GameData data = LoadGameData();
+        AItemFactory holyWater = AssetDatabase.LoadAssetAtPath<AItemFactory>("Assets/Data/EntityItems/HolyWaterItem/HolyWaterItem.asset");
+        Assert.IsNotNull(holyWater);
+
+        foreach (string path in CharacterPaths())
+        {
+            CharacterData character = AssetDatabase.LoadAssetAtPath<CharacterData>(path);
+            RewardPools pools = RewardPools.Create(data, character);
+            Assert.AreEqual(character.classTag.name == "Cleric", pools.unitItems.Contains(holyWater), path);
+        }
+    }
+
     [Test]
     public void Create_ChancesOfTheGameData()
     {
