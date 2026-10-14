@@ -39,6 +39,9 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
 
     ResourceAttribute _health;
     public ResourceAttribute health { get { return _health; } }
+    // Takes the damage before the health (e.g. the Relic of Light), up to the max health, empty at each fight
+    ResourceAttribute _shield;
+    public ResourceAttribute shield { get { return _shield; } }
     List<AConsumerFactory> _onHitConsumers = new List<AConsumerFactory>();
     List<ABuffHandlerFactory> _onHitEffects = new List<ABuffHandlerFactory>();
     public List<ABuffHandlerFactory> onHitEffects { get { return _onHitEffects; } set { _onHitEffects = value; } }
@@ -107,9 +110,16 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         }
 
         _health = gameObject.AddComponent<ResourceAttribute>();
-        _health.Init(ResourceType.Health, AttributeType.HealthMax);
+        _health.Init(ResourceType.Health, AttributeType.HealthMax, AttributeType.HealingReceived);
         _health.OnValueChanged.AddListener(OnHealthChanged);
         _health.OnAllConsumerProcessed.AddListener(OnConsumerProcessed);
+
+        // Empty until something gives some (e.g. the Relic of Light), never above the max health
+        _shield = gameObject.AddComponent<ResourceAttribute>();
+        _shield.Init(ResourceType.Shield, AttributeType.HealthMax);
+        _shield.fillWithMax = false;
+        _shield.SetValue(0f);
+        _health.outerLayer = _shield;
 
         // Init target behaviour from data
         _targetProvider.Init(data.targetBehaviourType, data.targetValidators);
@@ -278,6 +288,11 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         if (isEnabled)
         {
             _combatMeter.StartFight(Time.time);
+            // Each fight starts without shield
+            if (_shield != null)
+            {
+                _shield.SetValue(0f);
+            }
         }
         else
         {

@@ -611,6 +611,28 @@ public class ClericDataTests
         Assert.AreSame(AssetDatabase.LoadAssetAtPath<StatusData>(BlessedStatusPath), revive.data.status);
     }
 
+    // A Cleric character item: the overheal of the units becomes a shield on them, up to 20% of their max health
+    [Test]
+    public void RelicOfLight_OverhealBecomesAShieldUpTo20PercentOfTheMaxHealth_OnlyForTheCleric()
+    {
+        ItemFactory relic = AssetDatabase.LoadAssetAtPath<ItemFactory>("Assets/Data/PlayerItems/RelicOfLightItem/RelicOfLightItem.asset");
+        Assert.IsNotNull(relic);
+        Assert.AreEqual("Relic of Light", relic.data.name);
+        Assert.IsFalse(string.IsNullOrEmpty(relic.data.description));
+        Assert.IsNotNull(relic.data.icon);
+        Assert.IsTrue(relic.HasTag(TagNames.Player));
+        Assert.IsTrue(relic.HasTag(_cleric.classTag));
+        Assert.IsTrue(AssetDatabase.LoadAssetAtPath<GameData>("Assets/Data/GameData.asset").items.Contains(relic), "Never dropped");
+
+        ABuffHandlerFactory held = relic.data.buffs.Find(handler => handler.buffFactoryList.Exists(buff => buff is ShieldOnOverhealBuffFactory));
+        Assert.IsNotNull(held);
+        Assert.AreEqual(DurationType.Infinite, held.durationType);
+        ShieldOnOverhealBuffFactory onOverheal = (ShieldOnOverhealBuffFactory)held.buffFactoryList.Find(buff => buff is ShieldOnOverhealBuffFactory);
+        Assert.AreEqual(1f, onOverheal.data.ratio);
+        Assert.AreEqual(0.2f, onOverheal.data.maxHealthRatio, 0.0001f);
+        Assert.AreEqual(Entity.EntityType.Player, onOverheal.data.healedType);
+    }
+
     [Test]
     public void Beacon_CopiesTheHealsOfTheCharacterFor40PercentOnItsAdjacentAllies()
     {

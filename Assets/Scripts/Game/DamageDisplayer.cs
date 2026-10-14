@@ -32,6 +32,7 @@ public class DamageDisplayer : MonoBehaviour
         GameObject damagePopupGO = Instantiate(damagePopupPrefab, owner.GetComponent<Entity>().targetPoint.transform.position, Quaternion.identity);
         DamagePopup damagePopup = damagePopupGO.GetComponent<DamagePopup>();
         damagePopupGO.transform.SetParent(_parent.transform);
-        damagePopup.Init(resourceModifier.source, result.value);
+        // The whole hit, the part a shield took included: a hit shown as 0 would make no sense
+        damagePopup.Init(resourceModifier.source, result.totalValue);
     }
 }

@@ -7,17 +7,18 @@ public class ResourceConsumerResolver
     Attribute _hitArmor;
     Attribute _vulnerability;
     Attribute _criticalChanceResist;
-    Attribute _healingReceived;
+    // Multiplies the gains (e.g. HealingReceived for the heals of the health), none: the gains stay whole
+    Attribute _gainMultiplier;
 
-    public void Init(AttributeManager attributeManager)
+    public void Init(AttributeManager attributeManager, AttributeType? gainMultiplierType = null)
     {
         _percentArmor = attributeManager.GetOrAdd(AttributeType.PercentArmor);
         _flatArmor = attributeManager.GetOrAdd(AttributeType.FlatArmor);
         _hitArmor = attributeManager.GetOrAdd(AttributeType.HitArmor);
         _vulnerability = attributeManager.GetOrAdd(AttributeType.Vulnerability);
         _criticalChanceResist = attributeManager.GetOrAdd(AttributeType.CriticalChanceResist);
-        // A multiplier: heals are untouched by default, unlike the other attributes starting at 0
-        _healingReceived = attributeManager.GetOrAdd(AttributeType.HealingReceived);
+        // A multiplier: the gains are untouched by default, unlike the other attributes starting at 0
+        _gainMultiplier = gainMultiplierType.HasValue ? attributeManager.GetOrAdd(gainMultiplierType.Value) : null;
     }
 
     public (float value, bool isCritical) ComputeValue(ResourceAttribute resourceAttribute, ResourceModifier resourceModifier)
@@ -63,10 +64,10 @@ public class ResourceConsumerResolver
         }
 
         value *= resourceModifier.multiplier;
-        // Heals are positive
-        if (value > 0f)
+        // Gains are positive
+        if (value > 0f && _gainMultiplier != null)
         {
-            value *= _healingReceived.Value;
+            value *= _gainMultiplier.Value;
         }
         return (value, isCritical);
     }

@@ -438,6 +438,29 @@ public class EntityInfoFormatterTests
     }
 
     #endregion
+
+    ResourceAttribute CreateShield(float value)
+    {
+        GameObject shieldGo = new GameObject("Shield");
+        _objects.Add(shieldGo);
+        ResourceAttribute shield = TestHelpers.CreateResourceAttribute(shieldGo, ResourceType.Shield, AttributeType.HealthMax, 100f);
+        shield.SetValue(value);
+        return shield;
+    }
+
+    [Test]
+    public void FormatShield_ItsValue()
+    {
+        Assert.AreEqual("Shield: <b>12</b>", EntityInfoFormatter.FormatShield(CreateShield(12f)));
+    }
+
+    // Most units have no shield: no line
+    [Test]
+    public void FormatShield_Empty_NoLine()
+    {
+        Assert.IsNull(EntityInfoFormatter.FormatShield(CreateShield(0f)));
+        Assert.IsNull(EntityInfoFormatter.FormatShield(null));
+    }
 }
 
 }

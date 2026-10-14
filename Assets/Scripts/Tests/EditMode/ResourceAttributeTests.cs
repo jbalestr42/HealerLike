@@ -34,7 +34,8 @@ public class ResourceAttributeTests
     public void SetUp()
     {
         _targetGo = new GameObject();
-        _health = TestHelpers.CreateResourceAttribute(_targetGo, ResourceType.Health, AttributeType.HealthMax, 100f);
+        // As the units: the heals multiplied by HealingReceived
+        _health = TestHelpers.CreateResourceAttribute(_targetGo, ResourceType.Health, AttributeType.HealthMax, 100f, AttributeType.HealingReceived);
         _targetAttributeManager = _targetGo.GetComponent<AttributeManager>();
 
         _sourceGo = new GameObject();
@@ -928,6 +929,270 @@ public class ResourceAttributeTests
         SetMax(100f); // 90 / 100: same value, the views must show the new max
 
         Assert.AreEqual(100f, notifiedMax);
+    }
+
+    // A shield of 20 in front of the health, holding the given value
+    ResourceAttribute CreateShield(float value)
+    {
+        GameObject shieldGo = new GameObject("Shield");
+        shieldGo.transform.SetParent(_targetGo.transform);
+        ResourceAttribute shield = TestHelpers.CreateResourceAttribute(shieldGo, ResourceType.Shield, AttributeType.HealthMax, 20f);
+        shield.fillWithMax = false;
+        shield.SetValue(value);
+        _health.outerLayer = shield;
+        return shield;
+    }
+
+    [Test]
+    public void OuterLayer_TakesTheDamageFirst()
+    {
+        ResourceAttribute shield = CreateShield(15f);
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(5f, shield.Value);
+        Assert.AreEqual(100f, _health.Value);
+    }
+
+    [Test]
+    public void OuterLayer_Emptied_TheRestGoesToTheHealth()
+    {
+        ResourceAttribute shield = CreateShield(15f);
+        float processed = 0f;
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) => processed = result.value);
+
+        AddModifier(new FakeConsumer(-40f));
+        Drain();
+
+        Assert.AreEqual(0f, shield.Value);
+        Assert.AreEqual(75f, _health.Value);
+        Assert.AreEqual(-25f, processed, "the damage the health really took");
+    }
+
+    // The whole hit stays known, e.g. to show it above the unit
+    [Test]
+    public void OuterLayer_TheResultKeepsThePartItTook()
+    {
+        CreateShield(15f);
+        ConsumerResult processed = default;
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) => processed = result);
+
+        AddModifier(new FakeConsumer(-40f));
+        Drain();
+
+        Assert.AreEqual(-25f, processed.value);
+        Assert.AreEqual(15f, processed.absorbed);
+        Assert.AreEqual(-40f, processed.totalValue);
+    }
+
+    [Test]
+    public void OuterLayer_WholeHitTaken_TheResultIsStillTheWholeHit()
+    {
+        CreateShield(15f);
+        ConsumerResult processed = default;
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) => processed = result);
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(0f, processed.value);
+        Assert.AreEqual(-10f, processed.totalValue);
+    }
+
+    [Test]
+    public void NoOuterLayer_NothingAbsorbed()
+    {
+        ConsumerResult processed = default;
+        _health.OnAllConsumerProcessed.AddListener((go, modifier, result) => processed = result);
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(0f, processed.absorbed);
+        Assert.AreEqual(-10f, processed.totalValue);
+    }
+
+    // Two hits of the same frame share what it holds
+    [Test]
+    public void OuterLayer_SeveralHitsInAFrame_AbsorbsItsValueOnce()
+    {
+        CreateShield(15f);
+
+        AddModifier(new FakeConsumer(-10f));
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(95f, _health.Value);
+    }
+
+    // e.g. a Soul Link sharing the damage first: the shield only takes the part left to the holder
+    [Test]
+    public void OuterLayer_AfterTheListeners()
+    {
+        ResourceAttribute shield = CreateShield(15f);
+        _health.OnBeforeValueApplied.AddListener(pending => pending.value /= 4f);
+
+        AddModifier(new FakeConsumer(-20f));
+        Drain();
+
+        Assert.AreEqual(10f, shield.Value);
+        Assert.AreEqual(100f, _health.Value);
+    }
+
+    [Test]
+    public void OuterLayer_TheArmorAppliesBeforeIt()
+    {
+        _targetAttributeManager.Get(AttributeType.FlatArmor).BaseValue = 4f;
+        _targetAttributeManager.Get(AttributeType.FlatArmor).Update();
+        ResourceAttribute shield = CreateShield(15f);
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(9f, shield.Value);
+    }
+
+    [Test]
+    public void OuterLayer_NeverTakesAHeal()
+    {
+        ResourceAttribute shield = CreateShield(15f);
+        AddModifier(new FakeConsumer(-30f));
+        Drain(); // shield 0, health 85
+
+        AddModifier(new FakeConsumer(10f, ignoreDamageReduction: true, ignoreConsumerPrevention: true));
+        Drain();
+
+        Assert.AreEqual(0f, shield.Value);
+        Assert.AreEqual(95f, _health.Value);
+    }
+
+    // e.g. a lit fuse killing its holder whatever protects it
+    [Test]
+    public void OuterLayer_DamageIgnoringTheInvincibility_GoesThrough()
+    {
+        ResourceAttribute shield = CreateShield(15f);
+
+        AddModifier(new FakeConsumer(-10f, ignoreDamageReduction: true, ignoreConsumerPrevention: true));
+        Drain();
+
+        Assert.AreEqual(15f, shield.Value);
+        Assert.AreEqual(90f, _health.Value);
+    }
+
+    // A shield covering the shield: the damage goes through the layers from the outermost one
+    [Test]
+    public void OuterLayer_Chained_FromTheOutermost()
+    {
+        ResourceAttribute shield = CreateShield(10f);
+        GameObject outerGo = new GameObject("Outer");
+        outerGo.transform.SetParent(_targetGo.transform);
+        ResourceAttribute outer = TestHelpers.CreateResourceAttribute(outerGo, ResourceType.Shield, AttributeType.HealthMax, 20f);
+        outer.SetValue(5f);
+        shield.outerLayer = outer;
+
+        AddModifier(new FakeConsumer(-12f));
+        Drain();
+
+        Assert.AreEqual(0f, outer.Value);
+        Assert.AreEqual(3f, shield.Value);
+        Assert.AreEqual(100f, _health.Value);
+    }
+
+    // An empty layer still lets the one over it take the damage
+    [Test]
+    public void OuterLayer_EmptyButCovered_TheCoverTakesIt()
+    {
+        ResourceAttribute shield = CreateShield(0f);
+        GameObject outerGo = new GameObject("Outer");
+        outerGo.transform.SetParent(_targetGo.transform);
+        ResourceAttribute outer = TestHelpers.CreateResourceAttribute(outerGo, ResourceType.Shield, AttributeType.HealthMax, 20f);
+        outer.SetValue(8f);
+        shield.outerLayer = outer;
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(0f, outer.Value);
+        Assert.AreEqual(0f, shield.Value);
+        Assert.AreEqual(98f, _health.Value);
+    }
+
+    [Test]
+    public void OuterLayer_Empty_AllTheDamageGoesToTheHealth()
+    {
+        CreateShield(0f);
+
+        AddModifier(new FakeConsumer(-10f));
+        Drain();
+
+        Assert.AreEqual(90f, _health.Value);
+    }
+
+    // A shield earned by overheal: a bigger cap fills nothing
+    [Test]
+    public void NotFillingWithMax_MaxIncreased_OnlyRaisesTheCap()
+    {
+        _health.fillWithMax = false;
+        AddModifier(new FakeConsumer(-60f));
+        Drain(); // 40 / 100
+
+        SetMax(150f);
+
+        Assert.AreEqual(40f, _health.Value);
+        Assert.AreEqual(150f, _health.Max);
+    }
+
+    // Without gain multiplier (e.g. the mana or a shield), the gains stay whole whatever the attributes
+    [Test]
+    public void NoGainMultiplier_GainsStayWhole()
+    {
+        GameObject manaGo = new GameObject("Mana");
+        try
+        {
+            ResourceAttribute mana = TestHelpers.CreateResourceAttribute(manaGo, ResourceType.Mana, AttributeType.ManaMax, 100f);
+            AttributeManager attributes = manaGo.GetComponent<AttributeManager>();
+            Assert.IsFalse(attributes.Has(AttributeType.HealingReceived), "only added when used");
+            attributes.Add(AttributeType.HealingReceived, new Attribute(2f));
+            mana.SetValue(0f);
+            ResourceModifier gain = new ResourceModifier { source = _sourceGo };
+            gain.consumers.Add(new FakeConsumer(10f, ignoreDamageReduction: true, ignoreConsumerPrevention: true));
+            mana.AddResourceModifier(gain);
+
+            TestHelpers.InvokePrivate(mana, "Update");
+
+            Assert.AreEqual(10f, mana.Value);
+        }
+        finally
+        {
+            Object.DestroyImmediate(manaGo);
+        }
+    }
+
+    // Any attribute can multiply the gains of a resource
+    [Test]
+    public void GainMultiplier_AnyAttribute_MultipliesTheGains()
+    {
+        GameObject manaGo = new GameObject("Mana");
+        try
+        {
+            ResourceAttribute mana = TestHelpers.CreateResourceAttribute(manaGo, ResourceType.Mana, AttributeType.ManaMax, 100f, AttributeType.CombatManaRefill);
+            Attribute multiplier = manaGo.GetComponent<AttributeManager>().Get(AttributeType.CombatManaRefill);
+            multiplier.BaseValue = 2f;
+            multiplier.Update();
+            mana.SetValue(0f);
+            ResourceModifier gain = new ResourceModifier { source = _sourceGo };
+            gain.consumers.Add(new FakeConsumer(10f, ignoreDamageReduction: true, ignoreConsumerPrevention: true));
+            mana.AddResourceModifier(gain);
+
+            TestHelpers.InvokePrivate(mana, "Update");
+
+            Assert.AreEqual(20f, mana.Value);
+        }
+        finally
+        {
+            Object.DestroyImmediate(manaGo);
+        }
     }
 }
 

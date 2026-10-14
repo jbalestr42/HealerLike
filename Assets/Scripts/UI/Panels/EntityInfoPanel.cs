@@ -294,6 +294,11 @@ public class EntityInfoPanel : APanel
         {
             $"<b>{EntityInfoFormatter.FormatNumber(health.Value)} / {EntityInfoFormatter.FormatNumber(health.Max)}</b> <color={EntityInfoFormatter.MutedColor}>({Mathf.RoundToInt(health.percent * 100f)} %)</color>",
         };
+        string shield = EntityInfoFormatter.FormatShield(_entity.shield);
+        if (shield != null)
+        {
+            lines.Add(shield);
+        }
         if (health.preventConsumers)
         {
             lines.Add($"<color={EntityInfoFormatter.BonusColor}>Invulnerable</color>");

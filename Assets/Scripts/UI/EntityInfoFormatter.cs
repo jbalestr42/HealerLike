@@ -146,6 +146,16 @@ public static class EntityInfoFormatter
 
     #region Attributes
 
+    // "Shield: 12", null without any
+    public static string FormatShield(ResourceAttribute shield)
+    {
+        if (shield == null || shield.Value <= 0f)
+        {
+            return null;
+        }
+        return $"Shield: <b>{FormatNumber(shield.Value)}</b>";
+    }
+
     // "Damage: 12 (base 10)", the base is only shown when modifiers change the value
     public static string FormatAttribute(AttributeType type, Attribute attribute)
     {
