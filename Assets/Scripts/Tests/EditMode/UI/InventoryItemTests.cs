@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Entities;
 using NUnit.Framework;
 using UnityEngine;
@@ -106,6 +107,41 @@ public class InventoryItemTests
         Assert.IsEmpty(_from.items);
         Assert.AreEqual(1, _to.items.Count);
         Assert.AreEqual(2, _to.items[0].inventoryIndex);
+    }
+
+    class StubItem : AItem
+    {
+        public override void Equip(GameObject target) { }
+        public override void Unequip(GameObject target) { }
+        public override string title => "Stub";
+        public override string description => "";
+        public override Sprite icon => null;
+        public override List<GameplayTag> tags => new List<GameplayTag>();
+    }
+
+    // e.g. in the item catalog of the editor, to give it
+    [Test]
+    public void OnPointerClick_TheInventoryIsTold()
+    {
+        StubItem stub = new StubItem();
+        TestHelpers.SetPrivateField(_item, "_item", stub);
+        AItem clicked = null;
+        _from.OnItemClicked.AddListener(item => clicked = item);
+
+        _item.OnPointerClick(new PointerEventData(null));
+
+        Assert.AreSame(stub, clicked);
+    }
+
+    [Test]
+    public void OnPointerClick_WithoutItem_NothingTold()
+    {
+        bool told = false;
+        _from.OnItemClicked.AddListener(item => told = true);
+
+        _item.OnPointerClick(new PointerEventData(null));
+
+        Assert.IsFalse(told);
     }
 }
 

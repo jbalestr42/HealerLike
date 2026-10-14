@@ -37,6 +37,11 @@ public class GameHUD : MonoBehaviour
     // the max mana and the refill change with the items
     public Func<string> manaTooltip;
 
+#if UNITY_EDITOR
+    // Editor buttons created, each one on the right of the previous one
+    int _editorButtonCount = 0;
+#endif
+
     // The Devotion of the character shown, null when it builds none
     ResourceAttribute _devotion;
     bool _isTooltipShown;
@@ -109,16 +114,18 @@ public class GameHUD : MonoBehaviour
     }
 
 #if UNITY_EDITOR
-    // A button for testing in the editor only, never in a build: a copy of the next wave button, on its right
+    // A button for testing in the editor only, never in a build: a copy of the next wave button, on its right after
+    // the editor buttons already there
     public UnityEngine.UI.Button CreateEditorButton(string label)
     {
+        _editorButtonCount++;
         UnityEngine.UI.Button button = Instantiate(_nextWaveButton, _nextWaveButton.transform.parent);
         button.name = $"{label} (Editor)";
         // The copy would also call the listeners set on the original in the prefab
         button.onClick = new UnityEngine.UI.Button.ButtonClickedEvent();
         button.interactable = true;
         RectTransform rect = (RectTransform)button.transform;
-        rect.anchoredPosition += new Vector2(rect.sizeDelta.x + 10f, 0f);
+        rect.anchoredPosition += new Vector2((rect.sizeDelta.x + 10f) * _editorButtonCount, 0f);
         button.GetComponentInChildren<TMPro.TMP_Text>().text = label;
         return button;
     }

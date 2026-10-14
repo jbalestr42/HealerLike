@@ -18,6 +18,8 @@ public class InventoryHandler
 
     public UnityEvent<InventoryItemData, bool> OnItemAdded = new UnityEvent<InventoryItemData, bool>();
     public UnityEvent<InventoryItemData> OnItemRemoved = new UnityEvent<InventoryItemData>();
+    // An item of the inventory clicked, not dragged (e.g. in the item catalog of the editor, to give it)
+    public UnityEvent<AItem> OnItemClicked = new UnityEvent<AItem>();
 
     public void AddItem(AItem item, int inventoryIndex, bool isNewItem = true)
     {

@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 // An item in an inventory slot, dragged to another slot; its name and description shown in the tooltip on hover
-public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
+public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [SerializeField] TMPro.TMP_Text _descriptionText;
     [SerializeField] Image _background;
@@ -13,6 +13,7 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     InventoryHandler _inventoryHandler;
     Transform _root;
     AItem _item;
+    public AItem item => _item;
     bool _isToolTipShown;
     bool _isDragged;
 
@@ -125,6 +126,19 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         if (_isToolTipShown)
         {
             ShowToolTip(false);
+        }
+    }
+
+    #endregion
+
+    #region IPointerClickHandler
+
+    // Not sent after a drag
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (_inventoryHandler != null && _item != null)
+        {
+            _inventoryHandler.OnItemClicked.Invoke(_item);
         }
     }
 

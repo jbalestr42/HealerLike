@@ -67,6 +67,11 @@ public class AscensionGameType : AGameType, IEventRoomHost
     // The kind of fight of the wave: Combat, Elite or Boss (an event played as a combat is a Combat)
     MapNodeType _currentFightType;
 
+#if UNITY_EDITOR
+    // Editor only, every item of the game to try them (Items button)
+    ItemCatalogView _itemCatalog;
+#endif
+
     // Rooms climbed so far, the room being played included
     public int currentRound => _run != null ? _run.currentFloor + 1 : 0;
 
@@ -85,6 +90,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
         _gameView.gameHUD.nextWaveButton.onClick.AddListener(StartBattle);
 #if UNITY_EDITOR
         _gameView.gameHUD.CreateEditorButton("Kill Wave").onClick.AddListener(KillEnemyWave);
+        _gameView.gameHUD.CreateEditorButton("Items").onClick.AddListener(ToggleItemCatalog);
 #endif
         if (_gameView.gameHUD.mapButton != null)
         {
@@ -302,6 +308,18 @@ public class AscensionGameType : AGameType, IEventRoomHost
             StartBattle();
         }
         _entities.KillAll(Entity.EntityType.Computer);
+    }
+
+    // Editor only, to try the items: every item of the game, made the first time it is opened
+    void ToggleItemCatalog()
+    {
+        if (_itemCatalog == null)
+        {
+            SandboxButton buttonPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<SandboxButton>("Assets/Prefabs/UI/SandboxButton.prefab");
+            _itemCatalog = ItemCatalogView.Create(_gameView.playerInventory.inventory, buttonPrefab, DataManager.instance.items, AddUnitItem, AddPlayerItem);
+            return;
+        }
+        _itemCatalog.Show(!_itemCatalog.gameObject.activeSelf);
     }
 #endif
 
