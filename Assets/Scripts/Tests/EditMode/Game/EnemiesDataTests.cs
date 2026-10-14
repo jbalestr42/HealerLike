@@ -76,6 +76,49 @@ public class EnemiesDataTests
         return buff;
     }
 
+    // Armored, strikes twice then raises its guard: blocks 2 damage of each hit, then the next one whole
+    [Test]
+    public void ArmoredFootman_StrikesTwiceThenRaisesItsGuard()
+    {
+        EntityData footman = LoadEnemy("ArmoredFootman");
+
+        Assert.AreEqual("Armored Footman", footman.title);
+        Assert.IsFalse(string.IsNullOrEmpty(footman.description));
+        Assert.IsNotNull(footman.model);
+        Assert.AreEqual(2f, footman.attributes[AttributeType.FlatArmor]);
+        Assert.AreEqual(TargetBehaviourType.Nearest, footman.targetBehaviourType);
+        Assert.AreEqual(1, footman.skillFactories.Count);
+        ConfigurableSkillFactory skill = footman.skillFactories[0] as ConfigurableSkillFactory;
+        Assert.IsNotNull(skill);
+        List<ASkillStepFactory> steps = skill.data.skillStepFactories;
+        Assert.AreEqual(3, steps.Count);
+
+        // Two strikes, each followed by a wait of half its attack rate (0.5s)
+        RepeatSkillStepFactory strikes = steps[0] as RepeatSkillStepFactory;
+        Assert.IsNotNull(strikes);
+        Assert.AreEqual(2, strikes.data.count);
+        Assert.IsTrue(strikes.shootsAtTargets);
+        DurationSkillStepFactory strikeDelay = strikes.data.skillStepFactories[1] as DurationSkillStepFactory;
+        Assert.IsNotNull(strikeDelay);
+        AttributeValue delay = strikeDelay.data.duration as AttributeValue;
+        Assert.IsNotNull(delay);
+        Assert.AreEqual(AttributeType.AttackRate, delay.data.type);
+        Assert.AreEqual(0.5f, delay.data.multiplier * footman.attributes[AttributeType.AttackRate], 0.0001f);
+
+        // The guard: the next hit blocked, a single one however long it is not hit
+        ApplyBuffSkillStepFactory guard = steps[1] as ApplyBuffSkillStepFactory;
+        Assert.IsNotNull(guard);
+        Assert.AreEqual(DurationType.Instant, guard.data.buffHandlerFactory.durationType);
+        FlatModifierFactory hitArmor = guard.data.buffHandlerFactory.buffFactoryList[0] as FlatModifierFactory;
+        Assert.IsNotNull(hitArmor);
+        Assert.AreEqual(AttributeType.HitArmor, hitArmor.data.type);
+        Assert.AreEqual(AttributeModifierType.Override, hitArmor.data.modifierType);
+        Assert.AreEqual(1f, hitArmor.data.value);
+
+        // Then a pause in guard
+        Assert.IsInstanceOf<DurationSkillStepFactory>(steps[2]);
+    }
+
     [Test]
     public void Kamikaze_HasNoFuse()
     {
