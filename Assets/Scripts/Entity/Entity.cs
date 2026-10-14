@@ -76,9 +76,11 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     bool _isDraggable;
     public bool isDraggable { get { return _isDraggable; } }
 
-    // Tags given at runtime (e.g. Summon), on top of the tags of the data
-    List<GameplayTag> _runtimeTags = new List<GameplayTag>();
-    public List<GameplayTag> runtimeTags { get { return _runtimeTags; } }
+    // Tags given at runtime (e.g. Summon), on top of the tags of the data, with how many times each one was given:
+    // it goes once all of them are taken back (e.g. two blessings overlapping, the first one ending leaves the unit
+    // blessed)
+    Dictionary<GameplayTag, int> _runtimeTags = new Dictionary<GameplayTag, int>();
+    public IReadOnlyCollection<GameplayTag> runtimeTags { get { return _runtimeTags.Keys; } }
 
     // Asked in turn when the entity should die, the first one returning true keeps it alive (e.g. a revive)
     public delegate bool DeathPrevention(Entity dying);
@@ -220,9 +222,10 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
             return;
         }
 
-        if (!_runtimeTags.Contains(tag))
+        _runtimeTags.TryGetValue(tag, out int count);
+        _runtimeTags[tag] = count + 1;
+        if (count == 0)
         {
-            _runtimeTags.Add(tag);
             OnTagChanged.Invoke(tag, true);
         }
     }
@@ -251,12 +254,22 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         return false;
     }
 
+    // Taken back once as many times as it was given
     public void RemoveTag(GameplayTag tag)
     {
-        if (_runtimeTags.Remove(tag))
+        if (tag == null || !_runtimeTags.TryGetValue(tag, out int count))
         {
-            OnTagChanged.Invoke(tag, false);
+            return;
         }
+
+        if (count > 1)
+        {
+            _runtimeTags[tag] = count - 1;
+            return;
+        }
+
+        _runtimeTags.Remove(tag);
+        OnTagChanged.Invoke(tag, false);
     }
 
     public void Enable(bool isEnabled)
@@ -410,8 +423,8 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
     #region ITaggable
 
     // Has the tag, or one of its descendants, from the data or given at runtime
-    public bool HasTag(GameplayTag tag) => TagFilter.HasTag(_runtimeTags, tag) || (_data != null && _data.HasTag(tag));
-    public bool HasTag(string tagName) => TagFilter.HasTag(_runtimeTags, tagName) || (_data != null && _data.HasTag(tagName));
+    public bool HasTag(GameplayTag tag) => TagFilter.HasTag(_runtimeTags.Keys, tag) || (_data != null && _data.HasTag(tag));
+    public bool HasTag(string tagName) => TagFilter.HasTag(_runtimeTags.Keys, tagName) || (_data != null && _data.HasTag(tagName));
 
     #endregion
 }

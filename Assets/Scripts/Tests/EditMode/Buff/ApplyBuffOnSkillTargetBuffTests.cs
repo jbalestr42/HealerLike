@@ -105,6 +105,29 @@ public class ApplyBuffOnSkillTargetBuffTests
 
         Assert.IsNull(GetHandler(_ally));
     }
+
+    // e.g. the Blessing item: only the Blessed status
+    [Test]
+    public void WithAStatus_GivesItToo_FromTheCharacter()
+    {
+        BuffHandlerFactory statusHandler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+        statusHandler.data = new BuffHandlerData { durationType = DurationType.Duration, duration = 4f, maxStacks = 1, buffFactoryList = new List<ABuffFactory>() };
+        StatusData status = ScriptableObject.CreateInstance<StatusData>();
+        status.buffHandlerFactory = statusHandler;
+        _scriptableObjects.Add(statusHandler);
+        _scriptableObjects.Add(status);
+        _buff.data.buffHandlerFactory = null;
+        _buff.data.status = status;
+
+        _character.OnSkillAppliedOnTarget.Invoke(_ally.gameObject);
+
+        BuffManager buffManager = _ally.GetComponent<BuffManager>();
+        buffManager.ForceUpdate();
+        BuffManager.BuffHandlerData given = buffManager.GetActiveHandlers().Find(handler => handler.buffHandlerFactory == statusHandler);
+        Assert.IsNotNull(given);
+        Assert.AreSame(_characterGo, given.source);
+        Assert.IsNull(GetHandler(_ally));
+    }
 }
 
 }

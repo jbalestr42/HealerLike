@@ -8,9 +8,11 @@ public class ApplyBuffOnSkillTargetBuffFactory : BuffFactory<ApplyBuffOnSkillTar
 [Serializable]
 public class ApplyBuffOnSkillTargetBuffData
 {
-    // Given by the character to each unit one of its skills is used on
+    // Given by the character to each unit one of its skills is used on, none: only the status
     [CreateDataButton]
     public ABuffHandlerFactory buffHandlerFactory;
+    // Also given to each of these units (e.g. Blessed), none: only the buff
+    public StatusData status;
     // Side of the units getting it (e.g. only the allies, not the enemies hit by a spell)
     public Entity.EntityType entityType = Entity.EntityType.Player;
 }
@@ -42,11 +44,15 @@ public class ApplyBuffOnSkillTargetBuff : ABuff<ApplyBuffOnSkillTargetBuffData>
     void OnSkillAppliedOnTarget(GameObject target)
     {
         Entity entity = target != null ? target.GetComponent<Entity>() : null;
-        if (entity == null || data.buffHandlerFactory == null || (data.entityType != Entity.EntityType.Any && entity.entityType != data.entityType))
+        if (entity == null || (data.entityType != Entity.EntityType.Any && entity.entityType != data.entityType))
         {
             return;
         }
 
-        entity.GetComponent<BuffManager>().AddHandler(data.buffHandlerFactory, _owner.gameObject, entity.gameObject);
+        if (data.buffHandlerFactory != null)
+        {
+            entity.GetComponent<BuffManager>().AddHandler(data.buffHandlerFactory, _owner.gameObject, entity.gameObject);
+        }
+        entity.ApplyStatus(data.status, _owner.gameObject);
     }
 }

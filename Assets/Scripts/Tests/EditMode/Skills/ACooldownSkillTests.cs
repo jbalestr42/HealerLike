@@ -230,6 +230,46 @@ public class ACooldownSkillTests
 
         Assert.AreEqual(0f, skill.timeBeforeUse);
     }
+
+    // Used at once, then 4s of cooldown
+    [Test]
+    public void ReduceCooldown_TheNextUseComesThatMuchSooner()
+    {
+        FakeCooldownSkill skill = CreateSkill();
+        skill.Tick(_go, 0f);
+        Assert.AreEqual(4f, skill.timeBeforeUse, 0.0001f);
+
+        skill.ReduceCooldown(1f);
+
+        Assert.AreEqual(3f, skill.timeBeforeUse, 0.0001f);
+    }
+
+    [Test]
+    public void ReduceCooldown_MoreThanLeft_ReadyButNotUsedTwice()
+    {
+        FakeCooldownSkill skill = CreateSkill();
+        skill.Tick(_go, 0f);
+        skill.Tick(_go, 3.5f);
+
+        skill.ReduceCooldown(1f);
+        Assert.AreEqual(0f, skill.timeBeforeUse, 0.0001f);
+        skill.Tick(_go, 0f);
+
+        Assert.AreEqual(2, skill.uses);
+        // The time cut beyond the cooldown isn't kept for the next one
+        Assert.AreEqual(4f, skill.timeBeforeUse, 0.0001f);
+    }
+
+    [Test]
+    public void ReduceCooldown_Negative_NoLonger()
+    {
+        FakeCooldownSkill skill = CreateSkill();
+        skill.Tick(_go, 0f);
+
+        skill.ReduceCooldown(-1f);
+
+        Assert.AreEqual(4f, skill.timeBeforeUse, 0.0001f);
+    }
 }
 
 }

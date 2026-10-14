@@ -3,11 +3,11 @@ using Oisif.Editor;
 using UnityEditor;
 using UnityEngine;
 
-// The data of the game by kind (characters, skills, units, items, game data): each one listed, edited and created
+// The data of the game by kind (characters, skills, units, items, statuses, game data): each one listed, edited and created
 // in one window, the units and items filtered by tags
 public class DataEditor : AssetBrowserWindow
 {
-    static readonly string[] Tabs = { "Characters", "CharacterSkills", "Entities", "Items", "GameData" };
+    static readonly string[] Tabs = { "Characters", "CharacterSkills", "Entities", "Items", "Statuses", "GameData" };
 
     // Filter of the items: tags added from a dropdown, each one needed or excluded (right click to switch)
     enum TagFilterState
@@ -72,6 +72,9 @@ public class DataEditor : AssetBrowserWindow
                     getAssetName = GetItemName,
                     initDraft = data => ((ItemFactory)data).data = new ItemData { tags = new List<GameplayTag> { LoadTag(TagNames.Player), LoadTag(TagNames.Library) } },
                 });
+                break;
+            case "Statuses":
+                sections.Add(new AssetSection("Statuses", "Assets/Data/Statuses", typeof(StatusData)) { getAssetName = data => ((StatusData)data).title + "Status" });
                 break;
             case "GameData":
                 sections.Add(new AssetSection("", "Assets", typeof(GameData)) { canCreate = false, createFolder = false });

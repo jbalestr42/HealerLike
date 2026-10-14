@@ -19,4 +19,5 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 6e935ed9956f9214d8eaa148b4bb2c95, type: 2}
     - {fileID: 11400000, guid: a96d5c039d040da4380c4df5f02e419c, type: 2}
     - {fileID: 11400000, guid: d544705745d764549abacd8b0f82f1f9, type: 2}
+    status: {fileID: 11400000, guid: 21c11bc514747d84097073a012941dd5, type: 2}
     rate: 5

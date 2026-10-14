@@ -22,6 +22,7 @@ MonoBehaviour:
     stackAcrossSources: 0
     buffFactoryList:
     - {fileID: 11400000, guid: 509da1496b7dadf44a517996ee3f872d, type: 2}
+    - {fileID: 11400000, guid: 44af8318cc988294daa9213de38859aa, type: 2}
     buffEffect: {fileID: 0}
     icon: {fileID: 0}
     tags:

@@ -15,6 +15,10 @@ public class ShareCharacterHealBuffData
     public RelativeCellPatternType pattern = RelativeCellPatternType.Adjacent;
     [Min(1)]
     public int range = 1;
+    // While the holder has this tag (e.g. Blessed), the boosted ratio replaces the ratio; none: always the ratio
+    public GameplayTag boostTag;
+    [Min(0)]
+    public float boostedRatio = 0.6f;
 }
 
 // Beacon: each heal the character casts on an ally is copied, in part, on the most wounded ally around the
@@ -90,7 +94,13 @@ public class ShareCharacterHealBuff : ABuff<ShareCharacterHealBuffData>
                 around.Add(entity.gameObject);
             }
         }
-        LifeSteal.HealMostWounded(_owner.gameObject, around, heal.value * data.ratio);
+        LifeSteal.HealMostWounded(_owner.gameObject, around, heal.value * GetRatio());
+    }
+
+    // The boosted ratio while the holder has the boost tag
+    public float GetRatio()
+    {
+        return data.boostTag != null && _owner != null && _owner.HasTag(data.boostTag) ? data.boostedRatio : data.ratio;
     }
 
     protected virtual List<GameObject> GetAllies()

@@ -105,6 +105,15 @@ public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill, 
         }
     }
 
+    // The cycle goes on by this time at once, the steps falling in it played now (e.g. the next shot of a burst)
+    public void ReduceCooldown(float seconds)
+    {
+        if (seconds > 0f)
+        {
+            Tick(gameObject, seconds);
+        }
+    }
+
     #endregion
 
     #region IAttackSkill

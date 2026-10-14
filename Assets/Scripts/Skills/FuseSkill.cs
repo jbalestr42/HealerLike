@@ -32,7 +32,8 @@ public class FuseSkill : ASkill<FuseSkillData>, ICooldownSkill
         {
             if (_delay < 0f)
             {
-                _delay = UnityEngine.Random.Range(data.minDelay, Mathf.Max(data.minDelay, data.maxDelay));
+                // Random.Range can land a hair off a range of one value: a fixed delay stays exactly that delay
+                _delay = data.maxDelay > data.minDelay ? UnityEngine.Random.Range(data.minDelay, data.maxDelay) : data.minDelay;
             }
             return _delay;
         }
@@ -97,6 +98,15 @@ public class FuseSkill : ASkill<FuseSkillData>, ICooldownSkill
     public float cooldownProgress => _hasExploded ? 0f : Mathf.Clamp01(1f - _elapsed / delay);
 
     public float cooldownDuration => delay;
+
+    // The fuse burns faster: blows up on the next update once the delay is reached
+    public void ReduceCooldown(float seconds)
+    {
+        if (!_hasExploded)
+        {
+            _elapsed = Mathf.Min(delay, _elapsed + Mathf.Max(0f, seconds));
+        }
+    }
 
     #endregion
 }

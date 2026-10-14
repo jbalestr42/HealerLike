@@ -9,9 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be2b372e4c9b4b547acb9ede73ef1924, type: 3}
-  m_Name: ApplyBuffOnHealBuffFactory
-  m_EditorClassIdentifier: HealerLike.Runtime::ApplyBuffOnHealBuffFactory
-  uniqueID: 8ab661e2-f4e0-4174-be07-d4b039f98075
+  m_Script: {fileID: 11500000, guid: 74d4f1cdfa2f28942b98234ae82d9860, type: 3}
+  m_Name: ApplyBuffOnTagBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::ApplyBuffOnTagBuffFactory
+  uniqueID: 323e35b4-6685-4930-990c-64f29e2f4d3f
   data:
+    tag: {fileID: 11400000, guid: aa31deb09d45405428284e02dd5dcd7f, type: 2}
+    trigger: 2
     buffHandlerFactory: {fileID: 11400000, guid: 53625451ab4a7ef4d9d7668c2cafc4fe, type: 2}

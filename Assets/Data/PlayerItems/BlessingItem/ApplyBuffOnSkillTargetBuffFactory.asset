@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::ApplyBuffOnSkillTargetBuffFactory
   uniqueID: 18a9ff56-096c-4d48-8ada-383ca752e7dd
   data:
-    buffHandlerFactory: {fileID: 11400000, guid: 1e985d169d50f1e46a5514904d0ad7c9, type: 2}
+    buffHandlerFactory: {fileID: 0}
+    status: {fileID: 11400000, guid: 21c11bc514747d84097073a012941dd5, type: 2}
     entityType: 1

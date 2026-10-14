@@ -20,7 +20,7 @@ public class StatItemsDataTests
         new object[] { EntityItems + "HairTriggerItem/HairTriggerItem.asset", "Hair Trigger", "Entity" },
         new object[] { EntityItems + "LuckyCoinItem/LuckyCoinItem.asset", "Lucky Coin", "Entity" },
         new object[] { EntityItems + "ExecutionersEdgeItem/ExecutionersEdgeItem.asset", "Executioner's Edge", "Entity" },
-        new object[] { EntityItems + "BlessedCharmItem/BlessedCharmItem.asset", "Blessed Charm", "Entity" },
+        new object[] { EntityItems + "CharmOfMercyItem/CharmOfMercyItem.asset", "Charm of Mercy", "Entity" },
         new object[] { EntityItems + "GlassCannonItem/GlassCannonItem.asset", "Glass Cannon", "Entity" },
         new object[] { EntityItems + "TowerShieldItem/TowerShieldItem.asset", "Tower Shield", "Entity" },
         new object[] { EntityItems + "CursedIdolItem/CursedIdolItem.asset", "Cursed Idol", "Entity" },
@@ -174,9 +174,9 @@ public class StatItemsDataTests
     }
 
     [Test]
-    public void BlessedCharm_Adds30PercentHealingReceived()
+    public void CharmOfMercy_Adds30PercentHealingReceived()
     {
-        Equip("BlessedCharm");
+        Equip("CharmOfMercy");
 
         Assert.AreEqual(1.3f, Get(AttributeType.HealingReceived), 0.0001f);
     }

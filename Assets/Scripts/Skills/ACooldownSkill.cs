@@ -53,5 +53,11 @@ public abstract class ACooldownSkill<SkillData> : ASkill<SkillData>, ICooldownSk
 
     public abstract float cooldownDuration { get; }
 
+    // The time cut beyond the cooldown left isn't kept for the next one
+    public void ReduceCooldown(float seconds)
+    {
+        _cooldown = Mathf.Max(0f, _cooldown - Mathf.Max(0f, seconds));
+    }
+
     #endregion
 }

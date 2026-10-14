@@ -115,9 +115,13 @@ public class InteractionManager : Singleton<InteractionManager>
         return _interaction;
     }
 
-    public void SetInteraction(AInteraction interaction)
+    // keepSelection: the selected unit stays selected, its panel open (e.g. a spell aimed while looking at a unit)
+    public void SetInteraction(AInteraction interaction, bool keepSelection = true)
     {
-        CancelSelection();
+        if (!keepSelection)
+        {
+            CancelSelection();
+        }
         CancelInteraction();
         _interaction = interaction;
     }

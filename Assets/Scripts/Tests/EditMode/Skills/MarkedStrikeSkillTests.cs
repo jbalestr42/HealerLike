@@ -389,6 +389,37 @@ public class MarkedStrikeSkillTests
         _skill.Tick(Interval - 0.1f);
         Assert.IsFalse(_skill.isMarking);
     }
+
+    [Test]
+    public void ReduceCooldown_TheNextMarkComesThatMuchSooner()
+    {
+        _skill.Tick(2f);
+
+        _skill.ReduceCooldown(1f);
+
+        Assert.AreEqual(5f, _skill.remainingInterval, 0.0001f);
+    }
+
+    [Test]
+    public void ReduceCooldown_MoreThanLeft_MarksOnTheNextUpdate_WithTheWholeDelay()
+    {
+        _skill.ReduceCooldown(20f);
+        _skill.Tick(0f);
+
+        Assert.IsTrue(_skill.isMarking);
+        Assert.AreEqual(Delay, _skill.remainingDelay, 0.0001f);
+    }
+
+    // The units keep the whole delay to move out of a strike already marked
+    [Test]
+    public void ReduceCooldown_WhileMarking_TheStrikeKeepsItsDelay()
+    {
+        _skill.Tick(Interval);
+
+        _skill.ReduceCooldown(1f);
+
+        Assert.AreEqual(Delay, _skill.remainingDelay, 0.0001f);
+    }
 }
 
 }

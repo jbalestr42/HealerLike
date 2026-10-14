@@ -131,6 +131,49 @@ public class ShareCharacterHealBuffTests
         CollectionAssert.IsEmpty(TestUnits.GetPendingModifiers(_wounded));
     }
 
+    // Beacon blessed: 60% instead of 40%
+    [Test]
+    public void CharacterHeal_WhileTheHolderHasTheBoostTag_UsesTheBoostedRatio()
+    {
+        GameplayTag blessed = ScriptableObject.CreateInstance<GameplayTag>();
+        try
+        {
+            _buff.data.boostTag = blessed;
+            _buff.data.boostedRatio = 0.6f;
+            _beacon.AddTag(blessed);
+
+            Heal(_character, _healed, 20f);
+            TestUnits.Process(_wounded.health);
+
+            Assert.AreEqual(52f, _wounded.health.Value, 0.0001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(blessed);
+        }
+    }
+
+    [Test]
+    public void CharacterHeal_WithoutTheBoostTag_UsesTheRatio()
+    {
+        GameplayTag blessed = ScriptableObject.CreateInstance<GameplayTag>();
+        try
+        {
+            _buff.data.boostTag = blessed;
+            _buff.data.boostedRatio = 0.6f;
+
+            Assert.AreEqual(0.4f, _buff.GetRatio(), 0.0001f);
+            _beacon.AddTag(blessed);
+            Assert.AreEqual(0.6f, _buff.GetRatio(), 0.0001f);
+            _beacon.RemoveTag(blessed);
+            Assert.AreEqual(0.4f, _buff.GetRatio(), 0.0001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(blessed);
+        }
+    }
+
     [Test]
     public void CharacterHeal_OnAnEnemy_IsNotCopied()
     {

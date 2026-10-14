@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: BlessedZealBuffHandlerFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::BuffHandlerFactory
+  uniqueID: 95b633ce-e9f4-48da-a741-85cf3bb11b33
+  data:
+    durationType: 2
+    duration: 0
+    isPeriodic: 0
+    periodDuration: 0
+    maxStacks: 1
+    stackAcrossSources: 0
+    buffFactoryList:
+    - {fileID: 11400000, guid: fd5c2d14966940f4e879f68f772bc280, type: 2}
+    buffEffect: {fileID: 0}
+    icon: {fileID: 0}
+    tags: []

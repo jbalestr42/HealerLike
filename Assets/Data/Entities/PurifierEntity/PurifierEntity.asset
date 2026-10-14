@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 6891580169314388076, guid: 66ae442726d1cf4428dacb34edd61ac4, type: 3}
   title: Purifier
-  description: 'Doesn''t attack. Every 5s, removes a debuff from a random ally, then blesses a random ally for 5s: +50% attack speed, +3 damage or +2 armor'
+  description: 'Doesn''t attack. Every 5s, removes a debuff from a random ally, then blesses a random ally and gives it for 5s: +50% attack speed, +3 damage or +2 armor'
   attributes:
   - key: 0
     value: 150
@@ -32,6 +32,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
   - {fileID: 11400000, guid: 057ac9b64013d5b4a8e7cad3956503b8, type: 2}
   - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
-  items: []
+  items:
+  - {fileID: 11400000, guid: 11d365c464f00b74ba0af88a4440b8a4, type: 2}
   skillFactories:
   - {fileID: 11400000, guid: 75ffe167c7a478d41bf405e5dd75dc5b, type: 2}

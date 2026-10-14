@@ -33,9 +33,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 82c759f729084ad44a087a4608b18b6b, type: 2}
   - {fileID: 11400000, guid: a9b1d8816da4f9a42b38aba0789330fb, type: 2}
   entities:
-  - {fileID: 11400000, guid: 2042951354ead464aa1cd1fefcd8192c, type: 2}
   - {fileID: 11400000, guid: 5ae526315401c9343a385aee24faf7e0, type: 2}
-  - {fileID: 11400000, guid: e85cf5282617a01438e560dff6d97937, type: 2}
   - {fileID: 11400000, guid: e18e77831fceb7342a21e20e32807f03, type: 2}
   skills:
   - {fileID: 11400000, guid: 1ebca72647271b94ca5968b1b500f88d, type: 2}

@@ -7,11 +7,12 @@ namespace Game
 {
 
 // Checks the Cleric data: the strongest heals, cheap and frequent, building Devotion that the Shield and Judgment
-// spend, a last resort invincibility, and units rewarding a well healed team: Zealot, Radiant Archer, Purifier, Paladin
-// and Beacon
+// spend, a last resort invincibility, and units rewarding a well healed team: Radiant Archer and Paladin at the start,
+// Zealot, Purifier and Beacon recruited
 public class ClericDataTests
 {
     const string CharactersPath = "Assets/Data/Characters/";
+    const string BlessedStatusPath = "Assets/Data/Statuses/BlessedStatus/BlessedStatus.asset";
 
     CharacterData _cleric;
 
@@ -264,26 +265,31 @@ public class ClericDataTests
         ApplyBuffOnSkillTargetBuffFactory onSkill = (ApplyBuffOnSkillTargetBuffFactory)itemHandler.buffFactoryList.Find(buff => buff is ApplyBuffOnSkillTargetBuffFactory);
         Assert.AreEqual(Entity.EntityType.Player, onSkill.data.entityType, "Only the allies are blessed");
 
-        ABuffHandlerFactory blessed = onSkill.data.buffHandlerFactory;
+        // Only the status, nothing more
+        Assert.IsNull(onSkill.data.buffHandlerFactory);
+        StatusData status = onSkill.data.status;
+        Assert.AreSame(AssetDatabase.LoadAssetAtPath<StatusData>(BlessedStatusPath), status);
+        Assert.AreEqual("Blessed", status.title);
+        Assert.IsFalse(string.IsNullOrEmpty(status.description));
+        Assert.AreEqual("Blessed", status.tag.name);
+        Assert.IsTrue(status.GivesItsTag(), "The Blessed buff doesn't give the Blessed tag, or isn't tagged with it");
+
+        ABuffHandlerFactory blessed = status.buffHandlerFactory;
         Assert.AreEqual(DurationType.Duration, blessed.durationType);
         Assert.AreEqual(4f, blessed.duration, 0.001f);
         // A new spell refreshes it, whoever blessed the unit: the tag can't go away while another blessing lasts
         Assert.AreEqual(1, blessed.maxStacks);
         Assert.IsTrue(blessed.stackAcrossSources);
         Assert.IsNotNull(blessed.icon, "A blessed unit shows it");
-        AddTagBuffFactory addTag = (AddTagBuffFactory)blessed.buffFactoryList.Find(buff => buff is AddTagBuffFactory);
-        Assert.IsNotNull(addTag);
-        Assert.AreEqual("Blessed", addTag.data.tag.name);
-        // The effects reacting to every blessing, even on a unit already blessed, find it by its tag
-        Assert.IsTrue(blessed.HasTag(addTag.data.tag), "The Blessed buff isn't tagged Blessed");
     }
 
+    // A slower start: one damage dealer and one tank, the other units are recruited along the run
     [Test]
-    public void Cleric_StartsWithZealotRadiantArcherPurifierAndPaladin()
+    public void Cleric_StartsWithRadiantArcherAndPaladinOnly()
     {
         List<string> titles = _cleric.entities.ConvertAll(entity => entity.title);
 
-        CollectionAssert.AreEqual(new[] { "Zealot", "Radiant Archer", "Purifier", "Paladin" }, titles);
+        CollectionAssert.AreEqual(new[] { "Radiant Archer", "Paladin" }, titles);
     }
 
     // These units left the Cleric: they are no longer among its rewards
@@ -303,6 +309,7 @@ public class ClericDataTests
     [TestCase("PaladinEntity/PaladinEntity", TagNames.Tank)]
     [TestCase("PurifierEntity/PurifierEntity", TagNames.Support)]
     [TestCase("BeaconEntity/BeaconEntity", TagNames.Support)]
+    [TestCase("ZealotEntity/ZealotEntity", TagNames.Damage)]
     public void NewClericUnit_IsAClericRewardInItsRole_InTheGameData(string path, string role)
     {
         EntityData unit = LoadUnit(path);
@@ -315,11 +322,13 @@ public class ClericDataTests
         Assert.IsFalse(string.IsNullOrEmpty(unit.description));
     }
 
-    // Kept for later: a reward only
-    [Test]
-    public void Beacon_IsNotAStartingUnit()
+    // Recruited along the run only
+    [TestCase("BeaconEntity/BeaconEntity")]
+    [TestCase("ZealotEntity/ZealotEntity")]
+    [TestCase("PurifierEntity/PurifierEntity")]
+    public void RecruitOnlyUnit_IsNotAStartingUnit(string path)
     {
-        CollectionAssert.DoesNotContain(_cleric.entities, LoadUnit("BeaconEntity/BeaconEntity"));
+        CollectionAssert.DoesNotContain(_cleric.entities, LoadUnit(path));
     }
 
     static EntityData LoadUnit(string path)
@@ -344,6 +353,17 @@ public class ClericDataTests
         return buff;
     }
 
+    // The buff given by the effect reacting to the Blessed status
+    static ABuffHandlerFactory AssertOnBlessed(ABuffFactory buff, TagTrigger trigger)
+    {
+        ApplyBuffOnTagBuffFactory onTag = buff as ApplyBuffOnTagBuffFactory;
+        Assert.IsNotNull(onTag, "no Blessed effect");
+        Assert.AreEqual("Blessed", onTag.data.tag.name);
+        Assert.AreEqual(trigger, onTag.data.trigger);
+        Assert.IsNotNull(onTag.data.buffHandlerFactory);
+        return onTag.data.buffHandlerFactory;
+    }
+
     static void AssertModifier(ABuffFactory buff, AttributeType type, AttributeModifierType modifierType, float value)
     {
         FlatModifierFactory modifier = buff as FlatModifierFactory;
@@ -354,7 +374,7 @@ public class ClericDataTests
     }
 
     [Test]
-    public void RadiantArcher_EachHealGivesPlus3DamageAndPlus50PercentAttackSpeedFor5s()
+    public void RadiantArcher_EachBlessingGivesPlus3DamageAndPlus50PercentAttackSpeedFor5s()
     {
         EntityData archer = LoadUnit("RadiantArcherEntity/RadiantArcherEntity");
         Assert.AreEqual(5f, archer.attributes[AttributeType.Damage]);
@@ -362,7 +382,8 @@ public class ClericDataTests
         Assert.AreEqual(0.9f, archer.attributes[AttributeType.AttackRate], 0.0001f);
         Assert.AreEqual(1, archer.skillFactories.Count, "it attacks");
 
-        ABuffHandlerFactory radiance = GetItemBuff<ApplyBuffOnHealBuffFactory>(archer).data.buffHandlerFactory;
+        // Every blessing, even on an archer already blessed
+        ABuffHandlerFactory radiance = AssertOnBlessed(GetItemBuff<ApplyBuffOnTagBuffFactory>(archer), TagTrigger.EachApplication);
 
         Assert.AreEqual(DurationType.Duration, radiance.durationType);
         Assert.AreEqual(5f, radiance.duration, 0.0001f);
@@ -375,13 +396,15 @@ public class ClericDataTests
     }
 
     [Test]
-    public void Paladin_EachHealGivesPlus1ArmorFor10s_UpTo3()
+    public void Paladin_EachBlessingGivesPlus1ArmorFor10s_UpTo3()
     {
         EntityData paladin = LoadUnit("PaladinEntity/PaladinEntity");
         Assert.AreEqual(200f, paladin.attributes[AttributeType.HealthMax]);
         Assert.AreEqual(1, paladin.skillFactories.Count, "it attacks");
 
-        ABuffHandlerFactory devotion = GetItemBuff<ApplyBuffOnHealBuffFactory>(paladin).data.buffHandlerFactory;
+        // Renamed: the Devotion is the resource of the Cleric
+        Assert.AreEqual("Faithful Guard", ((ItemFactory)paladin.items[0]).data.name);
+        ABuffHandlerFactory devotion = AssertOnBlessed(GetItemBuff<ApplyBuffOnTagBuffFactory>(paladin), TagTrigger.EachApplication);
 
         Assert.AreEqual(DurationType.Duration, devotion.durationType);
         Assert.AreEqual(10f, devotion.duration, 0.0001f);
@@ -416,6 +439,87 @@ public class ClericDataTests
         AssertModifier(purify.data.buffHandlerFactories[2].buffFactoryList[0], AttributeType.FlatArmor, AttributeModifierType.Add, 2f);
     }
 
+    // Its blessings give the Blessed status, the same as the spells (one status, shown with its icon): the Blessed
+    // effects of the units react to them as to the spells
+    [Test]
+    public void Purifier_EachOfItsBlessingsGivesTheBlessedStatusOfTheSpells()
+    {
+        PurifySkillFactory purify = (PurifySkillFactory)LoadUnit("PurifierEntity/PurifierEntity").skillFactories[0];
+        ApplyBuffOnSkillTargetBuffFactory onSkill = AssetDatabase.LoadAssetAtPath<ApplyBuffOnSkillTargetBuffFactory>("Assets/Data/PlayerItems/BlessingItem/ApplyBuffOnSkillTargetBuffFactory.asset");
+
+        Assert.IsNotNull(purify.data.status);
+        Assert.AreSame(onSkill.data.status, purify.data.status);
+        // The tag comes from the status only, never hidden in a buff with another icon
+        foreach (ABuffHandlerFactory buff in purify.data.buffHandlerFactories)
+        {
+            Assert.IsFalse(buff.buffFactoryList.Exists(b => b is AddTagBuffFactory), buff.name);
+            Assert.IsFalse(buff.HasTag("Blessed"), buff.name);
+        }
+    }
+
+    // Swift Grace: each blessing, even on an already blessed Purifier, brings its next use 1s closer
+    [Test]
+    public void Purifier_EachBlessing_ItsNextUseComes1sSooner()
+    {
+        EntityData purifier = LoadUnit("PurifierEntity/PurifierEntity");
+        ItemFactory swiftGrace = (ItemFactory)purifier.items.Find(item => item != null && item.name == "SwiftGraceItem");
+        Assert.IsNotNull(swiftGrace, "The Purifier has no Swift Grace");
+        Assert.AreEqual("Swift Grace", swiftGrace.data.name);
+        Assert.IsFalse(string.IsNullOrEmpty(swiftGrace.data.description));
+        Assert.IsNotNull(swiftGrace.data.icon);
+
+        ABuffHandlerFactory held = swiftGrace.data.buffs.Find(handler => handler.buffFactoryList.Exists(buff => buff is ApplyBuffOnTagBuffFactory));
+        Assert.IsNotNull(held);
+        Assert.AreEqual(DurationType.Infinite, held.durationType);
+        ApplyBuffOnTagBuffFactory onBlessed = (ApplyBuffOnTagBuffFactory)held.buffFactoryList.Find(buff => buff is ApplyBuffOnTagBuffFactory);
+        Assert.AreSame(AssetDatabase.LoadAssetAtPath<StatusData>(BlessedStatusPath).tag, onBlessed.data.tag);
+        Assert.AreEqual(TagTrigger.EachApplication, onBlessed.data.trigger, "Only the first blessing would count");
+
+        ABuffHandlerFactory reduction = onBlessed.data.buffHandlerFactory;
+        Assert.AreEqual(DurationType.Instant, reduction.durationType);
+        ReduceCooldownBuffFactory reduce = (ReduceCooldownBuffFactory)reduction.buffFactoryList.Find(buff => buff is ReduceCooldownBuffFactory);
+        Assert.IsNotNull(reduce);
+        Assert.AreEqual(1f, reduce.data.seconds, 0.0001f);
+    }
+
+    // In play: blessed twice in a row, the second while still blessed, its cooldown loses 2s
+    [Test]
+    public void Purifier_BlessedTwice_ItsCooldownLoses2s()
+    {
+        EntityData purifier = LoadUnit("PurifierEntity/PurifierEntity");
+        ItemFactory swiftGrace = (ItemFactory)purifier.items.Find(item => item != null && item.name == "SwiftGraceItem");
+        StatusData blessed = AssetDatabase.LoadAssetAtPath<StatusData>(BlessedStatusPath);
+        Entities.TestUnits units = new Entities.TestUnits();
+        try
+        {
+            Entity unit = units.Create(100f, 100f, "Purifier");
+            BuffManager buffManager = unit.GetComponent<BuffManager>();
+            buffManager.isEnabled = true;
+            foreach (ABuffHandlerFactory handler in swiftGrace.data.buffs)
+            {
+                buffManager.AddHandler(handler, unit.gameObject, unit.gameObject);
+            }
+            buffManager.ForceUpdate();
+            // Just used: 4s before the next use
+            Skills.FakeCooldownSkill skill = unit.gameObject.AddComponent<Skills.FakeCooldownSkill>();
+            skill.data = new SkillDataBase { onSkillTriggerFactory = new List<AOnSkillTriggerFactory>() };
+            skill.Tick(unit.gameObject, 0f);
+
+            unit.ApplyStatus(blessed, unit.gameObject);
+            buffManager.ForceUpdate();
+            Assert.AreEqual(3f, skill.timeBeforeUse, 0.0001f, "first blessing");
+
+            unit.ApplyStatus(blessed, unit.gameObject);
+            buffManager.ForceUpdate();
+            Assert.IsTrue(unit.HasStatus(blessed));
+            Assert.AreEqual(2f, skill.timeBeforeUse, 0.0001f, "blessed again while blessed");
+        }
+        finally
+        {
+            units.DestroyAll();
+        }
+    }
+
     [Test]
     public void Beacon_CopiesTheHealsOfTheCharacterFor40PercentOnItsAdjacentAllies()
     {
@@ -435,6 +539,16 @@ public class ClericDataTests
         Assert.AreEqual("HealCell", zone.data.cellPrefab.name);
     }
 
+    [Test]
+    public void Beacon_Copies60PercentWhileBlessed()
+    {
+        ShareCharacterHealBuffFactory share = GetItemBuff<ShareCharacterHealBuffFactory>(LoadUnit("BeaconEntity/BeaconEntity"));
+
+        Assert.IsNotNull(share.data.boostTag);
+        Assert.AreEqual("Blessed", share.data.boostTag.name);
+        Assert.AreEqual(0.6f, share.data.boostedRatio, 0.0001f);
+    }
+
     // What the Purifier removes: the harmful buffs the enemies put on the units
     [TestCase("EntityItems/VenomItem/BuffHandlerFactory")]
     [TestCase("EntityItems/PlagueItem/BuffHandlerFactory")]
@@ -449,16 +563,9 @@ public class ClericDataTests
     }
 
     [Test]
-    public void Cleric_RecruitsTheZealot()
-    {
-        Assert.IsTrue(_cleric.entities.Exists(entity => entity != null && entity.title == "Zealot"));
-    }
-
-    [Test]
     public void Zealot_Deals50PercentMoreDamageAbove70PercentHealth()
     {
-        EntityData zealot = _cleric.entities.Find(entity => entity != null && entity.title == "Zealot");
-        Assert.IsNotNull(zealot);
+        EntityData zealot = LoadUnit("ZealotEntity/ZealotEntity");
         Assert.AreEqual(1, zealot.items.Count);
 
         ItemFactory zeal = zealot.items[0] as ItemFactory;
@@ -472,6 +579,33 @@ public class ClericDataTests
         Assert.AreEqual(AttributeModifierType.Multiply, modifier.data.modifierType);
         Assert.AreEqual(0.5f, modifier.data.value, 0.0001f);
         Assert.AreEqual(0.7f, modifier.data.threshold, 0.0001f);
+    }
+
+    [Test]
+    public void Zealot_Gets30PercentAttackSpeedWhileBlessed()
+    {
+        ItemFactory zeal = (ItemFactory)LoadUnit("ZealotEntity/ZealotEntity").items[0];
+        ABuffFactory onBlessed = zeal.data.buffs[0].buffFactoryList.Find(buff => buff is ApplyBuffOnTagBuffFactory);
+
+        ABuffHandlerFactory fervor = AssertOnBlessed(onBlessed, TagTrigger.WhileTagged);
+
+        Assert.AreEqual(DurationType.Infinite, fervor.durationType, "lasts as long as the blessing");
+        Assert.AreEqual(1, fervor.buffFactoryList.Count);
+        // The attack cooldown x0.77: 1.3 times as many attacks
+        AssertModifier(fervor.buffFactoryList[0], AttributeType.AttackRate, AttributeModifierType.Multiply, -0.23f);
+    }
+
+    // The units react to the blessings rather than the heals: their descriptions say it
+    [TestCase("RadiantArcherEntity/RadiantArcherEntity")]
+    [TestCase("PaladinEntity/PaladinEntity")]
+    [TestCase("ZealotEntity/ZealotEntity")]
+    [TestCase("PurifierEntity/PurifierEntity")]
+    [TestCase("BeaconEntity/BeaconEntity")]
+    public void ClericUnit_DescriptionMentionsTheBlessing(string path)
+    {
+        EntityData unit = LoadUnit(path);
+
+        StringAssert.Contains("bless", unit.description.ToLowerInvariant(), unit.title);
     }
 }
 

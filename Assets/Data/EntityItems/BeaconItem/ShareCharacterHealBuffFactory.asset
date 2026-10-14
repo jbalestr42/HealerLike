@@ -17,3 +17,5 @@ MonoBehaviour:
     ratio: 0.4
     pattern: 0
     range: 1
+    boostTag: {fileID: 11400000, guid: aa31deb09d45405428284e02dd5dcd7f, type: 2}
+    boostedRatio: 0.6

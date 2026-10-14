@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 1081930672269232, guid: e59aa7298768015418e3da8a9c8d85a8, type: 3}
   title: Radiant Archer
-  description: 'Each heal it receives fills it with light: +3 damage and +50% attack speed for 5s'
+  description: 'Each blessing it receives fills it with light: +3 damage and +50% attack speed for 5s'
   attributes:
   - key: 0
     value: 100

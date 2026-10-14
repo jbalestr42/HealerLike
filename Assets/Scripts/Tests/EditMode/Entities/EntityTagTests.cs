@@ -149,12 +149,38 @@ public class EntityTagTests
         _entity.OnTagChanged.AddListener((tag, isAdded) => changes.Add($"{tag.name}:{isAdded}"));
 
         _entity.AddTag(blessed);
-        // Already there, then already gone: nothing changes
+        // Already there, then still given once, then already gone: nothing changes
         _entity.AddTag(blessed);
+        _entity.RemoveTag(blessed);
         _entity.RemoveTag(blessed);
         _entity.RemoveTag(blessed);
 
         CollectionAssert.AreEqual(new[] { "Blessed:True", "Blessed:False" }, changes);
+    }
+
+    // Two buffs giving the same tag: the first one ending leaves it
+    [Test]
+    public void RemoveTag_GivenTwice_StaysUntilTakenBackTwice()
+    {
+        GameplayTag blessed = CreateTag("Blessed");
+        _entity.AddTag(blessed);
+        _entity.AddTag(blessed);
+
+        _entity.RemoveTag(blessed);
+        Assert.IsTrue(_entity.HasTag(blessed));
+
+        _entity.RemoveTag(blessed);
+        Assert.IsFalse(_entity.HasTag(blessed));
+    }
+
+    [Test]
+    public void RemoveTag_NeverGiven_IsIgnored()
+    {
+        GameplayTag summon = CreateTag("Summon");
+
+        Assert.DoesNotThrow(() => _entity.RemoveTag(summon));
+        Assert.DoesNotThrow(() => _entity.RemoveTag(null));
+        Assert.IsFalse(_entity.HasTag(summon));
     }
 }
 

@@ -244,5 +244,14 @@ public class MarkedStrikeSkill : ASkill<MarkedStrikeSkillData>, ICooldownSkill
     public float cooldownDuration => interval;
     public float cooldownProgress => interval > 0f ? remainingInterval / interval : 0f;
 
+    // Only the interval before the next mark: a strike already marked keeps its whole delay, for the units to move
+    public void ReduceCooldown(float seconds)
+    {
+        if (!isMarking && _timer < interval)
+        {
+            _timer = Mathf.Min(interval, _timer + Mathf.Max(0f, seconds));
+        }
+    }
+
     #endregion
 }

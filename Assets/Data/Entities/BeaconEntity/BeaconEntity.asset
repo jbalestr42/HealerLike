@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 6891580169314388076, guid: 66ae442726d1cf4428dacb34edd61ac4, type: 3}
   title: Beacon
-  description: Doesn't attack. Each heal you cast on an ally also heals the most wounded ally next to the Beacon for 40% of it
+  description: Doesn't attack. Each heal you cast on an ally also heals the most wounded ally next to the Beacon for 40% of it, 60% while the Beacon is blessed
   attributes:
   - key: 0
     value: 150

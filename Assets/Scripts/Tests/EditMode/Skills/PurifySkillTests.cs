@@ -159,6 +159,35 @@ public class PurifySkillTests
         Assert.AreSame(_purifier.gameObject, given.source);
     }
 
+    // Blessed: the same ally gets the status along with the buff
+    [Test]
+    public void GiveRandomBuff_AlsoGivesTheStatusToTheSameAlly_FromThePurifier()
+    {
+        ABuffHandlerFactory speed = CreateHandler("Speed");
+        ABuffHandlerFactory blessed = CreateHandler("Blessed");
+        _skill.data.buffHandlerFactories = new List<ABuffHandlerFactory> { speed };
+        StatusData status = Track(ScriptableObject.CreateInstance<StatusData>());
+        status.buffHandlerFactory = blessed;
+        _skill.data.status = status;
+
+        _skill.GiveRandomBuff(new List<Entity> { _ally });
+
+        CollectionAssert.IsSubsetOf(new[] { speed, blessed }, GetHandlers(_ally));
+        BuffManager.BuffHandlerData given = _ally.GetComponent<BuffManager>().GetActiveHandlers().Find(handler => handler.buffHandlerFactory == blessed);
+        Assert.AreSame(_purifier.gameObject, given.source);
+    }
+
+    [Test]
+    public void GiveRandomBuff_WithoutStatus_GivesOnlyTheBuff()
+    {
+        ABuffHandlerFactory speed = CreateHandler("Speed");
+        _skill.data.buffHandlerFactories = new List<ABuffHandlerFactory> { speed };
+
+        _skill.GiveRandomBuff(new List<Entity> { _ally });
+
+        CollectionAssert.AreEqual(new[] { speed }, GetHandlers(_ally));
+    }
+
     // Attack speed, damage or armor: each one comes up
     [Test]
     public void GiveRandomBuff_EveryBuffOfTheListCanBeGiven()
@@ -248,13 +277,54 @@ public class PurifySkillTests
     public void GetUpcomingTarget_TheAllyDied_AnotherLivingAlly()
     {
         _skill.data.buffHandlerFactories = new List<ABuffHandlerFactory> { CreateHandler("Blessing") };
-        _skill.allies = new List<GameObject> { _purifier.gameObject, _ally.gameObject };
+        Entity second = CreateUnit("Second", 100f);
+        _skill.allies = new List<GameObject> { _purifier.gameObject, _ally.gameObject, second.gameObject };
         GameObject upcoming = _skill.GetUpcomingTarget();
-        GameObject other = upcoming == _ally.gameObject ? _purifier.gameObject : _ally.gameObject;
+        GameObject other = upcoming == _ally.gameObject ? second.gameObject : _ally.gameObject;
 
         upcoming.GetComponent<Entity>().health.SetValue(0f);
 
         Assert.AreSame(other, _skill.GetUpcomingTarget());
+    }
+
+    // The purifier buffs the others, never itself
+    [Test]
+    public void GetUpcomingTarget_NeverThePurifier()
+    {
+        _skill.data.buffHandlerFactories = new List<ABuffHandlerFactory> { CreateHandler("Blessing") };
+        Random.InitState(1);
+
+        for (int i = 0; i < 20; i++)
+        {
+            Assert.AreSame(_ally.gameObject, _skill.GetUpcomingTarget(), $"use {i}");
+            _skill.Execute(_purifier.gameObject);
+        }
+    }
+
+    [Test]
+    public void GetUpcomingTarget_PurifierAlone_None()
+    {
+        _skill.data.buffHandlerFactories = new List<ABuffHandlerFactory> { CreateHandler("Blessing") };
+        _skill.allies = new List<GameObject> { _purifier.gameObject };
+
+        Assert.IsNull(_skill.GetUpcomingTarget());
+    }
+
+    // Alone, it still cleanses itself but gives no buff
+    [Test]
+    public void Execute_PurifierAlone_CleansesItselfWithoutBuff()
+    {
+        ABuffHandlerFactory poison = CreateHandler("Poison", _debuffTag);
+        ABuffHandlerFactory blessing = CreateHandler("Blessing");
+        _skill.data.buffHandlerFactories = new List<ABuffHandlerFactory> { blessing };
+        _skill.allies = new List<GameObject> { _purifier.gameObject };
+        Apply(_purifier, poison);
+
+        Assert.IsTrue(_skill.Execute(_purifier.gameObject));
+
+        List<ABuffHandlerFactory> handlers = GetHandlers(_purifier);
+        CollectionAssert.DoesNotContain(handlers, poison);
+        CollectionAssert.DoesNotContain(handlers, blessing);
     }
 
     [Test]

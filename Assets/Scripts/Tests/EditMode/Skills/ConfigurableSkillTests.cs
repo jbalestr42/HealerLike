@@ -103,6 +103,28 @@ public class ConfigurableSkillTests
 
         Assert.AreEqual(1f, _skill.cooldownProgress, 0.0001f);
     }
+
+    // In the pause after the burst: 2s left, 1s once reduced
+    [Test]
+    public void ReduceCooldown_TheCycleGoesOnByThatTime()
+    {
+        Play(1.5f);
+        Assert.AreEqual(2f / 3.5f, _skill.cooldownProgress, 0.0001f);
+
+        _skill.ReduceCooldown(1f);
+
+        Assert.AreEqual(1f / 3.5f, _skill.cooldownProgress, 0.0001f);
+    }
+
+    [Test]
+    public void ReduceCooldown_Negative_NothingChanges()
+    {
+        Play(1.5f);
+
+        _skill.ReduceCooldown(-1f);
+
+        Assert.AreEqual(2f / 3.5f, _skill.cooldownProgress, 0.0001f);
+    }
 }
 
 }

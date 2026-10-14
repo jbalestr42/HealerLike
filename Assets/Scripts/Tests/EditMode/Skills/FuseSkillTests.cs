@@ -217,6 +217,43 @@ public class FuseSkillTests
         Assert.AreEqual(0.75f, _skill.cooldownProgress, 0.0001f);
         Assert.AreEqual(10f, _skill.cooldownDuration);
     }
+
+    // Same min and max: exactly that delay, whatever the random draw
+    [Test]
+    public void FixedDelay_IsExactlyThatDelay()
+    {
+        for (int seed = 0; seed < 200; seed++)
+        {
+            Random.InitState(seed);
+            _skill.Reset();
+
+            Assert.AreEqual(10f, _skill.cooldownDuration, $"seed {seed}");
+        }
+    }
+
+    // The fuse burns 1s faster: blows up after 9s instead of 10s
+    [Test]
+    public void ReduceCooldown_BlowsUpThatMuchSooner()
+    {
+        _skill.ReduceCooldown(1f);
+
+        _skill.Tick(_kamikaze, 8.9f);
+        Assert.IsFalse(_skill.hasExploded);
+
+        _skill.Tick(_kamikaze, 0.1f);
+        Assert.IsTrue(_skill.hasExploded);
+    }
+
+    [Test]
+    public void ReduceCooldown_MoreThanLeft_BlowsUpOnTheNextUpdate()
+    {
+        _skill.ReduceCooldown(20f);
+
+        _skill.Tick(_kamikaze, 0f);
+
+        Assert.IsTrue(_skill.hasExploded);
+        Assert.AreEqual(0f, _skill.cooldownProgress);
+    }
 }
 
 }

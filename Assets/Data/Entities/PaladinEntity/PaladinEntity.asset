@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 873531700701352353, guid: 28d0a30d6aed6fc4c8ca473413f70c24, type: 3}
   title: Paladin
-  description: 'A holy knight: each heal it receives gives it +1 armor for 10s, up to +3'
+  description: 'A holy knight: each blessing it receives gives it +1 armor for 10s, up to +3'
   attributes:
   - key: 0
     value: 200

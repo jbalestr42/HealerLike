@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74d4f1cdfa2f28942b98234ae82d9860, type: 3}
+  m_Name: ApplyBuffOnTagBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::ApplyBuffOnTagBuffFactory
+  uniqueID: eff045c7-9315-411b-8c84-587e363717c7
+  data:
+    tag: {fileID: 11400000, guid: aa31deb09d45405428284e02dd5dcd7f, type: 2}
+    trigger: 2
+    buffHandlerFactory: {fileID: 11400000, guid: 91f96803eda92e446a452dd96a8c6d81, type: 2}

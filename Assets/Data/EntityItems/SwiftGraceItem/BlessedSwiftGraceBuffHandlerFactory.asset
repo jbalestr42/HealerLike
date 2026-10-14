@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
-  m_Name: DevotionBuffHandlerFactory
+  m_Name: BlessedSwiftGraceBuffHandlerFactory
   m_EditorClassIdentifier: HealerLike.Runtime::BuffHandlerFactory
-  uniqueID: 2c0a3479-1d5f-4732-886b-fe46e6116657
+  uniqueID: c862cd28-211b-465e-8e2f-cd5c1e2c5c5c
   data:
-    durationType: 1
-    duration: 10
+    durationType: 0
+    duration: 0
     isPeriodic: 0
     periodDuration: 0
-    maxStacks: 3
+    maxStacks: 1
     stackAcrossSources: 0
     buffFactoryList:
-    - {fileID: 11400000, guid: 1951676ac9a0ead4fb44483dba6c53f2, type: 2}
+    - {fileID: 11400000, guid: dde83ec9e3fbbac47b238cfe7e74a211, type: 2}
     buffEffect: {fileID: 0}
-    icon: {fileID: 21300000, guid: 51c302f64de43fe4b8b02506b6ed1918, type: 3}
+    icon: {fileID: 0}
     tags: []
