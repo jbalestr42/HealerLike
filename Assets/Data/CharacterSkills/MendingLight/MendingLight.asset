@@ -19,6 +19,8 @@ MonoBehaviour:
 
       Each ally healed gives <color=#FFE680>[{data:gainPerHeal.data.value.data.value}x-1] Devotion</color>
 
+      <color=#FFE680>Blesses</color> each ally healed
+
       Cost: <color=#8AB5FF>{cost:Mana}</color> mana
 
       Cooldown: <color=#FFCF70>{cooldown}s</color>'
@@ -27,8 +29,6 @@ MonoBehaviour:
     - {fileID: 11400000, guid: cbe82e8b2e005d84fbec32aaee6e2da9, type: 2}
     isSingle: 1
     entityType: 1
-    spendsResource: 0
-    spentResource: 2
     consumer: {fileID: 11400000, guid: 6eb1ab30de476e74db8c22b4fd9c0538, type: 2}
     multiplier: 0.25
     jumps: 3

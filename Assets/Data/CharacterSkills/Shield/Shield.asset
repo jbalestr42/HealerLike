@@ -17,6 +17,8 @@ MonoBehaviour:
     name: Shield
     description: 'Spend all your Devotion: give a single ally <color=#008080ff>+[{data:buffHandlerFactory|0.data.buffFactoryList|0.data.value}x100]%</color> armor per Devotion spent, up to <color=#008080ff>[{data:buffHandlerFactory|0.data.buffFactoryList|0.data.value}x{data:buffHandlerFactory|0.data.maxStacks}x100]%</color>, during <color="green">{data:buffHandlerFactory|0.data.duration}s</color>
 
+      <color=#FFE680>Blesses</color> the ally, even without Devotion
+
       Cost: <color=#8AB5FF>{cost:Mana}</color> mana
 
       Cooldown: <color=#FFCF70>{cooldown}s</color>'

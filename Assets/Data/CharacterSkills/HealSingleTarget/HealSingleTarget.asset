@@ -19,6 +19,8 @@ MonoBehaviour:
 
       Gives <color=#FFE680>[{cost:Devotion}x-1] Devotion</color>
 
+      <color=#FFE680>Blesses</color> the ally
+
       Cost: <color=#8AB5FF>{cost:Mana}</color> mana
 
       Cooldown: <color=#FFCF70>{cooldown}s</color>'
@@ -28,8 +30,5 @@ MonoBehaviour:
     - {fileID: 11400000, guid: f2f77290d2e0a44488c7921340c52437, type: 2}
     isSingle: 1
     entityType: 1
-    spendsResource: 0
-    spentResource: 2
     consumer: {fileID: 11400000, guid: 61e6b376a00fb444bb5eaa2d7a51e730, type: 2}
     multiplier: 0.5
-    multiplierPerSpent: 0

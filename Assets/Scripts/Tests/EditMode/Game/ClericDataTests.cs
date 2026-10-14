@@ -218,6 +218,17 @@ public class ClericDataTests
         CollectionAssert.AreEqual(new[] { sacredTome, blessing }, _cleric.items);
     }
 
+    // Every spell of the Cleric blesses the allies it touches (Blessing item): the player reads it on each spell
+    [Test]
+    public void EveryClericSkill_SaysItBlessesItsTargets()
+    {
+        foreach (ACharacterSkillFactory skill in _cleric.skills)
+        {
+            CharacterSkillData data = skill.Create().GetData();
+            StringAssert.Contains("Blesses", data.description, data.name);
+        }
+    }
+
     [Test]
     public void Cleric_HoldsUpTo5Devotion()
     {
