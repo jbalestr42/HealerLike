@@ -119,6 +119,65 @@ public class EnemiesDataTests
         Assert.IsInstanceOf<DurationSkillStepFactory>(steps[2]);
     }
 
+    // Goes for the unit with the most health (the tank), strikes it 3 times in a row, then pauses for 2s
+    [Test]
+    public void Duelist_StrikesTheHealthiestUnitThreeTimesThenPauses()
+    {
+        EntityData duelist = LoadEnemy("Duelist");
+
+        Assert.AreEqual("Duelist", duelist.title);
+        Assert.IsFalse(string.IsNullOrEmpty(duelist.description));
+        Assert.IsNotNull(duelist.model);
+        Assert.AreEqual(TargetBehaviourType.HighestHealth, duelist.targetBehaviourType);
+        Assert.AreEqual(1, duelist.skillFactories.Count);
+        ConfigurableSkillFactory skill = duelist.skillFactories[0] as ConfigurableSkillFactory;
+        Assert.IsNotNull(skill);
+        List<ASkillStepFactory> steps = skill.data.skillStepFactories;
+        Assert.AreEqual(2, steps.Count);
+
+        // Three strikes in a row, a short wait after each one
+        RepeatSkillStepFactory strikes = steps[0] as RepeatSkillStepFactory;
+        Assert.IsNotNull(strikes);
+        Assert.AreEqual(3, strikes.data.count);
+        Assert.IsTrue(strikes.shootsAtTargets);
+        AttributeValue strikeDelay = (strikes.data.skillStepFactories[1] as DurationSkillStepFactory).data.duration as AttributeValue;
+        Assert.IsNotNull(strikeDelay);
+        Assert.AreEqual(AttributeType.AttackRate, strikeDelay.data.type);
+        Assert.Less(strikeDelay.data.multiplier * duelist.attributes[AttributeType.AttackRate], 0.5f);
+
+        // Then the pause of 2s, shorter when its attacks are sped up (e.g. by a War Drum)
+        DurationSkillStepFactory pause = steps[1] as DurationSkillStepFactory;
+        Assert.IsNotNull(pause);
+        AttributeValue pauseDuration = pause.data.duration as AttributeValue;
+        Assert.IsNotNull(pauseDuration);
+        Assert.AreEqual(AttributeType.AttackRate, pauseDuration.data.type);
+        Assert.AreEqual(2f, pauseDuration.data.multiplier * duelist.attributes[AttributeType.AttackRate], 0.0001f);
+    }
+
+    // Strikes the most wounded unit, twice as hard when it is under half health
+    [Test]
+    public void Headsman_HitsTheMostWoundedUnit_TwiceAsHardUnderHalfHealth()
+    {
+        EntityData headsman = LoadEnemy("Headsman");
+
+        Assert.AreEqual("Headsman", headsman.title);
+        Assert.IsFalse(string.IsNullOrEmpty(headsman.description));
+        Assert.IsNotNull(headsman.model);
+        Assert.AreEqual(TargetBehaviourType.LowestHealth, headsman.targetBehaviourType);
+        Assert.AreEqual(1, headsman.skillFactories.Count);
+        ShootProjectileSkillFactory skill = headsman.skillFactories[0] as ShootProjectileSkillFactory;
+        Assert.IsNotNull(skill);
+
+        WoundedTargetConsumerFactory hit = skill.data.projectiles[0].onHitConsumer[0] as WoundedTargetConsumerFactory;
+        Assert.IsNotNull(hit);
+        Assert.AreEqual(0.5f, hit.data.healthThreshold, 0.0001f);
+        Assert.AreEqual(2f, hit.data.multiplier, 0.0001f);
+        AttributeValue damage = hit.data.value as AttributeValue;
+        Assert.IsNotNull(damage);
+        Assert.AreEqual(AttributeType.Damage, damage.data.type);
+        Assert.AreEqual(ConsumerValueOwner.Source, hit.data.valueOwner);
+    }
+
     [Test]
     public void Kamikaze_HasNoFuse()
     {

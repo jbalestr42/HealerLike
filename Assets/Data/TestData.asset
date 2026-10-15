@@ -66,31 +66,37 @@ MonoBehaviour:
     - {fileID: 11400000, guid: baf41a71c48a76d4f89dc7ad3c2d97ef, type: 2}
   - roomType: 0
     minFloor: 5
-    maxFloor: 5
+    maxFloor: 6
     wavePatterns:
-    - {fileID: 11400000, guid: 8161e30f498e47aa9369c3e1ce67f21f, type: 2}
-  - roomType: 0
-    minFloor: 5
-    maxFloor: 8
-    wavePatterns:
-    - {fileID: 11400000, guid: 6908f06dc1d046145887e3096a487189, type: 2}
-    - {fileID: 11400000, guid: 3dd9572fccf8ecd448fd7c3c30c43abe, type: 2}
-    - {fileID: 11400000, guid: a92f9a632870a1d49b6a63d524d5e18e, type: 2}
-    - {fileID: 11400000, guid: 4cfe159b8ed188b4497ffa802ed53dca, type: 2}
-    - {fileID: 11400000, guid: 751e244b43ca41f43aac44fd6922d25d, type: 2}
-  - roomType: 0
-    minFloor: 5
-    maxFloor: 8
-    wavePatterns:
-    - {fileID: 11400000, guid: 99b0f51e2fc4f204bb04f63607f72966, type: 2}
+    - {fileID: 11400000, guid: 6143e034b7aa4b57836f552ac2aa63a3, type: 2}
   - roomType: 0
     minFloor: 6
+    maxFloor: 7
+    wavePatterns:
+    - {fileID: 11400000, guid: 515919a08b4c483fb16c3f3bf9a31ae5, type: 2}
+  - roomType: 0
+    minFloor: 7
+    maxFloor: 8
+    wavePatterns:
+    - {fileID: 11400000, guid: 1e22798093714fac988060c62969edf6, type: 2}
+  - roomType: 0
+    minFloor: 8
+    maxFloor: 9
+    wavePatterns:
+    - {fileID: 11400000, guid: e97767b887ac408487f17616884e360c, type: 2}
+  - roomType: 0
+    minFloor: 9
+    maxFloor: 10
+    wavePatterns:
+    - {fileID: 11400000, guid: ad654b39966d4e62bf8fa432bf3d40cd, type: 2}
+  - roomType: 0
+    minFloor: 10
     maxFloor: 10
     wavePatterns:
     - {fileID: 11400000, guid: 1c212a03fe4897f4eba4cde365605551, type: 2}
     - {fileID: 11400000, guid: a52669809764a5b4bbd7ad66af7aa539, type: 2}
   - roomType: 0
-    minFloor: 9
+    minFloor: 10
     maxFloor: 12
     wavePatterns:
     - {fileID: 11400000, guid: beface40ce100824ab741b4ac2c539e5, type: 2}

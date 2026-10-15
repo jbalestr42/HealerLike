@@ -16,13 +16,16 @@ public class WavePoolsDataTests
     const string MapSettingsPath = "Assets/Data/Run/MapGenerationSettings.asset";
     const string WavesFolder = "Assets/Data/WavePatterns/";
     // The floors whose combat waves are rebuilt so far (0 to this one), the next ones still fighting the old waves
-    const int RebuiltUpToFloor = 4;
+    const int RebuiltUpToFloor = 9;
     // The first floors, for the 2 units the Cleric starts with: small waves
     const int SmallWavesUpToFloor = 4;
+    // The floors after them, once the recruits have joined: four enemies
+    const int FourEnemiesUpToFloor = 9;
     // Old waves kept in the data for later, out of the pools
     static readonly string[] SetAsideWaves =
     {
         "Wave_FrontLine", "Wave_Fuse", "Wave_HiddenHealer", "Wave_FireRain", "Wave_Bursts", "Wave_HiddenSniper", "Wave_Charnel",
+        "Wave_MarkAndShoot", "Wave_Storm", "Wave_Graveyard", "Wave_Winter", "Wave_Plague", "Wave_Execution", "Wave_Crypt",
     };
 
     GameData _data;
@@ -166,6 +169,84 @@ public class WavePoolsDataTests
         }
     }
 
+    // The waves coming in on these floors (Hunter, from the floor before, stays small)
+    [Test]
+    public void MiddleFloors_FourEnemies()
+    {
+        foreach (GameData.WavePool pool in _data.wavePools.Where(pool => pool.roomType == MapNodeType.Combat && pool.minFloor > SmallWavesUpToFloor && pool.minFloor <= FourEnemiesUpToFloor))
+        {
+            foreach (WavePatternData wave in pool.wavePatterns)
+            {
+                Assert.AreEqual(4, CountEnemies(wave.name).Values.Sum(), wave.name);
+            }
+        }
+    }
+
+    // The healing counters (Hexer, Plague Bearer) never come in the first floors
+    [Test]
+    public void TheHealingCounters_ComeInTheMiddleOfTheRun()
+    {
+        for (int floor = 0; floor <= SmallWavesUpToFloor; floor++)
+        {
+            foreach (string wave in GetWaves(MapNodeType.Combat, floor))
+            {
+                Dictionary<string, int> enemies = CountEnemies(wave);
+                Assert.IsFalse(enemies.ContainsKey("Hexer") || enemies.ContainsKey("Plague Bearer"), wave);
+            }
+        }
+        CollectionAssert.Contains(GetWaves(MapNodeType.Combat, 5), "Wave_HexedGuard");
+    }
+
+    [Test]
+    public void HexedGuard_FootmanSoldierHexerArcher()
+    {
+        AssertEnemies("Wave_HexedGuard", ("Armored Footman", 1), ("Soldier", 1), ("Hexer", 1), ("Archer", 1));
+    }
+
+    [Test]
+    public void Duel_DuelistFootmanArcherWarDrum()
+    {
+        AssertEnemies("Wave_Duel", ("Duelist", 1), ("Armored Footman", 1), ("Archer", 1), ("War Drum", 1));
+    }
+
+    [Test]
+    public void Shrine_TwoSoldiersShamanMortar()
+    {
+        AssertEnemies("Wave_Shrine", ("Soldier", 2), ("Shaman", 1), ("Mortar", 1));
+    }
+
+    [Test]
+    public void Frostbite_TwoFootmenFrostCasterArcher()
+    {
+        AssertEnemies("Wave_Frostbite", ("Armored Footman", 2), ("Frost Caster", 1), ("Archer", 1));
+    }
+
+    [Test]
+    public void ExecutionSquad_FootmanSoldierHexerHeadsman()
+    {
+        AssertEnemies("Wave_ExecutionSquad", ("Armored Footman", 1), ("Soldier", 1), ("Hexer", 1), ("Headsman", 1));
+    }
+
+    // Set aside for now (user, 2026-10-15): no healing halved by the Plague Bearer, no kamikaze in the rebuilt waves
+    [Test]
+    public void TheRebuiltWaves_NoPlagueBearerNorKamikaze()
+    {
+        for (int floor = 0; floor <= RebuiltUpToFloor; floor++)
+        {
+            foreach (string wave in GetWaves(MapNodeType.Combat, floor))
+            {
+                Dictionary<string, int> enemies = CountEnemies(wave);
+                Assert.IsFalse(enemies.ContainsKey("Plague Bearer") || enemies.ContainsKey("Kamikaze") || enemies.ContainsKey("Lit Kamikaze"), wave);
+            }
+        }
+    }
+
+    static void AssertEnemies(string waveName, params (string title, int count)[] expected)
+    {
+        Dictionary<string, int> enemies = CountEnemies(waveName);
+        CollectionAssert.AreEquivalent(expected.ToDictionary(enemy => enemy.title, enemy => enemy.count), enemies, waveName);
+    }
+
     [Test]
     public void TheEasiestWaves_StartTheRun_AndTheHardestEndIt()
     {
@@ -181,11 +262,11 @@ public class WavePoolsDataTests
     [Test]
     public void SlowPoison_IsMetWithLivingWallAndBulwark_NeverAtTheStart()
     {
-        for (int floor = 0; floor < 9; floor++)
+        for (int floor = 0; floor < 10; floor++)
         {
             CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, floor), "Wave_SlowPoison", $"floor {floor}");
         }
-        for (int floor = 9; floor <= 12; floor++)
+        for (int floor = 10; floor <= 12; floor++)
         {
             CollectionAssert.Contains(GetWaves(MapNodeType.Combat, floor), "Wave_SlowPoison", $"floor {floor}");
         }
