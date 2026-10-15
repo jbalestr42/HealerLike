@@ -62,6 +62,25 @@ public class ProjectileAttackTests
     }
 
     [Test]
+    public void Shoot_WithoutTargetsGiven_AimsAtTheCurrentTargetsOfTheSource()
+    {
+        ProjectileAttack attack = ProjectileAttack.Shoot(_attacker.gameObject, _projectileData);
+
+        Assert.IsNull(attack.targets);
+    }
+
+    [Test]
+    public void Shoot_AtTheTargetsGiven_KeepsThemForItsRepeats()
+    {
+        List<GameObject> targets = new List<GameObject>();
+
+        ProjectileAttack attack = ProjectileAttack.Shoot(_attacker.gameObject, _projectileData, targets);
+        attack.Repeat();
+
+        Assert.AreSame(targets, attack.targets);
+    }
+
+    [Test]
     public void Repeat_AfterTheSourceIsGone_DoesNothing()
     {
         ProjectileAttack attack = new ProjectileAttack { source = null, projectileData = _projectileData };

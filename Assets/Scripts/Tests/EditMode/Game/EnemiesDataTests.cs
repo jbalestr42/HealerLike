@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -11,6 +12,7 @@ public class EnemiesDataTests
 {
     const string EntitiesPath = "Assets/Data/Entities/";
     const string WavesPath = "Assets/Data/WavePatterns/";
+    const string VulnerableStatusPath = "Assets/Data/Statuses/VulnerableStatus/VulnerableStatus.asset";
 
     static EntityData LoadEnemy(string name)
     {
@@ -152,6 +154,105 @@ public class EnemiesDataTests
         Assert.IsNotNull(pauseDuration);
         Assert.AreEqual(AttributeType.AttackRate, pauseDuration.data.type);
         Assert.AreEqual(2f, pauseDuration.data.multiplier * duelist.attributes[AttributeType.AttackRate], 0.0001f);
+    }
+
+    // Elite alone on its floors: 3 random strikes making the units hit Vulnerable, then a slam on the whole team, then
+    // a pause
+    [Test]
+    public void Ravager_StrikesThreeRandomUnitsThenSlamsTheWholeTeamThenPauses()
+    {
+        EntityData ravager = LoadEnemy("Ravager");
+
+        Assert.AreEqual("Ravager", ravager.title);
+        Assert.IsFalse(string.IsNullOrEmpty(ravager.description));
+        Assert.IsNotNull(ravager.model);
+        Assert.AreEqual(TargetBehaviourType.Random, ravager.targetBehaviourType);
+        Assert.AreEqual(0.3f, ravager.attributes[AttributeType.PercentArmor], 0.0001f);
+        ConfigurableSkillFactory skill = ravager.skillFactories.Single() as ConfigurableSkillFactory;
+        Assert.IsNotNull(skill);
+        List<ASkillStepFactory> steps = skill.data.skillStepFactories;
+        Assert.AreEqual(3, steps.Count);
+
+        // Three strikes at its random target, each one making it Vulnerable, 0.5s after each one
+        RepeatSkillStepFactory strikes = steps[0] as RepeatSkillStepFactory;
+        Assert.IsNotNull(strikes);
+        Assert.AreEqual(3, strikes.data.count);
+        ShootProjectileSkillStepFactory strike = strikes.data.skillStepFactories[0] as ShootProjectileSkillStepFactory;
+        Assert.IsNotNull(strike);
+        Assert.IsFalse(strike.data.atEveryTarget);
+        CollectionAssert.AreEqual(new[] { AssetDatabase.LoadAssetAtPath<StatusData>(VulnerableStatusPath).buffHandlerFactory }, strike.data.projectiles.Single().onHitEffects);
+        AttributeValue strikeDelay = (strikes.data.skillStepFactories[1] as DurationSkillStepFactory).data.duration as AttributeValue;
+        Assert.AreEqual(AttributeType.AttackRate, strikeDelay.data.type);
+        Assert.AreEqual(0.5f, strikeDelay.data.multiplier * ravager.attributes[AttributeType.AttackRate], 0.0001f);
+
+        // The slam: every unit at once, harder than a strike, making none Vulnerable
+        ShootProjectileSkillStepFactory slam = steps[1] as ShootProjectileSkillStepFactory;
+        Assert.IsNotNull(slam);
+        Assert.IsTrue(slam.data.atEveryTarget);
+        ProjectileData slamProjectile = slam.data.projectiles.Single();
+        CollectionAssert.IsEmpty(slamProjectile.onHitEffects);
+        AttributeValue strikeDamage = (strike.data.projectiles.Single().onHitConsumer.Single() as ConsumerFactory).data.value as AttributeValue;
+        AttributeValue slamDamage = (slamProjectile.onHitConsumer.Single() as ConsumerFactory).data.value as AttributeValue;
+        Assert.AreEqual(AttributeType.Damage, strikeDamage.data.type);
+        Assert.AreEqual(AttributeType.Damage, slamDamage.data.type);
+        Assert.Greater(slamDamage.data.multiplier, strikeDamage.data.multiplier);
+
+        // Then a pause of 2.5s, shorter when its attacks are sped up
+        AttributeValue pause = (steps[2] as DurationSkillStepFactory).data.duration as AttributeValue;
+        Assert.AreEqual(AttributeType.AttackRate, pause.data.type);
+        Assert.AreEqual(2.5f, pause.data.multiplier * ravager.attributes[AttributeType.AttackRate], 0.0001f);
+    }
+
+    // Stacks on every hit, from any source, until the end of the fight: +15% damage taken per stack
+    [Test]
+    public void Vulnerable_StacksForTheWholeFight_15PercentDamageTakenPerStack()
+    {
+        StatusData status = AssetDatabase.LoadAssetAtPath<StatusData>(VulnerableStatusPath);
+
+        Assert.AreEqual("Vulnerable", status.title);
+        Assert.IsFalse(string.IsNullOrEmpty(status.description));
+        Assert.AreEqual("Vulnerable", status.tag.name);
+        Assert.IsTrue(status.GivesItsTag());
+        ABuffHandlerFactory vulnerable = status.buffHandlerFactory;
+        Assert.AreEqual(DurationType.Infinite, vulnerable.durationType);
+        Assert.AreEqual(0, vulnerable.maxStacks, "no limit");
+        Assert.IsTrue(vulnerable.stackAcrossSources);
+        Assert.IsNotNull(vulnerable.icon);
+        Assert.IsTrue(vulnerable.HasTag(AssetDatabase.LoadAssetAtPath<GameplayTag>("Assets/Prefabs/Tags/Debuff.asset")), "a debuff, removed by the cleanses");
+        Assert.IsFalse(vulnerable.HasTag(AssetDatabase.LoadAssetAtPath<GameplayTag>("Assets/Prefabs/Tags/Permanent.asset")), "gone at the end of the fight");
+
+        Entities.TestUnits units = new Entities.TestUnits();
+        try
+        {
+            Entity unit = units.Create(100f, 100f);
+            unit.GetComponent<BuffManager>().isEnabled = true;
+            Attribute vulnerability = unit.GetComponent<AttributeManager>().GetOrAdd(AttributeType.Vulnerability);
+            GameObject source = new GameObject("Source");
+            GameObject otherSource = new GameObject("Other Source");
+            try
+            {
+                unit.ApplyStatus(status, source);
+                unit.GetComponent<BuffManager>().ForceUpdate();
+                vulnerability.Update();
+                Assert.AreEqual(0.15f, vulnerability.Value, 0.0001f);
+
+                unit.ApplyStatus(status, source);
+                unit.ApplyStatus(status, otherSource);
+                unit.GetComponent<BuffManager>().ForceUpdate();
+                vulnerability.Update();
+                Assert.AreEqual(0.45f, vulnerability.Value, 0.0001f);
+                Assert.IsTrue(unit.HasStatus(status));
+            }
+            finally
+            {
+                Object.DestroyImmediate(source);
+                Object.DestroyImmediate(otherSource);
+            }
+        }
+        finally
+        {
+            units.DestroyAll();
+        }
     }
 
     // Strikes the most wounded unit, twice as hard when it is under half health

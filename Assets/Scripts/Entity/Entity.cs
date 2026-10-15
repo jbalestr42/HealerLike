@@ -367,6 +367,10 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
                 AddBuffHandler(onHitEffect, onHitData.source, gameObject);
             }
         }
+        foreach (ABuffHandlerFactory onHitEffect in onHitData.onHitEffects)
+        {
+            AddBuffHandler(onHitEffect, onHitData.source, gameObject);
+        }
     }
 
     public GameObject owner => gameObject;

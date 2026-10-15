@@ -27,7 +27,11 @@ public class Projectile : MonoBehaviour, IBuffable
     List<AConsumerFactory> _onHitConsumers = new List<AConsumerFactory>();
     public List<AConsumerFactory> onHitConsumers { get { return _onHitConsumers; } }
 
-    public void Init(GameObject source, GameObject target, List<ABuffHandlerFactory> projectileBehaviours, List<AConsumerFactory> onHitConsumers)
+    // Given to the unit hit along with the on hit effects of the shooter
+    List<ABuffHandlerFactory> _onHitEffects = new List<ABuffHandlerFactory>();
+    public List<ABuffHandlerFactory> onHitEffects { get { return _onHitEffects; } }
+
+    public void Init(GameObject source, GameObject target, List<ABuffHandlerFactory> projectileBehaviours, List<AConsumerFactory> onHitConsumers, List<ABuffHandlerFactory> onHitEffects = null)
     {
         _buffManager = GetComponent<BuffManager>();
         _buffManager.isEnabled = true;
@@ -35,6 +39,7 @@ public class Projectile : MonoBehaviour, IBuffable
         _source = source;
         _target = target;
         _onHitConsumers = onHitConsumers;
+        _onHitEffects = onHitEffects ?? new List<ABuffHandlerFactory>();
         _targetPoint = target.GetComponent<Entity>().targetPoint;
 
         // Init buff from data
@@ -127,6 +132,8 @@ public class Projectile : MonoBehaviour, IBuffable
             {
                 onHitData.resourceModifier.consumers.Add(consumerFactory.GetConsumer(source, currentTarget));
             }
+
+            onHitData.onHitEffects.AddRange(_onHitEffects);
 
             // Notify that something has been hit so all observers can add their own behaviour
             OnHit.Invoke(onHitData);

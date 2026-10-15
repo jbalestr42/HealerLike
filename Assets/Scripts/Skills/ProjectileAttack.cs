@@ -14,6 +14,11 @@ public class ProjectileData
     public List<AConsumerFactory> onHitConsumer;
 
     public int numberOfProjectileToShootPerTarget = 1;
+
+    // Given to each unit hit by these projectiles only, along with the on hit effects of the shooter (e.g. the
+    // Vulnerable of the Ravager's strikes, not of its slam)
+    [CreateDataButton]
+    public List<ABuffHandlerFactory> onHitEffects = new List<ABuffHandlerFactory>();
 }
 
 // An attack of an entity shooting projectiles, reported to it through Entity.OnAttack
@@ -21,19 +26,21 @@ public class ProjectileAttack
 {
     public GameObject source;
     public ProjectileData projectileData;
+    // Shot at instead of the current targets of the source (e.g. every enemy in range), null for these
+    public List<GameObject> targets;
     // Projectiles of the last shot (e.g. to empower their hits)
     public List<Projectile> projectiles = new List<Projectile>();
 
-    // Shoots the projectiles at every target of the source, reported as an attack
-    public static ProjectileAttack Shoot(GameObject source, ProjectileData projectileData)
+    // Shoots the projectiles at every target of the source, or at the targets given, reported as an attack
+    public static ProjectileAttack Shoot(GameObject source, ProjectileData projectileData, List<GameObject> targets = null)
     {
-        ProjectileAttack attack = new ProjectileAttack { source = source, projectileData = projectileData };
+        ProjectileAttack attack = new ProjectileAttack { source = source, projectileData = projectileData, targets = targets };
         attack.Fire();
         source.GetComponent<Entity>().OnAttack.Invoke(attack);
         return attack;
     }
 
-    // Shoots the same projectiles again at the current targets, not reported as a new attack
+    // Shoots the same projectiles again at the current targets (or the ones given), not reported as a new attack
     public virtual void Repeat()
     {
         if (source == null)
@@ -48,7 +55,7 @@ public class ProjectileAttack
     {
         Entity entity = source.GetComponent<Entity>();
         projectiles.Clear();
-        foreach (GameObject target in source.GetComponent<ITargetProvider>().GetTargets())
+        foreach (GameObject target in targets ?? source.GetComponent<ITargetProvider>().GetTargets())
         {
             for (int i = 0; i < projectileData.numberOfProjectileToShootPerTarget; i++)
             {
@@ -57,7 +64,7 @@ public class ProjectileAttack
 
                 GameObject projectileGo = EntityManager.instance.SpawnProjectile(projectileData.projectilePrefab, skillSource.transform.position, Quaternion.identity);
                 Projectile projectile = projectileGo.GetComponent<Projectile>();
-                projectile.Init(source, target, entity.projectileBehaviours, projectileData.onHitConsumer);
+                projectile.Init(source, target, entity.projectileBehaviours, projectileData.onHitConsumer, projectileData.onHitEffects);
                 projectiles.Add(projectile);
             }
         }

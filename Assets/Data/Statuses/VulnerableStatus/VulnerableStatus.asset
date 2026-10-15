@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58123253aaba3164b9c12c8fe366d14f, type: 3}
+  m_Name: VulnerableStatus
+  m_EditorClassIdentifier: HealerLike.Runtime::StatusData
+  title: Vulnerable
+  description: Takes 15% more damage per stack until the end of the fight
+  tag: {fileID: 11400000, guid: 3f06d1be916baab43b849a9c90fc8649, type: 2}
+  buffHandlerFactory: {fileID: 11400000, guid: 7876b5820f7c4a545a67657182e547a7, type: 2}

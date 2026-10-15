@@ -12,11 +12,17 @@ public class ShootProjectileSkillStepFactory : SkillStepFactory<ShootProjectileS
 public class ShootProjectileSkillStepData : SkillStepDataBase
 {
     public List<ProjectileData> projectiles;
+    // Shot at every enemy in range instead of the targets of the entity (e.g. a strike on the whole team)
+    public bool atEveryTarget;
+    // Only with atEveryTarget: the enemies in range that can be hit (e.g. not the untargetable ones)
+    public List<ATargetValidatorFactory> targetValidators = new List<ATargetValidatorFactory>();
 }
 
 public class ShootProjectileSkillStep : ASkillStep<ShootProjectileSkillStepData>
 {
     int _projectileIndex = 0;
+    // Its own way to pick targets, without limit nor taunt, the targets of the entity left untouched
+    ATargetBehaviour _everyTargetBehaviour;
 
     public override void Init()
     {
@@ -27,7 +33,8 @@ public class ShootProjectileSkillStep : ASkillStep<ShootProjectileSkillStepData>
     {
         if (skill.IsRequirementValidated())
         {
-            ProjectileAttack.Shoot(skill.gameObject, data.projectiles[_projectileIndex]);
+            List<GameObject> targets = data.atEveryTarget ? FindEveryTarget(skill.gameObject) : null;
+            ProjectileAttack.Shoot(skill.gameObject, data.projectiles[_projectileIndex], targets);
             _projectileIndex = (_projectileIndex + 1) % data.projectiles.Count;
             return true;
         }
@@ -37,5 +44,21 @@ public class ShootProjectileSkillStep : ASkillStep<ShootProjectileSkillStepData>
     public override void Reset()
     {
         _projectileIndex = 0;
+    }
+
+    // Every enemy within the range of the unit, a copy
+    protected virtual List<GameObject> FindEveryTarget(GameObject unit)
+    {
+        if (_everyTargetBehaviour == null)
+        {
+            _everyTargetBehaviour = ATargetBehaviour.Create(TargetBehaviourType.First);
+            _everyTargetBehaviour.targetCount = 0;
+            foreach (ATargetValidatorFactory targetValidator in data.targetValidators)
+            {
+                _everyTargetBehaviour.targetValidators.Add(targetValidator.GetTargetValidator());
+            }
+        }
+        float range = unit.GetComponent<AttributeManager>().GetOrAdd(AttributeType.Range).Value;
+        return new List<GameObject>(_everyTargetBehaviour.GetTargets(unit, unit.transform.position, range, unit.GetComponent<Entity>().GetTargetType()));
     }
 }

@@ -272,6 +272,28 @@ public class WavePoolsDataTests
         }
     }
 
+    // The first elite, in the pools of the floors 4 and 5 only: the Ravager alone, the only elite met on the first
+    // floor with elites (the map places them from the floor 5)
+    [Test]
+    public void FirstElite_TheRavagerAlone_OnTheFloors4And5Only()
+    {
+        int firstEliteFloor = _map.GetRoomType(MapNodeType.Elite).firstFloor;
+        Assert.That(firstEliteFloor, Is.InRange(4, 5), "the Ravager is the first elite met");
+        for (int floor = 0; floor < _map.floorCount; floor++)
+        {
+            List<string> elites = GetWaves(MapNodeType.Elite, floor);
+            if (floor == 4 || floor == 5)
+            {
+                CollectionAssert.AreEqual(new[] { "Wave_Elite_Ravager" }, elites, $"floor {floor}");
+            }
+            else
+            {
+                CollectionAssert.DoesNotContain(elites, "Wave_Elite_Ravager", $"floor {floor}");
+            }
+        }
+        AssertEnemies("Wave_Elite_Ravager", ("Ravager", 1));
+    }
+
     [Test]
     public void IronWall_ColossusTwoCrossbowmenBloodWarden()
     {
