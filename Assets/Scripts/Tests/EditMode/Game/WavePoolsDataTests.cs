@@ -15,8 +15,8 @@ public class WavePoolsDataTests
     const string GameDataPath = "Assets/Data/TestData.asset";
     const string MapSettingsPath = "Assets/Data/Run/MapGenerationSettings.asset";
     const string WavesFolder = "Assets/Data/WavePatterns/";
-    // The floors whose combat waves are rebuilt so far (0 to this one), the next ones still fighting the old waves
-    const int RebuiltUpToFloor = 9;
+    // The floors whose combat waves are rebuilt (0 to this one), the floor right before the boss still fighting the old waves
+    const int RebuiltUpToFloor = 13;
     // The first floors, for the 2 units the Cleric starts with: small waves
     const int SmallWavesUpToFloor = 4;
     // The floors after them, once the recruits have joined: four enemies
@@ -26,6 +26,7 @@ public class WavePoolsDataTests
     {
         "Wave_FrontLine", "Wave_Fuse", "Wave_HiddenHealer", "Wave_FireRain", "Wave_Bursts", "Wave_HiddenSniper", "Wave_Charnel",
         "Wave_MarkAndShoot", "Wave_Storm", "Wave_Graveyard", "Wave_Winter", "Wave_Plague", "Wave_Execution", "Wave_Crypt",
+        "Wave_Attrition", "Wave_Drain", "Wave_LivingWall", "Wave_Bulwark", "Wave_SlowPoison",
     };
 
     GameData _data;
@@ -258,17 +259,55 @@ public class WavePoolsDataTests
         CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, 13), "Wave_TotalWar");
     }
 
-    // Its threat is the one of Living Wall and Bulwark, far above the waves starting the run: met on their floors
+    // The last floors before the boss: bigger waves, the Armored Footman in most of them
     [Test]
-    public void SlowPoison_IsMetWithLivingWallAndBulwark_NeverAtTheStart()
+    public void LastFloors_FourToSixEnemies()
     {
-        for (int floor = 0; floor < 10; floor++)
+        foreach (GameData.WavePool pool in _data.wavePools.Where(pool => pool.roomType == MapNodeType.Combat && pool.minFloor > FourEnemiesUpToFloor && pool.minFloor <= RebuiltUpToFloor))
         {
-            CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, floor), "Wave_SlowPoison", $"floor {floor}");
+            foreach (WavePatternData wave in pool.wavePatterns)
+            {
+                Assert.That(CountEnemies(wave.name).Values.Sum(), Is.InRange(4, 6), wave.name);
+            }
         }
-        for (int floor = 10; floor <= 12; floor++)
+    }
+
+    [Test]
+    public void IronWall_ColossusTwoCrossbowmenBloodWarden()
+    {
+        AssertEnemies("Wave_IronWall", ("Colossus", 1), ("Crossbowman", 2), ("Blood Warden", 1));
+    }
+
+    [Test]
+    public void Boneyard_TwoFootmenNecromancerScavengerArcher()
+    {
+        AssertEnemies("Wave_Boneyard", ("Armored Footman", 2), ("Necromancer", 1), ("Scavenger", 1), ("Archer", 1));
+    }
+
+    [Test]
+    public void Tempest_TwoFootmenTwoArcMagesGuardian()
+    {
+        AssertEnemies("Wave_Tempest", ("Armored Footman", 2), ("Arc Mage", 2), ("Guardian", 1));
+    }
+
+    [Test]
+    public void WarBand_TwoFootmenTwoBerserkersBannermanMachineGunner()
+    {
+        AssertEnemies("Wave_WarBand", ("Armored Footman", 2), ("Berserker", 2), ("Bannerman", 1), ("Machine Gunner", 1));
+    }
+
+    // The Bannerman gives its damage to the allies on the 8 cells around it: both Berserkers stand there
+    [Test]
+    public void WarBand_TheBerserkersStandNextToTheBannerman()
+    {
+        WavePatternData wave = AssetDatabase.LoadAssetAtPath<WavePatternData>(WavesFolder + "Wave_WarBand.asset");
+        List<(int x, int y, EntityData entity)> units = wave.GetUnits().ToList();
+        (int x, int y, EntityData entity) bannerman = units.Single(unit => unit.entity.title == "Bannerman");
+
+        foreach ((int x, int y, EntityData entity) berserker in units.Where(unit => unit.entity.title == "Berserker"))
         {
-            CollectionAssert.Contains(GetWaves(MapNodeType.Combat, floor), "Wave_SlowPoison", $"floor {floor}");
+            Assert.LessOrEqual(System.Math.Abs(berserker.x - bannerman.x), 1);
+            Assert.LessOrEqual(System.Math.Abs(berserker.y - bannerman.y), 1);
         }
     }
 

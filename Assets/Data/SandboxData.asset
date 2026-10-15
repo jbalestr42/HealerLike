@@ -107,6 +107,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1e22798093714fac988060c62969edf6, type: 2}
   - {fileID: 11400000, guid: e97767b887ac408487f17616884e360c, type: 2}
   - {fileID: 11400000, guid: ad654b39966d4e62bf8fa432bf3d40cd, type: 2}
+  - {fileID: 11400000, guid: da3401bdb5604feca77d52357f4c3401, type: 2}
+  - {fileID: 11400000, guid: 79d38643949249d3ae74ce4019732c28, type: 2}
+  - {fileID: 11400000, guid: 67059c6f81344c198c5eb227c032b6da, type: 2}
+  - {fileID: 11400000, guid: 00b8d2af4ddc4261b8695524b141fcc4, type: 2}
   characterSkills:
   - {fileID: 11400000, guid: 398f76355dcd1574d876d59d8e1dd8bd, type: 2}
   - {fileID: 11400000, guid: 38f88bae44f5f1f41b2aef0148296685, type: 2}
