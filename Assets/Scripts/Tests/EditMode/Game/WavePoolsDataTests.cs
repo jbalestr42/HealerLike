@@ -7,12 +7,23 @@ namespace Game
 {
 
 // The wave pools of the game data against the map: every floor of the map has its waves, every wave can be met
-// in a run, and the new waves of the last floors hold the enemies they were made with
+// in a run, and the new waves of the last floors hold the enemies they were made with. The waves are being rebuilt
+// (Cleric rework): two different combat waves on each floor, each one on two floors at most, a new one coming in on
+// each floor; the old waves set aside stay in the data, out of the pools
 public class WavePoolsDataTests
 {
     const string GameDataPath = "Assets/Data/TestData.asset";
     const string MapSettingsPath = "Assets/Data/Run/MapGenerationSettings.asset";
     const string WavesFolder = "Assets/Data/WavePatterns/";
+    // The floors whose combat waves are rebuilt so far (0 to this one), the next ones still fighting the old waves
+    const int RebuiltUpToFloor = 4;
+    // The first floors, for the 2 units the Cleric starts with: small waves
+    const int SmallWavesUpToFloor = 4;
+    // Old waves kept in the data for later, out of the pools
+    static readonly string[] SetAsideWaves =
+    {
+        "Wave_FrontLine", "Wave_Fuse", "Wave_HiddenHealer", "Wave_FireRain", "Wave_Bursts", "Wave_HiddenSniper", "Wave_Charnel",
+    };
 
     GameData _data;
     MapGenerationSettings _map;
@@ -97,16 +108,71 @@ public class WavePoolsDataTests
         IEnumerable<string> waves = AssetDatabase.FindAssets("t:WavePatternData", new[] { "Assets/Data/WavePatterns" })
             .Select(guid => System.IO.Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(guid)));
 
-        CollectionAssert.IsSubsetOf(waves, pooled);
+        CollectionAssert.IsSubsetOf(waves.Except(SetAsideWaves), pooled);
+    }
+
+    [Test]
+    public void TheWavesSetAside_AreInNoPool()
+    {
+        HashSet<string> pooled = new HashSet<string>(_data.wavePools.SelectMany(pool => pool.wavePatterns).Where(wave => wave != null).Select(wave => wave.name));
+
+        foreach (string wave in SetAsideWaves)
+        {
+            Assert.IsNotNull(AssetDatabase.LoadAssetAtPath<WavePatternData>(WavesFolder + wave + ".asset"), $"{wave} stays in the data");
+            Assert.IsFalse(pooled.Contains(wave), wave);
+        }
+    }
+
+    [Test]
+    public void EachRebuiltFloor_TwoDifferentCombatWaves()
+    {
+        for (int floor = 0; floor <= RebuiltUpToFloor; floor++)
+        {
+            List<string> waves = GetWaves(MapNodeType.Combat, floor);
+            Assert.AreEqual(2, waves.Count, $"floor {floor}");
+            Assert.AreNotEqual(waves[0], waves[1], $"floor {floor}");
+        }
+    }
+
+    [Test]
+    public void EachRebuiltWave_OnTwoFloorsAtMost()
+    {
+        foreach (GameData.WavePool pool in _data.wavePools.Where(pool => pool.roomType == MapNodeType.Combat && pool.minFloor <= RebuiltUpToFloor))
+        {
+            Assert.LessOrEqual(pool.maxFloor - pool.minFloor + 1, 2, string.Join(", ", pool.wavePatterns.Select(wave => wave.name)));
+        }
+    }
+
+    // Each floor brings a wave in: the waves of a floor don't all come from the floor before
+    [Test]
+    public void EachRebuiltFloor_ANewWave()
+    {
+        for (int floor = 1; floor <= RebuiltUpToFloor; floor++)
+        {
+            List<string> before = GetWaves(MapNodeType.Combat, floor - 1);
+            Assert.IsTrue(GetWaves(MapNodeType.Combat, floor).Exists(wave => !before.Contains(wave)), $"floor {floor}");
+        }
+    }
+
+    [Test]
+    public void FirstFloors_TwoOrThreeEnemies()
+    {
+        for (int floor = 0; floor <= SmallWavesUpToFloor; floor++)
+        {
+            foreach (string wave in GetWaves(MapNodeType.Combat, floor))
+            {
+                Assert.That(CountEnemies(wave).Values.Sum(), Is.InRange(2, 3), wave);
+            }
+        }
     }
 
     [Test]
     public void TheEasiestWaves_StartTheRun_AndTheHardestEndIt()
     {
-        CollectionAssert.Contains(GetWaves(MapNodeType.Combat, 0), "Wave_FrontLine");
+        CollectionAssert.Contains(GetWaves(MapNodeType.Combat, 0), "Wave_Recruits");
         CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, 0), "Wave_Bulwark");
         CollectionAssert.Contains(GetWaves(MapNodeType.Combat, 14), "Wave_Ironclad");
-        CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, 14), "Wave_FrontLine");
+        CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, 14), "Wave_Recruits");
         CollectionAssert.Contains(GetWaves(MapNodeType.Elite, 13), "Wave_TotalWar");
         CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, 13), "Wave_TotalWar");
     }

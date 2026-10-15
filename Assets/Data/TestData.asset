@@ -36,26 +36,41 @@ MonoBehaviour:
   wavePools:
   - roomType: 0
     minFloor: 0
-    maxFloor: 2
+    maxFloor: 0
     wavePatterns:
-    - {fileID: 11400000, guid: d6a62ca494014f16a3f7d75a4c2410a0, type: 2}
-    - {fileID: 11400000, guid: e2513721d2e6c2345aaa6c2232be1141, type: 2}
-    - {fileID: 11400000, guid: e0c2c40dae69459c9bd530a7a5047c01, type: 2}
-    - {fileID: 11400000, guid: 0d33496f829346b387a4fda1cebe79bd, type: 2}
-    - {fileID: 11400000, guid: 48c477b4ba532ef43a5be572f2d597bf, type: 2}
+    - {fileID: 11400000, guid: bc7cb5671ec57824a9237e79d5660a72, type: 2}
+  - roomType: 0
+    minFloor: 0
+    maxFloor: 1
+    wavePatterns:
+    - {fileID: 11400000, guid: 63390d739e7d99149979ff50b4230985, type: 2}
   - roomType: 0
     minFloor: 1
-    maxFloor: 3
+    maxFloor: 2
     wavePatterns:
-    - {fileID: 11400000, guid: d4ec0ad597364edb8218b9a9cad3364e, type: 2}
-    - {fileID: 11400000, guid: 025635afde458914095ccb545c2ff1b0, type: 2}
+    - {fileID: 11400000, guid: 3888db367e9ddd44cb559006ee033dbc, type: 2}
   - roomType: 0
     minFloor: 2
+    maxFloor: 3
+    wavePatterns:
+    - {fileID: 11400000, guid: 0d779dbb1f9bd41468681e9abc03cd94, type: 2}
+  - roomType: 0
+    minFloor: 3
+    maxFloor: 4
+    wavePatterns:
+    - {fileID: 11400000, guid: c262ff995fb66d54da583fa85017871d, type: 2}
+  - roomType: 0
+    minFloor: 4
+    maxFloor: 5
+    wavePatterns:
+    - {fileID: 11400000, guid: baf41a71c48a76d4f89dc7ad3c2d97ef, type: 2}
+  - roomType: 0
+    minFloor: 5
     maxFloor: 5
     wavePatterns:
     - {fileID: 11400000, guid: 8161e30f498e47aa9369c3e1ce67f21f, type: 2}
   - roomType: 0
-    minFloor: 4
+    minFloor: 5
     maxFloor: 8
     wavePatterns:
     - {fileID: 11400000, guid: 6908f06dc1d046145887e3096a487189, type: 2}

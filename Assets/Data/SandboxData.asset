@@ -94,6 +94,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a26eb7dc132889f478acfc4fb505fabb, type: 2}
   - {fileID: 11400000, guid: ab19da632284a494c9dd7418db8051c3, type: 2}
   - {fileID: 11400000, guid: e1dafe1b45569f54f86105fe3b828b76, type: 2}
+  - {fileID: 11400000, guid: bc7cb5671ec57824a9237e79d5660a72, type: 2}
+  - {fileID: 11400000, guid: 63390d739e7d99149979ff50b4230985, type: 2}
+  - {fileID: 11400000, guid: 3888db367e9ddd44cb559006ee033dbc, type: 2}
+  - {fileID: 11400000, guid: 0d779dbb1f9bd41468681e9abc03cd94, type: 2}
+  - {fileID: 11400000, guid: c262ff995fb66d54da583fa85017871d, type: 2}
+  - {fileID: 11400000, guid: baf41a71c48a76d4f89dc7ad3c2d97ef, type: 2}
   characterSkills:
   - {fileID: 11400000, guid: 398f76355dcd1574d876d59d8e1dd8bd, type: 2}
   - {fileID: 11400000, guid: 38f88bae44f5f1f41b2aef0148296685, type: 2}
