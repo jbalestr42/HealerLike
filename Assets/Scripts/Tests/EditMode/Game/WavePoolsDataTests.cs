@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
@@ -26,7 +26,7 @@ public class WavePoolsDataTests
     {
         "Wave_FrontLine", "Wave_Fuse", "Wave_HiddenHealer", "Wave_FireRain", "Wave_Bursts", "Wave_HiddenSniper", "Wave_Charnel",
         "Wave_MarkAndShoot", "Wave_Storm", "Wave_Graveyard", "Wave_Winter", "Wave_Plague", "Wave_Execution", "Wave_Crypt",
-        "Wave_Attrition", "Wave_Drain", "Wave_LivingWall", "Wave_Bulwark", "Wave_SlowPoison",
+        "Wave_Attrition", "Wave_Drain", "Wave_LivingWall", "Wave_Bulwark", "Wave_SlowPoison", "Wave_Elite_Bastion", "Wave_Elite_Cult",
     };
 
     GameData _data;
@@ -330,6 +330,28 @@ public class WavePoolsDataTests
             }
         }
         AssertEnemies("Wave_Elite_IronMatron", ("Iron Matron", 1), ("Shield Warden", 1), ("War Drummer", 1));
+    }
+
+    // The fourth elite, in the pools of the floors 10 and 11 only: the Archon and his 4 Acolytes, the old Bastion and
+    // Cult elites set aside
+    [Test]
+    public void FourthElite_TheArchonAndHisAcolytes_OnTheFloors10And11Only()
+    {
+        for (int floor = 0; floor < _map.floorCount; floor++)
+        {
+            List<string> elites = GetWaves(MapNodeType.Elite, floor);
+            if (floor == 10 || floor == 11)
+            {
+                CollectionAssert.Contains(elites, "Wave_Elite_Archon", $"floor {floor}");
+            }
+            else
+            {
+                CollectionAssert.DoesNotContain(elites, "Wave_Elite_Archon", $"floor {floor}");
+            }
+            CollectionAssert.DoesNotContain(elites, "Wave_Elite_Bastion", $"floor {floor}");
+            CollectionAssert.DoesNotContain(elites, "Wave_Elite_Cult", $"floor {floor}");
+        }
+        AssertEnemies("Wave_Elite_Archon", ("Archon", 1), ("Frost Acolyte", 1), ("Blight Acolyte", 1), ("Hex Acolyte", 1), ("Spark Acolyte", 1));
     }
 
     [Test]

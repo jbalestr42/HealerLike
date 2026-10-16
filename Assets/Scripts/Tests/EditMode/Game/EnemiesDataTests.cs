@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
@@ -411,6 +411,169 @@ public class EnemiesDataTests
 
         Assert.AreEqual(1, GetRankCount(wave));
         CollectionAssert.AreEqual(new[] { "Shield Warden", "Iron Matron", "War Drummer" }, GetRank(wave, 0));
+    }
+
+    // Elite master: lightning on the nearest unit, +2 damage for the fight each time one of its Acolytes falls, up to 4
+    [Test]
+    public void Archon_StrikesWithLightning_AndGrowsWithEachFallenAcolyte()
+    {
+        EntityData archon = LoadEnemy("Archon");
+
+        Assert.AreEqual("Archon", archon.title);
+        Assert.IsFalse(string.IsNullOrEmpty(archon.description));
+        Assert.IsNotNull(archon.model);
+        Assert.AreEqual(TargetBehaviourType.Nearest, archon.targetBehaviourType);
+        Assert.AreEqual(500f, archon.attributes[AttributeType.HealthMax]);
+        Assert.IsTrue(archon.tags.Exists(tag => tag != null && tag.name == "Archon"), "found by his Acolytes through his tag");
+        Assert.IsTrue(ShootsLightning(archon), "a lightning bolt, not a projectile");
+
+        ApplyBuffOnAllyDeathBuffFactory onAllyDeath = GetItemBuff<ApplyBuffOnAllyDeathBuffFactory>(archon);
+        ItemFactory item = archon.items[0] as ItemFactory;
+        Assert.IsEmpty(item.data.projectileBehaviours, "a single bolt until the Spark Acolyte falls");
+        BuffHandlerFactory growth = onAllyDeath.data.buffHandlerFactory as BuffHandlerFactory;
+        Assert.IsNotNull(growth);
+        Assert.AreEqual(DurationType.Infinite, growth.durationType, "kept until the end of the fight");
+        Assert.AreEqual(4, growth.maxStacks, "one stack per Acolyte");
+        FlatModifierFactory damage = growth.data.buffFactoryList.Single() as FlatModifierFactory;
+        Assert.IsNotNull(damage);
+        Assert.AreEqual(AttributeType.Damage, damage.data.type);
+        Assert.AreEqual(AttributeModifierType.Add, damage.data.modifierType);
+        Assert.AreEqual(2f, damage.data.value, 0.0001f);
+    }
+
+    static bool ShootsLightning(EntityData enemy)
+    {
+        ShootProjectileSkillFactory skill = enemy.skillFactories.Single() as ShootProjectileSkillFactory;
+        Assert.IsNotNull(skill, enemy.title);
+        return skill.data.projectiles.Single().projectilePrefab.GetComponent<ChainLightningProjectile>() != null;
+    }
+
+    // The buff an Acolyte hands down to the Archon when it dies, kept by him until the end of the fight
+    static BuffHandlerFactory LoadLegacy(EntityData acolyte)
+    {
+        EntityData archon = LoadEnemy("Archon");
+        Assert.AreEqual(TargetBehaviourType.Random, acolyte.targetBehaviourType, acolyte.title);
+        Assert.IsFalse(string.IsNullOrEmpty(acolyte.description), acolyte.title);
+        Assert.IsNotNull(acolyte.model, acolyte.title);
+        Assert.Less(acolyte.attributes[AttributeType.HealthMax], archon.attributes[AttributeType.HealthMax], acolyte.title);
+        Assert.Less(acolyte.attributes[AttributeType.Damage], archon.attributes[AttributeType.Damage], "small damage");
+
+        List<ApplyBuffToAlliesOnDeathBuffFactory> legacies = acolyte.items
+            .OfType<ItemFactory>()
+            .SelectMany(item => item.data.buffs)
+            .SelectMany(handler => handler.buffFactoryList)
+            .OfType<ApplyBuffToAlliesOnDeathBuffFactory>()
+            .ToList();
+        Assert.AreEqual(1, legacies.Count, acolyte.title);
+        CollectionAssert.Contains(archon.tags, legacies[0].data.tag, "given to the Archon only");
+        BuffHandlerFactory legacy = legacies[0].data.buffHandlerFactory as BuffHandlerFactory;
+        Assert.IsNotNull(legacy);
+        Assert.AreEqual(DurationType.Infinite, legacy.durationType, "kept until the end of the fight");
+        Assert.IsNotNull(legacy.icon, "shown on the Archon");
+        return legacy;
+    }
+
+    static AItemFactory FindItem(EntityData enemy, string itemName)
+    {
+        return enemy.items.Find(item => item != null && item.title == itemName);
+    }
+
+    // Freezing shots at random units, the Archon attacking 30% faster once it falls
+    [Test]
+    public void FrostAcolyte_FreezesRandomUnits_ThenSpeedsUpTheArchon()
+    {
+        EntityData acolyte = LoadEnemy("FrostAcolyte");
+
+        Assert.AreEqual("Frost Acolyte", acolyte.title);
+        Assert.IsNotNull(FindItem(acolyte, "Frost"));
+        AttackSpeedModifierFactory speed = LoadLegacy(acolyte).data.buffFactoryList.Single() as AttackSpeedModifierFactory;
+        Assert.IsNotNull(speed);
+        Assert.AreEqual(AttributeType.AttackRate, speed.data.type);
+        Assert.AreEqual(AttributeModifierType.Multiply, speed.data.modifierType);
+        Assert.AreEqual(0.3f, speed.data.value, 0.0001f);
+    }
+
+    // Shots halving the heals random units receive for 4s (the Plague of the Plague Bearer), the hits of the Archon
+    // doing so once it falls
+    [Test]
+    public void BlightAcolyte_BlightsRandomUnits_ThenTheHitsOfTheArchonBlight()
+    {
+        EntityData acolyte = LoadEnemy("BlightAcolyte");
+        AItemFactory plague = FindItem(acolyte, "Plague");
+
+        Assert.AreEqual("Blight Acolyte", acolyte.title);
+        Assert.AreEqual(TargetBehaviourType.Random, acolyte.targetBehaviourType);
+        Assert.IsNotNull(plague);
+        BuffHandlerFactory blighted = ((ItemFactory)plague).data.onHitEffects.Single() as BuffHandlerFactory;
+        Assert.IsNotNull(blighted);
+        Assert.AreEqual(DurationType.Duration, blighted.data.durationType);
+        Assert.AreEqual(4f, blighted.data.duration, 0.0001f);
+        Assert.AreEqual(1, blighted.data.maxStacks, "hit again, the target stays blighted without stacking");
+        FlatModifierFactory healing = blighted.data.buffFactoryList.Single() as FlatModifierFactory;
+        Assert.IsNotNull(healing);
+        Assert.AreEqual(AttributeType.HealingReceived, healing.data.type);
+        Assert.AreEqual(AttributeModifierType.Multiply, healing.data.modifierType);
+        Assert.AreEqual(-0.5f, healing.data.value, 0.0001f);
+        Assert.IsNull(FindItem(acolyte, "Venom"), "the Acolytes no longer poison");
+        EquipItemBuffFactory equip = LoadLegacy(acolyte).data.buffFactoryList.Single() as EquipItemBuffFactory;
+        Assert.IsNotNull(equip);
+        Assert.AreSame(plague, equip.data.item);
+    }
+
+    // Shots making random units Vulnerable, the Archon getting 20% armor once it falls
+    [Test]
+    public void HexAcolyte_MakesRandomUnitsVulnerable_ThenArmorsTheArchon()
+    {
+        EntityData acolyte = LoadEnemy("HexAcolyte");
+        StatusData vulnerable = AssetDatabase.LoadAssetAtPath<StatusData>(VulnerableStatusPath);
+
+        Assert.AreEqual("Hex Acolyte", acolyte.title);
+        ShootProjectileSkillFactory skill = acolyte.skillFactories.Single() as ShootProjectileSkillFactory;
+        Assert.IsNotNull(skill);
+        CollectionAssert.Contains(skill.data.projectiles.Single().onHitEffects, vulnerable.buffHandlerFactory);
+        FlatModifierFactory armor = LoadLegacy(acolyte).data.buffFactoryList.Single() as FlatModifierFactory;
+        Assert.IsNotNull(armor);
+        Assert.AreEqual(AttributeType.PercentArmor, armor.data.type);
+        Assert.AreEqual(AttributeModifierType.Add, armor.data.modifierType);
+        Assert.AreEqual(0.2f, armor.data.value, 0.0001f);
+    }
+
+    // Lightning on a random unit chaining to 1 more, the lightning of the Archon chaining too once it falls
+    [Test]
+    public void SparkAcolyte_ChainsLightning_ThenTheLightningOfTheArchonChains()
+    {
+        EntityData acolyte = LoadEnemy("SparkAcolyte");
+        ItemFactory spark = FindItem(acolyte, "Spark") as ItemFactory;
+
+        Assert.AreEqual("Spark Acolyte", acolyte.title);
+        Assert.IsTrue(ShootsLightning(acolyte));
+        Assert.IsNotNull(spark);
+        BuffHandlerFactory chain = spark.data.projectileBehaviours.Single() as BuffHandlerFactory;
+        Assert.IsNotNull(chain);
+        ProjectileBehaviourBuffFactory behaviour = chain.data.buffFactoryList.Single() as ProjectileBehaviourBuffFactory;
+        Assert.IsNotNull(behaviour);
+        BounceProjectileBehaviourFactory bounce = behaviour.data.projectileBehaviour as BounceProjectileBehaviourFactory;
+        Assert.IsNotNull(bounce);
+        Assert.AreEqual(1, bounce.data.bounce, "1 more unit");
+        EquipItemBuffFactory equip = LoadLegacy(acolyte).data.buffFactoryList.Single() as EquipItemBuffFactory;
+        Assert.IsNotNull(equip);
+        Assert.AreSame(spark, equip.data.item);
+    }
+
+    // The Archon in the middle of a cross: an Acolyte in front of him, one on each side, one behind
+    [Test]
+    public void EliteArchon_FieldsTheArchonInTheMiddleOfACrossOfAcolytes()
+    {
+        WavePatternData wave = LoadWave("Wave_Elite_Archon");
+        List<(int rank, int y, EntityData entity)> units = wave.GetUnitsByRank().ToList();
+        int archonLane = units.Single(unit => unit.entity.title == "Archon").y;
+
+        Assert.AreEqual(3, GetRankCount(wave));
+        CollectionAssert.AreEqual(new[] { "Frost Acolyte" }, GetRank(wave, 0));
+        CollectionAssert.AreEqual(new[] { "Blight Acolyte", "Archon", "Hex Acolyte" }, GetRank(wave, 1));
+        CollectionAssert.AreEqual(new[] { "Spark Acolyte" }, GetRank(wave, 2));
+        Assert.AreEqual(archonLane, units.Single(unit => unit.entity.title == "Frost Acolyte").y, "in front of him");
+        Assert.AreEqual(archonLane, units.Single(unit => unit.entity.title == "Spark Acolyte").y, "behind him");
     }
 
     // Strikes the most wounded unit, twice as hard when it is under half health

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 200499978037cc34d93ebc9c76414b0c, type: 3}
+  m_Name: HexAcolyteEntity
+  m_EditorClassIdentifier: HealerLike.Runtime::EntityData
+  model: {fileID: 2795397902362475942, guid: 72c47fdc43d84b243bdc109c284341d6, type: 3}
+  title: Hex Acolyte
+  description: Shots making random units Vulnerable for the whole fight (+15% damage taken per stack). When it dies, the Archon gets 20% armor
+  attributes:
+  - key: 0
+    value: 130
+  - key: 1
+    value: 3
+  - key: 2
+    value: 3
+  - key: 3
+    value: 100
+  targetBehaviourType: 4
+  targetValidators: []
+  tags:
+  - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
+  items:
+  - {fileID: 11400000, guid: d1739149c836f454ca0f2fd92cca3d8d, type: 2}
+  skillFactories:
+  - {fileID: 11400000, guid: 669191d9c667bab4f88a25e1ecf17797, type: 2}

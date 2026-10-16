@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fdfd53866ed7ce44a44e218dbed70e6, type: 3}
+  m_Name: LegacyEquipItemBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::EquipItemBuffFactory
+  uniqueID: 79a53dfe-38c4-4edf-b101-52b55b348e3e
+  data:
+    item: {fileID: 11400000, guid: 53c4785ea1bd9744bbd769fde650d604, type: 2}

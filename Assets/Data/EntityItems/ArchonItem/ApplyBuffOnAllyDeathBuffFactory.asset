@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b673d8364bf70d4488d5d87ee96e41dd, type: 3}
+  m_Name: ApplyBuffOnAllyDeathBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::ApplyBuffOnAllyDeathBuffFactory
+  uniqueID: 261bb4f6-e8b4-4d3e-926c-4a7d77d588c5
+  data:
+    buffHandlerFactory: {fileID: 11400000, guid: ee134388a3fe3cf419c6846bc3dd317f, type: 2}
