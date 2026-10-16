@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: WarDrumBuffHandlerFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::BuffHandlerFactory
+  uniqueID: 90f3c870-0753-46b6-b98a-93c490b57cf5
+  data:
+    durationType: 2
+    duration: 0
+    isPeriodic: 0
+    periodDuration: 0
+    maxStacks: 5
+    stackAcrossSources: 1
+    buffFactoryList:
+    - {fileID: 11400000, guid: d658bbf5f49e45f89fbe2ab3e2b6101a, type: 2}
+    buffEffect: {fileID: 0}
+    icon: {fileID: 21300000, guid: 97d86a1e589756a41a7320ebe81b0c8e, type: 3}
+    tags: []

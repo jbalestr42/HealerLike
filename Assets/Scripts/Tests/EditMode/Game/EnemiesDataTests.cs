@@ -301,6 +301,118 @@ public class EnemiesDataTests
         Assert.AreEqual(0.5f, speed.data.value, 0.0001f);
     }
 
+    // A shield gain read on the max health of its target, given at once
+    static GainResourceBuffFactory LoadShieldGain(ABuffHandlerFactory handlerFactory)
+    {
+        BuffHandlerFactory handler = handlerFactory as BuffHandlerFactory;
+        Assert.IsNotNull(handler);
+        Assert.AreEqual(DurationType.Instant, handler.durationType);
+        GainResourceBuffFactory gain = handler.data.buffFactoryList.Single() as GainResourceBuffFactory;
+        Assert.IsNotNull(gain);
+        Assert.AreEqual(ResourceType.Shield, gain.data.resourceType);
+        Assert.AreEqual(ConsumerValueOwner.Target, gain.data.valueOwner);
+        Assert.IsInstanceOf<MaxHealthValue>(gain.data.value);
+        return gain;
+    }
+
+    static float MaxHealthRatio(GainResourceBuffFactory gain)
+    {
+        return ((MaxHealthValue)gain.data.value).data.multiplier;
+    }
+
+    // Elite tank: armored, starting without any shield (only her Shield Warden gives her one)
+    [Test]
+    public void IronMatron_IsArmored_AndStartsWithoutShield()
+    {
+        EntityData matron = LoadEnemy("IronMatron");
+
+        Assert.AreEqual("Iron Matron", matron.title);
+        Assert.IsFalse(string.IsNullOrEmpty(matron.description));
+        Assert.IsNotNull(matron.model);
+        Assert.AreEqual(TargetBehaviourType.Nearest, matron.targetBehaviourType);
+        Assert.AreEqual(400f, matron.attributes[AttributeType.HealthMax]);
+        Assert.IsFalse(matron.attributes.ContainsKey(AttributeType.FlatArmor), "no flat armor");
+        Assert.AreEqual(0.1f, matron.attributes[AttributeType.PercentArmor], 0.0001f);
+        Assert.IsNotEmpty(matron.skillFactories, "she attacks");
+        Assert.IsTrue(matron.tags.Exists(tag => tag != null && tag.name == "IronMatron"), "found by her Wardens through her tag");
+        Assert.IsEmpty(matron.items, "no item, so no starting shield");
+    }
+
+    // Doesn't attack, recharges the shield of the Iron Matron alone up to 10% of her max health every 5s, never piling up
+    [Test]
+    public void ShieldWarden_RechargesTheShieldOfTheIronMatronOnly()
+    {
+        EntityData warden = LoadEnemy("ShieldWarden");
+        EntityData matron = LoadEnemy("IronMatron");
+
+        Assert.AreEqual("Shield Warden", warden.title);
+        Assert.IsFalse(string.IsNullOrEmpty(warden.description));
+        Assert.IsNotNull(warden.model);
+        Assert.AreEqual(0f, warden.attributes[AttributeType.Damage]);
+        Assert.Less(warden.attributes[AttributeType.HealthMax], matron.attributes[AttributeType.HealthMax]);
+
+        ApplyBuffOnTargetSkillFactory recharge = warden.skillFactories.Single() as ApplyBuffOnTargetSkillFactory;
+        Assert.IsNotNull(recharge);
+        Assert.IsTrue(recharge.data.targetAlly);
+        Assert.IsFalse(recharge.data.singleTimeUse);
+        Assert.AreEqual(5f, recharge.data.rate, 0.0001f);
+        Assert.GreaterOrEqual(recharge.data.range, 100f, "reaches her anywhere on the board");
+        GainResourceBuffFactory gain = LoadShieldGain(recharge.data.buffHandlerFactory);
+        Assert.AreEqual(0.1f, MaxHealthRatio(gain), 0.0001f);
+        Assert.IsTrue(gain.data.upToValue, "tops the shield up, never piles it up");
+
+        TagValidatorFactory validator = recharge.data.targetValidators.Single() as TagValidatorFactory;
+        Assert.IsNotNull(validator);
+        Assert.IsTrue(validator.data.mustHave);
+        CollectionAssert.Contains(matron.tags, validator.data.tag);
+    }
+
+    // Doesn't attack, gives +2 damage to the Iron Matron alone every 5s, stacking up to 5 times until the end of the fight
+    [Test]
+    public void WarDrummer_RaisesTheDamageOfTheIronMatronOnly_UpTo5Times()
+    {
+        EntityData drummer = LoadEnemy("WarDrummer");
+        EntityData matron = LoadEnemy("IronMatron");
+
+        Assert.AreEqual("War Drummer", drummer.title);
+        Assert.IsFalse(string.IsNullOrEmpty(drummer.description));
+        Assert.IsNotNull(drummer.model);
+        Assert.AreEqual(0f, drummer.attributes[AttributeType.Damage]);
+        Assert.Less(drummer.attributes[AttributeType.HealthMax], matron.attributes[AttributeType.HealthMax]);
+
+        ApplyBuffOnTargetSkillFactory drum = drummer.skillFactories.Single() as ApplyBuffOnTargetSkillFactory;
+        Assert.IsNotNull(drum);
+        Assert.IsTrue(drum.data.targetAlly);
+        Assert.IsFalse(drum.data.singleTimeUse);
+        Assert.AreEqual(5f, drum.data.rate, 0.0001f);
+        Assert.GreaterOrEqual(drum.data.range, 100f, "reaches her anywhere on the board");
+
+        BuffHandlerFactory handler = drum.data.buffHandlerFactory as BuffHandlerFactory;
+        Assert.IsNotNull(handler);
+        Assert.AreEqual(DurationType.Infinite, handler.durationType, "kept until the end of the fight");
+        Assert.AreEqual(5, handler.maxStacks);
+        Assert.IsTrue(handler.stackAcrossSources, "outlives the drummer");
+        FlatModifierFactory damage = handler.data.buffFactoryList.Single() as FlatModifierFactory;
+        Assert.IsNotNull(damage);
+        Assert.AreEqual(AttributeType.Damage, damage.data.type);
+        Assert.AreEqual(AttributeModifierType.Add, damage.data.modifierType);
+        Assert.AreEqual(2f, damage.data.value, 0.0001f);
+
+        TagValidatorFactory validator = drum.data.targetValidators.Single() as TagValidatorFactory;
+        Assert.IsNotNull(validator);
+        Assert.IsTrue(validator.data.mustHave);
+        CollectionAssert.Contains(matron.tags, validator.data.tag);
+    }
+
+    [Test]
+    public void EliteIronMatron_FieldsTheMatronBetweenHerWardenAndHerDrummerInFront()
+    {
+        WavePatternData wave = LoadWave("Wave_Elite_IronMatron");
+
+        Assert.AreEqual(1, GetRankCount(wave));
+        CollectionAssert.AreEqual(new[] { "Shield Warden", "Iron Matron", "War Drummer" }, GetRank(wave, 0));
+    }
+
     // Strikes the most wounded unit, twice as hard when it is under half health
     [Test]
     public void Headsman_HitsTheMostWoundedUnit_TwiceAsHardUnderHalfHealth()

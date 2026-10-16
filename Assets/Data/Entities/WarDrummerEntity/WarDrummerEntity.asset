@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 200499978037cc34d93ebc9c76414b0c, type: 3}
+  m_Name: WarDrummerEntity
+  m_EditorClassIdentifier: HealerLike.Runtime::EntityData
+  model: {fileID: 6891580169314388076, guid: 66ae442726d1cf4428dacb34edd61ac4, type: 3}
+  title: War Drummer
+  description: Doesn't attack. Every 5s, gives +2 damage to the Iron Matron until the end of the fight, stacking up to 5 times
+  attributes:
+  - key: 0
+    value: 140
+  - key: 1
+    value: 0
+  - key: 2
+    value: 0
+  - key: 3
+    value: 1000
+  targetBehaviourType: 1
+  targetValidators: []
+  tags:
+  - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
+  items: []
+  skillFactories:
+  - {fileID: 11400000, guid: 52ee48a44dd44cd6831e43a804d2f1e6, type: 2}

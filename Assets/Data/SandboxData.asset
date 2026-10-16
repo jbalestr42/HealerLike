@@ -73,6 +73,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1e7d1b20f5b64a698c15e68ca46d87e9, type: 2}
   - {fileID: 11400000, guid: a31f470bddbb0954ca0bc1ad1194c0e0, type: 2}
   - {fileID: 11400000, guid: 2a2526ddadc5f534ca4455e04e9084c6, type: 2}
+  - {fileID: 11400000, guid: df468496eb0ac3f41bc5b65abfdcc2cc, type: 2}
+  - {fileID: 11400000, guid: 31ec2684059aff847b16f9be5053ef73, type: 2}
+  - {fileID: 11400000, guid: be084f75b9ce47bdba50f41a6ee77c19, type: 2}
   waves:
   - {fileID: 11400000, guid: d6a62ca494014f16a3f7d75a4c2410a0, type: 2}
   - {fileID: 11400000, guid: 55bd537b7a6b4020b407348f851dfc37, type: 2}
@@ -115,6 +118,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 00b8d2af4ddc4261b8695524b141fcc4, type: 2}
   - {fileID: 11400000, guid: 9bbea907dd30f7148a55c0d6d62a8960, type: 2}
   - {fileID: 11400000, guid: bb1bb45f34483f344bb941fa15693ec4, type: 2}
+  - {fileID: 11400000, guid: 37f9f1c09bb03c7438f6420688d699a4, type: 2}
   characterSkills:
   - {fileID: 11400000, guid: 398f76355dcd1574d876d59d8e1dd8bd, type: 2}
   - {fileID: 11400000, guid: 38f88bae44f5f1f41b2aef0148296685, type: 2}

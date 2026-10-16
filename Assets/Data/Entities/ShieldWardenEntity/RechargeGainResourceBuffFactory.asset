@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d95c10e6ee0c08240b37e5e530a36961, type: 3}
+  m_Name: RechargeGainResourceBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::GainResourceBuffFactory
+  uniqueID: 73ef960c-ba39-41fc-9828-fa6cddf08f43
+  data:
+    resourceType: 3
+    value:
+      rid: 4204219473301078114
+    valueOwner: 1
+    upToValue: 1
+  references:
+    version: 2
+    RefIds:
+    - rid: 4204219473301078114
+      type: {class: MaxHealthValue, ns: , asm: HealerLike.Runtime}
+      data:
+        data:
+          multiplier: 0.1
+          inverse: 0

@@ -313,6 +313,25 @@ public class WavePoolsDataTests
         AssertEnemies("Wave_Elite_TwinBlades", ("Twin Blade", 2));
     }
 
+    // The third elite, in the pools of the floors 8 and 9 only: the Iron Matron, her Shield Warden and her War Drummer
+    [Test]
+    public void ThirdElite_TheIronMatronAndHerSupports_OnTheFloors8And9Only()
+    {
+        for (int floor = 0; floor < _map.floorCount; floor++)
+        {
+            List<string> elites = GetWaves(MapNodeType.Elite, floor);
+            if (floor == 8 || floor == 9)
+            {
+                CollectionAssert.AreEqual(new[] { "Wave_Elite_IronMatron" }, elites, $"floor {floor}");
+            }
+            else
+            {
+                CollectionAssert.DoesNotContain(elites, "Wave_Elite_IronMatron", $"floor {floor}");
+            }
+        }
+        AssertEnemies("Wave_Elite_IronMatron", ("Iron Matron", 1), ("Shield Warden", 1), ("War Drummer", 1));
+    }
+
     [Test]
     public void IronWall_ColossusTwoCrossbowmenBloodWarden()
     {
