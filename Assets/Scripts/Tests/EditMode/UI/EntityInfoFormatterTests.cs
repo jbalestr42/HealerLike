@@ -179,6 +179,68 @@ public class EntityInfoFormatterTests
         StringAssert.Contains("= 5 · Source", EntityInfoFormatter.FormatModifier(AttributeModifierType.Override, CreateSourceModifier(_source, 5f), _owner));
     }
 
+    // The attack cooldown is shown as a speed, attacks per second: what the "+50% attack speed" of the descriptions read
+    [Test]
+    public void FormatAttribute_AttackCooldown_IsShownAsAttacksPerSecond()
+    {
+        Assert.AreEqual("Attack Speed: <b>2/s</b>", EntityInfoFormatter.FormatAttribute(AttributeType.AttackRate, new Attribute(0.5f)));
+    }
+
+    [Test]
+    public void FormatAttribute_ShorterAttackCooldown_IsAFasterSpeed_ShownAsABonus()
+    {
+        Attribute attribute = new Attribute(1f);
+        attribute.AddModifier(AttributeModifierType.Multiply, _source, new FixedModifier { value = 1f / 1.5f - 1f });
+        attribute.Update();
+
+        string line = EntityInfoFormatter.FormatAttribute(AttributeType.AttackRate, attribute);
+
+        StringAssert.StartsWith("Attack Speed: <b>1.5/s</b>", line);
+        StringAssert.Contains($"<color={EntityInfoFormatter.BonusColor}>(base 1/s)", line);
+    }
+
+    [Test]
+    public void FormatAttribute_LongerAttackCooldown_IsASlowerSpeed_ShownAsAMalus()
+    {
+        Attribute attribute = new Attribute(1f);
+        attribute.AddModifier(AttributeModifierType.Add, _source, new FixedModifier { value = 1f });
+        attribute.Update();
+
+        string line = EntityInfoFormatter.FormatAttribute(AttributeType.AttackRate, attribute);
+
+        StringAssert.StartsWith("Attack Speed: <b>0.5/s</b>", line);
+        StringAssert.Contains($"<color={EntityInfoFormatter.MalusColor}>(base 1/s)", line);
+    }
+
+    [Test]
+    public void FormatModifier_AttackCooldownMultiplier_IsTheAttackSpeedItGives()
+    {
+        // A cooldown divided by 1.5 is 50% more attacks, a doubled one half as many
+        StringAssert.Contains("+50 % · Source", EntityInfoFormatter.FormatModifier(AttributeModifierType.Multiply, CreateSourceModifier(_source, 1f / 1.5f - 1f), _owner, AttributeType.AttackRate));
+        StringAssert.Contains("-50 % · Source", EntityInfoFormatter.FormatModifier(AttributeModifierType.Multiply, CreateSourceModifier(_source, 1f), _owner, AttributeType.AttackRate));
+    }
+
+    [Test]
+    public void FormatModifier_AttackCooldownAddOrOverride_IsInSecondsOfCooldown()
+    {
+        StringAssert.Contains("+0.5s cooldown · Source", EntityInfoFormatter.FormatModifier(AttributeModifierType.Add, CreateSourceModifier(_source, 0.5f), _owner, AttributeType.AttackRate));
+        StringAssert.Contains("= 2s cooldown · Source", EntityInfoFormatter.FormatModifier(AttributeModifierType.Override, CreateSourceModifier(_source, 2f), _owner, AttributeType.AttackRate));
+    }
+
+    [Test]
+    public void GetAttributeLines_ShowsTheAttackCooldownModifiersAsAttackSpeed()
+    {
+        AttributeManager attributeManager = TestHelpers.CreateAttributeManager(_owner, AttributeType.AttackRate, 1f);
+        attributeManager.Get(AttributeType.AttackRate).AddModifier(AttributeModifierType.Multiply, _source, new FixedModifier { value = 1f / 1.5f - 1f });
+        attributeManager.Get(AttributeType.AttackRate).Update();
+
+        List<string> lines = EntityInfoFormatter.GetAttributeLines(attributeManager, _owner);
+
+        Assert.AreEqual(2, lines.Count);
+        StringAssert.StartsWith("Attack Speed: <b>1.5/s</b>", lines[0]);
+        StringAssert.Contains("+50 % · Source", lines[1]);
+    }
+
     [Test]
     public void GetAttributeLines_ListsEachAttributeFollowedByItsModifiers()
     {

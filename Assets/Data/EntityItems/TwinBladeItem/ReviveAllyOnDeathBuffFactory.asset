@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a717ce72405978f48941dce7f3b8a3e9, type: 3}
+  m_Name: ReviveAllyOnDeathBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::ReviveAllyOnDeathBuffFactory
+  uniqueID: a7c3b3f7-414c-4be3-b968-82ca0a5f0084
+  data:
+    raisingBuffHandlerFactory: {fileID: 11400000, guid: a8a1baa4e4906e84993df3827a4fd363, type: 2}
+    healthRatio: 0.5

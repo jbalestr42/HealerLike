@@ -16,7 +16,8 @@ public static class EntityInfoFormatter
     static readonly Dictionary<AttributeType, string> AttributeNames = new Dictionary<AttributeType, string>
     {
         { AttributeType.HealthMax, "Max HP" },
-        { AttributeType.AttackRate, "Attack Cooldown" },
+        // Seconds between two attacks, shown as attacks per second (see FormatAttributeValue)
+        { AttributeType.AttackRate, "Attack Speed" },
         { AttributeType.Damage, "Damage" },
         { AttributeType.Range, "Range" },
         { AttributeType.FlatArmor, "Armor" },
@@ -50,6 +51,22 @@ public static class EntityInfoFormatter
     public static string FormatNumber(float value)
     {
         return value.ToString("0.##", CultureInfo.InvariantCulture);
+    }
+
+    // The value as shown to the player: the attack cooldown as attacks per second, "1.5/s"
+    public static string FormatAttributeValue(AttributeType type, float value)
+    {
+        if (type == AttributeType.AttackRate)
+        {
+            return FormatNumber(ToAttackSpeed(value)) + "/s";
+        }
+        return FormatNumber(value);
+    }
+
+    // Attacks per second for a cooldown in seconds, none without a cooldown
+    static float ToAttackSpeed(float cooldown)
+    {
+        return cooldown > 0f ? 1f / cooldown : 0f;
     }
 
     public static string FormatDuration(float seconds)
@@ -159,31 +176,41 @@ public static class EntityInfoFormatter
     // "Damage: 12 (base 10)", the base is only shown when modifiers change the value
     public static string FormatAttribute(AttributeType type, Attribute attribute)
     {
-        string line = $"{GetAttributeName(type)}: <b>{FormatNumber(attribute.Value)}</b>";
+        string line = $"{GetAttributeName(type)}: <b>{FormatAttributeValue(type, attribute.Value)}</b>";
         if (!Mathf.Approximately(attribute.Value, attribute.BaseValue))
         {
-            string color = attribute.Value > attribute.BaseValue ? BonusColor : MalusColor;
-            line += $" <color={color}>(base {FormatNumber(attribute.BaseValue)})</color>";
+            // A shorter attack cooldown is a faster attack speed
+            bool isBonus = type == AttributeType.AttackRate ? attribute.Value < attribute.BaseValue : attribute.Value > attribute.BaseValue;
+            string color = isBonus ? BonusColor : MalusColor;
+            line += $" <color={color}>(base {FormatAttributeValue(type, attribute.BaseValue)})</color>";
         }
         return line;
     }
 
-    // "+2 · Hexer", "+30 % · itself", "= 5 · Frost Shooter"
-    public static string FormatModifier(AttributeModifierType type, Attribute.SourceModifier sourceModifier, GameObject owner)
+    // "+2 · Hexer", "+30 % · itself", "= 5 · Frost Shooter". On the attack cooldown, a multiplier is shown as the
+    // attack speed it gives ("+50 %" for a cooldown divided by 1.5), the others in seconds of cooldown
+    public static string FormatModifier(AttributeModifierType type, Attribute.SourceModifier sourceModifier, GameObject owner, AttributeType? attributeType = null)
     {
         float value = sourceModifier.modifier.ApplyModifier();
+        bool isAttackRate = attributeType == AttributeType.AttackRate;
+        if (isAttackRate && type == AttributeModifierType.Multiply)
+        {
+            // The cooldown is multiplied by 1 + value, the attacks per second by its inverse
+            value = 1f + value > 0f ? 1f / (1f + value) - 1f : 0f;
+        }
         string sign = value >= 0f ? "+" : "";
+        string unit = isAttackRate ? "s cooldown" : "";
         string amount;
         switch (type)
         {
             case AttributeModifierType.Add:
-                amount = sign + FormatNumber(value);
+                amount = sign + FormatNumber(value) + unit;
                 break;
             case AttributeModifierType.Multiply:
                 amount = sign + FormatNumber(value * 100f) + " %";
                 break;
             default:
-                amount = "= " + FormatNumber(value);
+                amount = "= " + FormatNumber(value) + unit;
                 break;
         }
         return $"<color={MutedColor}>    {amount} · {GetSourceName(sourceModifier.source, owner)}</color>";
@@ -206,7 +233,7 @@ public static class EntityInfoFormatter
             {
                 foreach (Attribute.SourceModifier sourceModifier in attribute.GetModifiers(modifierType))
                 {
-                    lines.Add(FormatModifier(modifierType, sourceModifier, owner));
+                    lines.Add(FormatModifier(modifierType, sourceModifier, owner, type));
                 }
             }
         }

@@ -37,7 +37,7 @@ public static class CharacterCardText
     {
         if (!UnityEngine.Mathf.Approximately(value, AttributeManager.GetDefaultValue(type)))
         {
-            lines.Add($"- {EntityInfoFormatter.GetAttributeName(type)}: {EntityInfoFormatter.FormatNumber(value)}");
+            lines.Add($"- {EntityInfoFormatter.GetAttributeName(type)}: {EntityInfoFormatter.FormatAttributeValue(type, value)}");
         }
     }
 

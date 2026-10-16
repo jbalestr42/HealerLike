@@ -294,6 +294,25 @@ public class WavePoolsDataTests
         AssertEnemies("Wave_Elite_Ravager", ("Ravager", 1));
     }
 
+    // The second elite, in the pools of the floors 6 and 7 only: the Twin Blades alone
+    [Test]
+    public void SecondElite_TheTwinBladesAlone_OnTheFloors6And7Only()
+    {
+        for (int floor = 0; floor < _map.floorCount; floor++)
+        {
+            List<string> elites = GetWaves(MapNodeType.Elite, floor);
+            if (floor == 6 || floor == 7)
+            {
+                CollectionAssert.AreEqual(new[] { "Wave_Elite_TwinBlades" }, elites, $"floor {floor}");
+            }
+            else
+            {
+                CollectionAssert.DoesNotContain(elites, "Wave_Elite_TwinBlades", $"floor {floor}");
+            }
+        }
+        AssertEnemies("Wave_Elite_TwinBlades", ("Twin Blade", 2));
+    }
+
     [Test]
     public void IronWall_ColossusTwoCrossbowmenBloodWarden()
     {

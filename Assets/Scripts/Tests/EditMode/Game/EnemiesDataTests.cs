@@ -255,6 +255,52 @@ public class EnemiesDataTests
         }
     }
 
+    // How a Twin Blade raises its fallen twin
+    static ReviveAllyOnDeathBuffFactory LoadTwinBladeRaising(EntityData twinBlade)
+    {
+        ItemFactory item = twinBlade.items.Single() as ItemFactory;
+        Assert.IsNotNull(item);
+        Assert.IsFalse(string.IsNullOrEmpty(item.data.description));
+        BuffHandlerFactory permanent = item.data.buffs.Single() as BuffHandlerFactory;
+        Assert.IsNotNull(permanent);
+        Assert.AreEqual(DurationType.Infinite, permanent.durationType);
+        ReviveAllyOnDeathBuffFactory revive = permanent.data.buffFactoryList.Single() as ReviveAllyOnDeathBuffFactory;
+        Assert.IsNotNull(revive);
+        return revive;
+    }
+
+    // Elite duo: two Duelists tougher than one, each raising the other when it falls
+    [Test]
+    public void TwinBlade_FightsLikeATougherDuelist_AndRaisesItsTwin()
+    {
+        EntityData twinBlade = LoadEnemy("TwinBlade");
+        EntityData duelist = LoadEnemy("Duelist");
+
+        Assert.AreEqual("Twin Blade", twinBlade.title);
+        Assert.IsFalse(string.IsNullOrEmpty(twinBlade.description));
+        Assert.IsNotNull(twinBlade.model);
+        Assert.AreEqual(TargetBehaviourType.HighestHealth, twinBlade.targetBehaviourType);
+        CollectionAssert.AreEqual(duelist.skillFactories, twinBlade.skillFactories, "3 strikes then a pause, as the Duelist");
+        Assert.AreEqual(duelist.attributes[AttributeType.AttackRate], twinBlade.attributes[AttributeType.AttackRate]);
+        Assert.AreEqual(duelist.attributes[AttributeType.Damage], twinBlade.attributes[AttributeType.Damage]);
+        Assert.Greater(twinBlade.attributes[AttributeType.HealthMax], duelist.attributes[AttributeType.HealthMax]);
+
+        // 6s of raising with +50% attack speed, the twin back with half its health
+        ReviveAllyOnDeathBuffFactory revive = LoadTwinBladeRaising(twinBlade);
+        Assert.AreEqual(0.5f, revive.data.healthRatio, 0.0001f);
+        BuffHandlerFactory raising = revive.data.raisingBuffHandlerFactory as BuffHandlerFactory;
+        Assert.IsNotNull(raising);
+        Assert.AreEqual(DurationType.Duration, raising.durationType);
+        Assert.AreEqual(6f, raising.data.duration, 0.0001f);
+        Assert.AreEqual(1, raising.maxStacks);
+        Assert.IsNotNull(raising.icon, "shows the raising on the twin left");
+        AttackSpeedModifierFactory speed = raising.data.buffFactoryList.Single() as AttackSpeedModifierFactory;
+        Assert.IsNotNull(speed);
+        Assert.AreEqual(AttributeType.AttackRate, speed.data.type);
+        Assert.AreEqual(AttributeModifierType.Multiply, speed.data.modifierType);
+        Assert.AreEqual(0.5f, speed.data.value, 0.0001f);
+    }
+
     // Strikes the most wounded unit, twice as hard when it is under half health
     [Test]
     public void Headsman_HitsTheMostWoundedUnit_TwiceAsHardUnderHalfHealth()

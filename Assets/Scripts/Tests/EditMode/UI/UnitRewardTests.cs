@@ -74,6 +74,15 @@ public class UnitRewardTests
     }
 
     [Test]
+    public void GetUnitDetails_ShowsTheAttackCooldownAsAttacksPerSecond()
+    {
+        EntityData zealot = CreateZealot();
+        zealot.attributes[AttributeType.AttackRate] = 2f;
+
+        StringAssert.Contains("- Attack Speed: 0.5/s", CharacterCardText.GetUnitDetails(zealot));
+    }
+
+    [Test]
     public void EntityButton_ShowsTheUnitAsANewUnitWithItsDetails()
     {
         GameObject go = new GameObject("Unit Reward");

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 200499978037cc34d93ebc9c76414b0c, type: 3}
+  m_Name: TwinBladeEntity
+  m_EditorClassIdentifier: 
+  model: {fileID: 7099655024501674456, guid: 8760cc9eb30a2b340b14499b6e150dc4, type: 3}
+  title: Twin Blade
+  description: 'Fights alongside its twin, always going for your unit with the most health: strikes it 3 times in a row, then pauses for 2s. When its twin dies, it raises it for 6s with +50% attack speed: if it survives, its twin comes back with half its health, as many times as it dies'
+  attributes:
+  - key: 0
+    value: 200
+  - key: 1
+    value: 1
+  - key: 2
+    value: 4
+  - key: 3
+    value: 100
+  targetBehaviourType: 2
+  targetValidators: []
+  tags:
+  - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
+  items:
+  - {fileID: 11400000, guid: 223f3b0e507121e46b038f3e64410c01, type: 2}
+  skillFactories:
+  - {fileID: 11400000, guid: b2ca1594c10a4b5c851fccc178137e9a, type: 2}
