@@ -8,6 +8,7 @@ public class SandboxPanel : MonoBehaviour
     [SerializeField] Transform _skillContainer;
     [SerializeField] Transform _itemContainer;
     [SerializeField] Transform _playerItemContainer;
+    [SerializeField] Transform _statusContainer;
     [SerializeField] GameObject _wavePanel;
     [SerializeField] Transform _waveContainer;
     [SerializeField] EntityInfoPanel _entityInfoPanel;
@@ -56,6 +57,14 @@ public class SandboxPanel : MonoBehaviour
         {
             Transform container = IsPlayerItem(itemFactory) ? _playerItemContainer : _itemContainer;
             CreateButton(container, itemFactory.title, () => _gameType.GiveItem(itemFactory));
+        }
+
+        foreach (StatusData status in data.statuses)
+        {
+            if (status != null)
+            {
+                CreateButton(_statusContainer, status.title, () => _gameType.ApplyStatus(status));
+            }
         }
 
         Refresh();

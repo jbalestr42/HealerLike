@@ -113,22 +113,21 @@ public class WarlockDataTests
         Assert.IsTrue(drain.data.validators.Exists(v => v is ResourceValidatorFactory));
     }
 
+    // 5 Poisoned stacks (user decision 2026-10-17): 1 damage per stack every second, ignoring armor
     [Test]
-    public void Curse_PoisonsAnEnemyIgnoringItsArmor()
+    public void Curse_Gives5PoisonedStacksToAnEnemy()
     {
         BuffCharacterSkillFactory curse = GetSkill<BuffCharacterSkillFactory>("Curse");
 
         Assert.IsTrue(curse.data.isSingle);
         Assert.AreEqual(Entity.EntityType.Computer, curse.data.entityType);
-        BuffHandlerFactory handler = (BuffHandlerFactory)curse.data.buffHandlerFactory[0];
-        Assert.AreEqual(DurationType.Duration, handler.data.durationType);
-        Assert.IsTrue(handler.data.isPeriodic);
-        Assert.AreEqual(1, handler.data.maxStacks);
-        AConsumer damage = ((ApplyConsumerBuffFactory)handler.data.buffFactoryList[0]).data.consumerFactory.GetConsumer(_caster, _caster);
-        // 30% of the 15 Heal Power per tick
-        Assert.AreEqual(-4.5f, damage.GetValue(), 0.0001f);
+        StatusStacksFactory poison = curse.data.buffHandlerFactory.Single() as StatusStacksFactory;
+        Assert.IsNotNull(poison);
+        Assert.AreSame(AssetDatabase.LoadAssetAtPath<StatusData>("Assets/Data/Statuses/PoisonedStatus/PoisonedStatus.asset"), poison.data.status);
+        Assert.AreEqual(5, poison.data.stacks);
+        AConsumer damage = poison.buffFactoryList.OfType<ApplyConsumerBuffFactory>().Single().data.consumerFactory.GetConsumer(_caster, _caster);
+        Assert.AreEqual(-1f, damage.GetValue(), 0.0001f);
         Assert.IsTrue(damage.ignoreDamageReduction);
-        Assert.IsFalse(damage.ignoreConsumerPrevention);
     }
 
     [Test]
@@ -144,7 +143,7 @@ public class WarlockDataTests
 
     // The descriptions read their values from the data and the Heal Power of the character
     [TestCase("Drain Life", "<color=\"red\">15</color> <color=#008080ff>(100% HealPower)</color>")]
-    [TestCase("Curse", "<color=\"red\">4.5</color> <color=#008080ff>(30% HealPower)</color>")]
+    [TestCase("Curse", "<color=\"red\">5</color> Poisoned stacks, each dealing <color=\"red\">1</color> damage every 1s during <color=\"green\">6s</color>")]
     [TestCase("Dark Pact", "<color=\"red\">15%</color> of its max health")]
     public void Description_ShowsTheValuesOfTheData(string name, string expected)
     {

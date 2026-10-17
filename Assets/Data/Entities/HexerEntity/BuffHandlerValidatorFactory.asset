@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: BuffHandlerValidatorFactory
   m_EditorClassIdentifier: HealerLike.Runtime::BuffHandlerValidatorFactory
   data:
-    buffHandlerFactory: {fileID: 11400000, guid: f5ecc54c6ebf5ea4588b44669f63e5b0, type: 2}
+    buffHandlerFactory: {fileID: 11400000, guid: 0ce6c2d93de17aa48987f10f43286907, type: 2}
     mustHave: 0

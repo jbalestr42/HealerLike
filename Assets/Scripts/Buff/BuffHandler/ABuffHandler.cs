@@ -25,6 +25,10 @@ public abstract class ABuffHandlerFactory : ScriptableObject, ITaggable
     public abstract int maxStacks { get; }
     public abstract bool stackAcrossSources { get; }
     public abstract List<GameplayTag> tags { get; }
+    // The handler a giver really applies and its number of stacks (e.g. 2 stacks of the Vulnerable status, see
+    // StatusStacksFactory): itself, once, by default
+    public virtual ABuffHandlerFactory appliedFactory => this;
+    public virtual int appliedStacks => 1;
 
     #region ITaggable
 

@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::BuffHandlerFactory
   uniqueID: 1a9bffc3-9dfa-46d5-a0ed-6d4d45f45ca8
   data:
-    durationType: 2
-    duration: 0
+    durationType: 1
+    duration: 6
     isPeriodic: 0
     periodDuration: 0
-    maxStacks: 0
+    maxStacks: 5
     stackAcrossSources: 1
     buffFactoryList:
     - {fileID: 11400000, guid: 01ca0b8e9f7f6ba45b914bc28508640d, type: 2}

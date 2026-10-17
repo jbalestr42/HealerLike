@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::EntityData
   model: {fileID: 2795397902362475942, guid: 72c47fdc43d84b243bdc109c284341d6, type: 3}
   title: Hex Acolyte
-  description: Shots making random units Vulnerable for the whole fight (+15% damage taken per stack). When it dies, the Archon gets 20% armor
+  description: Shots making random units Vulnerable (+15% damage taken per stack, for 6s). When it dies, the Archon gets 20% armor
   attributes:
   - key: 0
     value: 130

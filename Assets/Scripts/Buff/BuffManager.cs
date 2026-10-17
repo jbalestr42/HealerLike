@@ -244,6 +244,11 @@ public class BuffManager : MonoBehaviour
     // Whether this handler is currently applied, whatever its source
     public bool HasHandler(ABuffHandlerFactory buffHandlerFactory)
     {
+        buffHandlerFactory = buffHandlerFactory.appliedFactory;
+        if (buffHandlerFactory == null)
+        {
+            return false;
+        }
         foreach (var handlerPerSource in _buffHandlerPerSource)
         {
             if (handlerPerSource.Value.buffHandlerPerId.TryGetValue(buffHandlerFactory.uniqueID, out BuffHandlerData buffHandlerData) && buffHandlerData.isInit)
@@ -422,8 +427,15 @@ public class BuffManager : MonoBehaviour
         _cachedSourcesToRemove.Clear();
     }
 
+    // Adds the stacks the factory applies, of the handler it applies (e.g. the buff of a status)
     public void AddHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target)
     {
+        int stacks = buffHandlerFactory.appliedStacks;
+        buffHandlerFactory = buffHandlerFactory.appliedFactory;
+        if (buffHandlerFactory == null)
+        {
+            return;
+        }
         if (string.IsNullOrEmpty(buffHandlerFactory.uniqueID))
         {
             Debug.LogError($"[BuffManager:{gameObject.name}] uniqueId is null for factory '{buffHandlerFactory.name}'");
@@ -442,12 +454,18 @@ public class BuffManager : MonoBehaviour
             Debug.Log($"[BuffManager:{gameObject.name}] Refresh handler " + buffHandlerFactory.name);
         }
         buffHandlerData.source = source;
-        buffHandlerData.refreshStacks++;
+        buffHandlerData.refreshStacks += stacks;
         OnBuffHandlerApplied.Invoke(buffHandlerFactory);
     }
 
     public void RemoveHandler(ABuffHandlerFactory buffHandlerFactory, GameObject source, GameObject target, bool removeAll = false)
     {
+        int stacks = buffHandlerFactory.appliedStacks;
+        buffHandlerFactory = buffHandlerFactory.appliedFactory;
+        if (buffHandlerFactory == null)
+        {
+            return;
+        }
         source = GetSourceKey(buffHandlerFactory, source);
         if (source == null)
         {
@@ -466,7 +484,7 @@ public class BuffManager : MonoBehaviour
         if (buffHandlerData != null)
         {
             Debug.Log($"[BuffManager:{gameObject.name}] Remove handler " + buffHandlerFactory.name);
-            buffHandlerData.refreshStacks--;
+            buffHandlerData.refreshStacks -= stacks;
         }
     }
 

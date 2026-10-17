@@ -19,5 +19,6 @@ MonoBehaviour:
       - {fileID: 11400000, guid: e80088b16287af94fa63cd1edc67c841, type: 2}
       numberOfProjectileToShootPerTarget: 1
       onHitEffects:
-      - {fileID: 11400000, guid: 7876b5820f7c4a545a67657182e547a7, type: 2}
+      - {fileID: 11400000, guid: 5ee93e8c9baf5a14180843ec286980cd, type: 2}
     atEveryTarget: 0
+    targetValidators: []

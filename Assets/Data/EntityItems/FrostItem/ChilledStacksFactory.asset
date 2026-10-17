@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bf9fcff7a878f24fb7573ac5a155639, type: 3}
+  m_Name: ChilledStacksFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::StatusStacksFactory
+  uniqueID: a8406829-1fc4-4854-9ab3-516a02574d59
+  data:
+    status: {fileID: 11400000, guid: 218d9b8e3dd97a64eb5e85f35442392f, type: 2}
+    stacks: 1

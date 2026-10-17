@@ -182,7 +182,7 @@ public class EnemiesDataTests
         ShootProjectileSkillStepFactory strike = strikes.data.skillStepFactories[0] as ShootProjectileSkillStepFactory;
         Assert.IsNotNull(strike);
         Assert.IsFalse(strike.data.atEveryTarget);
-        CollectionAssert.AreEqual(new[] { AssetDatabase.LoadAssetAtPath<StatusData>(VulnerableStatusPath).buffHandlerFactory }, strike.data.projectiles.Single().onHitEffects);
+        AssertStatusStacks(strike.data.projectiles.Single().onHitEffects.Single(), VulnerableStatusPath, 1);
         AttributeValue strikeDelay = (strikes.data.skillStepFactories[1] as DurationSkillStepFactory).data.duration as AttributeValue;
         Assert.AreEqual(AttributeType.AttackRate, strikeDelay.data.type);
         Assert.AreEqual(0.5f, strikeDelay.data.multiplier * ravager.attributes[AttributeType.AttackRate], 0.0001f);
@@ -222,9 +222,18 @@ public class EnemiesDataTests
         Assert.AreEqual(seconds, windUp.data.multiplier * unit.attributes[AttributeType.AttackRate], 0.0001f);
     }
 
-    // Stacks on every hit, from any source, until the end of the fight: +15% damage taken per stack
+    // Gives the stacks of a status, onto the buff of the status itself
+    static void AssertStatusStacks(ABuffHandlerFactory effect, string statusPath, int stacks)
+    {
+        StatusStacksFactory statusStacks = effect as StatusStacksFactory;
+        Assert.IsNotNull(statusStacks, "stacks of a status");
+        Assert.AreSame(AssetDatabase.LoadAssetAtPath<StatusData>(statusPath), statusStacks.data.status);
+        Assert.AreEqual(stacks, statusStacks.data.stacks);
+    }
+
+    // Stacks on every hit, from any source, for 6s refreshed on each, up to 5: +15% damage taken per stack
     [Test]
-    public void Vulnerable_StacksForTheWholeFight_15PercentDamageTakenPerStack()
+    public void Vulnerable_StacksUpTo5For6s_15PercentDamageTakenPerStack()
     {
         StatusData status = AssetDatabase.LoadAssetAtPath<StatusData>(VulnerableStatusPath);
 
@@ -233,8 +242,9 @@ public class EnemiesDataTests
         Assert.AreEqual("Vulnerable", status.tag.name);
         Assert.IsTrue(status.GivesItsTag());
         ABuffHandlerFactory vulnerable = status.buffHandlerFactory;
-        Assert.AreEqual(DurationType.Infinite, vulnerable.durationType);
-        Assert.AreEqual(0, vulnerable.maxStacks, "no limit");
+        Assert.AreEqual(DurationType.Duration, vulnerable.durationType);
+        Assert.AreEqual(6f, vulnerable.duration, 0.0001f);
+        Assert.AreEqual(5, vulnerable.maxStacks);
         Assert.IsTrue(vulnerable.stackAcrossSources);
         Assert.IsNotNull(vulnerable.icon);
         Assert.IsTrue(vulnerable.HasTag(AssetDatabase.LoadAssetAtPath<GameplayTag>("Assets/Prefabs/Tags/Debuff.asset")), "a debuff, removed by the cleanses");
@@ -261,6 +271,13 @@ public class EnemiesDataTests
                 vulnerability.Update();
                 Assert.AreEqual(0.45f, vulnerability.Value, 0.0001f);
                 Assert.IsTrue(unit.HasStatus(status));
+
+                unit.ApplyStatus(status, source);
+                unit.ApplyStatus(status, otherSource);
+                unit.ApplyStatus(status, source);
+                unit.GetComponent<BuffManager>().ForceUpdate();
+                vulnerability.Update();
+                Assert.AreEqual(0.75f, vulnerability.Value, 0.0001f, "5 stacks at most");
             }
             finally
             {
@@ -566,12 +583,12 @@ public class EnemiesDataTests
         Assert.AreEqual("Blight Acolyte", acolyte.title);
         Assert.AreEqual(TargetBehaviourType.Random, acolyte.targetBehaviourType);
         Assert.IsNotNull(plague);
-        BuffHandlerFactory blighted = ((ItemFactory)plague).data.onHitEffects.Single() as BuffHandlerFactory;
-        Assert.IsNotNull(blighted);
+        AssertStatusStacks(((ItemFactory)plague).data.onHitEffects.Single(), "Assets/Data/Statuses/BlightedStatus/BlightedStatus.asset", 1);
+        BuffHandlerFactory blighted = AssetDatabase.LoadAssetAtPath<StatusData>("Assets/Data/Statuses/BlightedStatus/BlightedStatus.asset").buffHandlerFactory as BuffHandlerFactory;
         Assert.AreEqual(DurationType.Duration, blighted.data.durationType);
         Assert.AreEqual(4f, blighted.data.duration, 0.0001f);
         Assert.AreEqual(1, blighted.data.maxStacks, "hit again, the target stays blighted without stacking");
-        FlatModifierFactory healing = blighted.data.buffFactoryList.Single() as FlatModifierFactory;
+        FlatModifierFactory healing = blighted.data.buffFactoryList.OfType<FlatModifierFactory>().Single();
         Assert.IsNotNull(healing);
         Assert.AreEqual(AttributeType.HealingReceived, healing.data.type);
         Assert.AreEqual(AttributeModifierType.Multiply, healing.data.modifierType);
@@ -587,12 +604,11 @@ public class EnemiesDataTests
     public void HexAcolyte_MakesRandomUnitsVulnerable_ThenArmorsTheArchon()
     {
         EntityData acolyte = LoadEnemy("HexAcolyte");
-        StatusData vulnerable = AssetDatabase.LoadAssetAtPath<StatusData>(VulnerableStatusPath);
 
         Assert.AreEqual("Hex Acolyte", acolyte.title);
         ShootProjectileSkillFactory skill = acolyte.skillFactories.Single() as ShootProjectileSkillFactory;
         Assert.IsNotNull(skill);
-        CollectionAssert.Contains(skill.data.projectiles.Single().onHitEffects, vulnerable.buffHandlerFactory);
+        AssertStatusStacks(skill.data.projectiles.Single().onHitEffects.Single(), VulnerableStatusPath, 1);
         FlatModifierFactory armor = LoadLegacy(acolyte).data.buffFactoryList.Single() as FlatModifierFactory;
         Assert.IsNotNull(armor);
         Assert.AreEqual(AttributeType.PercentArmor, armor.data.type);

@@ -195,3 +195,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 99bead8474838e7418b5fdc27018b593, type: 2}
   - {fileID: 11400000, guid: daf6a666e0ae0d0479a15c92de27f8ec, type: 2}
   - {fileID: 11400000, guid: 4621d24a1b7ba24429b3e3f5d7ed28f2, type: 2}
+  statuses:
+  - {fileID: 11400000, guid: 21c11bc514747d84097073a012941dd5, type: 2}
+  - {fileID: 11400000, guid: 0a1fccb3c29abbc4b89000415b9fa318, type: 2}
+  - {fileID: 11400000, guid: 218d9b8e3dd97a64eb5e85f35442392f, type: 2}
+  - {fileID: 11400000, guid: 564ef7837aa8c2f43a1a11f1c08180e1, type: 2}
+  - {fileID: 11400000, guid: 7a79c51ecd95e1b45b65530603ed40b8, type: 2}
+  - {fileID: 11400000, guid: 64eff56b41cb3a949b67cc276dde8b9c, type: 2}

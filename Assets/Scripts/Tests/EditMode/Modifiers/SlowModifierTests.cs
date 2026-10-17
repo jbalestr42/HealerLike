@@ -1,54 +1,60 @@
-using System.Reflection;
-using System.Runtime.Serialization;
+using System.Collections.Generic;
+using Entities;
 using NUnit.Framework;
 using UnityEngine;
 
 namespace Attributes.Modifiers
 {
 
+// A slow fading over the duration of its buff, from its full value when the buff is given or refreshed to nothing
 public class SlowModifierTests
 {
-    static ABuffHandler CreateHandler(DurationType durationType, float duration)
+    static BuffHandler CreateHandler(DurationType durationType, float duration, float elapsed = 0f)
     {
-        return new BuffHandler { data = new BuffHandlerData { durationType = durationType, duration = duration } };
+        return new BuffHandler { data = new BuffHandlerData { durationType = durationType, duration = duration }, durationTimer = elapsed };
     }
 
-    static float GetDuration(SlowModifier modifier)
+    static SlowModifier CreateModifier(float value, BuffHandler handler)
     {
-        return (float)typeof(SlowModifier).GetField("_duration", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(modifier);
+        SlowModifier modifier = new SlowModifier { data = new SlowModifierData { value = value }, buffHandler = handler };
+        modifier.Init(null, null);
+        return modifier;
     }
 
     [Test]
-    public void Init_UsesTheHandlerDuration()
+    public void ApplyModifier_NoTimeElapsed_ReturnsFullValue()
     {
-        SlowModifier modifier = new SlowModifier { data = new SlowModifierData { value = 0.5f }, buffHandler = CreateHandler(DurationType.Duration, 10f) };
+        Assert.AreEqual(0.5f, CreateModifier(0.5f, CreateHandler(DurationType.Duration, 10f)).ApplyModifier(), 0.0001f);
+    }
 
-        modifier.Init(null, null);
+    [Test]
+    public void ApplyModifier_HalfwayThroughTheBuff_ReturnsHalfValue()
+    {
+        Assert.AreEqual(0.25f, CreateModifier(0.5f, CreateHandler(DurationType.Duration, 10f, 5f)).ApplyModifier(), 0.0001f);
+    }
 
-        Assert.AreEqual(10f, GetDuration(modifier));
+    [Test]
+    public void ApplyModifier_AtTheEndOfTheBuff_ReturnsZero()
+    {
+        Assert.AreEqual(0f, CreateModifier(0.5f, CreateHandler(DurationType.Duration, 10f, 10f)).ApplyModifier(), 0.0001f);
+    }
+
+    [Test]
+    public void InfiniteBuff_NeverFades()
+    {
+        Assert.AreEqual(0.5f, CreateModifier(0.5f, CreateHandler(DurationType.Infinite, 0f, 1000f)).ApplyModifier(), 0.0001f);
+    }
+
+    // E.g. Chilled hit again while chilled, without a new stack (max 1)
+    [Test]
+    public void BuffRefreshed_BackToTheFullValue()
+    {
+        BuffHandler handler = CreateHandler(DurationType.Duration, 10f, 5f);
+        SlowModifier modifier = CreateModifier(0.5f, handler);
+
+        handler.Refresh(null, null);
+
         Assert.AreEqual(0.5f, modifier.ApplyModifier(), 0.0001f);
-    }
-
-    [Test]
-    public void Init_InfiniteHandler_NeverFades()
-    {
-        // An infinite handler keeps duration at 0 (the field is hidden in the Inspector)
-        SlowModifier modifier = new SlowModifier { data = new SlowModifierData { value = 0.5f }, buffHandler = CreateHandler(DurationType.Infinite, 0f) };
-        modifier.Init(null, null);
-
-        TestHelpers.SetPrivateField(modifier, "_start", Time.time - 1000f);
-
-        Assert.AreEqual(0.5f, modifier.ApplyModifier(), 0.0001f);
-    }
-
-    [Test]
-    public void Init_HandlerWithoutDuration_DefaultsToOneSecond()
-    {
-        SlowModifier modifier = new SlowModifier { data = new SlowModifierData { value = 0.5f }, buffHandler = CreateHandler(DurationType.Instant, 10f) };
-
-        modifier.Init(null, null);
-
-        Assert.AreEqual(1f, GetDuration(modifier));
     }
 
     [Test]
@@ -73,68 +79,32 @@ public class SlowModifierTests
         }
     }
 
-    static SlowModifier CreateModifierBypassingConstructor(float value, float secondsElapsed, float duration)
+    [Test]
+    public void Stack_IncreasesTheValueWithDiminishingReturns()
     {
-        // Sets the private state directly so decay/stacking can be tested at a given elapsed time
-        SlowModifier modifier = (SlowModifier)FormatterServices.GetUninitializedObject(typeof(SlowModifier));
-        modifier.data = new SlowModifierData { value = value };
-        TestHelpers.SetPrivateField(modifier, "_start", Time.time - secondsElapsed);
-        TestHelpers.SetPrivateField(modifier, "_stackFactor", 1f);
-        TestHelpers.SetPrivateField(modifier, "_stacks", 1f);
-        TestHelpers.SetPrivateField(modifier, "_duration", duration);
-        return modifier;
+        SlowModifier modifier = CreateModifier(1f, CreateHandler(DurationType.Duration, 10f));
+
+        modifier.Stack(null, null);
+        Assert.AreEqual(1.3466f, modifier.ApplyModifier(), 0.0001f, "2 stacks: ln(2)/2 + 1");
+
+        modifier.Stack(null, null);
+        Assert.AreEqual(1.5493f, modifier.ApplyModifier(), 0.0001f, "3 stacks: ln(3)/2 + 1");
     }
 
     [Test]
-    public void ApplyModifier_NoTimeElapsed_ReturnsFullValue()
+    public void Stack_StillFadesWithTheBuff()
     {
-        SlowModifier modifier = CreateModifierBypassingConstructor(value: 0.5f, secondsElapsed: 0f, duration: 10f);
-
-        Assert.AreEqual(0.5f, modifier.ApplyModifier(), 0.0001f);
-    }
-
-    [Test]
-    public void ApplyModifier_HalfwayThroughDuration_ReturnsHalfValue()
-    {
-        SlowModifier modifier = CreateModifierBypassingConstructor(value: 0.5f, secondsElapsed: 5f, duration: 10f);
-
-        Assert.AreEqual(0.25f, modifier.ApplyModifier(), 0.0001f);
-    }
-
-    [Test]
-    public void ApplyModifier_PastDuration_ReturnsZero()
-    {
-        SlowModifier modifier = CreateModifierBypassingConstructor(value: 0.5f, secondsElapsed: 100f, duration: 10f);
-
-        Assert.AreEqual(0f, modifier.ApplyModifier(), 0.0001f);
-    }
-
-    [Test]
-    public void Stack_IncreasesStackFactorAndResetsDecay()
-    {
-        // 5s into a 10s duration, value would normally have decayed to half.
-        SlowModifier modifier = CreateModifierBypassingConstructor(value: 1f, secondsElapsed: 5f, duration: 10f);
+        SlowModifier modifier = CreateModifier(1f, CreateHandler(DurationType.Duration, 10f, 5f));
 
         modifier.Stack(null, null);
 
-        Assert.AreEqual(1.3466f, modifier.ApplyModifier(), 0.0001f); // 2 stacks: ln(2)/2 + 1, decay reset
-    }
-
-    [Test]
-    public void Stack_Twice_KeepsIncreasingWithDiminishingReturns()
-    {
-        SlowModifier modifier = CreateModifierBypassingConstructor(value: 1f, secondsElapsed: 0f, duration: 10f);
-
-        modifier.Stack(null, null);
-        modifier.Stack(null, null);
-
-        Assert.AreEqual(1.5493f, modifier.ApplyModifier(), 0.0001f); // 3 stacks: ln(3)/2 + 1
+        Assert.AreEqual(1.3466f / 2f, modifier.ApplyModifier(), 0.0001f);
     }
 
     [Test]
     public void Unstack_BackToOneStack_IsAsStrongAsAFreshSlow()
     {
-        SlowModifier modifier = CreateModifierBypassingConstructor(value: 1f, secondsElapsed: 0f, duration: 10f);
+        SlowModifier modifier = CreateModifier(1f, CreateHandler(DurationType.Duration, 10f));
         modifier.Stack(null, null);
 
         modifier.Unstack(null, null);
@@ -145,7 +115,7 @@ public class SlowModifierTests
     [Test]
     public void StackThenUnstack_MultipleCycles_ReturnsToTheSingleStackValue()
     {
-        SlowModifier modifier = CreateModifierBypassingConstructor(value: 1f, secondsElapsed: 0f, duration: 10f);
+        SlowModifier modifier = CreateModifier(1f, CreateHandler(DurationType.Duration, 10f));
 
         modifier.Stack(null, null);
         modifier.Stack(null, null);

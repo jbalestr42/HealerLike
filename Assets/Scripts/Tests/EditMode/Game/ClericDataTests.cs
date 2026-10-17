@@ -708,11 +708,12 @@ public class ClericDataTests
         Assert.AreEqual(0.6f, share.data.boostedRatio, 0.0001f);
     }
 
-    // What the Purifier removes: the harmful buffs the enemies put on the units
-    [TestCase("EntityItems/VenomItem/BuffHandlerFactory")]
-    [TestCase("EntityItems/PlagueItem/BuffHandlerFactory")]
-    [TestCase("EntityItems/FrostItem/BuffHandlerFactory")]
-    [TestCase("Entities/HexerEntity/BuffHandlerFactory")]
+    // What the Purifier removes: the harmful statuses the enemies put on the units
+    [TestCase("Statuses/VulnerableStatus/VulnerableBuffHandlerFactory")]
+    [TestCase("Statuses/PoisonedStatus/PoisonedBuffHandlerFactory")]
+    [TestCase("Statuses/ChilledStatus/ChilledBuffHandlerFactory")]
+    [TestCase("Statuses/BlightedStatus/BlightedBuffHandlerFactory")]
+    [TestCase("Statuses/SunderedStatus/SunderedBuffHandlerFactory")]
     public void EnemyDebuff_HasTheDebuffTag(string path)
     {
         ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>("Assets/Data/" + path + ".asset");

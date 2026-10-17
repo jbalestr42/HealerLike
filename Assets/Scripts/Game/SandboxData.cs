@@ -18,6 +18,9 @@ public class SandboxData : ScriptableObject
 
     public List<AItemFactory> items = new List<AItemFactory>();
 
+    // Given to the clicked units, to try the reactions to them (e.g. Vulnerable, Blessed)
+    public List<StatusData> statuses = new List<StatusData>();
+
     // played: null plays with every sandbox skill, otherwise the character with its skills and items
     public CharacterData CreateCharacterData(CharacterData played = null)
     {

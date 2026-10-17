@@ -128,6 +128,12 @@ public class SandboxGameType : AGameType
         }
     }
 
+    // Given to the entities clicked next, one more stack on each click
+    public void ApplyStatus(StatusData status)
+    {
+        InteractionManager.instance.SetInteraction(new ApplyStatusInteraction(status));
+    }
+
     public void StartBattle()
     {
         InteractionManager.instance.CancelInteraction();

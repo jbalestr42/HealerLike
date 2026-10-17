@@ -117,15 +117,18 @@ public class CombatItemsDataTests
         }
     }
 
+    // A Sundered stack per hit
     [Test]
     public void ArmorBreaker_EachHitRemoves1ArmorUntilTheEndOfTheFight_NeverBelow0()
     {
         ItemFactory item = LoadItem(EntityItems, "ArmorBreaker");
         Assert.AreEqual(1, item.data.onHitEffects.Count);
         ABuffHandlerFactory breaker = item.data.onHitEffects[0];
+        Assert.AreEqual("Sundered", (breaker as StatusStacksFactory).data.status.title);
+        Assert.AreEqual(1, breaker.appliedStacks);
         _attributes.Add(AttributeType.FlatArmor, new Attribute(2f));
 
-        ABuff buff = breaker.buffFactoryList[0].GetBuff(null);
+        ABuff buff = breaker.buffFactoryList.Find(factory => factory is FlatModifierFactory).GetBuff(null);
         buff.Add(_go, _go);
         Assert.AreEqual(1f, Get(AttributeType.FlatArmor), 0.0001f);
         // 2 more hits than the armor of the target

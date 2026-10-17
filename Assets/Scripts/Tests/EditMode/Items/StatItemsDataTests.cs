@@ -263,19 +263,21 @@ public class StatItemsDataTests
         Assert.AreEqual(1.7f, Get(AttributeType.AttackRate), 0.0001f);
     }
 
+    // A Vulnerable stack per hit (user decision 2026-10-17): +15% damage taken for 6s
     [Test]
-    public void HuntersMark_HitsMakeTheTargetTake20PercentMoreDamageFor3s_WithoutStacking()
+    public void HuntersMark_HitsMakeTheTargetVulnerable()
     {
         ItemFactory item = LoadEntityItem("HuntersMark");
         Assert.AreEqual(1, item.data.onHitEffects.Count);
         ABuffHandlerFactory mark = item.data.onHitEffects[0];
+        Assert.AreEqual("Vulnerable", (mark as StatusStacksFactory).data.status.title);
+        Assert.AreEqual(1, mark.appliedStacks);
 
-        AddBuffs(item.data.onHitEffects);
+        mark.buffFactoryList.Find(factory => factory is FlatModifierFactory).GetBuff(null).Add(_go, _go);
 
         Assert.AreEqual(DurationType.Duration, mark.durationType);
-        Assert.AreEqual(3f, mark.duration, 0.0001f);
-        Assert.AreEqual(1, mark.maxStacks);
-        Assert.AreEqual(0.2f, Get(AttributeType.Vulnerability), 0.0001f);
+        Assert.AreEqual(6f, mark.duration, 0.0001f);
+        Assert.AreEqual(0.15f, Get(AttributeType.Vulnerability), 0.0001f);
     }
 
     [Test]

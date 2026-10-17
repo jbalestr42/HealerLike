@@ -132,6 +132,18 @@ public class SandboxEntitiesTests
         }
     }
 
+    // Every status of the game can be given to a unit from the sandbox
+    [Test]
+    public void EveryStatus_CanBeGivenFromTheSandbox()
+    {
+        foreach (string guid in AssetDatabase.FindAssets("t:StatusData", new[] { "Assets/Data" }))
+        {
+            StatusData status = AssetDatabase.LoadAssetAtPath<StatusData>(AssetDatabase.GUIDToAssetPath(guid));
+            CollectionAssert.Contains(_sandboxData.statuses, status, status.name);
+        }
+        CollectionAssert.AllItemsAreNotNull(_sandboxData.statuses);
+    }
+
     [Test]
     public void Necromancer_RaisesUpToTwoFrailSkeletons()
     {

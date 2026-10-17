@@ -10,20 +10,15 @@ public class SlowModifierData : BaseData
     public float value;
 }
 
+// Fades over the duration of its buff, from its full value when the buff is given or refreshed (e.g. Chilled hit again
+// while chilled) to nothing when the buff ends
 public class SlowModifier : AttributeModifier<SlowModifierData>, IStackableBuff
 {
-    float _start = 0f;
     float _stackFactor = 1f;
     float _stacks = 1f;
-    float _duration = 1f;
-    // An infinite handler has no duration to fade over: the modifier keeps its full value
-    bool _isPermanent = false;
 
     public override void Init(GameObject source, GameObject target)
     {
-        _start = Time.time;
-        _duration = buffHandler.hasDuration ? buffHandler.duration : 1f;
-        _isPermanent = buffHandler.durationType == DurationType.Infinite;
     }
 
     public override float ApplyModifier()
@@ -31,13 +26,14 @@ public class SlowModifier : AttributeModifier<SlowModifierData>, IStackableBuff
         return data.value * _stackFactor * (1f - GetRatio());
     }
 
+    // The time spent of the buff, which restarts on each refresh; an infinite buff has no duration to fade over
     float GetRatio()
     {
-        if (_isPermanent)
+        if (buffHandler.durationType != DurationType.Duration || buffHandler.duration <= 0f)
         {
             return 0f;
         }
-        return Mathf.Clamp01((Time.time - _start) / _duration);
+        return Mathf.Clamp01(1f - buffHandler.remainingDuration / buffHandler.duration);
     }
 
     // 1 for a single stack, then grows with diminishing returns (~1.35 at 2 stacks, ~1.55 at 3)
@@ -52,7 +48,6 @@ public class SlowModifier : AttributeModifier<SlowModifierData>, IStackableBuff
     {
         _stacks++;
         _stackFactor = GetStackFactor(_stacks);
-        _start = Time.time;
     }
 
     public void Unstack(GameObject source, GameObject target)
