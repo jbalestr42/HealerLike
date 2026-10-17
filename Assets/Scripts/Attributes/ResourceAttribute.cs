@@ -58,12 +58,13 @@ public class ResourceAttribute : MonoBehaviour
     // covered by its own outer layer, the damage going through the layers from the outermost one, none: nothing
     public ResourceAttribute outerLayer { get; set; }
 
-    // TODO: move in SO
-    ResourceConsumerResolver _resourceConsumerResolver = new ResourceConsumerResolver();
+    // Turns the consumers into the value the resource changes by, given at Init
+    IResourceConsumerResolver _resourceConsumerResolver;
 
-    // Full, its max read from the given attribute of the owner, its gains multiplied by the other one if any (e.g.
-    // HealingReceived for the heals of the health)
-    public void Init(ResourceType type, AttributeType maxType, AttributeType? gainMultiplierType = null)
+    // Full, its max read from the given attribute of the owner, its consumers resolved by the given resolver (e.g. a
+    // ResourceConsumerResolver with HealingReceived multiplying the heals of the health, a RawResourceConsumerResolver
+    // for the mana, taking them as they are)
+    public void Init(ResourceType type, AttributeType maxType, IResourceConsumerResolver resourceConsumerResolver)
     {
         _type = type;
         AttributeManager attributeManager = GetComponent<AttributeManager>();
@@ -71,7 +72,8 @@ public class ResourceAttribute : MonoBehaviour
         _value = _max.Value;
         _lastMax = _max.Value;
         _max.AddOnValueChangedListener(OnValueMaxChanged);
-        _resourceConsumerResolver.Init(attributeManager, gainMultiplierType);
+        _resourceConsumerResolver = resourceConsumerResolver;
+        _resourceConsumerResolver.Init(attributeManager);
         Update();
     }
 

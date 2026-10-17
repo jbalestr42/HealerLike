@@ -35,7 +35,7 @@ public class ResourceAttributeTests
     {
         _targetGo = new GameObject();
         // As the units: the heals multiplied by HealingReceived
-        _health = TestHelpers.CreateResourceAttribute(_targetGo, ResourceType.Health, AttributeType.HealthMax, 100f, AttributeType.HealingReceived);
+        _health = TestHelpers.CreateResourceAttribute(_targetGo, ResourceType.Health, AttributeType.HealthMax, 100f, new ResourceConsumerResolver(AttributeType.HealingReceived));
         _targetAttributeManager = _targetGo.GetComponent<AttributeManager>();
 
         _sourceGo = new GameObject();
@@ -76,7 +76,7 @@ public class ResourceAttributeTests
         _targetAttributeManager.Add(AttributeType.DevotionMax, new Attribute(5f));
         ResourceAttribute devotion = _targetGo.AddComponent<ResourceAttribute>();
 
-        devotion.Init(ResourceType.Devotion, AttributeType.DevotionMax);
+        devotion.Init(ResourceType.Devotion, AttributeType.DevotionMax, new ResourceConsumerResolver());
 
         Assert.AreEqual(ResourceType.Devotion, devotion.type);
         Assert.AreEqual(5f, devotion.Max);
@@ -110,7 +110,7 @@ public class ResourceAttributeTests
     {
         _targetAttributeManager.Add(AttributeType.ManaMax, new Attribute(50f));
         ResourceAttribute mana = _targetGo.AddComponent<ResourceAttribute>();
-        mana.Init(ResourceType.Mana, AttributeType.ManaMax);
+        mana.Init(ResourceType.Mana, AttributeType.ManaMax, new ResourceConsumerResolver());
 
         Assert.AreSame(_health, ResourceAttribute.Get(_targetGo, ResourceType.Health));
         Assert.AreSame(mana, ResourceAttribute.Get(_targetGo, ResourceType.Mana));
@@ -1176,7 +1176,7 @@ public class ResourceAttributeTests
         GameObject manaGo = new GameObject("Mana");
         try
         {
-            ResourceAttribute mana = TestHelpers.CreateResourceAttribute(manaGo, ResourceType.Mana, AttributeType.ManaMax, 100f, AttributeType.CombatManaRefill);
+            ResourceAttribute mana = TestHelpers.CreateResourceAttribute(manaGo, ResourceType.Mana, AttributeType.ManaMax, 100f, new ResourceConsumerResolver(AttributeType.CombatManaRefill));
             Attribute multiplier = manaGo.GetComponent<AttributeManager>().Get(AttributeType.CombatManaRefill);
             multiplier.BaseValue = 2f;
             multiplier.Update();

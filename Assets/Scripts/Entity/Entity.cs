@@ -110,13 +110,13 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         }
 
         _health = gameObject.AddComponent<ResourceAttribute>();
-        _health.Init(ResourceType.Health, AttributeType.HealthMax, AttributeType.HealingReceived);
+        _health.Init(ResourceType.Health, AttributeType.HealthMax, new ResourceConsumerResolver(AttributeType.HealingReceived));
         _health.OnValueChanged.AddListener(OnHealthChanged);
         _health.OnAllConsumerProcessed.AddListener(OnConsumerProcessed);
 
         // Empty until something gives some (e.g. the Relic of Light), never above the max health
         _shield = gameObject.AddComponent<ResourceAttribute>();
-        _shield.Init(ResourceType.Shield, AttributeType.HealthMax);
+        _shield.Init(ResourceType.Shield, AttributeType.HealthMax, new ResourceConsumerResolver());
         _shield.fillWithMax = false;
         _shield.SetValue(0f);
         _health.outerLayer = _shield;

@@ -79,12 +79,12 @@ public class Character : MonoBehaviour, IBuffable
         }
 
         _mana = gameObject.AddComponent<ResourceAttribute>();
-        _mana.Init(ResourceType.Mana, AttributeType.ManaMax);
+        _mana.Init(ResourceType.Mana, AttributeType.ManaMax, new RawResourceConsumerResolver());
 
         if (_attributeManager.Has(AttributeType.DevotionMax) && _attributeManager.Get(AttributeType.DevotionMax).Value > 0f)
         {
             _devotion = gameObject.AddComponent<ResourceAttribute>();
-            _devotion.Init(ResourceType.Devotion, AttributeType.DevotionMax);
+            _devotion.Init(ResourceType.Devotion, AttributeType.DevotionMax, new RawResourceConsumerResolver());
             // Built during the fights, unlike the mana
             _devotion.SetValue(0f);
         }

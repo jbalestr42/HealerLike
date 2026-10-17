@@ -239,7 +239,7 @@ public class StatItemsDataTests
         Entity entity = null;
         TestHelpers.WithLoggingDisabled(() => entity = _go.AddComponent<Entity>());
         ResourceAttribute health = _go.AddComponent<ResourceAttribute>();
-        health.Init(ResourceType.Health, AttributeType.HealthMax);
+        health.Init(ResourceType.Health, AttributeType.HealthMax, new ResourceConsumerResolver());
         TestHelpers.SetPrivateField(entity, "_health", health);
 
         Equip("Adrenaline");

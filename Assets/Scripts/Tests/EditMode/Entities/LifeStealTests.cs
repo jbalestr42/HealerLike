@@ -21,7 +21,7 @@ public class TestUnits
         GameObject healthGo = new GameObject(name + " Health");
         _objects.Add(healthGo);
         // As Entity.Init: the heals multiplied by HealingReceived
-        ResourceAttribute health = TestHelpers.CreateResourceAttribute(healthGo, ResourceType.Health, AttributeType.HealthMax, max, AttributeType.HealingReceived);
+        ResourceAttribute health = TestHelpers.CreateResourceAttribute(healthGo, ResourceType.Health, AttributeType.HealthMax, max, new ResourceConsumerResolver(AttributeType.HealingReceived));
         health.SetValue(value);
         TestHelpers.SetPrivateField(entity, "_health", health);
         return entity;

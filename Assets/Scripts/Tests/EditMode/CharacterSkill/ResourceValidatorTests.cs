@@ -186,7 +186,7 @@ public class ResourceValidatorTests
         {
             _characterGo.GetComponent<AttributeManager>().Add(AttributeType.DevotionMax, new Attribute(5f));
             devotion = _characterGo.AddComponent<ResourceAttribute>();
-            devotion.Init(ResourceType.Devotion, AttributeType.DevotionMax);
+            devotion.Init(ResourceType.Devotion, AttributeType.DevotionMax, new ResourceConsumerResolver());
         });
         devotion.SetValue(0f);
 

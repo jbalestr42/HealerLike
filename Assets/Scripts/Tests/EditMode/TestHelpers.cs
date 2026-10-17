@@ -78,14 +78,14 @@ public static class TestHelpers
     /// backed by its own AttributeManager. Adding Entity triggers Entity.Reset() (NREs without a
     /// full Init()), so this is wrapped in WithLoggingDisabled.
     /// </summary>
-    public static ResourceAttribute CreateResourceAttribute(GameObject go, ResourceType type, AttributeType maxType, float maxValue, AttributeType? gainMultiplierType = null)
+    public static ResourceAttribute CreateResourceAttribute(GameObject go, ResourceType type, AttributeType maxType, float maxValue, IResourceConsumerResolver resourceConsumerResolver = null)
     {
         ResourceAttribute resourceAttribute = null;
         WithLoggingDisabled(() =>
         {
             CreateAttributeManager(go, maxType, maxValue);
             resourceAttribute = go.AddComponent<ResourceAttribute>();
-            resourceAttribute.Init(type, maxType, gainMultiplierType);
+            resourceAttribute.Init(type, maxType, resourceConsumerResolver ?? new ResourceConsumerResolver());
         });
         return resourceAttribute;
     }
