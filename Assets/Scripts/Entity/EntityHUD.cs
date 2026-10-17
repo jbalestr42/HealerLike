@@ -7,6 +7,8 @@ public class EntityHUD : MonoBehaviour, IVisualBehaviour
     [SerializeField] BuffIconBar _buffIconBar;
     // Optional: the shield shown at the end of the health, inside the fill area of the bar
     [SerializeField] RectTransform _shieldBar;
+    // Optional: the phase under way of a phased skill (e.g. the slam the Ravager is charging)
+    [SerializeField] SkillPhaseView _phaseView;
 
     Entity _entity;
 
@@ -66,6 +68,10 @@ public class EntityHUD : MonoBehaviour, IVisualBehaviour
         ShowHealth(entity.health);
         entity.OnMarkChanged.AddListener(ShowMark);
         _buffIconBar.Init(entity.buffManager);
+        if (_phaseView != null)
+        {
+            _phaseView.Init(entity);
+        }
 
         _resourceView.Show(true);
     }

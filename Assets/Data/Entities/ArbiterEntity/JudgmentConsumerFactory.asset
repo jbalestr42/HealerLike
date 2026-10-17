@@ -9,18 +9,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ee4336be73d3274ca513c5b6bb22f0f, type: 3}
-  m_Name: PauseSkillStepFactory
-  m_EditorClassIdentifier: HealerLike.Runtime::DurationSkillStepFactory
+  m_Script: {fileID: 11500000, guid: 4aee98d927598e340ae28ed4c28c0ac7, type: 3}
+  m_Name: JudgmentConsumerFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::ConsumerFactory
   data:
-    duration:
-      rid: 4204219452148416611
+    ignoreDamageReduction: 0
+    ignoreConsumerPrevention: 0
+    canBeCritical: 1
+    value:
+      rid: 4204219452148416608
+    valueOwner: 0
   references:
     version: 2
     RefIds:
-    - rid: 4204219452148416611
+    - rid: 4204219452148416608
       type: {class: AttributeValue, ns: , asm: HealerLike.Runtime}
       data:
         data:
-          type: 1
-          multiplier: 2.5
+          type: 2
+          multiplier: 1.5

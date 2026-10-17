@@ -21,8 +21,7 @@ public class ShootProjectileSkillStepData : SkillStepDataBase
 public class ShootProjectileSkillStep : ASkillStep<ShootProjectileSkillStepData>
 {
     int _projectileIndex = 0;
-    // Its own way to pick targets, without limit nor taunt, the targets of the entity left untouched
-    ATargetBehaviour _everyTargetBehaviour;
+    EveryEnemyInRange _everyTarget;
 
     public override void Init()
     {
@@ -49,16 +48,7 @@ public class ShootProjectileSkillStep : ASkillStep<ShootProjectileSkillStepData>
     // Every enemy within the range of the unit, a copy
     protected virtual List<GameObject> FindEveryTarget(GameObject unit)
     {
-        if (_everyTargetBehaviour == null)
-        {
-            _everyTargetBehaviour = ATargetBehaviour.Create(TargetBehaviourType.First);
-            _everyTargetBehaviour.targetCount = 0;
-            foreach (ATargetValidatorFactory targetValidator in data.targetValidators)
-            {
-                _everyTargetBehaviour.targetValidators.Add(targetValidator.GetTargetValidator());
-            }
-        }
-        float range = unit.GetComponent<AttributeManager>().GetOrAdd(AttributeType.Range).Value;
-        return new List<GameObject>(_everyTargetBehaviour.GetTargets(unit, unit.transform.position, range, unit.GetComponent<Entity>().GetTargetType()));
+        _everyTarget ??= new EveryEnemyInRange(data.targetValidators);
+        return _everyTarget.Find(unit);
     }
 }

@@ -10,7 +10,7 @@ public class ConfigurableSkillData : SkillDataBase
     public List<ASkillStepFactory> skillStepFactories = new List<ASkillStepFactory>();
 }
 
-public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill, IAttackSkill
+public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill, IAttackSkill, IPhasedSkill
 {
     int _currentStep = 0;
     List<ASkillStep> _skillSteps = new List<ASkillStep>();
@@ -120,6 +120,27 @@ public class ConfigurableSkill : ASkill<ConfigurableSkillData>, ICooldownSkill, 
 
     // One of its steps shoots at the targets (e.g. a burst of shots then a pause)
     public bool attacksTargets => data != null && data.skillStepFactories.Exists(factory => factory != null && factory.shootsAtTargets);
+
+    #endregion
+
+    #region IPhasedSkill
+
+    // The phases are the steps of the cycle itself, not the ones inside them
+    public bool TryGetPhase(out PhaseSkillStepData phase, out float progress)
+    {
+        for (int i = 0; i < _skillSteps.Count; i++)
+        {
+            if (_skillSteps[(_currentStep + i) % _skillSteps.Count] is PhaseSkillStep phaseStep)
+            {
+                phase = phaseStep.data;
+                progress = i == 0 ? phaseStep.GetProgress() : 0f;
+                return true;
+            }
+        }
+        phase = null;
+        progress = 0f;
+        return false;
+    }
 
     #endregion
 }

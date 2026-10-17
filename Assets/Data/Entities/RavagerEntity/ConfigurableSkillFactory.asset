@@ -15,6 +15,5 @@ MonoBehaviour:
   data:
     onSkillTriggerFactory: []
     skillStepFactories:
-    - {fileID: 11400000, guid: 3dce5211b12dafe4e949d38718fbbdec, type: 2}
-    - {fileID: 11400000, guid: 6375bec8204960445aa396517e08e9b2, type: 2}
-    - {fileID: 11400000, guid: 0db824dc9e9795245a7a5a45893f4405, type: 2}
+    - {fileID: 11400000, guid: af14bf62f355bab4ba82f91ae4c0e784, type: 2}
+    - {fileID: 11400000, guid: a5cefada350fa1b4bae206bac0496b43, type: 2}

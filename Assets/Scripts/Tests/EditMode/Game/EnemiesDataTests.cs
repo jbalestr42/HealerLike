@@ -159,7 +159,7 @@ public class EnemiesDataTests
     // Elite alone on its floors: 3 random strikes making the units hit Vulnerable, then a slam on the whole team, then
     // a pause
     [Test]
-    public void Ravager_StrikesThreeRandomUnitsThenSlamsTheWholeTeamThenPauses()
+    public void Ravager_StrikesThreeRandomUnitsThenChargesASlamOnTheWholeTeam()
     {
         EntityData ravager = LoadEnemy("Ravager");
 
@@ -170,11 +170,13 @@ public class EnemiesDataTests
         Assert.AreEqual(0.3f, ravager.attributes[AttributeType.PercentArmor], 0.0001f);
         ConfigurableSkillFactory skill = ravager.skillFactories.Single() as ConfigurableSkillFactory;
         Assert.IsNotNull(skill);
-        List<ASkillStepFactory> steps = skill.data.skillStepFactories;
-        Assert.AreEqual(3, steps.Count);
+        List<ASkillStepFactory> phases = skill.data.skillStepFactories;
+        Assert.AreEqual(2, phases.Count);
 
-        // Three strikes at its random target, each one making it Vulnerable, 0.5s after each one
-        RepeatSkillStepFactory strikes = steps[0] as RepeatSkillStepFactory;
+        // The strikes phase: three strikes at its random target, each one making it Vulnerable, 0.5s after each one
+        PhaseSkillStepFactory strikesPhase = phases[0] as PhaseSkillStepFactory;
+        AssertPhase(strikesPhase, "Strikes");
+        RepeatSkillStepFactory strikes = strikesPhase.data.skillStepFactories.Single() as RepeatSkillStepFactory;
         Assert.IsNotNull(strikes);
         Assert.AreEqual(3, strikes.data.count);
         ShootProjectileSkillStepFactory strike = strikes.data.skillStepFactories[0] as ShootProjectileSkillStepFactory;
@@ -185,8 +187,13 @@ public class EnemiesDataTests
         Assert.AreEqual(AttributeType.AttackRate, strikeDelay.data.type);
         Assert.AreEqual(0.5f, strikeDelay.data.multiplier * ravager.attributes[AttributeType.AttackRate], 0.0001f);
 
-        // The slam: every unit at once, harder than a strike, making none Vulnerable
-        ShootProjectileSkillStepFactory slam = steps[1] as ShootProjectileSkillStepFactory;
+        // The slam phase: charged for 2.5s, shown filling up above it, then every unit at once, harder than a strike,
+        // making none Vulnerable
+        PhaseSkillStepFactory slamPhase = phases[1] as PhaseSkillStepFactory;
+        AssertPhase(slamPhase, "Slam");
+        Assert.AreEqual(2, slamPhase.data.skillStepFactories.Count);
+        AssertWindUp(slamPhase.data.skillStepFactories[0], ravager, 2.5f);
+        ShootProjectileSkillStepFactory slam = slamPhase.data.skillStepFactories[1] as ShootProjectileSkillStepFactory;
         Assert.IsNotNull(slam);
         Assert.IsTrue(slam.data.atEveryTarget);
         ProjectileData slamProjectile = slam.data.projectiles.Single();
@@ -196,11 +203,23 @@ public class EnemiesDataTests
         Assert.AreEqual(AttributeType.Damage, strikeDamage.data.type);
         Assert.AreEqual(AttributeType.Damage, slamDamage.data.type);
         Assert.Greater(slamDamage.data.multiplier, strikeDamage.data.multiplier);
+    }
 
-        // Then a pause of 2.5s, shorter when its attacks are sped up
-        AttributeValue pause = (steps[2] as DurationSkillStepFactory).data.duration as AttributeValue;
-        Assert.AreEqual(AttributeType.AttackRate, pause.data.type);
-        Assert.AreEqual(2.5f, pause.data.multiplier * ravager.attributes[AttributeType.AttackRate], 0.0001f);
+    // A phase shown above its unit: a name and an icon
+    static void AssertPhase(PhaseSkillStepFactory phase, string title)
+    {
+        Assert.IsNotNull(phase, title);
+        Assert.AreEqual(title, phase.data.title);
+        Assert.IsNotNull(phase.data.icon, title);
+    }
+
+    // A wait of that many seconds, shorter when the attacks of the unit are sped up
+    static void AssertWindUp(ASkillStepFactory step, EntityData unit, float seconds)
+    {
+        AttributeValue windUp = (step as DurationSkillStepFactory)?.data.duration as AttributeValue;
+        Assert.IsNotNull(windUp);
+        Assert.AreEqual(AttributeType.AttackRate, windUp.data.type);
+        Assert.AreEqual(seconds, windUp.data.multiplier * unit.attributes[AttributeType.AttackRate], 0.0001f);
     }
 
     // Stacks on every hit, from any source, until the end of the fight: +15% damage taken per stack
@@ -476,6 +495,49 @@ public class EnemiesDataTests
     static AItemFactory FindItem(EntityData enemy, string itemName)
     {
         return enemy.items.Find(item => item != null && item.title == itemName);
+    }
+
+    // Judgment: 3 strikes at the unit with the lowest share of health. Balance, charged for 2s: every unit set to the
+    // average share of health. Verdict, charged for 2s: a slam on the whole team. Alone, armored
+    [Test]
+    public void Arbiter_JudgesTheWeakest_ThenBalancesTheTeam_ThenSlamsIt()
+    {
+        EntityData arbiter = LoadEnemy("Arbiter");
+
+        Assert.AreEqual("Arbiter", arbiter.title);
+        Assert.IsFalse(string.IsNullOrEmpty(arbiter.description));
+        Assert.IsNotNull(arbiter.model);
+        Assert.AreEqual(TargetBehaviourType.LowestHealth, arbiter.targetBehaviourType);
+        Assert.AreEqual(0.3f, arbiter.attributes[AttributeType.PercentArmor], 0.0001f);
+        Assert.Greater(arbiter.attributes[AttributeType.HealthMax], 500f, "the last elite before the boss");
+        ConfigurableSkillFactory skill = arbiter.skillFactories.Single() as ConfigurableSkillFactory;
+        Assert.IsNotNull(skill);
+        List<ASkillStepFactory> phases = skill.data.skillStepFactories;
+        Assert.AreEqual(3, phases.Count);
+
+        PhaseSkillStepFactory judgment = phases[0] as PhaseSkillStepFactory;
+        AssertPhase(judgment, "Judgment");
+        RepeatSkillStepFactory strikes = judgment.data.skillStepFactories.Single() as RepeatSkillStepFactory;
+        Assert.IsNotNull(strikes);
+        Assert.AreEqual(3, strikes.data.count);
+        ShootProjectileSkillStepFactory strike = strikes.data.skillStepFactories.OfType<ShootProjectileSkillStepFactory>().Single();
+        Assert.IsFalse(strike.data.atEveryTarget, "at its own target: the weakest unit");
+
+        PhaseSkillStepFactory balance = phases[1] as PhaseSkillStepFactory;
+        AssertPhase(balance, "Balance");
+        Assert.AreEqual(2, balance.data.skillStepFactories.Count);
+        AssertWindUp(balance.data.skillStepFactories[0], arbiter, 2f);
+        Assert.IsInstanceOf<EqualizeHealthSkillStepFactory>(balance.data.skillStepFactories[1]);
+
+        PhaseSkillStepFactory verdict = phases[2] as PhaseSkillStepFactory;
+        AssertPhase(verdict, "Verdict");
+        Assert.AreEqual(2, verdict.data.skillStepFactories.Count);
+        AssertWindUp(verdict.data.skillStepFactories[0], arbiter, 2f);
+        ShootProjectileSkillStepFactory slam = verdict.data.skillStepFactories[1] as ShootProjectileSkillStepFactory;
+        Assert.IsNotNull(slam);
+        Assert.IsTrue(slam.data.atEveryTarget);
+        AttributeValue slamDamage = (slam.data.projectiles.Single().onHitConsumer.Single() as ConsumerFactory).data.value as AttributeValue;
+        Assert.AreEqual(AttributeType.Damage, slamDamage.data.type);
     }
 
     // Freezing shots at random units, the Archon attacking 30% faster once it falls

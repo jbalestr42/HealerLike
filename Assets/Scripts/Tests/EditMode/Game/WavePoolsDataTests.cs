@@ -354,6 +354,25 @@ public class WavePoolsDataTests
         AssertEnemies("Wave_Elite_Archon", ("Archon", 1), ("Frost Acolyte", 1), ("Blight Acolyte", 1), ("Hex Acolyte", 1), ("Spark Acolyte", 1));
     }
 
+    // The fifth elite, in the pools of the floors 12 and 13 only: the Arbiter alone
+    [Test]
+    public void FifthElite_TheArbiterAlone_OnTheFloors12And13Only()
+    {
+        for (int floor = 0; floor < _map.floorCount; floor++)
+        {
+            List<string> elites = GetWaves(MapNodeType.Elite, floor);
+            if (floor == 12 || floor == 13)
+            {
+                CollectionAssert.Contains(elites, "Wave_Elite_Arbiter", $"floor {floor}");
+            }
+            else
+            {
+                CollectionAssert.DoesNotContain(elites, "Wave_Elite_Arbiter", $"floor {floor}");
+            }
+        }
+        AssertEnemies("Wave_Elite_Arbiter", ("Arbiter", 1));
+    }
+
     [Test]
     public void IronWall_ColossusTwoCrossbowmenBloodWarden()
     {
