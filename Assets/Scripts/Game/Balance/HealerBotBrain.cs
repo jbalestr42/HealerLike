@@ -27,11 +27,12 @@ public static class HealerBotBrain
         return Mathf.Max(previous + interval, time);
     }
 
-    public static bool AreMet(IReadOnlyList<HealerBotCondition> conditions, IReadOnlyList<BotUnit> allies, float manaPercent)
+    // resourcePercent gives the share of its max of a resource of the character (none: 0)
+    public static bool AreMet(IReadOnlyList<HealerBotCondition> conditions, IReadOnlyList<BotUnit> allies, float manaPercent, Func<ResourceType, float> resourcePercent = null)
     {
         foreach (HealerBotCondition condition in conditions)
         {
-            if (!IsMet(condition, allies, manaPercent))
+            if (!IsMet(condition, allies, manaPercent, resourcePercent))
             {
                 return false;
             }
@@ -39,7 +40,7 @@ public static class HealerBotBrain
         return true;
     }
 
-    public static bool IsMet(HealerBotCondition condition, IReadOnlyList<BotUnit> allies, float manaPercent)
+    public static bool IsMet(HealerBotCondition condition, IReadOnlyList<BotUnit> allies, float manaPercent, Func<ResourceType, float> resourcePercent = null)
     {
         switch (condition.type)
         {
@@ -55,6 +56,8 @@ public static class HealerBotBrain
                 return manaPercent < condition.value;
             case HealerBotConditionType.StrikeWithin:
                 return HasLiving(allies, null, unit => unit.isMarked && unit.strikeIn <= condition.value);
+            case HealerBotConditionType.ResourceAtLeast:
+                return (resourcePercent != null ? resourcePercent(condition.resource) : 0f) >= condition.value - 0.0001f;
             default:
                 return false;
         }

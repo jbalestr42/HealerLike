@@ -66,7 +66,7 @@ public class HealerBot
 
         foreach (HealerBotRule rule in _profile.rules)
         {
-            if (!_slots.TryGetValue(rule, out CharacterSkillSlot slot) || !slot.CanUseSkill() || !HealerBotBrain.AreMet(rule.conditions, allyUnits, manaPercent))
+            if (!_slots.TryGetValue(rule, out CharacterSkillSlot slot) || !slot.CanUseSkill() || !HealerBotBrain.AreMet(rule.conditions, allyUnits, manaPercent, GetResourcePercent))
             {
                 continue;
             }
@@ -77,6 +77,13 @@ public class HealerBot
                 return;
             }
         }
+    }
+
+    // Share of its max of a resource of the character, 0 when it has none (e.g. Devotion for the Cleric only)
+    float GetResourcePercent(ResourceType type)
+    {
+        ResourceAttribute resource = ResourceAttribute.Get(_character.gameObject, type);
+        return resource != null && resource.Max > 0f ? resource.Value / resource.Max : 0f;
     }
 
     bool TryCast(HealerBotRule rule, CharacterSkillSlot slot, List<Entity> allies, List<Entity> enemies, List<BotUnit> allyUnits, List<BotUnit> enemyUnits)

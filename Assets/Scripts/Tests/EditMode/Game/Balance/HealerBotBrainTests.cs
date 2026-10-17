@@ -84,6 +84,20 @@ public class HealerBotBrainTests
         Assert.IsFalse(HealerBotBrain.IsMet(Condition(HealerBotConditionType.ManaBelow, 0.3f), allies, 0.5f));
     }
 
+    // E.g. the Shield of the Cleric giving armor per Devotion spent: 3 Devotion out of 5 or more
+    [Test]
+    public void ResourceAtLeast_ComparesTheShareOfTheResourceOfTheCharacter()
+    {
+        List<BotUnit> allies = new List<BotUnit> { Unit(100f) };
+        HealerBotCondition devotion = new HealerBotCondition { type = HealerBotConditionType.ResourceAtLeast, value = 0.6f, resource = ResourceType.Devotion };
+
+        Assert.IsTrue(HealerBotBrain.IsMet(devotion, allies, 0f, type => type == ResourceType.Devotion ? 3f / 5f : 0f), "exactly the value");
+        Assert.IsTrue(HealerBotBrain.IsMet(devotion, allies, 0f, type => type == ResourceType.Devotion ? 1f : 0f));
+        Assert.IsFalse(HealerBotBrain.IsMet(devotion, allies, 0f, type => type == ResourceType.Devotion ? 2f / 5f : 0f));
+        Assert.IsFalse(HealerBotBrain.IsMet(devotion, allies, 1f, type => type == ResourceType.Mana ? 1f : 0f), "another resource");
+        Assert.IsFalse(HealerBotBrain.IsMet(devotion, allies, 1f), "no resource known");
+    }
+
     [Test]
     public void AreMet_EveryConditionNeeded_NoConditionAlwaysMet()
     {

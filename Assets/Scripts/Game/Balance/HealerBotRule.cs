@@ -18,6 +18,8 @@ public enum HealerBotConditionType
     ManaBelow,
     // A living ally marked by a telegraphed strike landing within value seconds
     StrikeWithin,
+    // The resource of the character at value of its max or more (e.g. Devotion at 0.6: 3 out of 5)
+    ResourceAtLeast,
 }
 
 // Who the skill is cast on, for the skills asking for a target
@@ -44,6 +46,8 @@ public struct HealerBotCondition
     [Range(0f, 1f)] public float value;
     // Allies needed by AlliesBelowHealth
     [Min(1)] public int count;
+    // Resource of the character looked at by ResourceAtLeast
+    public ResourceType resource;
 }
 
 // Cast the skill when every condition is met, on the target

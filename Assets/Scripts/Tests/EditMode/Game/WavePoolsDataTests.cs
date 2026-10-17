@@ -27,6 +27,7 @@ public class WavePoolsDataTests
         "Wave_FrontLine", "Wave_Fuse", "Wave_HiddenHealer", "Wave_FireRain", "Wave_Bursts", "Wave_HiddenSniper", "Wave_Charnel",
         "Wave_MarkAndShoot", "Wave_Storm", "Wave_Graveyard", "Wave_Winter", "Wave_Plague", "Wave_Execution", "Wave_Crypt",
         "Wave_Attrition", "Wave_Drain", "Wave_LivingWall", "Wave_Bulwark", "Wave_SlowPoison", "Wave_Elite_Bastion", "Wave_Elite_Cult",
+        "Wave_TotalWar", "Wave_Elite_Artillery",
     };
 
     GameData _data;
@@ -80,11 +81,17 @@ public class WavePoolsDataTests
         }
     }
 
+    // Except the floors given to another room (e.g. the rest before the boss)
     [Test]
     public void EveryFloorWithElites_HasItsOwnEliteWaves()
     {
         for (int floor = _map.GetRoomType(MapNodeType.Elite).firstFloor; floor < _map.floorCount; floor++)
         {
+            MapNodeType? fixedType = _map.GetFixedType(floor);
+            if (fixedType.HasValue && fixedType.Value != MapNodeType.Elite)
+            {
+                continue;
+            }
             Assert.IsNotEmpty(GetWaves(MapNodeType.Elite, floor), $"floor {floor}");
         }
     }
@@ -255,8 +262,8 @@ public class WavePoolsDataTests
         CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, 0), "Wave_Bulwark");
         CollectionAssert.Contains(GetWaves(MapNodeType.Combat, 14), "Wave_Ironclad");
         CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, 14), "Wave_Recruits");
-        CollectionAssert.Contains(GetWaves(MapNodeType.Elite, 13), "Wave_TotalWar");
-        CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, 13), "Wave_TotalWar");
+        CollectionAssert.Contains(GetWaves(MapNodeType.Elite, 13), "Wave_Elite_Arbiter");
+        CollectionAssert.DoesNotContain(GetWaves(MapNodeType.Combat, 13), "Wave_Elite_Arbiter");
     }
 
     // The last floors before the boss: bigger waves, the Armored Footman in most of them
