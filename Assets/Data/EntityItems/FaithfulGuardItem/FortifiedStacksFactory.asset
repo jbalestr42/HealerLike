@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bf9fcff7a878f24fb7573ac5a155639, type: 3}
+  m_Name: FortifiedStacksFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::StatusStacksFactory
+  uniqueID: ebd407ae-49d1-43fb-805f-78e8c49bcbdb
+  data:
+    status: {fileID: 11400000, guid: 00fec8431700bf54db238b56c0b53b78, type: 2}
+    stacks: 1

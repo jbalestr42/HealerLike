@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 6891580169314388076, guid: 66ae442726d1cf4428dacb34edd61ac4, type: 3}
   title: War Drum
-  description: 'Doesn''t attack. Every 3s, drums up an ally: attacks twice as fast, fading back to normal over 4s'
+  description: 'Doesn''t attack. Every 3s, drums up an ally not Hasted yet: 2 Hasted stacks, +50% attack speed for 5s'
   attributes:
   - key: 0
     value: 110

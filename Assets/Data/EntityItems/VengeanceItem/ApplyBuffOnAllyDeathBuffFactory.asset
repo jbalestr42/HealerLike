@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::ApplyBuffOnAllyDeathBuffFactory
   uniqueID: 73442bf0-8483-4676-9e32-e00e7405fcd1
   data:
-    buffHandlerFactory: {fileID: 11400000, guid: ddc2377d9ec04e27ab368eba5214c7fe, type: 2}
+    buffHandlerFactory: {fileID: 11400000, guid: 5ad85d8e6b382fb4081b724e7710f411, type: 2}

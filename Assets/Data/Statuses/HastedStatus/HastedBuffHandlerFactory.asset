@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f9cbe60bb3b3f9469ace7c3e7ab47cf, type: 3}
+  m_Name: HastedBuffHandlerFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::BuffHandlerFactory
+  uniqueID: 3c21e7a5-00df-4fc2-9e76-7021e5606286
+  data:
+    durationType: 1
+    duration: 5
+    isPeriodic: 0
+    periodDuration: 0
+    maxStacks: 8
+    stackAcrossSources: 1
+    buffFactoryList:
+    - {fileID: 11400000, guid: 57ae389f48bd178448a7979459adc5fc, type: 2}
+    - {fileID: 11400000, guid: 7aabb63e70a01e940aead4bd92c56d70, type: 2}
+    buffEffect: {fileID: 0}
+    icon: {fileID: 21300000, guid: eecd1e1d4e5dc3f4a975c18de888982a, type: 3}
+    tags:
+    - {fileID: 11400000, guid: 80a85cdf0739feb4aaef6dd04009e0d1, type: 2}

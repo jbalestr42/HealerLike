@@ -16,5 +16,5 @@ MonoBehaviour:
   data:
     healthRatio: 0
     flatHealth: 1
-    buffHandlerFactory: {fileID: 11400000, guid: 19e014e4f4b40b348a3c86e692a5a64c, type: 2}
+    buffHandlerFactory: {fileID: 11400000, guid: b1e76a3a320954a489d22ee6921c0938, type: 2}
     status: {fileID: 11400000, guid: 21c11bc514747d84097073a012941dd5, type: 2}

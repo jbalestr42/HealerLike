@@ -247,6 +247,28 @@ public class ApplyBuffOnTagBuffTests
         Assert.AreEqual(1, GetStacks());
     }
 
+    // E.g. a reaction to Blessed giving stacks of a status carrying the Blessed tag: given once, not again and again
+    [Test]
+    public void EachApplication_ItsOwnBuffGivenAsStacksOfAStatus_IsGivenOnce()
+    {
+        BuffHandlerFactory blessing = CreateBlessing(_blessed);
+        _handlerFactory = CreateBlessing(_blessed);
+        _handlerFactory.data.maxStacks = 10;
+        StatusData status = ScriptableObject.CreateInstance<StatusData>();
+        status.tag = _blessed;
+        status.buffHandlerFactory = _handlerFactory;
+        StatusStacksFactory twoStacks = ScriptableObject.CreateInstance<StatusStacksFactory>();
+        twoStacks.data = new StatusStacksData { status = status, stacks = 2 };
+        _scriptableObjects.Add(status);
+        _scriptableObjects.Add(twoStacks);
+        _buff = new ApplyBuffOnTagBuff { data = new ApplyBuffOnTagBuffData { tag = _blessed, trigger = TagTrigger.EachApplication, buffHandlerFactory = twoStacks } };
+        _buff.Add(_owner.gameObject, _owner.gameObject);
+
+        Bless(blessing);
+
+        Assert.AreEqual(2, GetStacks());
+    }
+
     [Test]
     public void EachApplication_Removed_GivesNothingAnymore()
     {

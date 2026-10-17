@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   data:
     onSkillTriggerFactory: []
-    buffHandlerFactory: {fileID: 11400000, guid: 26cac74421eb0714a809bbcbdb038620, type: 2}
+    buffHandlerFactory: {fileID: 11400000, guid: 804b6a5d11ffe0e438b76b2c3ed6ea9f, type: 2}
     targetValidators: []
     singleTimeUse: 0
     rate: 4

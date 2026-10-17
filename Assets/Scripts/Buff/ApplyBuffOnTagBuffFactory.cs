@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using Oisif.Inspector;
 
@@ -108,8 +108,8 @@ public class ApplyBuffOnTagBuff : ABuff<ApplyBuffOnTagBuffData>
 
     void OnBuffHandlerApplied(ABuffHandlerFactory buffHandlerFactory)
     {
-        // Its own buff carrying the tag would give itself again forever
-        if (buffHandlerFactory == data.buffHandlerFactory || buffHandlerFactory.tags == null || !buffHandlerFactory.tags.Exists(Matches))
+        // Its own buff carrying the tag would give itself again forever, also given as stacks of a status
+        if (buffHandlerFactory == data.buffHandlerFactory || buffHandlerFactory == data.buffHandlerFactory.appliedFactory || buffHandlerFactory.tags == null || !buffHandlerFactory.tags.Exists(Matches))
         {
             return;
         }

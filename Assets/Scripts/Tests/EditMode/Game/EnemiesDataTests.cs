@@ -3,6 +3,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using static Game.StatusesTestData;
 
 namespace Game
 {
@@ -718,22 +719,10 @@ public class EnemiesDataTests
     }
 
     [Test]
-    public void VengefulSniper_EachAllyDeathGivesPlus100PercentAttackSpeedFor6s_UpTo200()
+    public void VengefulSniper_EachAllyDeathGives4Hasted()
     {
-        ABuffHandlerFactory vengeance = GetItemBuff<ApplyBuffOnAllyDeathBuffFactory>(LoadEnemy("VengefulSniper")).data.buffHandlerFactory;
-
-        Assert.AreEqual(DurationType.Duration, vengeance.durationType);
-        Assert.AreEqual(6f, vengeance.duration, 0.0001f);
-        // A second death stacks it, a third one only refreshes it
-        Assert.AreEqual(2, vengeance.maxStacks);
-        Assert.AreEqual(1, vengeance.buffFactoryList.Count);
-        AttackSpeedModifierFactory modifier = vengeance.buffFactoryList[0] as AttackSpeedModifierFactory;
-        Assert.IsNotNull(modifier);
-        Assert.AreEqual(AttributeType.AttackRate, modifier.data.type);
-        Assert.AreEqual(AttributeModifierType.Multiply, modifier.data.modifierType);
-        // +100% per stack: twice then three times as many attacks
-        Assert.AreEqual(1f, modifier.data.value, 0.0001f);
-        Assert.IsEmpty(vengeance.tags, "removed at the end of the fight");
+        // +100% attack speed for 5s: a second death reaches +200%, the max of Hasted, a third one only refreshes it
+        AssertStacks(GetItemBuff<ApplyBuffOnAllyDeathBuffFactory>(LoadEnemy("VengefulSniper")).data.buffHandlerFactory, "Hasted", 4);
     }
 
     [Test]

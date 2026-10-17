@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using static Game.StatusesTestData;
 
 namespace Game
 {
@@ -171,10 +173,8 @@ public class ClericDataTests
 
         Assert.IsFalse(divine.data.isSingle);
         Assert.AreEqual(Entity.EntityType.Player, divine.data.entityType);
-        ABuffHandlerFactory handler = divine.data.buffHandlerFactory[0];
-        Assert.AreEqual(DurationType.Duration, handler.durationType);
-        Assert.AreEqual(2f, handler.duration, 0.0001f);
-        Assert.IsInstanceOf<InvincibilityBuffFactory>(handler.buffFactoryList[0]);
+        // Invulnerable lasts 2s (see BuffStatusesDataTests)
+        AssertStacks(divine.data.buffHandlerFactory[0], "Invulnerable", 1);
     }
 
     [Test]
@@ -374,7 +374,7 @@ public class ClericDataTests
     }
 
     [Test]
-    public void RadiantArcher_EachBlessingGivesPlus3DamageAndPlus50PercentAttackSpeedFor5s()
+    public void RadiantArcher_EachBlessingGives3EmpoweredAnd2Hasted()
     {
         EntityData archer = LoadUnit("RadiantArcherEntity/RadiantArcherEntity");
         Assert.AreEqual(5f, archer.attributes[AttributeType.Damage]);
@@ -382,21 +382,16 @@ public class ClericDataTests
         Assert.AreEqual(0.9f, archer.attributes[AttributeType.AttackRate], 0.0001f);
         Assert.AreEqual(1, archer.skillFactories.Count, "it attacks");
 
-        // Every blessing, even on an archer already blessed
-        ABuffHandlerFactory radiance = AssertOnBlessed(GetItemBuff<ApplyBuffOnTagBuffFactory>(archer), TagTrigger.EachApplication);
-
-        Assert.AreEqual(DurationType.Duration, radiance.durationType);
-        Assert.AreEqual(5f, radiance.duration, 0.0001f);
-        Assert.AreEqual(1, radiance.maxStacks);
-        Assert.AreEqual(2, radiance.buffFactoryList.Count);
-        AssertModifier(radiance.buffFactoryList[0], AttributeType.Damage, AttributeModifierType.Add, 3f);
-        // The attack cooldown x0.67: 1.5 times as many attacks
-        AssertModifier(radiance.buffFactoryList[1], AttributeType.AttackRate, AttributeModifierType.Multiply, -0.33f);
-        Assert.IsEmpty(radiance.tags, "removed at the end of the fight");
+        // Every blessing, even on an archer already blessed: +3 damage and +50% attack speed for 5s
+        ItemFactory radiant = (ItemFactory)archer.items.Single();
+        List<ABuffFactory> reactions = radiant.data.buffs.Single().buffFactoryList;
+        Assert.AreEqual(2, reactions.Count);
+        AssertStacks(AssertOnBlessed(reactions[0], TagTrigger.EachApplication), "Empowered", 3);
+        AssertStacks(AssertOnBlessed(reactions[1], TagTrigger.EachApplication), "Hasted", 2);
     }
 
     [Test]
-    public void Paladin_EachBlessingGivesPlus1ArmorFor10s_UpTo3()
+    public void Paladin_EachBlessingGives1Fortified()
     {
         EntityData paladin = LoadUnit("PaladinEntity/PaladinEntity");
         Assert.AreEqual(200f, paladin.attributes[AttributeType.HealthMax]);
@@ -404,18 +399,12 @@ public class ClericDataTests
 
         // Renamed: the Devotion is the resource of the Cleric
         Assert.AreEqual("Faithful Guard", ((ItemFactory)paladin.items[0]).data.name);
-        ABuffHandlerFactory devotion = AssertOnBlessed(GetItemBuff<ApplyBuffOnTagBuffFactory>(paladin), TagTrigger.EachApplication);
-
-        Assert.AreEqual(DurationType.Duration, devotion.durationType);
-        Assert.AreEqual(10f, devotion.duration, 0.0001f);
-        Assert.AreEqual(3, devotion.maxStacks);
-        Assert.AreEqual(1, devotion.buffFactoryList.Count);
-        AssertModifier(devotion.buffFactoryList[0], AttributeType.FlatArmor, AttributeModifierType.Add, 1f);
-        Assert.IsEmpty(devotion.tags, "removed at the end of the fight");
+        // +1 armor for 6s, up to +3 (the max of Fortified)
+        AssertStacks(AssertOnBlessed(GetItemBuff<ApplyBuffOnTagBuffFactory>(paladin), TagTrigger.EachApplication), "Fortified", 1);
     }
 
     [Test]
-    public void Purifier_Every5s_RemovesADebuffAndGivesAttackSpeedDamageOrArmorFor5s()
+    public void Purifier_Every5s_RemovesADebuffAndGivesHastedEmpoweredOrFortified()
     {
         EntityData purifier = LoadUnit("PurifierEntity/PurifierEntity");
         Assert.AreEqual(1, purifier.skillFactories.Count, "no attack, only its purify");
@@ -427,16 +416,10 @@ public class ClericDataTests
         Assert.IsNotNull(purify.data.debuffTag);
         Assert.AreEqual(TagNames.Debuff, purify.data.debuffTag.name);
         Assert.AreEqual(3, purify.data.buffHandlerFactories.Count);
-        foreach (ABuffHandlerFactory blessing in purify.data.buffHandlerFactories)
-        {
-            Assert.AreEqual(DurationType.Duration, blessing.durationType, blessing.name);
-            Assert.AreEqual(5f, blessing.duration, 0.0001f, blessing.name);
-            Assert.AreEqual(1, blessing.maxStacks, blessing.name);
-            Assert.IsNotNull(blessing.icon, blessing.name);
-        }
-        AssertModifier(purify.data.buffHandlerFactories[0].buffFactoryList[0], AttributeType.AttackRate, AttributeModifierType.Multiply, -0.33f);
-        AssertModifier(purify.data.buffHandlerFactories[1].buffFactoryList[0], AttributeType.Damage, AttributeModifierType.Add, 3f);
-        AssertModifier(purify.data.buffHandlerFactories[2].buffFactoryList[0], AttributeType.FlatArmor, AttributeModifierType.Add, 2f);
+        // +50% attack speed, +3 damage or +2 armor
+        AssertStacks(purify.data.buffHandlerFactories[0], "Hasted", 2);
+        AssertStacks(purify.data.buffHandlerFactories[1], "Empowered", 3);
+        AssertStacks(purify.data.buffHandlerFactories[2], "Fortified", 2);
     }
 
     // Its blessings give the Blessed status, the same as the spells (one status, shown with its icon): the Blessed
@@ -452,7 +435,7 @@ public class ClericDataTests
         // The tag comes from the status only, never hidden in a buff with another icon
         foreach (ABuffHandlerFactory buff in purify.data.buffHandlerFactories)
         {
-            Assert.IsFalse(buff.buffFactoryList.Exists(b => b is AddTagBuffFactory), buff.name);
+            Assert.IsFalse(buff.buffFactoryList.Exists(b => b is AddTagBuffFactory addTag && addTag.data.tag.name == "Blessed"), buff.name);
             Assert.IsFalse(buff.HasTag("Blessed"), buff.name);
         }
     }

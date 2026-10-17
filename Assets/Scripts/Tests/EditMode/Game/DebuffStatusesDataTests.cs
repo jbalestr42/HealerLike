@@ -2,6 +2,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using static Game.StatusesTestData;
 
 namespace Game
 {
@@ -12,26 +13,11 @@ public class DebuffStatusesDataTests
 {
     const string Data = "Assets/Data/";
 
-    static StatusData LoadStatus(string name)
-    {
-        StatusData status = AssetDatabase.LoadAssetAtPath<StatusData>($"{Data}Statuses/{name}Status/{name}Status.asset");
-        Assert.IsNotNull(status, name);
-        return status;
-    }
-
     static T LoadAsset<T>(string path) where T : Object
     {
         T asset = AssetDatabase.LoadAssetAtPath<T>(Data + path + ".asset");
         Assert.IsNotNull(asset, path);
         return asset;
-    }
-
-    static void AssertStacks(ABuffHandlerFactory effect, string statusName, int stacks)
-    {
-        StatusStacksFactory statusStacks = effect as StatusStacksFactory;
-        Assert.IsNotNull(statusStacks, $"stacks of {statusName}");
-        Assert.AreSame(LoadStatus(statusName), statusStacks.data.status);
-        Assert.AreEqual(stacks, statusStacks.data.stacks, statusName);
     }
 
     static void AssertOnHitStacks(string itemPath, string statusName, int stacks)

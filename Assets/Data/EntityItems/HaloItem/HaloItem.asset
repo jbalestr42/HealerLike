@@ -15,7 +15,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 312991b311b8ccc49adec5703787cb1b, type: 3}
     name: Halo
-    description: The first time it dies in a fight, survives with 1 health, invincible for 2s, and gets blessed
+    description: The first time it dies in a fight, survives with 1 health, Invulnerable for 2s, and gets blessed
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}

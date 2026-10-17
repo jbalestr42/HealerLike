@@ -16,4 +16,4 @@ MonoBehaviour:
   data:
     tag: {fileID: 11400000, guid: aa31deb09d45405428284e02dd5dcd7f, type: 2}
     trigger: 2
-    buffHandlerFactory: {fileID: 11400000, guid: ae9d78a83cefcfc4bb994715ab851290, type: 2}
+    buffHandlerFactory: {fileID: 11400000, guid: 8c15aef7d4e3eca4eb87a4e883f8dfd7, type: 2}

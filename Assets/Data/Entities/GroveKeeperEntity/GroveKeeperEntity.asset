@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 7099655024501674456, guid: 8760cc9eb30a2b340b14499b6e150dc4, type: 3}
   title: Grove Keeper
-  description: Doesn't attack. Every 4s, heals its most wounded ally for 2 HP every second during 4s
+  description: Doesn't attack. Every 4s, gives its most wounded ally 2 Regenerating stacks: heals 2 HP every second during 4s
   attributes:
   - key: 0
     value: 100

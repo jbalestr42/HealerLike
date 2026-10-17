@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using static Game.StatusesTestData;
 
 namespace Game
 {
@@ -268,9 +269,8 @@ public class DruidDataTests
         Assert.IsNotNull(skill);
         Assert.IsTrue(skill.data.targetAlly);
         Assert.AreEqual(4f, skill.data.rate, 0.0001f);
-        BuffHandlerFactory handler = (BuffHandlerFactory)skill.data.buffHandlerFactory;
-        Assert.IsTrue(handler.data.isPeriodic);
-        Assert.Greater(((ApplyConsumerBuffFactory)handler.data.buffFactoryList[0]).data.consumerFactory.GetConsumer(_healer, _healer).GetValue(), 0f);
+        // 2 HP every second during 4s
+        AssertStacks(skill.data.buffHandlerFactory, "Regenerating", 2);
     }
 }
 
