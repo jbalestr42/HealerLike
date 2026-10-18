@@ -51,6 +51,16 @@ public class ItemRebalanceDataTests
         }
     }
 
+    // The player must know why the holder no longer shoots where it used to
+    [Test]
+    public void Poison_DescriptionSaysTheHolderAttacksAtRandom()
+    {
+        ItemFactory poison = Load<ItemFactory>(EntityItems + "PoisonItem/PoisonItem.asset");
+
+        StringAssert.Contains("random enemy", poison.data.description);
+        StringAssert.Contains("1 {status:Poisoned} stack", poison.data.description);
+    }
+
     [Test]
     public void GrowingSeed_GrowsAtMost8Battles()
     {

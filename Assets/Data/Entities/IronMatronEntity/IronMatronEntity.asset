@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::EntityData
   model: {fileID: 873531700701352353, guid: 28d0a30d6aed6fc4c8ca473413f70c24, type: 3}
   title: Iron Matron
-  description: Her Shield Warden gives her a shield. Her War Drummer raises her damage. Shoots the nearest unit. 10% armor
+  description: Her Shield Warden gives her a shield. Her War Drummer raises her damage. Shoots the nearest unit. Takes 10% less damage
   attributes:
   - key: 0
     value: 400
@@ -28,6 +28,7 @@ MonoBehaviour:
     value: 0.1
   targetBehaviourType: 1
   targetValidators: []
+  followsMark: 1
   tags:
   - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}
   - {fileID: 11400000, guid: dfb296e6bed6adc4eb1f1fa86c2f0623, type: 2}

@@ -379,7 +379,7 @@ public class ClericDataTests
     }
 
     [Test]
-    public void RadiantArcher_EachBlessingGives3EmpoweredAnd2Hasted()
+    public void RadiantArcher_EachBlessingGives1EmpoweredAnd1Hasted()
     {
         EntityData archer = LoadUnit("RadiantArcherEntity/RadiantArcherEntity");
         Assert.AreEqual(5f, archer.attributes[AttributeType.Damage]);
@@ -387,12 +387,13 @@ public class ClericDataTests
         Assert.AreEqual(0.9f, archer.attributes[AttributeType.AttackRate], 0.0001f);
         Assert.AreEqual(1, archer.skillFactories.Count, "it attacks");
 
-        // Every blessing, even on an archer already blessed: +3 damage and +50% attack speed for 5s
+        // Every blessing, even on an archer already blessed: +1 damage and +25% attack speed for 5s (3 and 2 stacks made it
+        // reach the caps of both statuses in a few blessings)
         ItemFactory radiant = (ItemFactory)archer.items.Single();
         List<ABuffFactory> reactions = radiant.data.buffs.Single().buffFactoryList;
         Assert.AreEqual(2, reactions.Count);
-        AssertStacks(AssertOnBlessed(reactions[0], TagTrigger.EachApplication), "Empowered", 3);
-        AssertStacks(AssertOnBlessed(reactions[1], TagTrigger.EachApplication), "Hasted", 2);
+        AssertStacks(AssertOnBlessed(reactions[0], TagTrigger.EachApplication), "Empowered", 1);
+        AssertStacks(AssertOnBlessed(reactions[1], TagTrigger.EachApplication), "Hasted", 1);
     }
 
     [Test]

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 1081930672269232, guid: e59aa7298768015418e3da8a9c8d85a8, type: 3}
   title: Radiant Archer
-  description: Each time it is {status:Blessed}, gets 3 {status:Empowered} and 2 {status:Hasted} stacks (+3 damage, +50% attack speed)
+  description: Each time it is {status:Blessed}, gets 1 {status:Empowered} and 1 {status:Hasted} stack (+1 damage, +25% attack speed)
   attributes:
   - key: 0
     value: 100

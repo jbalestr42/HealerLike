@@ -124,7 +124,11 @@ public class BuffManager : MonoBehaviour
             foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
             {
                 BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
-                buffHandlerData.buffHandler.ResetPeriodDuration();
+                // An entry may exist before its handler is created (e.g. asked to be removed first)
+                if (buffHandlerData.isInit)
+                {
+                    buffHandlerData.buffHandler.ResetPeriodDuration();
+                }
             }
         }
     }
@@ -323,21 +327,32 @@ public class BuffManager : MonoBehaviour
     // Stops and removes every initialized handler matching the predicate, across all sources -
     // properly (Remove()+Stop()) instead of just discarding the entry, so the underlying buff
     // (e.g. an AttributeModifier) never stays attached to its target forever.
+    // Goes through snapshots, like Update(): removing a buff may add or remove other handlers of this buff manager
+    // (e.g. losing a status ending a reaction to it)
     public void RemoveBuff(Func<BuffHandlerData, bool> shouldRemove)
     {
-        foreach (var handlerPerSource in _buffHandlerPerSource)
+        List<GameObject> sources = new List<GameObject>(_buffHandlerPerSource.Keys);
+        foreach (GameObject source in sources)
         {
-            GameObject source = handlerPerSource.Key;
-            foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
+            if (!_buffHandlerPerSource.TryGetValue(source, out BuffHandlerDataPerId handlerPerSource))
+            {
+                continue;
+            }
+            List<KeyValuePair<string, BuffHandlerData>> handlers = new List<KeyValuePair<string, BuffHandlerData>>(handlerPerSource.buffHandlerPerId);
+            foreach (var kvpBuffHandler in handlers)
             {
                 BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
+                // Skip a handler removed meanwhile by a buff removed earlier
+                if (!handlerPerSource.buffHandlerPerId.TryGetValue(kvpBuffHandler.Key, out BuffHandlerData currentData) || currentData != buffHandlerData)
+                {
+                    continue;
+                }
                 if (buffHandlerData.isInit && shouldRemove(buffHandlerData))
                 {
                     StopHandler(source, buffHandlerData);
+                    RemoveCachedIdsFromHandler(handlerPerSource.buffHandlerPerId);
                 }
             }
-
-            RemoveCachedIdsFromHandler(handlerPerSource.Value.buffHandlerPerId);
         }
 
         RemoveOutdatedSources();
@@ -371,15 +386,36 @@ public class BuffManager : MonoBehaviour
     void RemoveOutdatedSources()
     {
         // Clean sources that do not have an active buff handler or sources that doesn't exists anymore
+        List<GameObject> destroyedSources = null;
         foreach (var handlerPerSource in _buffHandlerPerSource)
         {
-            GameObject source = handlerPerSource.Key;
-            if (source == null)
+            if (handlerPerSource.Key == null)
             {
+                // Stopped below, out of this enumeration: stopping a handler may add or remove others (see RemoveBuff)
+                if (destroyedSources == null)
+                {
+                    destroyedSources = new List<GameObject>();
+                }
+                destroyedSources.Add(handlerPerSource.Key);
+            }
+            else if (handlerPerSource.Value.buffHandlerPerId.Count == 0)
+            {
+                _cachedSourcesToRemove.Add(handlerPerSource.Key);
+            }
+        }
+
+        if (destroyedSources != null)
+        {
+            foreach (GameObject source in destroyedSources)
+            {
+                if (!_buffHandlerPerSource.TryGetValue(source, out BuffHandlerDataPerId handlerPerSource))
+                {
+                    continue;
+                }
                 // The source (e.g. a booster tower) was destroyed before its handlers could be
                 // flushed normally - force-stop them here so their buffs get a proper Remove()
                 // instead of being silently discarded along with this now-orphaned entry.
-                foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
+                foreach (var kvpBuffHandler in new List<KeyValuePair<string, BuffHandlerData>>(handlerPerSource.buffHandlerPerId))
                 {
                     BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
                     if (buffHandlerData.isInit)
@@ -390,15 +426,11 @@ public class BuffManager : MonoBehaviour
                 // The whole per-source entry is discarded below regardless, but StopHandler just
                 // queued ids in the shared _cachedIdsToRemove list - flush it now so those ids
                 // don't leak into some other source's cleanup later.
-                RemoveCachedIdsFromHandler(handlerPerSource.Value.buffHandlerPerId);
-                _cachedSourcesToRemove.Add(handlerPerSource.Key);
-            }
-            else if (handlerPerSource.Value.buffHandlerPerId.Count == 0)
-            {
-                _cachedSourcesToRemove.Add(handlerPerSource.Key);
+                RemoveCachedIdsFromHandler(handlerPerSource.buffHandlerPerId);
+                _cachedSourcesToRemove.Add(source);
             }
         }
-        
+
         foreach (GameObject sourceToRemove in _cachedSourcesToRemove)
         {
             _buffHandlerPerSource.Remove(sourceToRemove);
@@ -498,7 +530,13 @@ public class BuffManager : MonoBehaviour
             Debug.LogError($"[BuffManager:{gameObject.name}] uniqueId is null for factory '{buffHandlerFactory.name}'");
         }
 
-        BuffHandlerData buffHandlerData = GetBuffHandlerData(buffHandlerFactory, source);
+        // Nothing to remove from a handler never given: no empty entry created for it (e.g. a reaction ending on a
+        // unit that never got its buff), it would never be cleaned up
+        if (!_buffHandlerPerSource.TryGetValue(source, out BuffHandlerDataPerId handlerPerSource)
+            || !handlerPerSource.buffHandlerPerId.TryGetValue(buffHandlerFactory.uniqueID, out BuffHandlerData buffHandlerData))
+        {
+            return;
+        }
         if (buffHandlerData != null)
         {
             Debug.Log($"[BuffManager:{gameObject.name}] Remove handler " + buffHandlerFactory.name);

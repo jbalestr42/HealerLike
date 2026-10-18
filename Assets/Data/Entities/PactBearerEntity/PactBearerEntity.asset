@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 873531700701352353, guid: 28d0a30d6aed6fc4c8ca473413f70c24, type: 3}
   title: Pact Bearer
-  description: 'A tank sworn to a dark pact: the lower its health, the more armor (up to 70%) and damage (up to +10) it gets'
+  description: 'A tank sworn to a dark pact: the lower its health, the less damage it takes (up to 70% less) and the more it deals (up to +10)'
   attributes:
   - key: 0
     value: 300
@@ -26,6 +26,7 @@ MonoBehaviour:
     value: 100
   targetBehaviourType: 1
   targetValidators: []
+  followsMark: 1
   tags:
   - {fileID: 11400000, guid: 3614776454183994283ae65b8f13ca38, type: 2}
   - {fileID: 11400000, guid: 057ac9b64013d5b4a8e7cad3956503b8, type: 2}

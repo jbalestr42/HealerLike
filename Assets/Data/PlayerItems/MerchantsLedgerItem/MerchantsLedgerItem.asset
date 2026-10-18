@@ -15,7 +15,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: b97c352a0d60abf4489782e30580c0b7, type: 3}
     name: Merchant's Ledger
-    description: +1 item choice on every reward
+    description: +1 choice on every reward, items or units
     tags:
     - {fileID: 11400000, guid: c62124ce56224930993248ec27464a56, type: 2}
     buffs:

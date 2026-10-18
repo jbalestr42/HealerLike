@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::EntityData
   model: {fileID: 6705402075998324148, guid: d941199d4a58fcb45adc75ea8e37c42c, type: 3}
   title: Blood Warden
-  description: 'Doesn''t attack. While it lives, its allies under 50% health get +50% armor: kill it first to finish off the wounded'
+  description: 'Doesn''t attack. While it lives, its allies under 50% health take 50% less damage: kill it first to finish off the wounded'
   attributes:
   - key: 0
     value: 150
   targetBehaviourType: 1
   targetValidators: []
+  followsMark: 1
   tags:
   - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
   items:

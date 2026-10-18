@@ -54,21 +54,54 @@ public class SourceRecordingBuff : ABuff<List<GameObject>>
     public override void Remove(GameObject source, GameObject target) { }
 }
 
-// Gives another handler to a buff manager when applied, like a heal making a health threshold reaction apply its buff
+// Gives another handler to a buff manager when applied, like a heal making a health threshold reaction apply its buff,
+// or gives or takes one back when removed (onRemove), like a status ending a reaction to it
 public class HandlerGivingBuffData
 {
     public BuffManager buffManager = null;
     public ABuffHandlerFactory handlerFactory = null;
     public GameObject source = null;
+    public bool onRemove = false;
+    public bool takesBack = false;
 }
 
 public class HandlerGivingBuff : ABuff<HandlerGivingBuffData>
 {
-    void GiveHandler(GameObject target) => data.buffManager.AddHandler(data.handlerFactory, data.source, target);
+    void GiveHandler(GameObject target)
+    {
+        if (data.takesBack)
+        {
+            data.buffManager.RemoveHandler(data.handlerFactory, data.source, target);
+        }
+        else
+        {
+            data.buffManager.AddHandler(data.handlerFactory, data.source, target);
+        }
+    }
 
-    public override void Instant(GameObject source, GameObject target) => GiveHandler(target);
-    public override void Add(GameObject source, GameObject target) => GiveHandler(target);
-    public override void Remove(GameObject source, GameObject target) { }
+    public override void Instant(GameObject source, GameObject target)
+    {
+        if (!data.onRemove)
+        {
+            GiveHandler(target);
+        }
+    }
+
+    public override void Add(GameObject source, GameObject target)
+    {
+        if (!data.onRemove)
+        {
+            GiveHandler(target);
+        }
+    }
+
+    public override void Remove(GameObject source, GameObject target)
+    {
+        if (data.onRemove)
+        {
+            GiveHandler(target);
+        }
+    }
 }
 
 public class FakeBuffFactory : BuffFactory<FakeBuff, FakeBuffData> { }
@@ -930,6 +963,63 @@ public class BuffManagerTests
     public void Update_BuffGivingAHandlerOfANewSource_AppliesItWithoutThrowing(DurationType durationType)
     {
         AssertHandlerGivenDuringUpdate(durationType, _target);
+    }
+
+    // A handler whose buff gives or takes back another handler of this buff manager when removed (e.g. a status
+    // ending a reaction to it), removed with the temporary buffs at the end of a fight
+    void AssertHandlerChangedWhileRemovingBuffs(GameObject changedHandlerSource, bool takesBack)
+    {
+        FakeBuffFactory changedBuffFactory = CreateTracked<FakeBuffFactory>();
+        changedBuffFactory.data = _data;
+        HandlerGivingBuffFactory givingBuffFactory = CreateTracked<HandlerGivingBuffFactory>();
+        givingBuffFactory.data = new HandlerGivingBuffData
+        {
+            buffManager = _buffManager,
+            handlerFactory = CreateHandlerFactory(changedBuffFactory, DurationType.Infinite),
+            source = changedHandlerSource,
+            onRemove = true,
+            takesBack = takesBack,
+        };
+        _buffManager.AddHandler(CreateHandlerFactory(givingBuffFactory, DurationType.Infinite), _source, _target);
+        _buffManager.ForceUpdate();
+
+        Assert.DoesNotThrow(() => _buffManager.RemoveBuff(_ => true));
+        Assert.DoesNotThrow(() => _buffManager.Reset());
+    }
+
+    [Test]
+    public void RemoveBuff_BuffGivingAHandlerOfTheSameSourceWhenRemoved_NoError()
+    {
+        AssertHandlerChangedWhileRemovingBuffs(_source, takesBack: false);
+    }
+
+    [Test]
+    public void RemoveBuff_BuffGivingAHandlerOfANewSourceWhenRemoved_NoError()
+    {
+        AssertHandlerChangedWhileRemovingBuffs(_target, takesBack: false);
+    }
+
+    [Test]
+    public void RemoveBuff_BuffTakingBackAHandlerNeverGivenWhenRemoved_NoError()
+    {
+        AssertHandlerChangedWhileRemovingBuffs(_target, takesBack: true);
+    }
+
+    // The reaction removing a buff the unit never got: nothing to remove, and no empty entry left behind
+    [Test]
+    public void RemoveHandler_NeverGiven_NothingLeftBehind()
+    {
+        FakeBuffFactory buffFactory = CreateTracked<FakeBuffFactory>();
+        buffFactory.data = _data;
+        ABuffHandlerFactory handlerFactory = CreateHandlerFactory(buffFactory, DurationType.Infinite);
+
+        _buffManager.RemoveHandler(handlerFactory, _source, _target);
+
+        Assert.DoesNotThrow(() => _buffManager.Reset());
+        _buffManager.AddHandler(handlerFactory, _source, _target);
+        _buffManager.ForceUpdate();
+        // Applied once, as if never removed
+        CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
     }
 }
 
