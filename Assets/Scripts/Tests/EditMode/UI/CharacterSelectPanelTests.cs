@@ -570,6 +570,51 @@ public class CharacterSelectPanelTests
         StringAssert.Contains("Malus 1", panel.tooltipText);
         StringAssert.DoesNotContain("Malus 2", panel.tooltipText);
     }
+
+    // Few skills: their full size
+    [Test]
+    public void GetSkillIconSize_RoomEnough_TheLargestSize()
+    {
+        Assert.AreEqual(56f, CharacterSelectPanel.GetSkillIconSize(2, 320f, 10f, 56f), 0.001f);
+    }
+
+    // 6 skills on a card 320 wide: (320 - 5 x 10) / 6
+    [Test]
+    public void GetSkillIconSize_TooManyForTheRow_SmallerToFitIt()
+    {
+        Assert.AreEqual(45f, CharacterSelectPanel.GetSkillIconSize(6, 320f, 10f, 56f), 0.001f);
+    }
+
+    [Test]
+    public void GetSkillIconSize_NoSkill_TheLargestSize()
+    {
+        Assert.AreEqual(56f, CharacterSelectPanel.GetSkillIconSize(0, 320f, 10f, 56f), 0.001f);
+    }
+
+    // The skills of every character on a single row of its card, however many they have
+    [Test]
+    public void Card_ManySkills_StayOnOneRowWithinTheCard()
+    {
+        CharacterData cleric = CreateCharacter("Cleric");
+        cleric.skills = new List<ACharacterSkillFactory>();
+        for (int i = 0; i < 8; i++)
+        {
+            cleric.skills.Add(CreateSkill("Skill " + i));
+        }
+
+        CharacterSelectPanel panel = CharacterSelectPanel.Create(_canvas.transform, new List<CharacterData> { cleric }, _ => { }, () => { });
+
+        RectTransform card = (RectTransform)panel.transform.Find("Cards").GetChild(0);
+        Transform skills = card.Find("Skills");
+        float width = 0f;
+        foreach (RectTransform icon in skills)
+        {
+            Assert.AreEqual(icon.sizeDelta.x, icon.sizeDelta.y, 0.001f, "Square icons");
+            width += icon.sizeDelta.x;
+        }
+        width += skills.GetComponent<HorizontalLayoutGroup>().spacing * (skills.childCount - 1);
+        Assert.LessOrEqual(width, card.sizeDelta.x - 40f + 0.001f);
+    }
 }
 
 }

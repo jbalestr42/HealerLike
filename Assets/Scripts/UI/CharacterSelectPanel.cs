@@ -15,8 +15,11 @@ public class CharacterSelectPanel : MonoBehaviour
     static readonly Color HeaderColor = new Color(1f, 0.85f, 0.4f, 1f);
     static readonly Color MutedColor = new Color(0.6f, 0.64f, 0.7f, 1f);
     static readonly Color TooltipColor = new Color(0.08f, 0.09f, 0.12f, 0.97f);
+    // The largest size of the skill icons, smaller when the skills of a card wouldn't fit on one row
     const float SkillIconSize = 56f;
+    const float SkillIconSpacing = 10f;
     const float CardWidth = 360f;
+    const int CardPadding = 20;
     // The cards grow to fit the fullest one, never smaller than this
     const float MinCardHeight = 600f;
     const float TooltipWidth = 420f;
@@ -141,7 +144,7 @@ public class CharacterSelectPanel : MonoBehaviour
         card.AddComponent<Image>().color = CardColor;
 
         VerticalLayoutGroup layout = card.AddComponent<VerticalLayoutGroup>();
-        layout.padding = new RectOffset(20, 20, 20, 20);
+        layout.padding = new RectOffset(CardPadding, CardPadding, CardPadding, CardPadding);
         layout.spacing = 12f;
         layout.childControlWidth = true;
         layout.childControlHeight = true;
@@ -250,26 +253,21 @@ public class CharacterSelectPanel : MonoBehaviour
         GameObject row = CreateUIObject("Skills", parent);
         HorizontalLayoutGroup layout = row.AddComponent<HorizontalLayoutGroup>();
         layout.childAlignment = TextAnchor.MiddleCenter;
-        layout.spacing = 10f;
+        layout.spacing = SkillIconSpacing;
         layout.childControlWidth = false;
         layout.childControlHeight = false;
         layout.childForceExpandWidth = false;
         layout.childForceExpandHeight = false;
-        row.AddComponent<LayoutElement>().minHeight = SkillIconSize;
 
-        if (character.skills == null)
+        List<ACharacterSkillFactory> skills = character.skills != null ? character.skills.FindAll(skill => skill != null) : new List<ACharacterSkillFactory>();
+        // On a single row, whatever the number of skills
+        float iconSize = GetSkillIconSize(skills.Count, CardWidth - 2f * CardPadding, SkillIconSpacing, SkillIconSize);
+        row.AddComponent<LayoutElement>().minHeight = iconSize;
+        foreach (ACharacterSkillFactory skill in skills)
         {
-            return;
-        }
-        foreach (ACharacterSkillFactory skill in character.skills)
-        {
-            if (skill == null)
-            {
-                continue;
-            }
             CharacterSkillData data = skill.Create().GetData();
             GameObject icon = CreateUIObject(data.name, row.transform);
-            icon.GetComponent<RectTransform>().sizeDelta = new Vector2(SkillIconSize, SkillIconSize);
+            icon.GetComponent<RectTransform>().sizeDelta = new Vector2(iconSize, iconSize);
             Image image = icon.AddComponent<Image>();
             image.sprite = data.icon;
             image.preserveAspect = true;
@@ -279,6 +277,16 @@ public class CharacterSelectPanel : MonoBehaviour
             }
             AddTooltip(icon, CharacterCardText.GetSkillTooltip(skill, preview));
         }
+    }
+
+    // The size of count square icons on a row of width, apart from each other by spacing: maxSize when they fit
+    public static float GetSkillIconSize(int count, float width, float spacing, float maxSize)
+    {
+        if (count <= 0)
+        {
+            return maxSize;
+        }
+        return Mathf.Clamp((width - spacing * (count - 1)) / count, 0f, maxSize);
     }
 
     // One label per unit the character can recruit, its details shown on hover
