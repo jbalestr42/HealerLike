@@ -302,6 +302,29 @@ public class ResourceValidatorTests
         Assert.IsFalse(validator.IsValid(_characterGo));
         Assert.DoesNotThrow(() => validator.OnSkillUsed(_characterGo));
     }
+
+    // Kept for the skills without restriction (the sandbox), unlike a cost
+    [Test]
+    public void IsGain_NegativeCost_True()
+    {
+        (ResourceAttribute devotion, ResourceValidator validator) = CreateDevotionValidator(-1f);
+
+        Assert.IsTrue(validator.IsGain(_characterGo));
+    }
+
+    [Test]
+    public void IsGain_Cost_False()
+    {
+        Assert.IsFalse(_validator.IsGain(_characterGo));
+    }
+
+    [Test]
+    public void IsGain_FreeSkill_False()
+    {
+        SetCostMultiplier(0f);
+
+        Assert.IsFalse(_validator.IsGain(_characterGo));
+    }
 }
 
 }

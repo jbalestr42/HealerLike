@@ -24,6 +24,9 @@ public abstract class ACharacterSkillValidator
     public virtual void Update(UseCharacterSkillButton skillButton) {}
     public abstract bool IsValid(GameObject owner);
     public abstract void OnSkillUsed(GameObject owner);
+    // Only gives something when the skill is used (e.g. the Devotion of a heal), never blocking it: still applied to
+    // the skills without restriction (the sandbox)
+    public virtual bool IsGain(GameObject owner) => false;
 }
 
 public abstract class ACharacterSkillValidator<DataType> : ACharacterSkillValidator

@@ -109,6 +109,66 @@ public class GameHUDTests
         maxMana = 80;
         Assert.AreEqual("+80 mana", _hud.GetManaTooltipText());
     }
+
+    // The sandbox: the HUD is hidden in its scene and it has its own buttons
+    [Test]
+    public void ShowResourcesOnly_ShowsTheHUDAndTheManaBar_NotTheButtonsOfARun()
+    {
+        Button inventory = new GameObject("Inventory", typeof(RectTransform)).AddComponent<Button>();
+        inventory.transform.SetParent(_hudGo.transform, false);
+        Button nextWave = new GameObject("StartBattle", typeof(RectTransform)).AddComponent<Button>();
+        nextWave.transform.SetParent(_hudGo.transform, false);
+        TestHelpers.SetPrivateField(_hud, "_inventoryButton", inventory);
+        TestHelpers.SetPrivateField(_hud, "_nextWaveButton", nextWave);
+        _hudGo.SetActive(false);
+        _manaBarGo.SetActive(false);
+
+        _hud.ShowResourcesOnly();
+
+        Assert.IsTrue(_hudGo.activeSelf);
+        Assert.IsTrue(_manaBarGo.activeSelf);
+        Assert.IsFalse(inventory.gameObject.activeSelf);
+        Assert.IsFalse(nextWave.gameObject.activeSelf);
+    }
+
+    // The Cleric in the sandbox: its HUD starts after its init
+    [Test]
+    public void ShowCharacter_ShowsItsDevotion()
+    {
+        // The mana bar shows the mana too
+        ResourceView manaBar = _manaBarGo.GetComponent<ResourceView>();
+        TestHelpers.SetPrivateField(manaBar, "_slider", _manaBarGo.AddComponent<Slider>());
+        TMPro.TMP_Text manaText = new GameObject("ManaText", typeof(RectTransform)).AddComponent<TMPro.TextMeshProUGUI>();
+        manaText.transform.SetParent(_manaBarGo.transform, false);
+        TestHelpers.SetPrivateField(manaBar, "_text", manaText);
+        Character character = null;
+        TestHelpers.WithLoggingDisabled(() =>
+        {
+            _characterGo.AddComponent<AttributeManager>();
+            character = _characterGo.AddComponent<Character>();
+        });
+        CharacterData data = ScriptableObject.CreateInstance<CharacterData>();
+        try
+        {
+            data.attributes = new System.Collections.Generic.Dictionary<AttributeType, float>
+            {
+                { AttributeType.ManaMax, 100f },
+                { AttributeType.DevotionMax, 5f },
+            };
+            character.data = data;
+            TestHelpers.WithLoggingDisabled(character.InitAttributes);
+            TestHelpers.InvokePrivate(character.devotion, "Update");
+
+            _hud.ShowCharacter(character);
+
+            Assert.IsTrue(_devotionGo.activeSelf);
+            Assert.AreEqual("0/5", _devotionView.text);
+        }
+        finally
+        {
+            Object.DestroyImmediate(data);
+        }
+    }
 }
 
 }

@@ -134,10 +134,32 @@ public class GameHUD : MonoBehaviour
         _manaBar.gameObject.SetActive(show);
     }
 
+    // Only the mana and the Devotion of the character, without the buttons of a run (e.g. in the sandbox, which has
+    // its own): the HUD shown, even if hidden in the scene
+    public void ShowResourcesOnly()
+    {
+        gameObject.SetActive(true);
+        foreach (UnityEngine.UI.Button button in new[] { _inventoryButton, _nextWaveButton, _mapButton })
+        {
+            if (button != null)
+            {
+                button.gameObject.SetActive(false);
+            }
+        }
+        ShowManaBar(true);
+    }
+
     void OnCharacterInit(Character character)
     {
-        PlayerBehaviour.instance.character.mana.OnValueChanged.AddListener(OnManaChanged);
-        OnManaChanged(PlayerBehaviour.instance.character.mana);
+        ShowCharacter(character);
+    }
+
+    // The mana and the Devotion of the character kept up to date, for a HUD started after its init (e.g. hidden until
+    // then)
+    public void ShowCharacter(Character character)
+    {
+        character.mana.OnValueChanged.AddListener(OnManaChanged);
+        OnManaChanged(character.mana);
         ShowDevotion(character.devotion);
     }
 

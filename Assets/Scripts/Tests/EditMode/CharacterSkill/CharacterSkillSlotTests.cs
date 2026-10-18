@@ -132,6 +132,67 @@ public class CharacterSkillSlotTests
 
         Assert.AreEqual(0, used);
     }
+
+    // A validator of the resource of the character costing cost (a gain when negative), tracked for the tear down
+    ResourceValidatorFactory CreateResourceValidator(ResourceType resourceType, float cost, List<Object> created)
+    {
+        ConsumerFactory consumer = ScriptableObject.CreateInstance<ConsumerFactory>();
+        consumer.data = new ConsumerData
+        {
+            ignoreDamageReduction = true,
+            ignoreConsumerPrevention = true,
+            canBeCritical = false,
+            value = new FlatValue { data = new FlatValueData { value = cost } },
+        };
+        ResourceValidatorFactory factory = ScriptableObject.CreateInstance<ResourceValidatorFactory>();
+        factory.data = new ResourceValidatorData { resourceType = resourceType, consumer = consumer };
+        created.Add(consumer);
+        created.Add(factory);
+        return factory;
+    }
+
+    // The Heal of the Cleric in the sandbox: free, but giving its Devotion as in a run
+    [Test]
+    public void UseSkill_WithoutValidators_StillGivesItsGains()
+    {
+        List<Object> created = new List<Object>();
+        try
+        {
+            ResourceAttribute mana = TestHelpers.CreateResourceAttribute(_owner, ResourceType.Mana, AttributeType.ManaMax, 100f);
+            mana.SetValue(0f);
+            // On the same attributes as the mana, as on the character
+            ResourceAttribute devotion = null;
+            TestHelpers.WithLoggingDisabled(() =>
+            {
+                _owner.GetComponent<AttributeManager>().Add(AttributeType.DevotionMax, new Attribute(5f));
+                devotion = _owner.AddComponent<ResourceAttribute>();
+                devotion.Init(ResourceType.Devotion, AttributeType.DevotionMax, new RawResourceConsumerResolver());
+            });
+            devotion.SetValue(0f);
+            _skill.data.validators = new List<ACharacterSkillValidatorFactory>
+            {
+                CreateResourceValidator(ResourceType.Mana, 20f, created),
+                CreateResourceValidator(ResourceType.Devotion, -1f, created),
+            };
+            _slot.Init(_skill, _skillButton, useValidators: false);
+
+            _slot.UseSkill();
+            TestHelpers.InvokePrivate(devotion, "Update");
+            TestHelpers.InvokePrivate(mana, "Update");
+
+            Assert.AreEqual(1, _skill.useCount, "Used without the mana it costs");
+            Assert.AreEqual(1f, devotion.Value, 0.001f);
+            Assert.AreEqual(0f, mana.Value, 0.001f);
+            Assert.IsFalse(_skillButton.hasCost);
+        }
+        finally
+        {
+            foreach (Object obj in created)
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
+    }
 }
 
 }

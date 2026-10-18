@@ -23,14 +23,16 @@ public class CharacterSkillSlot : MonoBehaviour
 
         _skillButton.button.onClick.AddListener(UseSkill);
 
-        if (useValidators)
+        foreach (ACharacterSkillValidatorFactory validatorFactory in data.validators)
         {
-            foreach (ACharacterSkillValidatorFactory validatorFactory in data.validators)
+            ACharacterSkillValidator validator = validatorFactory.Create();
+            // Without restriction (the sandbox): neither cost nor cooldown, but the gains as in a run
+            if (!useValidators && !validator.IsGain(gameObject))
             {
-                ACharacterSkillValidator validator = validatorFactory.Create();
-                validator.Init(_skillButton, gameObject);
-                _validators.Add(validator);
+                continue;
             }
+            validator.Init(_skillButton, gameObject);
+            _validators.Add(validator);
         }
 
         _skillButton.SetName(_data.name);

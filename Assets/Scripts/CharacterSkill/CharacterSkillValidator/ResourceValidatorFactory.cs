@@ -55,6 +55,12 @@ public class ResourceValidator : ACharacterSkillValidator<ResourceValidatorData>
         return cost <= 0f || (resource != null && resource.Value >= cost);
     }
 
+    // A negative cost: the skill gives the resource
+    public override bool IsGain(GameObject owner)
+    {
+        return GetCost(owner) < 0f;
+    }
+
     public override void OnSkillUsed(GameObject owner)
     {
         if (resource != null)
