@@ -68,6 +68,7 @@ public class EntityHUD : MonoBehaviour, IVisualBehaviour
         ShowHealth(entity.health);
         entity.OnMarkChanged.AddListener(ShowMark);
         _buffIconBar.Init(entity.buffManager);
+        _buffIconBar.TrackHitArmor(entity.attributeManager.GetOrAdd(AttributeType.HitArmor));
         if (_phaseView != null)
         {
             _phaseView.Init(entity);

@@ -15,6 +15,7 @@ public class EntityHUDTests
     EntityHUD _hud;
     Slider _slider;
     TMP_Text _text;
+    BuffIconView _iconPrefab;
 
     [SetUp]
     public void SetUp()
@@ -32,7 +33,10 @@ public class EntityHUDTests
         _hud = _hudGo.AddComponent<EntityHUD>();
         TestHelpers.SetPrivateField(_hud, "_resourceView", resourceView);
         TestHelpers.SetPrivateField(_hud, "_mark", new GameObject("Mark"));
-        TestHelpers.SetPrivateField(_hud, "_buffIconBar", _hudGo.AddComponent<BuffIconBar>());
+        BuffIconBar buffIconBar = _hudGo.AddComponent<BuffIconBar>();
+        _iconPrefab = BuffIconBarTests.CreateIconPrefab();
+        TestHelpers.SetPrivateField(buffIconBar, "_iconPrefab", _iconPrefab);
+        TestHelpers.SetPrivateField(_hud, "_buffIconBar", buffIconBar);
     }
 
     [TearDown]
@@ -41,12 +45,15 @@ public class EntityHUDTests
         _units.DestroyAll();
         Object.DestroyImmediate(TestHelpers.GetPrivateField<GameObject>(_hud, "_mark"));
         Object.DestroyImmediate(_hudGo);
+        Object.DestroyImmediate(_iconPrefab.gameObject);
     }
 
     Entity CreateUnit(float value, float max)
     {
         Entity entity = _units.Create(value, max);
         TestHelpers.SetPrivateField(entity, "_buffManager", entity.gameObject.AddComponent<BuffManager>());
+        // As Entity.Init
+        entity.attributeManager = entity.GetComponent<AttributeManager>();
         return entity;
     }
 
@@ -163,6 +170,21 @@ public class EntityHUDTests
         (float start, float end) = EntityHUD.GetShieldSpan(50f, 0f, 100f);
 
         Assert.AreEqual(start, end);
+    }
+
+    // e.g. the Armored Footman raising its guard
+    [Test]
+    public void Init_UnitBlockingHits_ShowsHowMany()
+    {
+        Entity unit = CreateUnit(100f, 100f);
+        unit.attributeManager.GetOrAdd(AttributeType.HitArmor).BaseValue = 2f;
+        unit.attributeManager.ForceUpdate();
+
+        _hud.Init(unit);
+
+        BuffIconBar buffIconBar = TestHelpers.GetPrivateField<BuffIconBar>(_hud, "_buffIconBar");
+        Assert.IsNotNull(buffIconBar.hitArmorView);
+        Assert.AreEqual("2", buffIconBar.hitArmorView.stacksText);
     }
 }
 
