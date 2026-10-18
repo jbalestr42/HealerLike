@@ -15,7 +15,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 187ed0ddef46b1d48be502bdc6dc7c0d, type: 3}
     name: Phalanx
-    description: +2 armor for each adjacent ally
+    description: +1 armor for each adjacent ally
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}

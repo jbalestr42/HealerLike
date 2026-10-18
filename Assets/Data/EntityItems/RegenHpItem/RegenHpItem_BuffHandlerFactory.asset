@@ -17,7 +17,7 @@ MonoBehaviour:
     durationType: 2
     duration: 0
     isPeriodic: 1
-    periodDuration: 2
+    periodDuration: 1
     maxStacks: 0
     stackAcrossSources: 0
     buffFactoryList:

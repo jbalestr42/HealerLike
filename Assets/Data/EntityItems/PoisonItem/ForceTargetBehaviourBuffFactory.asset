@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0eebeee5c393fd47a963ac425316e08, type: 3}
+  m_Name: ForceTargetBehaviourBuffFactory
+  m_EditorClassIdentifier: HealerLike.Runtime::ForceTargetBehaviourBuffFactory
+  uniqueID: 6b76ac27-5f6f-4acb-ad7b-13164d2ce898
+  data:
+    targetBehaviourType: 4

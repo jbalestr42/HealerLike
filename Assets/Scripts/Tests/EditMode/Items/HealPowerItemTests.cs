@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Items
 {
 
-// The Sacred Tome player item: +10 Heal Power for the whole run
+// The Sacred Tome player item: +6 Heal Power for the whole run
 public class HealPowerItemTests
 {
     const string ItemPath = "Assets/Data/PlayerItems/HealPowerItem/HealPowerItem.asset";
@@ -39,7 +39,7 @@ public class HealPowerItemTests
     }
 
     [Test]
-    public void Item_Adds10HealPower()
+    public void Item_Adds6HealPower()
     {
         AttributeManager attributeManager = TestHelpers.CreateAttributeManager(_character, AttributeType.HealPower, 25f);
         ABuff buff = _item.data.buffs[0].buffFactoryList[0].GetBuff(null);
@@ -48,7 +48,7 @@ public class HealPowerItemTests
         Attribute healPower = attributeManager.Get(AttributeType.HealPower);
         healPower.Update();
 
-        Assert.AreEqual(35f, healPower.Value, 0.0001f);
+        Assert.AreEqual(31f, healPower.Value, 0.0001f);
     }
 
     [Test]

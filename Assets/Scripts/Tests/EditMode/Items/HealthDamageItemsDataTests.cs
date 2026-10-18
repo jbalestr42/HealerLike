@@ -78,9 +78,16 @@ public class HealthDamageItemsDataTests
     }
 
     [Test]
-    public void MissingHealthDamage_Deals10PercentOfTheTargetMissingHealth_EvenFromAnAttackerAtFullHealth()
+    public void MissingHealthDamage_Deals5PercentOfTheTargetMissingHealth_EvenFromAnAttackerAtFullHealth()
     {
-        Assert.AreEqual(50f, Hit(LoadConsumer("MissingHealthDamageItem")), 0.0001f);
+        Assert.AreEqual(25f, Hit(LoadConsumer("MissingHealthDamageItem")), 0.0001f);
+    }
+
+    // Halved on the bosses, as the Current Health Damage: their large health made it far too strong
+    [Test]
+    public void MissingHealthDamage_Deals2Point5PercentOfTheTargetMissingHealth_OnABoss()
+    {
+        Assert.AreEqual(12.5f, Hit(LoadConsumer("MissingHealthDamageItem"), isBoss: true), 0.0001f);
     }
 }
 

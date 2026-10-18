@@ -18,7 +18,7 @@ public class CursedTreasureItemsDataTests
     static readonly object[] StatItems =
     {
         new object[] { "BloodthirstBladeItem", "Bloodthirst Blade", new[] { AttributeType.Damage, AttributeType.HealingReceived }, new[] { 16f, 0.6f } },
-        new object[] { "ThornedCrownItem", "Thorned Crown", new[] { AttributeType.FlatArmor, AttributeType.HealingReceived }, new[] { 6f, 0.5f } },
+        new object[] { "ThornedCrownItem", "Thorned Crown", new[] { AttributeType.FlatArmor, AttributeType.HealingReceived }, new[] { 3f, 0.5f } },
         new object[] { "ReapersCoinItem", "Reaper's Coin", new[] { AttributeType.CriticalChance, AttributeType.CriticalMultiplier, AttributeType.HealthMax }, new[] { 30f, 2f, 50f } },
         new object[] { "BerserkersBrandItem", "Berserker's Brand", new[] { AttributeType.AttackRate, AttributeType.Vulnerability }, new[] { 0.65f, 0.25f } },
         new object[] { "GluttonsCharmItem", "Glutton's Charm", new[] { AttributeType.HealingReceived, AttributeType.Damage }, new[] { 1.5f, 7f } },

@@ -164,10 +164,10 @@ public class DebuffStatusesDataTests
     }
 
     [Test]
-    public void Poisoned_GivenByVenom1_Poison5_Curse5()
+    public void Poisoned_GivenByVenom1_Poison1_Curse5()
     {
         AssertOnHitStacks("EntityItems/VenomItem/VenomItem", "Poisoned", 1);
-        AssertOnHitStacks("EntityItems/PoisonItem/PoisonItem", "Poisoned", 5);
+        AssertOnHitStacks("EntityItems/PoisonItem/PoisonItem", "Poisoned", 1);
         BuffCharacterSkillFactory curse = LoadAsset<BuffCharacterSkillFactory>("CharacterSkills/Curse/Curse");
         AssertStacks(curse.data.buffHandlerFactory.Single(), "Poisoned", 5);
     }

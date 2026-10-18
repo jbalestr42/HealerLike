@@ -15,7 +15,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 51c302f64de43fe4b8b02506b6ed1918, type: 3}
     name: Iron Plating
-    description: '+3 flat armor: blocks 3 damage from each hit'
+    description: '+2 flat armor: blocks 2 damage from each hit'
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}

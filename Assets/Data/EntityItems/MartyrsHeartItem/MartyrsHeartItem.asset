@@ -15,7 +15,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: af5bfcb23171b4f46ab2ad13250a1062, type: 3}
     name: Martyr's Heart
-    description: When healed, adjacent allies receive 20% of the heal
+    description: When healed, adjacent allies receive 35% of the heal
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}

@@ -15,7 +15,7 @@ MonoBehaviour:
   uniqueID: 8ff90ea7-315a-440e-b688-6b7d1089c786
   data:
     durationType: 1
-    duration: 5
+    duration: 10
     isPeriodic: 0
     periodDuration: 0
     maxStacks: 1

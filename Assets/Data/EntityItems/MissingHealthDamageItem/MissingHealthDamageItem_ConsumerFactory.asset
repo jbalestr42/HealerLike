@@ -26,6 +26,6 @@ MonoBehaviour:
       type: {class: CurrentHealthValue, ns: , asm: HealerLike.Runtime}
       data:
         data:
-          multiplier: 0.1
+          multiplier: 0.05
           inverse: 1
-          bossMultiplier: 1
+          bossMultiplier: 0.5

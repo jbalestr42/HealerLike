@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uniqueID: 818cb7ed-0fea-44d8-ac5f-843555f42950
   data:
-    ratio: 0.2
+    ratio: 0.35
     pattern: 0
     range: 1
     minimumSharedHeal: 1

@@ -270,9 +270,9 @@ public class WarlockDataTests
         Assert.AreEqual(3, shoot.data.projectiles[0].numberOfProjectileToShootPerTarget);
     }
 
-    // Each hit gives the target a permanent vulnerability of 1%, stacking without limit
+    // Each hit gives the target a permanent vulnerability of 2%, stacking without limit
     [Test]
-    public void HexWeaver_EachHitAddsAPermanent1PercentVulnerabilityToTheTarget()
+    public void HexWeaver_EachHitAddsAPermanent2PercentVulnerabilityToTheTarget()
     {
         ItemFactory hex = GetUnit("Hex Weaver").items[0] as ItemFactory;
         Assert.IsNotNull(hex);
@@ -286,10 +286,11 @@ public class WarlockDataTests
 
         FlatModifier modifier = new FlatModifier { data = vulnerability.data };
         modifier.Init(null, null);
-        Assert.AreEqual(0.01f, modifier.ApplyModifier(), 0.0001f);
+        Assert.AreEqual(0.02f, modifier.ApplyModifier(), 0.0001f);
         modifier.Stack(null, null);
         modifier.Stack(null, null);
-        Assert.AreEqual(0.03f, modifier.ApplyModifier(), 0.0001f);
+        Assert.AreEqual(0.06f, modifier.ApplyModifier(), 0.0001f);
+        StringAssert.Contains("2% more damage", GetUnit("Hex Weaver").description);
     }
 }
 

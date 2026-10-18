@@ -197,7 +197,7 @@ public class CombatItemsDataTests
     }
 
     [Test]
-    public void WarDrums_AtBattleStart_TheUnitsGetMinus30PercentAttackCooldownFor5s()
+    public void WarDrums_AtBattleStart_TheUnitsGetMinus30PercentAttackCooldownFor10s()
     {
         ApplyBuffOnEventBuffFactory drums = GetBuff<ApplyBuffOnEventBuffFactory>(LoadItem(PlayerItems, "WarDrums"));
         ABuffHandlerFactory handler = drums.data.buffHandlerFactory;
@@ -208,7 +208,7 @@ public class CombatItemsDataTests
         Assert.AreEqual(BuffEventTrigger.BattleStart, drums.data.triggers);
         Assert.AreEqual(Entity.EntityType.Player, drums.data.entityType);
         Assert.AreEqual(DurationType.Duration, handler.durationType);
-        Assert.AreEqual(5f, handler.duration, 0.0001f);
+        Assert.AreEqual(10f, handler.duration, 0.0001f);
         Assert.AreEqual(1.4f, Get(AttributeType.AttackRate), 0.0001f);
     }
 

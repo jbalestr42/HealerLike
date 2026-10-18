@@ -15,11 +15,12 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: b8428167e3680bd48832aa8c94bcae6d, type: 3}
     name: Poison
-    description: Each hit gives the target 5 {status:Poisoned} stacks
+    description: Attacks a random enemy, each hit gives it 1 {status:Poisoned} stack
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}
-    buffs: []
+    buffs:
+    - {fileID: 11400000, guid: 41782cbb318c0a04b8ad696c3f5fe742, type: 2}
     onHitEffects:
     - {fileID: 11400000, guid: 9d4775898702f7845a03d279e09d938f, type: 2}
     onHitConsumers: []

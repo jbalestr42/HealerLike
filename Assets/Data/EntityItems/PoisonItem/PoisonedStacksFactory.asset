@@ -15,4 +15,4 @@ MonoBehaviour:
   uniqueID: f6a50a85-e8b9-405b-b469-0b7c1841f742
   data:
     status: {fileID: 11400000, guid: 564ef7837aa8c2f43a1a11f1c08180e1, type: 2}
-    stacks: 5
+    stacks: 1

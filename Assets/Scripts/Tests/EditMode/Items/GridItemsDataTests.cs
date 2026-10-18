@@ -79,13 +79,13 @@ public class GridItemsDataTests
     }
 
     [Test]
-    public void Phalanx_Gives2ArmorForEachAdjacentAlly()
+    public void Phalanx_Gives1ArmorForEachAdjacentAlly()
     {
         AlliesOnRelativeCellModifierFactory buff = GetBuff<AlliesOnRelativeCellModifierFactory>(LoadItem(EntityItems, "Phalanx"));
 
         Assert.AreEqual(AttributeType.FlatArmor, buff.data.type);
         Assert.AreEqual(AttributeModifierType.Add, buff.data.modifierType);
-        Assert.AreEqual(2f, buff.data.value, 0.0001f);
+        Assert.AreEqual(1f, buff.data.value, 0.0001f);
         Assert.IsFalse(buff.data.isWhenAlone);
         Assert.AreEqual(RelativeCellPatternType.Adjacent, buff.data.pattern);
         Assert.AreEqual(1, buff.data.range);

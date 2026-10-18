@@ -15,7 +15,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 51c302f64de43fe4b8b02506b6ed1918, type: 3}
     name: Thorned Crown
-    description: '+6 flat armor: blocks 6 damage from each hit
+    description: '+3 flat armor: blocks 3 damage from each hit
 
       -50% healing received'
     tags:

@@ -18,7 +18,7 @@ public class LibraryItemsDataTests
     {
         new object[] { "TomeOfHasteItem", "Tome of Haste", AttributeType.SkillCooldownMultiplier, 0.8f },
         new object[] { "ScrollOfThriftItem", "Scroll of Thrift", AttributeType.SkillCostMultiplier, 0.8f },
-        new object[] { "CodexOfMendingItem", "Codex of Mending", AttributeType.HealPower, 50f },
+        new object[] { "CodexOfMendingItem", "Codex of Mending", AttributeType.HealPower, 42f },
         new object[] { "WellspringManuscriptItem", "Wellspring Manuscript", AttributeType.ManaMax, 120f },
     };
 
@@ -28,7 +28,7 @@ public class LibraryItemsDataTests
     {
         new object[] { "HastyGrimoireItem", "Hasty Grimoire", AttributeType.SkillCooldownMultiplier, 0.7f, AttributeType.SkillCostMultiplier, 1.15f },
         new object[] { "BloodLedgerItem", "Blood Ledger", AttributeType.SkillCostMultiplier, 0.7f, AttributeType.ManaMax, 85f },
-        new object[] { "BlackCodexItem", "Black Codex", AttributeType.HealPower, 60f, AttributeType.SkillCooldownMultiplier, 1.15f },
+        new object[] { "BlackCodexItem", "Black Codex", AttributeType.HealPower, 48f, AttributeType.SkillCooldownMultiplier, 1.15f },
         new object[] { "AbyssalWellItem", "Abyssal Well", AttributeType.ManaMax, 130f, AttributeType.HealPower, 15f },
     };
 

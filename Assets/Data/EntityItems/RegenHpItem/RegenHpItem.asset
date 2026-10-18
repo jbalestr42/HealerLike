@@ -15,7 +15,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 830168f764471444d8a47b35247f811c, type: 3}
     name: Health Regen
-    description: Heals 2 HP every 2s
+    description: Heals 3 HP every second
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}

@@ -26,4 +26,4 @@ MonoBehaviour:
       type: {class: FlatValue, ns: , asm: HealerLike.Runtime}
       data:
         data:
-          value: -2
+          value: -3

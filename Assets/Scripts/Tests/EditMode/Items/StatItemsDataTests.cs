@@ -118,11 +118,11 @@ public class StatItemsDataTests
     }
 
     [Test]
-    public void IronPlating_Adds3FlatArmor()
+    public void IronPlating_Adds2FlatArmor()
     {
         Equip("IronPlating");
 
-        Assert.AreEqual(3f, Get(AttributeType.FlatArmor), 0.0001f);
+        Assert.AreEqual(2f, Get(AttributeType.FlatArmor), 0.0001f);
     }
 
     [Test]
@@ -136,40 +136,40 @@ public class StatItemsDataTests
     }
 
     [Test]
-    public void Whetstone_Adds5Damage()
+    public void Whetstone_Adds2Damage()
     {
         Set(AttributeType.Damage, 10f);
 
         Equip("Whetstone");
 
-        Assert.AreEqual(15f, Get(AttributeType.Damage), 0.0001f);
+        Assert.AreEqual(12f, Get(AttributeType.Damage), 0.0001f);
     }
 
     [Test]
-    public void HairTrigger_Removes15PercentAttackCooldown()
+    public void HairTrigger_Removes25PercentAttackCooldown()
     {
         Set(AttributeType.AttackRate, 2f);
 
         Equip("HairTrigger");
 
-        Assert.AreEqual(1.7f, Get(AttributeType.AttackRate), 0.0001f);
+        Assert.AreEqual(1.5f, Get(AttributeType.AttackRate), 0.0001f);
     }
 
     [Test]
-    public void LuckyCoin_Adds15CriticalChance_WithTheDefaultCriticalMultiplier()
+    public void LuckyCoin_Adds20CriticalChance_WithTheDefaultCriticalMultiplier()
     {
         Equip("LuckyCoin");
 
-        Assert.AreEqual(15f, Get(AttributeType.CriticalChance), 0.0001f);
+        Assert.AreEqual(20f, Get(AttributeType.CriticalChance), 0.0001f);
         Assert.AreEqual(1.5f, Get(AttributeType.CriticalMultiplier), 0.0001f);
     }
 
     [Test]
-    public void ExecutionersEdge_Adds10CriticalChance_AndCriticalHitsDealDoubleDamage()
+    public void ExecutionersEdge_Adds20CriticalChance_AndCriticalHitsDealDoubleDamage()
     {
         Equip("ExecutionersEdge");
 
-        Assert.AreEqual(10f, Get(AttributeType.CriticalChance), 0.0001f);
+        Assert.AreEqual(20f, Get(AttributeType.CriticalChance), 0.0001f);
         Assert.AreEqual(2f, Get(AttributeType.CriticalMultiplier), 0.0001f);
     }
 

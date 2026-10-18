@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 2795397902362475942, guid: 72c47fdc43d84b243bdc109c284341d6, type: 3}
   title: Hex Weaver
-  description: 'Weak volleys of 3 hexed bolts: each hit makes the target take 1% more damage until the end of the fight'
+  description: 'Weak volleys of 3 hexed bolts: each hit makes the target take 2% more damage until the end of the fight'
   attributes:
   - key: 0
     value: 100

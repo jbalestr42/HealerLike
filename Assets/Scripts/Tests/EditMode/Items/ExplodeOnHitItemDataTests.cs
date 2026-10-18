@@ -59,7 +59,7 @@ public class ExplodeOnHitItemDataTests
         ItemFactory item = Load();
 
         Assert.AreEqual("Explode On Hit", item.data.name);
-        StringAssert.Contains("+50% attack cooldown", item.data.description);
+        StringAssert.Contains("+25% attack cooldown", item.data.description);
         StringAssert.DoesNotContain("damage", item.data.description);
     }
 
@@ -74,13 +74,13 @@ public class ExplodeOnHitItemDataTests
     }
 
     [Test]
-    public void ExplodeOnHit_Adds50PercentAttackCooldown()
+    public void ExplodeOnHit_Adds25PercentAttackCooldown()
     {
         _attributes.Add(AttributeType.AttackRate, new Attribute(2f));
 
         AddItemBuffs(Load());
 
-        Assert.AreEqual(3f, Get(AttributeType.AttackRate), 0.0001f);
+        Assert.AreEqual(2.5f, Get(AttributeType.AttackRate), 0.0001f);
     }
 
     [Test]

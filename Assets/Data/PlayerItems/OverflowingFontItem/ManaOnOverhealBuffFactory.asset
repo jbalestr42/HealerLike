@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uniqueID: 41cb0df8-7b23-4c76-829d-6e6aa3e31947
   data:
-    ratio: 0.1
+    ratio: 0.25
     healedType: 1

@@ -135,11 +135,11 @@ public class HealReceivedItemsDataTests
     }
 
     [Test]
-    public void MartyrsHeart_WhenHealedTheAdjacentAlliesReceive20PercentOfTheHeal()
+    public void MartyrsHeart_WhenHealedTheAdjacentAlliesReceive35PercentOfTheHeal()
     {
         ShareHealOnRelativeCellBuffFactory buff = GetBuff<ShareHealOnRelativeCellBuffFactory>(LoadItem(EntityItems, "MartyrsHeart"));
 
-        Assert.AreEqual(0.2f, buff.data.ratio, 0.0001f);
+        Assert.AreEqual(0.35f, buff.data.ratio, 0.0001f);
         Assert.AreEqual(RelativeCellPatternType.Adjacent, buff.data.pattern);
         Assert.AreEqual(1, buff.data.range);
         // The zone is shown around the holder, in green like the heals
@@ -150,19 +150,20 @@ public class HealReceivedItemsDataTests
     }
 
     [Test]
-    public void ChaliceOfPlenty_GivesHeals15PercentChanceToBeCritical()
+    public void ChaliceOfPlenty_GivesHeals25PercentChanceToBeCritical_ForDoubleHealing()
     {
         Equip(LoadItem(PlayerItems, "ChaliceOfPlenty"));
 
-        Assert.AreEqual(15f, Get(AttributeType.HealCriticalChance), 0.0001f);
+        Assert.AreEqual(25f, Get(AttributeType.HealCriticalChance), 0.0001f);
+        Assert.AreEqual(2f, Get(AttributeType.CriticalMultiplier), 0.0001f);
     }
 
     [Test]
-    public void OverflowingFont_TheOverhealOfTheUnitsRestores10PercentOfItAsMana()
+    public void OverflowingFont_TheOverhealOfTheUnitsRestores25PercentOfItAsMana()
     {
         ManaOnOverhealBuffFactory buff = GetBuff<ManaOnOverhealBuffFactory>(LoadItem(PlayerItems, "OverflowingFont"));
 
-        Assert.AreEqual(0.1f, buff.data.ratio, 0.0001f);
+        Assert.AreEqual(0.25f, buff.data.ratio, 0.0001f);
         Assert.AreEqual(Entity.EntityType.Player, buff.data.healedType);
     }
 }
