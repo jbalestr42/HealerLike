@@ -175,7 +175,7 @@ public class BalanceSimulator : AGameType
         {
             // In front of the team: the summons go on the free cell of the team nearest to it
             BoardLayout layout = _entities.board.layout;
-            Vector2Int front = new Vector2Int(layout.GetFrontColumn(BoardCellType.Player) + 1, GetCenterRow(layout));
+            Vector2Int front = new Vector2Int(layout.GetFrontColumn(BoardCellType.Player) + 1, TeamFormation.GetCenterRow(layout));
             _bot = new HealerBot(job.bot, character, _entities, _entities.board.GetUnitPosition(front));
             stats.bot = job.bot.name;
         }
@@ -194,12 +194,6 @@ public class BalanceSimulator : AGameType
         _maxDuration = _plan.GetMaxDuration(job.roomType);
     }
 
-    // The row in the middle of the board, the lower one of the two middle rows for an even height
-    static int GetCenterRow(BoardLayout layout)
-    {
-        return (layout.height - 1) / 2;
-    }
-
     // On the player cells of the board: the tanks closest to the enemies, then the supports, then the damage dealers,
     // each with its items, a column holding as many units as the board has rows. A team with a pattern is placed as
     // drawn in it. A unit whose cell is taken or out of the player cells goes on the nearest free one
@@ -207,11 +201,11 @@ public class BalanceSimulator : AGameType
     {
         Board board = _entities.board;
         int frontColumn = board.layout.GetFrontColumn(BoardCellType.Player);
-        int centerRow = GetCenterRow(board.layout);
+        int centerRow = TeamFormation.GetCenterRow(board.layout);
         Dictionary<int, Entity> placed = new Dictionary<int, Entity>();
         Dictionary<int, Vector2Int> cells = pattern != null
-            ? SimulationFormation.GetPatternCells(pattern, frontColumn, centerRow)
-            : SimulationFormation.GetCells(team.units, frontColumn, centerRow, board.layout.height);
+            ? TeamFormation.GetPatternCells(pattern, frontColumn, centerRow)
+            : TeamFormation.GetCells(team.units, board.layout);
         foreach (KeyValuePair<int, Vector2Int> cell in cells)
         {
             GameObject unit = _entities.SpawnEntity(team.units[cell.Key], board.GetUnitPosition(cell.Value), Entity.EntityType.Player);

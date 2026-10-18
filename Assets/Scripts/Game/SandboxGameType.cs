@@ -61,6 +61,25 @@ public class SandboxGameType : AGameType
         UIManager.instance.GetView<GameView>(ViewType.Game).gameHUD.ShowManaBar(true);
 
         _panel.Init(this, _data, PlayerBehaviour.instance.character);
+        if (playedCharacter != null)
+        {
+            PlaceStartingUnits(playedCharacter);
+        }
+    }
+
+    // The units the character starts a run with, on the player cells as the simulated teams (the tanks in front)
+    void PlaceStartingUnits(CharacterData character)
+    {
+        List<EntityData> units = character.entities.FindAll(unit => unit != null);
+        Board board = _entities.board;
+        foreach (KeyValuePair<int, Vector2Int> cell in TeamFormation.GetCells(units, board.layout))
+        {
+            GameObject unit = _entities.SpawnEntity(units[cell.Key], board.GetUnitPosition(cell.Value), Entity.EntityType.Player);
+            if (unit != null)
+            {
+                OnEntitySpawned(unit.GetComponent<Entity>());
+            }
+        }
     }
 
     // Only a character of the sandbox list, the selection may come from another sandbox data

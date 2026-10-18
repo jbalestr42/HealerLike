@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace Game.Balance
+namespace Game
 {
 
-public class SimulationFormationTests
+public class TeamFormationTests
 {
     readonly List<Object> _created = new List<Object>();
 
@@ -37,16 +37,16 @@ public class SimulationFormationTests
     [Test]
     public void GetRowOffset_FromTheCenterOutwards()
     {
-        CollectionAssert.AreEqual(new[] { 0, 1, -1, 2, -2 }, new List<int> { 0, 1, 2, 3, 4 }.ConvertAll(SimulationFormation.GetRowOffset));
+        CollectionAssert.AreEqual(new[] { 0, 1, -1, 2, -2 }, new List<int> { 0, 1, 2, 3, 4 }.ConvertAll(TeamFormation.GetRowOffset));
     }
 
     [Test]
     public void GetRoleRank_TanksThenSupportsThenTheOthers()
     {
-        Assert.AreEqual(0, SimulationFormation.GetRoleRank(CreateUnit(TagNames.Tank)));
-        Assert.AreEqual(1, SimulationFormation.GetRoleRank(CreateUnit(TagNames.Support)));
-        Assert.AreEqual(2, SimulationFormation.GetRoleRank(CreateUnit(TagNames.Damage)));
-        Assert.AreEqual(2, SimulationFormation.GetRoleRank(CreateUnit(null)));
+        Assert.AreEqual(0, TeamFormation.GetRoleRank(CreateUnit(TagNames.Tank)));
+        Assert.AreEqual(1, TeamFormation.GetRoleRank(CreateUnit(TagNames.Support)));
+        Assert.AreEqual(2, TeamFormation.GetRoleRank(CreateUnit(TagNames.Damage)));
+        Assert.AreEqual(2, TeamFormation.GetRoleRank(CreateUnit(null)));
     }
 
     [Test]
@@ -59,7 +59,7 @@ public class SimulationFormationTests
             CreateUnit(TagNames.Tank),
         };
 
-        Dictionary<int, Vector2Int> cells = SimulationFormation.GetCells(units, 6, 8, 5);
+        Dictionary<int, Vector2Int> cells = TeamFormation.GetCells(units, 6, 8, 5);
 
         Assert.AreEqual(new Vector2Int(6, 8), cells[2]);
         Assert.AreEqual(new Vector2Int(5, 8), cells[1]);
@@ -76,7 +76,7 @@ public class SimulationFormationTests
             CreateUnit(TagNames.Damage, 100f),
         };
 
-        Dictionary<int, Vector2Int> cells = SimulationFormation.GetCells(units, 6, 8, 5);
+        Dictionary<int, Vector2Int> cells = TeamFormation.GetCells(units, 6, 8, 5);
 
         Assert.AreEqual(new Vector2Int(6, 8), cells[1]);
         Assert.AreEqual(new Vector2Int(6, 9), cells[2]);
@@ -88,7 +88,7 @@ public class SimulationFormationTests
     {
         List<EntityData> units = new List<EntityData> { CreateUnit(TagNames.Damage), CreateUnit(TagNames.Support) };
 
-        Dictionary<int, Vector2Int> cells = SimulationFormation.GetCells(units, 6, 8, 5);
+        Dictionary<int, Vector2Int> cells = TeamFormation.GetCells(units, 6, 8, 5);
 
         Assert.AreEqual(new Vector2Int(6, 8), cells[1]);
         Assert.AreEqual(new Vector2Int(5, 8), cells[0]);
@@ -105,7 +105,7 @@ public class SimulationFormationTests
             CreateUnit(TagNames.Damage),
         };
 
-        Dictionary<int, Vector2Int> cells = SimulationFormation.GetCells(units, 6, 8, 2);
+        Dictionary<int, Vector2Int> cells = TeamFormation.GetCells(units, 6, 8, 2);
 
         Assert.AreEqual(new Vector2Int(6, 8), cells[0]);
         Assert.AreEqual(new Vector2Int(6, 9), cells[1]);
@@ -116,7 +116,7 @@ public class SimulationFormationTests
     [Test]
     public void GetCells_NoUnit_NoCell()
     {
-        Assert.IsEmpty(SimulationFormation.GetCells(new List<EntityData>(), 6, 8, 5));
+        Assert.IsEmpty(TeamFormation.GetCells(new List<EntityData>(), 6, 8, 5));
     }
 
     [Test]
@@ -128,7 +128,7 @@ public class SimulationFormationTests
             units.Add(CreateUnit(i % 3 == 0 ? TagNames.Tank : i % 3 == 1 ? TagNames.Support : TagNames.Damage));
         }
 
-        Dictionary<int, Vector2Int> cells = SimulationFormation.GetCells(units, 6, 8, 3);
+        Dictionary<int, Vector2Int> cells = TeamFormation.GetCells(units, 6, 8, 3);
 
         Assert.AreEqual(12, cells.Count);
         CollectionAssert.AllItemsAreUnique(cells.Values);
@@ -152,7 +152,7 @@ public class SimulationFormationTests
             pattern.SetEntity(slot.x, slot.y, dummy);
         }
 
-        Dictionary<int, Vector2Int> cells = SimulationFormation.GetPatternCells(pattern, 6, 8);
+        Dictionary<int, Vector2Int> cells = TeamFormation.GetPatternCells(pattern, 6, 8);
 
         // Corners and center of the 3x3 square spanning columns 4-6 and rows 7-9
         CollectionAssert.AreEquivalent(new[] { new Vector2Int(6, 7), new Vector2Int(6, 9), new Vector2Int(5, 8), new Vector2Int(4, 7), new Vector2Int(4, 9) }, cells.Values);
@@ -168,7 +168,7 @@ public class SimulationFormationTests
         pattern.SetEntity(0, 0, front);
         pattern.SetEntity(1, 0, back);
 
-        Dictionary<int, Vector2Int> cells = SimulationFormation.GetPatternCells(pattern, 6, 8);
+        Dictionary<int, Vector2Int> cells = TeamFormation.GetPatternCells(pattern, 6, 8);
         ReferenceTeam team = ReferenceTeam.FromWave(pattern);
 
         // The first column of the pattern on the front column
@@ -179,7 +179,54 @@ public class SimulationFormationTests
     [Test]
     public void GetPatternCells_NoPattern_Empty()
     {
-        Assert.IsEmpty(SimulationFormation.GetPatternCells(null, 6, 8));
+        Assert.IsEmpty(TeamFormation.GetPatternCells(null, 6, 8));
+    }
+
+    // The default board: the player on the 4 left columns of 4 rows, the enemies on the right
+    BoardLayout CreateDefaultLayout()
+    {
+        BoardLayout layout = ScriptableObject.CreateInstance<BoardLayout>();
+        _created.Add(layout);
+        return layout;
+    }
+
+    [Test]
+    public void GetCells_OnABoard_TheTankOnThePlayerColumnNearestTheEnemiesInTheMiddleRow()
+    {
+        EntityData damage = CreateUnit(TagNames.Damage);
+        EntityData tank = CreateUnit(TagNames.Tank);
+
+        Dictionary<int, Vector2Int> cells = TeamFormation.GetCells(new List<EntityData> { damage, tank }, CreateDefaultLayout());
+
+        Assert.AreEqual(new Vector2Int(3, 1), cells[1]);
+        Assert.AreEqual(new Vector2Int(2, 1), cells[0]);
+    }
+
+    [Test]
+    public void GetCenterRow_EvenHeight_TheLowerMiddleRow()
+    {
+        Assert.AreEqual(1, TeamFormation.GetCenterRow(CreateDefaultLayout()));
+    }
+
+    // The sandbox places them as soon as the character is played: each on its own player cell
+    [Test]
+    public void StartingUnitsOfEverySandboxCharacter_EachOnItsOwnPlayerCell()
+    {
+        SandboxData sandbox = UnityEditor.AssetDatabase.LoadAssetAtPath<SandboxData>("Assets/Data/SandboxData.asset");
+        BoardLayout layout = CreateDefaultLayout();
+        Assert.IsNotEmpty(sandbox.characters);
+        foreach (CharacterData character in sandbox.characters)
+        {
+            List<EntityData> units = character.entities.FindAll(unit => unit != null);
+            Dictionary<int, Vector2Int> cells = TeamFormation.GetCells(units, layout);
+
+            Assert.AreEqual(units.Count, cells.Count, character.title);
+            CollectionAssert.AllItemsAreUnique(cells.Values, character.title);
+            foreach (Vector2Int cell in cells.Values)
+            {
+                Assert.AreEqual(BoardCellType.Player, layout.GetCell(cell), $"{character.title}: {cell}");
+            }
+        }
     }
 }
 

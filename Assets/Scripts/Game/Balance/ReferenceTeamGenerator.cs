@@ -142,14 +142,12 @@ public static class ReferenceTeamGenerator
     // Placement order, the front first: the units with the most max health, ties in team order
     public static List<int> GetPlacementOrder(IReadOnlyList<EntityData> units)
     {
-        return Enumerable.Range(0, units.Count)
-            .OrderByDescending(i => GetMaxHealth(units[i]))
-            .ToList();
+        return TeamFormation.GetPlacementOrder(units);
     }
 
     public static float GetMaxHealth(EntityData unit)
     {
-        return GetAttribute(unit, AttributeType.HealthMax);
+        return TeamFormation.GetMaxHealth(unit);
     }
 
     // Base value of the unit, 0 without the attribute
