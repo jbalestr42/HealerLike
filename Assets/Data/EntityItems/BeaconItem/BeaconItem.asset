@@ -15,7 +15,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: af5bfcb23171b4f46ab2ad13250a1062, type: 3}
     name: Beacon of Light
-    description: Each heal you cast on an ally also heals the most wounded ally next to the holder for 40% of it, 60% while the holder is blessed
+    description: Each heal you cast on an ally also heals the most wounded ally next to the holder for 40% of it, 60% while the holder is {status:Blessed}
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}

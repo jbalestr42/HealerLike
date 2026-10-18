@@ -17,7 +17,7 @@ MonoBehaviour:
     name: Judgment
     description: 'Spend all your Devotion: heal all allies for <color="green">[{attribute:current:HealPower}x{data:multiplier}]</color> <color=#008080ff>([{data:multiplier}x100]% HealPower)</color>, plus <color="green">[{attribute:current:HealPower}x{data:multiplierPerSpent}]</color> <color=#008080ff>([{data:multiplierPerSpent}x100]% HealPower)</color> per Devotion spent
 
-      <color=#FFE680>Blesses</color> all allies
+      Makes all allies {status:Blessed}
 
       Cost: <color=#8AB5FF>{cost:Mana}</color> mana
 

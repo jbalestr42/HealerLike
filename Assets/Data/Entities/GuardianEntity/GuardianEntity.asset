@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 6891580169314388076, guid: 66ae442726d1cf4428dacb34edd61ac4, type: 3}
   title: Guardian
-  description: Doesn't attack. Every 8s, makes its most wounded ally under 70% HP Invulnerable: no damage taken for 2s
+  description: Doesn't attack. Every 8s, makes its most wounded ally under 70% HP {status:Invulnerable}
   attributes:
   - key: 0
     value: 160
@@ -28,6 +28,7 @@ MonoBehaviour:
     value: 50
   targetBehaviourType: 1
   targetValidators: []
+  followsMark: 1
   tags:
   - {fileID: 11400000, guid: 93b4ac5719af37045b2b1140d36137e1, type: 2}
   items: []

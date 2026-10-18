@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: FortifiedStatus
   m_EditorClassIdentifier: HealerLike.Runtime::StatusData
   title: Fortified
-  description: +1 armor per stack
+  description: +1 armor per stack, for 6s (up to 3 stacks)
   isPositive: 1
   tag: {fileID: 11400000, guid: 193fd1c24e048584cb17cf974c168cd0, type: 2}
   buffHandlerFactory: {fileID: 11400000, guid: ec522abf2a961024aaa4d75cd65a4c9b, type: 2}

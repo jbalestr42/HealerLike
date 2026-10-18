@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 1081930672269232, guid: e59aa7298768015418e3da8a9c8d85a8, type: 3}
   title: Zealot
-  description: 'A fervent fighter dealing +50% damage while above 70% health, +30% attack speed while blessed: keep it topped up and blessed'
+  description: 'A fervent fighter dealing +50% damage while above 70% health, +30% attack speed while {status:Blessed}: keep it topped up and blessed'
   attributes:
   - key: 0
     value: 100
@@ -26,6 +26,7 @@ MonoBehaviour:
     value: 100
   targetBehaviourType: 1
   targetValidators: []
+  followsMark: 1
   tags:
   - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
   - {fileID: 11400000, guid: 057ac9b64013d5b4a8e7cad3956503b8, type: 2}

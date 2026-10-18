@@ -19,7 +19,7 @@ MonoBehaviour:
 
       Each ally healed gives <color=#FFE680>[{data:gainPerHeal.data.value.data.value}x-1] Devotion</color>
 
-      <color=#FFE680>Blesses</color> each ally healed
+      Makes each ally healed {status:Blessed}
 
       Cost: <color=#8AB5FF>{cost:Mana}</color> mana
 

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::EntityData
   model: {fileID: 873531700701352353, guid: 28d0a30d6aed6fc4c8ca473413f70c24, type: 3}
   title: Ravager
-  description: Strikes 3 random units, each hit making it Vulnerable (+15% damage taken per stack, for 6s), then charges for 2.5s a slam on your whole team for 2.5x its damage. 30% armor
+  description: Strikes 3 random units, each hit making it {status:Vulnerable}, then charges for 2.5s a slam on your whole team for 2.5x its damage. 30% armor
   attributes:
   - key: 0
     value: 450
@@ -28,6 +28,7 @@ MonoBehaviour:
     value: 0.3
   targetBehaviourType: 4
   targetValidators: []
+  followsMark: 1
   tags:
   - {fileID: 11400000, guid: 2915167d772523a4fa787ccd580dc5c1, type: 2}
   items: []

@@ -219,8 +219,8 @@ public class ClericDataTests
         CollectionAssert.AreEqual(new[] { sacredTome, blessing }, _cleric.items);
     }
 
-    // Every spell of the Cleric blesses the allies it touches (Blessing item): the player reads it on each spell, but
-    // the ones on an enemy (the Mark)
+    // Every spell of the Cleric blesses the allies it touches (Blessing item): the player reads it on each spell, the
+    // status explained next to it, but the ones on an enemy (the Mark)
     [Test]
     public void EveryClericSkill_SaysItBlessesItsTargets()
     {
@@ -231,7 +231,7 @@ public class ClericDataTests
             {
                 continue;
             }
-            StringAssert.Contains("Blesses", data.description, data.name);
+            StringAssert.Contains("{status:Blessed}", data.description, data.name);
         }
     }
 

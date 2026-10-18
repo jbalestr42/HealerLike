@@ -143,7 +143,7 @@ public class WarlockDataTests
 
     // The descriptions read their values from the data and the Heal Power of the character
     [TestCase("Drain Life", "<color=\"red\">15</color> <color=#008080ff>(100% HealPower)</color>")]
-    [TestCase("Curse", "<color=\"red\">5</color> Poisoned stacks, each dealing <color=\"red\">1</color> damage every 1s during <color=\"green\">6s</color>")]
+    [TestCase("Curse", "<color=\"red\">5</color> <link=\"status:Poisoned\">")]
     [TestCase("Dark Pact", "<color=\"red\">15%</color> of its max health")]
     public void Description_ShowsTheValuesOfTheData(string name, string expected)
     {

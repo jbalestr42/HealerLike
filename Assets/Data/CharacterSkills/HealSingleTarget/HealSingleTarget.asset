@@ -19,7 +19,7 @@ MonoBehaviour:
 
       Gives <color=#FFE680>[{cost:Devotion}x-1] Devotion</color>
 
-      <color=#FFE680>Blesses</color> the ally
+      Makes the ally {status:Blessed}
 
       Cost: <color=#8AB5FF>{cost:Mana}</color> mana
 

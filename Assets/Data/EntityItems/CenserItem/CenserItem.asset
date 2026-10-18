@@ -15,7 +15,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: cad492dc6f9a766438b99f4f3897028d, type: 3}
     name: Censer
-    description: When it gets blessed, blesses the adjacent allies too
+    description: When it gets {status:Blessed}, blesses the adjacent allies too
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}

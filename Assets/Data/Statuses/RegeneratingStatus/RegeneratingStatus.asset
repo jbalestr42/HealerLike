@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RegeneratingStatus
   m_EditorClassIdentifier: HealerLike.Runtime::StatusData
   title: Regenerating
-  description: Heals 1 HP per stack every second
+  description: Heals 1 HP per stack every second, for 4s (up to 10 stacks)
   isPositive: 1
   tag: {fileID: 11400000, guid: 11de78b9d13b458478cbdf380d3aa531, type: 2}
   buffHandlerFactory: {fileID: 11400000, guid: ade5989ba6d21c149a62d71be30d5a9e, type: 2}

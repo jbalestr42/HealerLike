@@ -15,7 +15,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: d52306de7206bd34ea489197b237f4a8, type: 3}
     name: Blight Legacy
-    description: When it dies, the Archon's hits halve the heals their target receives for 4s, for the whole fight
+    description: When it dies, the Archon's hits make their target {status:Blighted}, for the whole fight
     tags:
     - {fileID: 11400000, guid: 70e1d7434c8b934438c8f00ac71691d8, type: 2}
     - {fileID: 11400000, guid: cd0b7aa62306e634d92287440f37b455, type: 2}

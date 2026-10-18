@@ -78,6 +78,46 @@ public class StatusKeywordsDataTests
 
         CollectionAssert.IsEmpty(unknown);
     }
+
+    // A unit, an item or a spell giving a status, or reacting to it (e.g. +2 armor while Blessed), through its own data
+    // or the items and skills it holds, names it as a keyword: its effect is explained next to the description
+    [Test]
+    public void EveryGiverOrReceiverOfAStatus_CitesItsKeyword()
+    {
+        Dictionary<string, StatusData> statusPerPath = new Dictionary<string, StatusData>();
+        foreach (StatusData status in LoadStatusAssets())
+        {
+            statusPerPath[AssetDatabase.GetAssetPath(status)] = status;
+            statusPerPath[AssetDatabase.GetAssetPath(status.tag)] = status;
+        }
+
+        List<string> missing = new List<string>();
+        foreach (string type in new[] { "t:EntityData", "t:AItemFactory", "t:ACharacterSkillFactory" })
+        {
+            foreach (string guid in AssetDatabase.FindAssets(type, new[] { "Assets/Data" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                string description = GetDescription(path);
+                foreach (string dependency in AssetDatabase.GetDependencies(path, true))
+                {
+                    if (statusPerPath.TryGetValue(dependency, out StatusData status) && !description.Contains($"{{status:{status.title}}}"))
+                    {
+                        missing.Add($"{path}: {{status:{status.title}}}");
+                    }
+                }
+            }
+        }
+
+        CollectionAssert.IsEmpty(missing);
+    }
+
+    // The description of a unit, of an item or of a spell, empty without one
+    static string GetDescription(string path)
+    {
+        SerializedObject asset = new SerializedObject(AssetDatabase.LoadMainAssetAtPath(path));
+        SerializedProperty description = asset.FindProperty("description") ?? asset.FindProperty("data.description");
+        return description != null ? description.stringValue : "";
+    }
 }
 
 }

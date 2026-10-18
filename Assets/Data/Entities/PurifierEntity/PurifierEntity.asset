@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 6891580169314388076, guid: 66ae442726d1cf4428dacb34edd61ac4, type: 3}
   title: Purifier
-  description: 'Doesn''t attack. Every 5s, removes a debuff from a random ally, then blesses a random ally and gives it 2 Hasted stacks (+50% attack speed for 5s), 3 Empowered stacks (+3 damage for 5s) or 2 Fortified stacks (+2 armor for 6s)'
+  description: Doesn't attack. Every 5s, removes a debuff from a random ally, then makes a random ally {status:Blessed} and gives it 2 {status:Hasted} stacks (+50% attack speed), 3 {status:Empowered} stacks (+3 damage) or 2 {status:Fortified} stacks (+2 armor). Each time it is Blessed, its next purification comes 1s sooner
   attributes:
   - key: 0
     value: 150
@@ -28,6 +28,7 @@ MonoBehaviour:
     value: 50
   targetBehaviourType: 1
   targetValidators: []
+  followsMark: 1
   tags:
   - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
   - {fileID: 11400000, guid: 057ac9b64013d5b4a8e7cad3956503b8, type: 2}

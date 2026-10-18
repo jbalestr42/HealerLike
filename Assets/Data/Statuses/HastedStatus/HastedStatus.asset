@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HastedStatus
   m_EditorClassIdentifier: HealerLike.Runtime::StatusData
   title: Hasted
-  description: Attacks 25% faster per stack
+  description: Attacks 25% faster per stack, for 5s (up to 8 stacks)
   isPositive: 1
   tag: {fileID: 11400000, guid: 80a85cdf0739feb4aaef6dd04009e0d1, type: 2}
   buffHandlerFactory: {fileID: 11400000, guid: 3091cd83db040fe4f8905e3260793922, type: 2}

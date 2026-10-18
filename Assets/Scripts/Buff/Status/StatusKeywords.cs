@@ -15,12 +15,37 @@ public static class StatusKeywords
 
     static IReadOnlyList<StatusData> _statuses = new List<StatusData>();
     // The statuses of the game (GameData.statuses), registered when the game data is loaded
-    public static IReadOnlyList<StatusData> statuses => _statuses;
+    public static IReadOnlyList<StatusData> statuses
+    {
+        get
+        {
+#if UNITY_EDITOR
+            // Outside of the game (e.g. a description previewed in the inspector, a data test): every status of the project
+            if (_statuses.Count == 0)
+            {
+                _statuses = LoadProjectStatuses();
+            }
+#endif
+            return _statuses;
+        }
+    }
 
     public static void Register(IReadOnlyList<StatusData> statuses)
     {
         _statuses = statuses ?? new List<StatusData>();
     }
+
+#if UNITY_EDITOR
+    static List<StatusData> LoadProjectStatuses()
+    {
+        List<StatusData> projectStatuses = new List<StatusData>();
+        foreach (string guid in UnityEditor.AssetDatabase.FindAssets("t:StatusData"))
+        {
+            projectStatuses.Add(UnityEditor.AssetDatabase.LoadAssetAtPath<StatusData>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid)));
+        }
+        return projectStatuses;
+    }
+#endif
 
     // The status with this title, null when there is none
     public static StatusData Find(string title, IReadOnlyList<StatusData> statuses)
@@ -41,7 +66,7 @@ public static class StatusKeywords
 
     public static string Format(string text)
     {
-        return Format(text, _statuses);
+        return Format(text, statuses);
     }
 
     // Every {status:X} of the text replaced by its keyword, an unknown status by its bare name
@@ -56,7 +81,7 @@ public static class StatusKeywords
 
     public static string FormatStatus(string title)
     {
-        return FormatStatus(title, _statuses);
+        return FormatStatus(title, statuses);
     }
 
     public static string FormatStatus(string title, IReadOnlyList<StatusData> statuses)
@@ -77,7 +102,7 @@ public static class StatusKeywords
 
     public static List<StatusData> GetCitedStatuses(string formattedText)
     {
-        return GetCitedStatuses(formattedText, _statuses);
+        return GetCitedStatuses(formattedText, statuses);
     }
 
     // The statuses a formatted text cites, each once, in the order they first appear
@@ -101,7 +126,7 @@ public static class StatusKeywords
 
     public static string GetExplanation(string formattedText)
     {
-        return GetExplanation(formattedText, _statuses);
+        return GetExplanation(formattedText, statuses);
     }
 
     // Each status the text cites, its title then its description, apart from each other. Empty when it cites none

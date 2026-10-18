@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EmpoweredStatus
   m_EditorClassIdentifier: HealerLike.Runtime::StatusData
   title: Empowered
-  description: +1 damage per stack
+  description: +1 damage per stack, for 5s (up to 10 stacks)
   isPositive: 1
   tag: {fileID: 11400000, guid: 760dd35888dbe334c9b9777eab9e1db8, type: 2}
   buffHandlerFactory: {fileID: 11400000, guid: d9d107160eaebe7489af8e3e24a8f1ad, type: 2}

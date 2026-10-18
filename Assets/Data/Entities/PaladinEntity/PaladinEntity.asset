@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   model: {fileID: 873531700701352353, guid: 28d0a30d6aed6fc4c8ca473413f70c24, type: 3}
   title: Paladin
-  description: 'A holy knight: each blessing it receives gives it +1 armor for 10s, up to +3'
+  description: 'A holy knight: each time it is {status:Blessed}, gets 1 {status:Fortified} stack'
   attributes:
   - key: 0
     value: 200
@@ -26,6 +26,7 @@ MonoBehaviour:
     value: 100
   targetBehaviourType: 1
   targetValidators: []
+  followsMark: 1
   tags:
   - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
   - {fileID: 11400000, guid: 057ac9b64013d5b4a8e7cad3956503b8, type: 2}

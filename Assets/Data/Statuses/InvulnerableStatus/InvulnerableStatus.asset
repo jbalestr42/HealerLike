@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: InvulnerableStatus
   m_EditorClassIdentifier: HealerLike.Runtime::StatusData
   title: Invulnerable
-  description: Takes no damage
+  description: Takes no damage, for 2s
   isPositive: 1
   tag: {fileID: 11400000, guid: 7fd62b14e3cb2f04ba3eec61eaa1a68a, type: 2}
   buffHandlerFactory: {fileID: 11400000, guid: 130dca789df9cf34b8f859e34f262af3, type: 2}

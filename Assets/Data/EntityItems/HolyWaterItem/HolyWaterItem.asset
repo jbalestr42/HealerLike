@@ -15,7 +15,7 @@ MonoBehaviour:
   data:
     icon: {fileID: 21300000, guid: 1aeaebe2ff34a064093cfd36c9b31a37, type: 3}
     name: Holy Water
-    description: +2 armor while blessed
+    description: +2 armor while {status:Blessed}
     tags:
     - {fileID: 11400000, guid: 8379756e4f3a4a2fa6788f7ce48aa236, type: 2}
     - {fileID: 11400000, guid: 235301864b24d92409dd073514eea2f8, type: 2}
