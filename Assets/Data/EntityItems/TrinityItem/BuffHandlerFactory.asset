@@ -23,6 +23,7 @@ MonoBehaviour:
     buffFactoryList:
     - {fileID: 11400000, guid: 20d029bd75f1c644f9c6013b87b29ab8, type: 2}
     - {fileID: 11400000, guid: 3d94387abaae65a42a634b7b705d5cb3, type: 2}
+    - {fileID: 11400000, guid: b460ed1ac5cdaa442b7e01439490217c, type: 2}
     buffEffect: {fileID: 0}
     icon: {fileID: 0}
     tags:
