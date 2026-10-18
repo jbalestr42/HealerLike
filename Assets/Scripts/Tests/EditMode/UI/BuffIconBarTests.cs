@@ -40,6 +40,10 @@ public class BuffIconBarTests
         stacks.transform.SetParent(go.transform, false);
         TestHelpers.SetPrivateField(view, "_icon", image);
         TestHelpers.SetPrivateField(view, "_stacks", stacks);
+        Image timer = new GameObject("Timer", typeof(RectTransform)).AddComponent<Image>();
+        timer.transform.SetParent(go.transform, false);
+        timer.type = Image.Type.Filled;
+        TestHelpers.SetPrivateField(view, "_timer", timer);
         return view;
     }
 
@@ -130,6 +134,83 @@ public class BuffIconBarTests
         {
             Object.DestroyImmediate(view.gameObject);
         }
+    }
+
+    [Test]
+    public void BuffIconPrefab_HasItsTimer()
+    {
+        GameObject icon = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/BuffIcon.prefab");
+
+        Assert.IsNotNull(TestHelpers.GetPrivateField<Image>(icon.GetComponent<BuffIconView>(), "_timer"));
+    }
+
+    [Test]
+    public void BuffIconView_SetRemaining_DarkensThePartOfTheDurationGone()
+    {
+        BuffIconView view = Object.Instantiate(_iconPrefab);
+        try
+        {
+            view.SetRemaining(4f, 6f);
+
+            Assert.AreEqual(1f / 3f, view.timerFill, 0.001f);
+            Assert.AreEqual(1f, view.iconAlpha, 0.001f, "Not ending yet");
+        }
+        finally
+        {
+            Object.DestroyImmediate(view.gameObject);
+        }
+    }
+
+    [Test]
+    public void BuffIconView_SetRemaining_WithoutDuration_NeitherDarkenedNorBlinking()
+    {
+        BuffIconView view = Object.Instantiate(_iconPrefab);
+        try
+        {
+            view.SetRemaining(0f, 0f);
+
+            Assert.AreEqual(0f, view.timerFill);
+            Assert.AreEqual(1f, view.iconAlpha, 0.001f);
+        }
+        finally
+        {
+            Object.DestroyImmediate(view.gameObject);
+        }
+    }
+
+    [TestCase(6f, 6f, 0f)]
+    [TestCase(3f, 6f, 0.5f)]
+    [TestCase(0f, 6f, 1f)]
+    [TestCase(1f, 0f, 0f)]
+    public void BuffIconView_GetElapsedShare(float remaining, float duration, float expected)
+    {
+        Assert.AreEqual(expected, BuffIconView.GetElapsedShare(remaining, duration), 0.001f);
+    }
+
+    // Its last second
+    [TestCase(0.5f, 6f, true)]
+    [TestCase(1f, 6f, true)]
+    [TestCase(1.5f, 6f, false)]
+    [TestCase(0f, 0f, false)]
+    public void BuffIconView_IsEnding(float remaining, float duration, bool expected)
+    {
+        Assert.AreEqual(expected, BuffIconView.IsEnding(remaining, duration));
+    }
+
+    [Test]
+    public void BuffIconView_GetBlinkAlpha_BetweenFaintAndOpaque()
+    {
+        float min = 1f;
+        float max = 0f;
+        for (float time = 0f; time < 1f; time += 0.01f)
+        {
+            float alpha = BuffIconView.GetBlinkAlpha(time);
+            min = Mathf.Min(min, alpha);
+            max = Mathf.Max(max, alpha);
+        }
+
+        Assert.Less(min, 0.5f);
+        Assert.AreEqual(1f, max, 0.05f);
     }
 }
 

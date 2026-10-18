@@ -48,7 +48,7 @@ public class BuffIconTrackerTests
         _events.Clear();
     }
 
-    ABuffHandlerFactory CreateHandlerFactory(Sprite icon, List<GameplayTag> tags = null)
+    ABuffHandlerFactory CreateHandlerFactory(Sprite icon, List<GameplayTag> tags = null, DurationType durationType = DurationType.Infinite, float duration = 0f)
     {
         FakeStackableBuffFactory buffFactory = ScriptableObject.CreateInstance<FakeStackableBuffFactory>();
         buffFactory.data = new FakeBuffData();
@@ -57,7 +57,8 @@ public class BuffIconTrackerTests
         BuffHandlerFactory handlerFactory = ScriptableObject.CreateInstance<BuffHandlerFactory>();
         handlerFactory.data = new BuffHandlerData
         {
-            durationType = DurationType.Infinite,
+            durationType = durationType,
+            duration = duration,
             buffFactoryList = new List<ABuffFactory> { buffFactory },
             tags = tags ?? new List<GameplayTag>(),
             icon = icon,
@@ -147,6 +148,49 @@ public class BuffIconTrackerTests
 
         Assert.AreEqual(2, _tracker.GetStacks(poison));
         Assert.AreEqual((poison, 2), _events[_events.Count - 1]);
+    }
+
+    [Test]
+    public void TryGetRemaining_TimedEffect_ItsTimeLeftAndDuration()
+    {
+        ABuffHandlerFactory vulnerable = CreateHandlerFactory(_sprite, durationType: DurationType.Duration, duration: 6f);
+        _buffManager.AddHandler(vulnerable, _source, _target);
+        _buffManager.ForceUpdate();
+        _buffManager.GetActiveHandlers()[0].buffHandler.Update(2f);
+
+        Assert.IsTrue(_tracker.TryGetRemaining(vulnerable, out float remaining, out float duration));
+        Assert.AreEqual(6f, duration, 0.001f);
+        Assert.AreEqual(4f, remaining, 0.1f);
+    }
+
+    // The icon stays while one of its sources still applies it
+    [Test]
+    public void TryGetRemaining_SeveralSources_TheOneEndingLast()
+    {
+        ABuffHandlerFactory vulnerable = CreateHandlerFactory(_sprite, durationType: DurationType.Duration, duration: 6f);
+        _buffManager.AddHandler(vulnerable, _source, _target);
+        _buffManager.AddHandler(vulnerable, _otherSource, _target);
+        _buffManager.ForceUpdate();
+        _buffManager.GetActiveHandlers()[0].buffHandler.Update(4f);
+
+        Assert.IsTrue(_tracker.TryGetRemaining(vulnerable, out float remaining, out float duration));
+        Assert.Greater(remaining, 5f);
+    }
+
+    [Test]
+    public void TryGetRemaining_EffectWithoutEnd_False()
+    {
+        ABuffHandlerFactory passive = CreateHandlerFactory(_sprite);
+        _buffManager.AddHandler(passive, _source, _target);
+        _buffManager.ForceUpdate();
+
+        Assert.IsFalse(_tracker.TryGetRemaining(passive, out _, out _));
+    }
+
+    [Test]
+    public void TryGetRemaining_NotApplied_False()
+    {
+        Assert.IsFalse(_tracker.TryGetRemaining(CreateHandlerFactory(_sprite, durationType: DurationType.Duration, duration: 6f), out _, out _));
     }
 }
 

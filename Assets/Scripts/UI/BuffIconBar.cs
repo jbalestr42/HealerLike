@@ -23,6 +23,26 @@ public class BuffIconBar : MonoBehaviour
         }
     }
 
+    // The time left of each effect shown on its icon
+    void Update()
+    {
+        if (_tracker == null)
+        {
+            return;
+        }
+        foreach (KeyValuePair<ABuffHandlerFactory, BuffIconView> icon in _icons)
+        {
+            if (_tracker.TryGetRemaining(icon.Key, out float remaining, out float duration))
+            {
+                icon.Value.SetRemaining(remaining, duration);
+            }
+            else
+            {
+                icon.Value.SetRemaining(0f, 0f);
+            }
+        }
+    }
+
     public void Init(BuffManager buffManager)
     {
         _tracker = new BuffIconTracker(buffManager);

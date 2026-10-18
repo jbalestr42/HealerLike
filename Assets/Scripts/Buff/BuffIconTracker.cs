@@ -29,6 +29,31 @@ public class BuffIconTracker
         return stacks;
     }
 
+    // The time left before the effect ends (its handler ending last) and the full duration of that handler, false when
+    // one of its handlers never ends (e.g. an item) or none is applied
+    public bool TryGetRemaining(ABuffHandlerFactory buffHandlerFactory, out float remaining, out float duration)
+    {
+        remaining = 0f;
+        duration = 0f;
+        if (!_handlersPerFactory.TryGetValue(buffHandlerFactory, out List<BuffManager.BuffHandlerData> handlers))
+        {
+            return false;
+        }
+        foreach (BuffManager.BuffHandlerData handler in handlers)
+        {
+            if (handler.buffHandler == null || handler.buffHandler.durationType != DurationType.Duration)
+            {
+                return false;
+            }
+            if (handler.buffHandler.remainingDuration >= remaining)
+            {
+                remaining = handler.buffHandler.remainingDuration;
+                duration = handler.buffHandler.duration;
+            }
+        }
+        return duration > 0f;
+    }
+
     void OnBuffHandlerRefreshed(BuffManager.BuffHandlerData buffHandlerData)
     {
         ABuffHandlerFactory buffHandlerFactory = buffHandlerData.buffHandlerFactory;
