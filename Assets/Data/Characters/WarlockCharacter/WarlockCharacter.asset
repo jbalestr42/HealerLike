@@ -15,6 +15,7 @@ MonoBehaviour:
   model: {fileID: 0}
   title: Warlock
   text: 'A dark healer: drains the life of the enemies to heal, raises the dead and trades life for mana'
+  classTag: {fileID: 11400000, guid: 3614776454183994283ae65b8f13ca38, type: 2}
   attributes:
   - key: 10
     value: 15
@@ -32,9 +33,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3c3340ffc52d73940965e963046a7995, type: 2}
   - {fileID: 11400000, guid: 7820f298d46f4935ae42f2273e0283ca, type: 2}
   - {fileID: 11400000, guid: ae81d6cd16e942e488707a00f5b867a2, type: 2}
-  classTag: {fileID: 11400000, guid: 3614776454183994283ae65b8f13ca38, type: 2}
   skills:
   - {fileID: 11400000, guid: 67f433739f2aede41aedeeeee5d7575d, type: 2}
   - {fileID: 11400000, guid: ca029eff829bfd14a86276e24a1bd8a1, type: 2}
   - {fileID: 11400000, guid: fecd39d5edd8a3545b80b61542167a42, type: 2}
   - {fileID: 11400000, guid: 00a255aac080439ea7292e169fb1517b, type: 2}
+  - {fileID: 11400000, guid: f051281ad187b3246a1c0c0bf5076b68, type: 2}

@@ -39,7 +39,8 @@ public class HealerBotProfileDataTests
         return bot;
     }
 
-    // Every spell of the Cleric is played, Mending Light included
+    // Every spell of the Cleric is played, Mending Light included, but the Mark: choosing the enemy the units attack
+    // first is the player's tactic, not a heal the bot measures
     [Test]
     public void ClericHealerBot_CastsEverySpellOfTheCleric()
     {
@@ -47,6 +48,10 @@ public class HealerBotProfileDataTests
 
         foreach (ACharacterSkillFactory skill in bot.character.skills)
         {
+            if (skill is MarkCharacterSkillFactory)
+            {
+                continue;
+            }
             Assert.IsTrue(bot.rules.Exists(rule => rule.skill == skill), skill.name);
         }
     }

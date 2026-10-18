@@ -12,9 +12,10 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
 
     public bool isEnabled { get; set; }
 
-    public void Init(TargetBehaviourType targetBehaviourType, List<ATargetValidatorFactory> targetValidators)
+    public void Init(TargetBehaviourType targetBehaviourType, List<ATargetValidatorFactory> targetValidators, bool followsMark = true)
     {
         _targetBehaviour = ATargetBehaviour.Create(targetBehaviourType);
+        _targetBehaviour.followsMark = followsMark;
         foreach (ATargetValidatorFactory targetValidator in targetValidators)
         {
             _targetBehaviour.targetValidators.Add(targetValidator.GetTargetValidator());
@@ -48,6 +49,7 @@ public class TargetProvider : MonoBehaviour, ITargetProvider
         // The validators come from the entity data, whatever the way targets are picked
         _targetBehaviour.targetValidators = previousBehaviour.targetValidators;
         _targetBehaviour.tauntTag = previousBehaviour.tauntTag;
+        _targetBehaviour.followsMark = previousBehaviour.followsMark;
     }
 
     // The targets of the battle, or the ones the entity would aim at from where it stands when it doesn't

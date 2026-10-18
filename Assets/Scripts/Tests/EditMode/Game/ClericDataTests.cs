@@ -51,11 +51,11 @@ public class ClericDataTests
     }
 
     [Test]
-    public void Cleric_HasHealMendingLightShieldJudgmentAndDivineIntervention()
+    public void Cleric_HasHealMendingLightShieldJudgmentDivineInterventionAndMark()
     {
         List<string> names = _cleric.skills.ConvertAll(skill => skill.Create().GetData().name);
 
-        CollectionAssert.AreEqual(new[] { "Heal", "Mending Light", "Shield", "Judgment", "Divine Intervention" }, names);
+        CollectionAssert.AreEqual(new[] { "Heal", "Mending Light", "Shield", "Judgment", "Divine Intervention", "Mark" }, names);
     }
 
     [Test]
@@ -219,13 +219,18 @@ public class ClericDataTests
         CollectionAssert.AreEqual(new[] { sacredTome, blessing }, _cleric.items);
     }
 
-    // Every spell of the Cleric blesses the allies it touches (Blessing item): the player reads it on each spell
+    // Every spell of the Cleric blesses the allies it touches (Blessing item): the player reads it on each spell, but
+    // the ones on an enemy (the Mark)
     [Test]
     public void EveryClericSkill_SaysItBlessesItsTargets()
     {
         foreach (ACharacterSkillFactory skill in _cleric.skills)
         {
             CharacterSkillData data = skill.Create().GetData();
+            if (data is BaseCharacterSkillData onTargets && onTargets.entityType == Entity.EntityType.Computer)
+            {
+                continue;
+            }
             StringAssert.Contains("Blesses", data.description, data.name);
         }
     }

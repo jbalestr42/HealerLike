@@ -29,6 +29,11 @@ public abstract class ATargetBehaviour
     // Some ways to pick targets don't care about the taunt (e.g. at random)
     protected virtual bool isTauntable => true;
 
+    // Whether the enemy marked by the character is targeted first (EntityData.followsMark), only for the attacks of
+    // the unit, not its area of effects, bounces or heals
+    bool _followsMark;
+    public bool followsMark { get { return _followsMark; } set { _followsMark = value; } }
+
     public virtual List<GameObject> GetTargets(GameObject source, Vector3 position, float range, Entity.EntityType entityType)
     {
         _targets.Clear();
@@ -46,20 +51,9 @@ public abstract class ATargetBehaviour
 
         ApplyBehaviour(_targets, position, range);
         PrioritizeTaunting(_targets);
-
-        // Focus marked entity first
-        //if at some point we want multiple marked entity
-        //_targets.Sort((GameObject a, GameObject b) =>
-        //{
-        //    return MarkManager.instance.IsEntityMarked(b).CompareTo(MarkManager.instance.IsEntityMarked(a));
-        //});
-
-        // Move single marked entity at first index
-        GameObject marked = _targets.Find((GameObject a) => MarkManager.instance.IsEntityMarked(a));
-        if (marked)
+        if (_followsMark)
         {
-            _targets.Remove(marked);
-            _targets.Insert(0, marked);
+            PrioritizeMarked(_targets, GetMarked());
         }
 
         if (_targetCount > 0 && _targetCount < _targets.Count)
@@ -67,6 +61,22 @@ public abstract class ATargetBehaviour
             _targets.RemoveRange(_targetCount, _targets.Count - _targetCount);
         }
         return _targets;
+    }
+
+    // Moves the marked target first, before the taunting ones too, for the units following the mark
+    public void PrioritizeMarked(List<GameObject> targets, GameObject marked)
+    {
+        if (!_followsMark || marked == null || !targets.Remove(marked))
+        {
+            return;
+        }
+        targets.Insert(0, marked);
+    }
+
+    static GameObject GetMarked()
+    {
+        MarkManager markManager = MarkManager.existingInstance;
+        return markManager != null ? markManager.markedEntity : null;
     }
 
     // Moves the taunting targets first, keeping the order of the behaviour among them and among the others

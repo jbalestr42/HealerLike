@@ -49,11 +49,11 @@ public class WarlockDataTests
     }
 
     [Test]
-    public void Warlock_HasDrainLifeCurseDarkPactAndSoulLink()
+    public void Warlock_HasDrainLifeCurseDarkPactSoulLinkAndMark()
     {
         List<string> names = _warlock.skills.ConvertAll(skill => skill.Create().GetData().name);
 
-        CollectionAssert.AreEqual(new[] { "Drain Life", "Curse", "Dark Pact", "Soul Link" }, names);
+        CollectionAssert.AreEqual(new[] { "Drain Life", "Curse", "Dark Pact", "Soul Link", "Mark" }, names);
     }
 
     // The anticipation spell of the Warlock: cast on the unit about to take a big hit

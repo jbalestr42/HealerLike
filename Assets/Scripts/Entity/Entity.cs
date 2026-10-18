@@ -122,7 +122,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         _health.outerLayer = _shield;
 
         // Init target behaviour from data
-        _targetProvider.Init(data.targetBehaviourType, data.targetValidators);
+        _targetProvider.Init(data.targetBehaviourType, data.targetValidators, data.followsMark);
 
         // Init model from data
         GameObject model = Instantiate(_data.model, transform);

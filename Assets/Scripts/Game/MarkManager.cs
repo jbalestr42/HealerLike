@@ -2,27 +2,13 @@ using UnityEngine;
 
 public class MarkManager : Singleton<MarkManager>
 {
-    GameView _gameView;
     GameObject _markedEntity;
+    // The enemy the units following the mark attack first (see the Mark spell), null when none
+    public GameObject markedEntity => _markedEntity;
 
     void Start()
     {
-        _gameView = UIManager.instance.GetView<GameView>(ViewType.Game);
-        _gameView.gameHUD.markEntityToggle.onValueChanged.AddListener(OnEntityMarkClicked);
         EntityManager.instance.OnEntityKilled.AddListener(OnEntityKilled);
-    }
-
-    void OnEntityMarkClicked(bool isOn)
-    {
-        if (!isOn)
-        {
-            InteractionManager.instance.SetInteraction(new MarkEntityInteraction());
-        }
-        else
-        {
-            UnMarkEntity();
-            InteractionManager.instance.CancelInteraction();
-        }
     }
 
     void OnEntityKilled(Entity entity)
@@ -63,6 +49,5 @@ public class MarkManager : Singleton<MarkManager>
     public void ResetMark()
     {
         _markedEntity = null;
-        _gameView.gameHUD.markEntityToggle.SetIsOnWithoutNotify(true);
     }
 }

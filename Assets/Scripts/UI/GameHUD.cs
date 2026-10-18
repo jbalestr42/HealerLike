@@ -23,8 +23,6 @@ public class GameHUD : MonoBehaviour
     public UnityEngine.UI.Button playSpeedx2Button { get { return _playSpeedx2Button; } }
     [SerializeField] UnityEngine.UI.Button _playSpeedx3Button;
     public UnityEngine.UI.Button playSpeedx3Button { get { return _playSpeedx3Button; } }
-    [SerializeField] UnityEngine.UI.Toggle _markEntityToggle;
-    public UnityEngine.UI.Toggle markEntityToggle { get { return _markEntityToggle; } }
     [SerializeField] ResourceView _manaBar;
     // Optional, the Devotion of the character, hidden when it builds none
     [SerializeField] DevotionView _devotionBar;

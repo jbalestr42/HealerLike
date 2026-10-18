@@ -102,11 +102,11 @@ public class DruidDataTests
     }
 
     [Test]
-    public void Druid_HasRejuvenationWildGrowthBalanceLifeAndThickBark()
+    public void Druid_HasRejuvenationWildGrowthBalanceLifeThickBarkAndMark()
     {
         List<string> names = _druid.skills.ConvertAll(skill => skill.Create().GetData().name);
 
-        CollectionAssert.AreEqual(new[] { "Rejuvenation", "Wild Growth", "Balance Life", "Thick Bark" }, names);
+        CollectionAssert.AreEqual(new[] { "Rejuvenation", "Wild Growth", "Balance Life", "Thick Bark", "Mark" }, names);
     }
 
     // The anticipation spell of the Druid: cast on the unit about to take a big hit

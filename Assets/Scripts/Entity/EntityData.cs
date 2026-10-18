@@ -21,6 +21,9 @@ public class EntityData : ScriptableObject, ITaggable, IInspectorPreview
 
     public List<ATargetValidatorFactory> targetValidators;
 
+    // Attacks the enemy marked by the character (the Mark spell) first, when it can reach it
+    public bool followsMark = true;
+
     public List<GameplayTag> tags = new List<GameplayTag>();
 
     [Space]

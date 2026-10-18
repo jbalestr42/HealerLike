@@ -59,6 +59,18 @@ public class TargetProviderTests
     }
 
     [Test]
+    public void SetTargetBehaviour_KeepsFollowingTheMarkOrNot()
+    {
+        GetTargetBehaviour().followsMark = true;
+        _targetProvider.targetBehaviourType = TargetBehaviourType.Farest;
+        Assert.IsTrue(GetTargetBehaviour().followsMark);
+
+        GetTargetBehaviour().followsMark = false;
+        _targetProvider.targetBehaviourType = TargetBehaviourType.Nearest;
+        Assert.IsFalse(GetTargetBehaviour().followsMark);
+    }
+
+    [Test]
     public void GetTargets_LeavesOutTheUnitsDestroyedSinceTheyWerePicked()
     {
         GameObject alive = new GameObject("Alive");
