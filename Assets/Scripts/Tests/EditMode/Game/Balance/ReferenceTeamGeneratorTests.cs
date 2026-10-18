@@ -332,6 +332,46 @@ public class ReferenceTeamGeneratorTests
         Assert.AreEqual(0f, ReferenceTeamGenerator.GetMaxHealth(unit));
         Assert.AreEqual(0f, ReferenceTeamGenerator.GetMaxHealth(null));
     }
+
+    // As in a run: a unit after each elite, never from the other rewards when their unit chance is 0
+    [Test]
+    public void GenerateRun_AUnitAfterEachEliteOnly()
+    {
+        RunMap map = CreateLine(MapNodeType.Combat, MapNodeType.Elite, MapNodeType.Treasure, MapNodeType.Elite);
+
+        List<ReferenceTeam> teams = ReferenceTeamGenerator.GenerateRun(ReferenceTeamGenerator.PickPath(map, new System.Random(1)), new List<EntityData> { CreateUnit("Knight") }, CreatePools(0f, 0.5f), new System.Random(1));
+
+        // Combat, Elite, Treasure, Elite, then the boss
+        CollectionAssert.AreEqual(new[] { 1, 1, 2, 2, 3 }, teams.ConvertAll(team => team.units.Count));
+        CollectionAssert.AreEqual(new[] { 0, 1, 2, 3, 4 }, teams.ConvertAll(team => team.rewardCount));
+    }
+
+    [Test]
+    public void AddRandomUnit_OneOfTheUnitsToRecruit()
+    {
+        ReferenceTeam team = new ReferenceTeam { units = new List<EntityData> { CreateUnit("Knight") } };
+        RewardPools pools = CreatePools(0f, 0f);
+
+        ReferenceTeamGenerator.AddRandomUnit(team, pools, new System.Random(0));
+
+        Assert.AreEqual(2, team.units.Count);
+        Assert.AreSame(pools.units[0], team.units[1]);
+        Assert.AreEqual(1, team.rewardCount);
+    }
+
+    [Test]
+    public void AddRandomUnit_NoUnitToRecruit_TheUsualReward()
+    {
+        ReferenceTeam team = new ReferenceTeam { units = new List<EntityData> { CreateUnit("Knight") } };
+        RewardPools pools = CreatePools(0f, 0f);
+        pools.units.Clear();
+
+        ReferenceTeamGenerator.AddRandomUnit(team, pools, new System.Random(0));
+
+        Assert.AreEqual(1, team.units.Count);
+        Assert.AreEqual(1, team.unitItems.Count);
+        Assert.AreEqual(1, team.rewardCount);
+    }
 }
 
 }

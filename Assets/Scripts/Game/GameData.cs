@@ -29,7 +29,7 @@ public class GameData : ScriptableObject
 
     public float playerItemChance = 0.2f;
 
-    // Chance for each reward choice to be a unit, the other choices being items
+    // Chance for each reward choice to be a unit, the other choices being items. 0 for now: only the elites give units
     [Range(0f, 1f)]
     public float unitRewardChance = 0.25f;
 

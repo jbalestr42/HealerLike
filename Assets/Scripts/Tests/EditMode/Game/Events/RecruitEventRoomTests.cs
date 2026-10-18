@@ -153,8 +153,9 @@ public class RecruitEventRoomTests
         Assert.AreEqual("Leave", _host.shownChoices[0].label);
     }
 
+    // Set aside for now: the elites are the only way to get a unit
     [Test]
-    public void RecruitEventAsset_OffersThreeUnitsAndIsInTheEventPool()
+    public void RecruitEventAsset_OffersThreeUnits_NotInTheEventPoolForNow()
     {
         RecruitEventRoom asset = AssetDatabase.LoadAssetAtPath<RecruitEventRoom>(RecruitEventPath);
         MapGenerationSettings settings = AssetDatabase.LoadAssetAtPath<MapGenerationSettings>("Assets/Data/Run/MapGenerationSettings.asset");
@@ -163,9 +164,7 @@ public class RecruitEventRoomTests
         Assert.AreEqual(3, asset.unitCount);
         Assert.IsNotEmpty(asset.eventName);
         Assert.IsNotEmpty(asset.description);
-        EventRoomChance chance = settings.eventRooms.Find(eventRoom => eventRoom.eventRoom == asset);
-        Assert.IsNotNull(chance);
-        Assert.Greater(chance.weight, 0f);
+        Assert.IsNull(settings.eventRooms.Find(eventRoom => eventRoom.eventRoom == asset));
     }
 }
 

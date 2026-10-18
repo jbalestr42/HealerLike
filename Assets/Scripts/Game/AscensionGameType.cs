@@ -35,7 +35,8 @@ public class AscensionGameType : AGameType, IEventRoomHost
     [SerializeField] int _seed = 0;
     [SerializeField, TextArea] string _restDescription = "Take a moment to recover before moving on.";
     [SerializeField, Min(1)] int _rewardChoiceCount = 3;
-    [SerializeField, Min(1)] int _eliteRewardChoiceCount = 4;
+    // The units offered after an elite, the only way to get one
+    [SerializeField, Min(1)] int _eliteUnitChoiceCount = 3;
     // Writes every fight to the combat log (Logs/Balance), off in a normal run
     [SerializeField] bool _recordCombatLog = false;
 
@@ -257,7 +258,14 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 // Reset all unit to their default state (remove temporary buffs)
                 ResetAllEntities();
                 OnRoundEnd.Invoke();
-                ShowRewards(_run.currentNode.type == MapNodeType.Elite ? _eliteRewardChoiceCount : _rewardChoiceCount);
+                if (GivesUnitReward(_run.currentNode.type))
+                {
+                    ShowUnitReward();
+                }
+                else
+                {
+                    ShowRewards(_rewardChoiceCount);
+                }
                 break;
 
             case State.SelectUpgrade:
@@ -556,6 +564,32 @@ public class AscensionGameType : AGameType, IEventRoomHost
         {
             _gameView.gameHUD.mapButton.interactable = isInteractable;
         }
+    }
+
+    // Beating an elite is the only way to get a unit, the other rooms give items
+    public static bool GivesUnitReward(MapNodeType roomType)
+    {
+        return roomType == MapNodeType.Elite;
+    }
+
+    // A choice among a few of the units the character can recruit (plus its RewardChoices), as the Recruit event; the
+    // items instead for a character without any unit to recruit
+    void ShowUnitReward()
+    {
+        int count = GetRewardChoiceCount(_eliteUnitChoiceCount, PlayerBehaviour.instance.character.gameObject);
+        List<EntityData> units = EventRoomPicker.PickDistinct(GetRewardEntities(), count, _random);
+        if (units.Count == 0)
+        {
+            ShowRewards(_rewardChoiceCount);
+            return;
+        }
+
+        SetState(State.PlayEvent);
+        ShowChoices("Elite defeated", "A unit offers to join your team.", RecruitEventRoom.CreateChoices(units, unit =>
+        {
+            AddUnit(unit);
+            EndEvent();
+        }, EndEvent));
     }
 
     void ShowRewards(int choiceCount)

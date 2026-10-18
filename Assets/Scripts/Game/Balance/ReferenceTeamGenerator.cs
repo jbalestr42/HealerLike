@@ -7,7 +7,7 @@ using UnityEngine;
 public static class ReferenceTeamGenerator
 {
     // The rooms ending with a reward: the fights (events falling back to one), the treasures and the events,
-    // counted as one reward of the usual kind (Recruit gives a unit, the libraries an item)
+    // counted as one reward of the usual kind (e.g. the libraries give an item), a unit after an elite
     public static bool GivesReward(MapNodeType roomType)
     {
         return roomType == MapNodeType.Combat
@@ -48,7 +48,14 @@ public static class ReferenceTeamGenerator
             {
                 // Copied again so the reward only shows in the next rooms
                 team = team.Copy(node.floor);
-                AddRandomReward(team, pools, random);
+                if (AscensionGameType.GivesUnitReward(node.type))
+                {
+                    AddRandomUnit(team, pools, random);
+                }
+                else
+                {
+                    AddRandomReward(team, pools, random);
+                }
             }
         }
         return teams;
@@ -59,6 +66,18 @@ public static class ReferenceTeamGenerator
         System.Random random = new System.Random(seed);
         RunMap map = MapGenerator.Generate(settings, seed);
         return GenerateRun(PickPath(map, random), startingUnits, pools, random);
+    }
+
+    // One of the units to recruit, as after an elite; the usual reward without any
+    public static void AddRandomUnit(ReferenceTeam team, RewardPools pools, System.Random random)
+    {
+        if (pools.units.Count == 0)
+        {
+            AddRandomReward(team, pools, random);
+            return;
+        }
+        team.rewardCount++;
+        team.units.Add(pools.units[random.Next(pools.units.Count)]);
     }
 
     // Same roll as the reward screen: a unit, a player item or a unit item. Nothing when the pool is empty

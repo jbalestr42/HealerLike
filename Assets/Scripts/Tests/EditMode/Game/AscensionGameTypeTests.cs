@@ -524,6 +524,27 @@ public class AscensionGameTypeTests
             Object.DestroyImmediate(characterGo);
         }
     }
+
+    // Beating an elite is the only way to get a unit
+    [TestCase(MapNodeType.Elite, true)]
+    [TestCase(MapNodeType.Combat, false)]
+    [TestCase(MapNodeType.Treasure, false)]
+    [TestCase(MapNodeType.Event, false)]
+    [TestCase(MapNodeType.Boss, false)]
+    public void GivesUnitReward_OnlyTheElites(MapNodeType roomType, bool expected)
+    {
+        Assert.AreEqual(expected, AscensionGameType.GivesUnitReward(roomType));
+    }
+
+    // ... so the other rewards never offer one
+    [TestCase("Assets/Data/GameData.asset")]
+    [TestCase("Assets/Data/TestData.asset")]
+    public void GameData_RewardsOfferNoUnit(string path)
+    {
+        GameData data = UnityEditor.AssetDatabase.LoadAssetAtPath<GameData>(path);
+
+        Assert.AreEqual(0f, data.unitRewardChance);
+    }
 }
 
 }
