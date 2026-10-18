@@ -56,4 +56,7 @@ public class GameData : ScriptableObject
     public List<EntityData> entities = new List<EntityData>();
 
     public List<GameplayTag> tags = new List<GameplayTag>();
+
+    // Every status, found by its title by the {status:X} keywords of the descriptions (see StatusKeywords)
+    public List<StatusData> statuses = new List<StatusData>();
 }

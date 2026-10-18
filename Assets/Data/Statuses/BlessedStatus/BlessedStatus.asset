@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::StatusData
   title: Blessed
   description: 'Touched by a holy spell for a few seconds: Cleric units get stronger while Blessed'
+  isPositive: 1
   tag: {fileID: 11400000, guid: aa31deb09d45405428284e02dd5dcd7f, type: 2}
   buffHandlerFactory: {fileID: 11400000, guid: 1e985d169d50f1e46a5514904d0ad7c9, type: 2}

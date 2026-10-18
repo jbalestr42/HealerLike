@@ -11,6 +11,7 @@ public class MainMenu : MonoBehaviour
     // The character select screen is the first screen, the run starts once a character is picked
     void Start()
     {
+        StatusKeywords.Register(_gameData.statuses);
         StartGame();
     }
 

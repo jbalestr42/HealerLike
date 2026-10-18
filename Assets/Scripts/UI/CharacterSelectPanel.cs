@@ -27,6 +27,8 @@ public class CharacterSelectPanel : MonoBehaviour
 
     GameObject _tooltip;
     TMP_Text _tooltipText;
+    // Next to the tooltip, explaining the statuses it cites
+    StatusKeywordBox _keywordBox;
 
     AscensionSettings _ascension;
     Func<CharacterData, int> _getUnlockedLevel;
@@ -34,6 +36,7 @@ public class CharacterSelectPanel : MonoBehaviour
 
     public GameObject tooltip => _tooltip;
     public string tooltipText => _tooltipText.text;
+    public StatusKeywordBox keywordBox => _keywordBox;
 
     public static CharacterSelectPanel Create(Transform parent, List<CharacterData> characters, Action<CharacterData> onChosen, Action onBack)
     {
@@ -146,7 +149,7 @@ public class CharacterSelectPanel : MonoBehaviour
         layout.childForceExpandHeight = false;
 
         CreateText(card.transform, character.title, 34, HeaderColor, FontStyles.Bold);
-        CreateText(card.transform, CharacterCardText.GetDescription(character), 20, Color.white, FontStyles.Normal);
+        CreateKeywordText(card.transform, CharacterCardText.GetDescription(character));
         CreateText(card.transform, "Stats", 22, MutedColor, FontStyles.Bold);
         CreateText(card.transform, CharacterCardText.GetStats(preview), 20, Color.white, FontStyles.Normal);
         CreateText(card.transform, "Skills", 22, MutedColor, FontStyles.Bold);
@@ -156,7 +159,7 @@ public class CharacterSelectPanel : MonoBehaviour
         if (!string.IsNullOrEmpty(items))
         {
             CreateText(card.transform, "Items", 22, MutedColor, FontStyles.Bold);
-            CreateText(card.transform, items, 20, Color.white, FontStyles.Normal);
+            CreateKeywordText(card.transform, items);
         }
         CreateText(card.transform, "Units", 22, MutedColor, FontStyles.Bold);
         CreateUnitLabels(card.transform, character);
@@ -341,12 +344,24 @@ public class CharacterSelectPanel : MonoBehaviour
         _tooltipText = CreateText(_tooltip.transform, "", 20, Color.white, FontStyles.Normal);
         _tooltipText.alignment = TextAlignmentOptions.TopLeft;
         _tooltip.SetActive(false);
+        _keywordBox = StatusKeywordBox.Create(parent);
+    }
+
+    // A text of the card, its status keywords formatted and explained while it is hovered
+    static void CreateKeywordText(Transform parent, string content)
+    {
+        TMP_Text text = CreateText(parent, StatusKeywords.Format(content), 20, Color.white, FontStyles.Normal);
+        if (StatusKeywords.GetCitedStatuses(text.text).Count > 0)
+        {
+            text.raycastTarget = true;
+            StatusKeywordBox.AddHover(text.gameObject, () => text.text);
+        }
     }
 
     // Under the element, on the side of the screen with the most room so it stays visible
     public void ShowTooltip(string text, RectTransform target)
     {
-        _tooltipText.text = text;
+        _tooltipText.text = StatusKeywords.Format(text);
         Vector3[] corners = new Vector3[4];
         target.GetWorldCorners(corners);
         RectTransform tooltipTransform = (RectTransform)_tooltip.transform;
@@ -355,6 +370,9 @@ public class CharacterSelectPanel : MonoBehaviour
         tooltipTransform.pivot = new Vector2(isOnTheRight ? 1f : 0f, 1f);
         tooltipTransform.position = (isOnTheRight ? corners[3] : corners[0]) + Vector3.down * TooltipOffset * tooltipTransform.lossyScale.y;
         _tooltip.SetActive(true);
+        // Sized by its layout, needed to put the box next to it
+        LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipTransform);
+        _keywordBox.Show(_tooltipText.text, tooltipTransform);
     }
 
     public void HideTooltip()
@@ -363,6 +381,10 @@ public class CharacterSelectPanel : MonoBehaviour
         if (_tooltip != null)
         {
             _tooltip.SetActive(false);
+        }
+        if (_keywordBox != null)
+        {
+            _keywordBox.Hide();
         }
     }
 

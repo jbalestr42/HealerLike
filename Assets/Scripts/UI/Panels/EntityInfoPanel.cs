@@ -35,6 +35,8 @@ public class EntityInfoPanel : APanel
     RectTransform _content;
     TMP_Text _inventoryTitle;
     TMP_Text _body;
+    // Next to the panel, explaining the statuses its texts cite
+    StatusKeywordBox _keywordBox;
     bool _isBuilt = false;
 
     Entity _entity;
@@ -69,6 +71,7 @@ public class EntityInfoPanel : APanel
     public override void OnHideUI(GameObject selectedObject)
     {
         _entity = null;
+        _keywordBox.Hide();
     }
 
     #endregion
@@ -142,6 +145,8 @@ public class EntityInfoPanel : APanel
         _scrollRect.horizontal = false;
         _scrollRect.movementType = ScrollRect.MovementType.Clamped;
         _scrollRect.scrollSensitivity = 30f;
+
+        _keywordBox = StatusKeywordBox.Create(_rect.parent);
     }
 
     TMP_Text CreateText(string name, Transform parent)
@@ -208,7 +213,7 @@ public class EntityInfoPanel : APanel
     {
         float textWidth = _width - 2f * _padding;
 
-        _title.text = BuildTitle();
+        _title.text = StatusKeywords.Format(BuildTitle());
         float titleHeight = _title.GetPreferredValues(_title.text, textWidth, 0f).y;
         _title.rectTransform.sizeDelta = new Vector2(_title.rectTransform.sizeDelta.x, titleHeight);
         _title.rectTransform.anchoredPosition = new Vector2(0f, -_padding);
@@ -218,7 +223,7 @@ public class EntityInfoPanel : APanel
         ((RectTransform)_targetButton.transform).anchoredPosition = new Vector2(((RectTransform)_targetButton.transform).anchoredPosition.x, -buttonsTop);
         ((RectTransform)_closeButton.transform).anchoredPosition = new Vector2(((RectTransform)_closeButton.transform).anchoredPosition.x, -buttonsTop);
 
-        float bodyHeight = LayoutBody(BuildBody());
+        float bodyHeight = LayoutBody(StatusKeywords.Format(BuildBody()));
 
         // The panel grows with its content, then the body scrolls
         float bodyTop = buttonsTop + _buttonHeight + 8f;
@@ -226,6 +231,7 @@ public class EntityInfoPanel : APanel
         _rect.sizeDelta = new Vector2(_width, height);
         _viewport.offsetMin = new Vector2(_padding, _padding);
         _viewport.offsetMax = new Vector2(-_padding, -bodyTop);
+        _keywordBox.Show(_title.text + "\n" + _body.text, _rect);
     }
 
     // Lays out the scrolled content: the inventory title and its slots, then the text of the other sections. Returns

@@ -125,6 +125,29 @@ public class EventViewTests
         Assert.AreEqual("<b>Heal</b>\n<size=75%>Heals every unit</size>", EventView.GetChoiceText(new EventChoice { label = "Heal", description = "Heals every unit" }));
         Assert.AreEqual("<b>Leave</b>", EventView.GetChoiceText(new EventChoice { label = "Leave" }));
     }
+
+    [Test]
+    public void Display_StatusKeywordInAChoice_Formatted()
+    {
+        IReadOnlyList<StatusData> registeredStatuses = StatusKeywords.statuses;
+        StatusData vulnerable = ScriptableObject.CreateInstance<StatusData>();
+        vulnerable.title = "Vulnerable";
+        try
+        {
+            StatusKeywords.Register(new List<StatusData> { vulnerable });
+
+            _view.Display("Library", "", new List<EventChoice> { new EventChoice { label = "Curse", description = "Makes an enemy {status:Vulnerable}" } });
+
+            string text = _view.choiceButtons[0].GetComponentInChildren<TMPro.TMP_Text>().text;
+            StringAssert.Contains(StatusKeywords.FormatStatus("Vulnerable"), text);
+            StringAssert.DoesNotContain("{status:", text);
+        }
+        finally
+        {
+            StatusKeywords.Register(registeredStatuses);
+            Object.DestroyImmediate(vulnerable);
+        }
+    }
 }
 
 }

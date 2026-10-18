@@ -15,6 +15,11 @@ public class ToolTip : MonoBehaviour
     Vector2 _defaultPivot;
     // The width set in the prefab: the panel fits its text up to it, a longer text wraps
     float _maxWidth;
+    // Next to the panel, explaining the statuses its text cites
+    StatusKeywordBox _keywordBox;
+
+    public string text => _text.text;
+    public StatusKeywordBox keywordBox => _keywordBox;
 
     void Awake()
     {
@@ -22,6 +27,7 @@ public class ToolTip : MonoBehaviour
         _defaultPosition = _panel.anchoredPosition;
         _defaultPivot = _panel.pivot;
         _maxWidth = _panel.sizeDelta.x;
+        _keywordBox = StatusKeywordBox.Create(_panel.parent);
     }
 
     // At its default place
@@ -37,6 +43,7 @@ public class ToolTip : MonoBehaviour
         {
             FitText();
         }
+        UpdateKeywordBox();
     }
 
     // Under the target, aligned on its left edge; above it when there is no room below, aligned on its right edge
@@ -52,6 +59,7 @@ public class ToolTip : MonoBehaviour
         Vector2 size = Vector2.Scale(_panel.sizeDelta, _panel.lossyScale);
         _panel.pivot = Vector2.zero;
         _panel.position = GetBottomLeft(targetRect, size, new Vector2(Screen.width, Screen.height), BelowOffset * _panel.lossyScale.y);
+        UpdateKeywordBox();
     }
 
     // The bottom left corner of a panel of size next to target, all in screen units: below it, else above it, left
@@ -71,13 +79,27 @@ public class ToolTip : MonoBehaviour
         return new Vector2(x, y);
     }
 
-    // The panel resized to the text, now when shown, else once shown
+    // The panel resized to the text, now when shown, else once shown. Its status keywords formatted
     public void SetText(string text)
     {
-        _text.text = text;
+        _text.text = StatusKeywords.Format(text);
         if (_toolTip.activeInHierarchy)
         {
             FitText();
+            UpdateKeywordBox();
+        }
+    }
+
+    // Next to the panel while it is shown with a text citing a status
+    void UpdateKeywordBox()
+    {
+        if (_toolTip.activeSelf)
+        {
+            _keywordBox.Show(_text.text, _panel);
+        }
+        else
+        {
+            _keywordBox.Hide();
         }
     }
 

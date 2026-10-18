@@ -13,7 +13,17 @@ public class SelectEntityUpgradeButton : MonoBehaviour
     {
         _entity = entity;
         _title.text = GetTitle(entity);
-        _description.text = CharacterCardText.GetUnitDetails(entity);
+        SetDescription(CharacterCardText.GetUnitDetails(entity));
+    }
+
+    // Its status keywords formatted, and explained while the button is hovered
+    void SetDescription(string description)
+    {
+        _description.text = StatusKeywords.Format(description);
+        if (GetComponent<HoverTooltipTrigger>() == null)
+        {
+            StatusKeywordBox.AddHover(gameObject, () => _description.text);
+        }
     }
 
     // "New unit: Zealot", so a unit can't be mistaken for an item

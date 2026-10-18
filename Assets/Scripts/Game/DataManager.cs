@@ -5,10 +5,23 @@ using UnityEngine;
 public class DataManager : Singleton<DataManager>
 {
     [SerializeField] GameData _data;
-    public GameData data { get { return _data; } set { _data = value; } }
+    public GameData data { get { return _data; } set { _data = value; RegisterStatuses(); } }
 
     public List<CharacterData> characters { get { return _data.characters; } set { _data.characters = value; } } 
     public List<AItemFactory> items { get { return _data.items; } set { _data.items = value; } } 
+
+    void Awake()
+    {
+        RegisterStatuses();
+    }
+
+    void RegisterStatuses()
+    {
+        if (_data != null)
+        {
+            StatusKeywords.Register(_data.statuses);
+        }
+    }
 
     public CharacterData GetRandomCharacter()
     {

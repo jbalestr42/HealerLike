@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -12,10 +13,18 @@ public class ToolTipTests
     ToolTip _toolTip;
     RectTransform _panel;
     RectTransform _target;
+    IReadOnlyList<StatusData> _registeredStatuses;
+    StatusData _vulnerable;
 
     [SetUp]
     public void SetUp()
     {
+        _registeredStatuses = StatusKeywords.statuses;
+        _vulnerable = ScriptableObject.CreateInstance<StatusData>();
+        _vulnerable.title = "Vulnerable";
+        _vulnerable.description = "Takes 15% more damage per stack";
+        StatusKeywords.Register(new List<StatusData> { _vulnerable });
+
         _go = new GameObject("ToolTip");
         _toolTip = _go.AddComponent<ToolTip>();
         GameObject panelGo = new GameObject("Panel", typeof(RectTransform));
@@ -41,6 +50,8 @@ public class ToolTipTests
     {
         Object.DestroyImmediate(_go);
         Object.DestroyImmediate(_targetGo);
+        StatusKeywords.Register(_registeredStatuses);
+        Object.DestroyImmediate(_vulnerable);
     }
 
     [Test]
@@ -99,6 +110,57 @@ public class ToolTipTests
         _toolTip.Show(false);
 
         Assert.IsFalse(_panel.gameObject.activeSelf);
+    }
+
+    [Test]
+    public void SetText_StatusKeyword_Formatted()
+    {
+        _toolTip.SetText("Makes the target {status:Vulnerable}");
+
+        Assert.AreEqual("Makes the target " + StatusKeywords.FormatStatus("Vulnerable"), _toolTip.text);
+    }
+
+    [Test]
+    public void ShowBelow_TextCitingAStatus_ShowsItsExplanationNextToIt()
+    {
+        _toolTip.SetText("Makes the target {status:Vulnerable}");
+
+        _toolTip.ShowBelow(_target);
+
+        Assert.IsTrue(_toolTip.keywordBox.isShown);
+        StringAssert.Contains("Takes 15% more damage per stack", _toolTip.keywordBox.text);
+    }
+
+    [Test]
+    public void ShowBelow_TextCitingNoStatus_NoExplanation()
+    {
+        _toolTip.SetText("Heals 10 HP");
+
+        _toolTip.ShowBelow(_target);
+
+        Assert.IsFalse(_toolTip.keywordBox.isShown);
+    }
+
+    [Test]
+    public void SetText_WhileShown_UpdatesTheExplanation()
+    {
+        _toolTip.SetText("Makes the target {status:Vulnerable}");
+        _toolTip.ShowBelow(_target);
+
+        _toolTip.SetText("Heals 10 HP");
+
+        Assert.IsFalse(_toolTip.keywordBox.isShown);
+    }
+
+    [Test]
+    public void Show_False_HidesTheExplanation()
+    {
+        _toolTip.SetText("Makes the target {status:Vulnerable}");
+        _toolTip.ShowBelow(_target);
+
+        _toolTip.Show(false);
+
+        Assert.IsFalse(_toolTip.keywordBox.isShown);
     }
 
     [Test]

@@ -10,11 +10,13 @@ public class DataManagerTests
     GameObject _go;
     DataManager _dataManager;
     GameData _gameData;
+    IReadOnlyList<StatusData> _registeredStatuses;
     readonly List<Object> _scriptableObjects = new List<Object>();
 
     [SetUp]
     public void SetUp()
     {
+        _registeredStatuses = StatusKeywords.statuses;
         // Standalone component, never going through DataManager.instance
         _go = new GameObject("DataManager");
         _dataManager = _go.AddComponent<DataManager>();
@@ -25,6 +27,7 @@ public class DataManagerTests
     [TearDown]
     public void TearDown()
     {
+        StatusKeywords.Register(_registeredStatuses);
         Object.DestroyImmediate(_go);
         foreach (Object scriptableObject in _scriptableObjects)
         {
@@ -354,6 +357,18 @@ public class DataManagerTests
 
         Assert.AreNotSame(other, character);
         CollectionAssert.Contains(characters, character);
+    }
+
+    // The {status:X} keywords of the descriptions are found among them
+    [Test]
+    public void Data_Set_RegistersItsStatuses()
+    {
+        GameData gameData = CreateTracked<GameData>();
+        gameData.statuses = new List<StatusData> { CreateTracked<StatusData>() };
+
+        _dataManager.data = gameData;
+
+        Assert.AreSame(gameData.statuses, StatusKeywords.statuses);
     }
 }
 

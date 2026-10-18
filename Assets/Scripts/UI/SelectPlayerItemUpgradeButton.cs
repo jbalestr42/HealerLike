@@ -10,7 +10,17 @@ public class SelectPlayerItemUpgradeButton : MonoBehaviour
     {
         _item = item;
         _title.text = _item.title;
-        _description.text = _item.description;
+        SetDescription(_item.description);
+    }
+
+    // Its status keywords formatted, and explained while the button is hovered
+    void SetDescription(string description)
+    {
+        _description.text = StatusKeywords.Format(description);
+        if (GetComponent<HoverTooltipTrigger>() == null)
+        {
+            StatusKeywordBox.AddHover(gameObject, () => _description.text);
+        }
     }
 
     public void SelectUpgrade()

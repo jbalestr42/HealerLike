@@ -29,6 +29,7 @@ public class TextConvertor
     /// Convert variables within {}
     /// attribute: base / current
     /// data: reflection within the object
+    /// status: keyword of a status (e.g. {status:Vulnerable}), see StatusKeywords
     /// </summary>
     static string EvaluateVariable(Character character, object data, string variable, string defaultValue = "")
     {
@@ -86,6 +87,12 @@ public class TextConvertor
                     return GetError("Wrong Format -> Available format is {cost:ResourceType} (e.g. {cost:Mana})", defaultValue);
                 }
                 return GetCost(character, data, resourceType, defaultValue);
+            case "status":
+                if (tokens.Length < 2)
+                {
+                    return GetError("Wrong Format -> Available format is {status:Title} (e.g. {status:Vulnerable})", defaultValue);
+                }
+                return StatusKeywords.FormatStatus(tokens[1]);
             default:
                 return GetError($"Unkown Variable Type -> {tokens[0]}", defaultValue);
         }

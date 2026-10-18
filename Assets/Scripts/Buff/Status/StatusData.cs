@@ -9,6 +9,8 @@ public class StatusData : ScriptableObject
     public string title;
     [TextArea]
     public string description;
+    // A buff (e.g. Hasted), else a debuff (e.g. Vulnerable): sets the color of its keyword in the descriptions
+    public bool isPositive;
     // Carried while in the status, what the reactions to it look for (e.g. armor while blessed)
     public GameplayTag tag;
     // Gives the status: must give the tag above (e.g. with an AddTagBuff)

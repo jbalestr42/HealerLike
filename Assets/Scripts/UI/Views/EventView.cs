@@ -35,7 +35,7 @@ public class EventView : AView
         }
         if (_description != null)
         {
-            _description.text = description;
+            _description.text = StatusKeywords.Format(description);
             _description.gameObject.SetActive(!string.IsNullOrEmpty(description));
         }
 
@@ -112,7 +112,7 @@ public class EventView : AView
         }
 
         TMP_Text text = buttonGo.GetComponentInChildren<TMP_Text>();
-        text.text = GetChoiceText(choice);
+        text.text = StatusKeywords.Format(GetChoiceText(choice));
         // Long texts (e.g. the stats of a unit) shrink to fit the choice
         text.enableAutoSizing = true;
         text.fontSizeMax = _fontSize;
@@ -123,6 +123,7 @@ public class EventView : AView
         Button button = buttonGo.GetComponent<Button>();
         button.interactable = choice.isAvailable;
         button.onClick.AddListener(() => Select(choice));
+        StatusKeywordBox.AddHover(buttonGo, () => text.text);
         _choiceButtons.Add(button);
     }
 

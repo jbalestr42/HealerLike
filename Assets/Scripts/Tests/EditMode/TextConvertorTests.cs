@@ -386,4 +386,30 @@ public class TextConvertorTests
     }
 
     #endregion
+
+    #region Convert - {status:X}
+
+    [Test]
+    public void Convert_StatusKeyword_TheKeywordOfTheStatus()
+    {
+        IReadOnlyList<StatusData> registeredStatuses = StatusKeywords.statuses;
+        StatusData vulnerable = ScriptableObject.CreateInstance<StatusData>();
+        vulnerable.title = "Vulnerable";
+        try
+        {
+            StatusKeywords.Register(new List<StatusData> { vulnerable });
+
+            string text = TextConvertor.Convert("Makes the target {status:Vulnerable}", null, null);
+
+            Assert.AreEqual("Makes the target " + StatusKeywords.FormatStatus("Vulnerable"), text);
+            StringAssert.Contains("<link=\"status:Vulnerable\">", text);
+        }
+        finally
+        {
+            StatusKeywords.Register(registeredStatuses);
+            Object.DestroyImmediate(vulnerable);
+        }
+    }
+
+    #endregion
 }
