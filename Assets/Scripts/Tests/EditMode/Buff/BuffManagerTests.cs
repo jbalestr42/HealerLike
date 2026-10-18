@@ -54,7 +54,25 @@ public class SourceRecordingBuff : ABuff<List<GameObject>>
     public override void Remove(GameObject source, GameObject target) { }
 }
 
+// Gives another handler to a buff manager when applied, like a heal making a health threshold reaction apply its buff
+public class HandlerGivingBuffData
+{
+    public BuffManager buffManager = null;
+    public ABuffHandlerFactory handlerFactory = null;
+    public GameObject source = null;
+}
+
+public class HandlerGivingBuff : ABuff<HandlerGivingBuffData>
+{
+    void GiveHandler(GameObject target) => data.buffManager.AddHandler(data.handlerFactory, data.source, target);
+
+    public override void Instant(GameObject source, GameObject target) => GiveHandler(target);
+    public override void Add(GameObject source, GameObject target) => GiveHandler(target);
+    public override void Remove(GameObject source, GameObject target) { }
+}
+
 public class FakeBuffFactory : BuffFactory<FakeBuff, FakeBuffData> { }
+public class HandlerGivingBuffFactory : BuffFactory<HandlerGivingBuff, HandlerGivingBuffData> { }
 public class SourceRecordingBuffFactory : BuffFactory<SourceRecordingBuff, List<GameObject>> { }
 public class StaticEventBuffFactory : BuffFactory<StaticEventBuff, FakeBuffData> { }
 public class HandlerRecordingBuffFactory : BuffFactory<HandlerRecordingBuff, List<ABuffHandler>> { }
@@ -878,6 +896,40 @@ public class BuffManagerTests
         StaticEventBuff.OnEvent.Invoke();
 
         CollectionAssert.AreEqual(new[] { "Event" }, _data.log);
+    }
+
+    // The buff of the handler given by a buff applied during the update, the given handler applied on the next update
+    void AssertHandlerGivenDuringUpdate(DurationType durationType, GameObject givenHandlerSource)
+    {
+        FakeBuffFactory givenBuffFactory = CreateTracked<FakeBuffFactory>();
+        givenBuffFactory.data = _data;
+        HandlerGivingBuffFactory givingBuffFactory = CreateTracked<HandlerGivingBuffFactory>();
+        givingBuffFactory.data = new HandlerGivingBuffData
+        {
+            buffManager = _buffManager,
+            handlerFactory = CreateHandlerFactory(givenBuffFactory, DurationType.Infinite),
+            source = givenHandlerSource,
+        };
+        _buffManager.AddHandler(CreateHandlerFactory(givingBuffFactory, durationType), _source, _target);
+
+        Assert.DoesNotThrow(() => _buffManager.ForceUpdate());
+        _buffManager.ForceUpdate();
+
+        CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
+    }
+
+    [TestCase(DurationType.Instant)]
+    [TestCase(DurationType.Infinite)]
+    public void Update_BuffGivingAHandlerOfTheSameSource_AppliesItWithoutThrowing(DurationType durationType)
+    {
+        AssertHandlerGivenDuringUpdate(durationType, _source);
+    }
+
+    [TestCase(DurationType.Instant)]
+    [TestCase(DurationType.Infinite)]
+    public void Update_BuffGivingAHandlerOfANewSource_AppliesItWithoutThrowing(DurationType durationType)
+    {
+        AssertHandlerGivenDuringUpdate(durationType, _target);
     }
 }
 

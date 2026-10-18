@@ -67,6 +67,10 @@ public class BuffManager : MonoBehaviour
     List<string> _cachedBuffIdsToRemove = new List<string>();
     List<string> _cachedIdsToRemove = new List<string>();
     List<GameObject> _cachedSourcesToRemove = new List<GameObject>();
+    // Snapshots Update() goes through: a buff it applies may give another handler to this buff manager (e.g. a heal
+    // making a health threshold reaction apply its buff), which would otherwise modify the dictionaries being enumerated
+    List<GameObject> _cachedUpdateSources = new List<GameObject>();
+    List<KeyValuePair<string, BuffHandlerData>> _cachedUpdateHandlers = new List<KeyValuePair<string, BuffHandlerData>>();
 
     public bool isEnabled { get; set; }
 
@@ -127,12 +131,24 @@ public class BuffManager : MonoBehaviour
 
     void Update()
     {
-        foreach (var handlerPerSource in _buffHandlerPerSource)
+        _cachedUpdateSources.Clear();
+        _cachedUpdateSources.AddRange(_buffHandlerPerSource.Keys);
+        foreach (GameObject source in _cachedUpdateSources)
         {
-            GameObject source = handlerPerSource.Key;
-            foreach (var kvpBuffHandler in handlerPerSource.Value.buffHandlerPerId)
+            if (!_buffHandlerPerSource.TryGetValue(source, out BuffHandlerDataPerId handlerPerSource))
+            {
+                continue;
+            }
+            _cachedUpdateHandlers.Clear();
+            _cachedUpdateHandlers.AddRange(handlerPerSource.buffHandlerPerId);
+            foreach (var kvpBuffHandler in _cachedUpdateHandlers)
             {
                 BuffHandlerData buffHandlerData = kvpBuffHandler.Value;
+                // Skip a handler removed meanwhile by a buff applied earlier in this update
+                if (!handlerPerSource.buffHandlerPerId.TryGetValue(kvpBuffHandler.Key, out BuffHandlerData currentData) || currentData != buffHandlerData)
+                {
+                    continue;
+                }
                 if (buffHandlerData.isInit)
                 {
                     ABuffHandlerFactory buffHandlerFactory = buffHandlerData.buffHandlerFactory;
@@ -230,8 +246,10 @@ public class BuffManager : MonoBehaviour
                 }
             }
 
-            RemoveCachedIdsFromHandler(handlerPerSource.Value.buffHandlerPerId);
+            RemoveCachedIdsFromHandler(handlerPerSource.buffHandlerPerId);
         }
+        _cachedUpdateSources.Clear();
+        _cachedUpdateHandlers.Clear();
 
         RemoveOutdatedSources();
     }
