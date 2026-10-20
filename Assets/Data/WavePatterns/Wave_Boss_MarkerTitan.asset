@@ -53,10 +53,10 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   score:
-    dps: 13.6503315
+    dps: 13.651423
     peakDps: 49.333332
-    survivalTime: 68.06311
-    effectiveHealth: 2727.3257
-    threat: 929.08405
+    survivalTime: 68.81516
+    effectiveHealth: 2751.9524
+    threat: 939.4249
     timedOut: 0
-    fingerprint: d69ed8902ce762e163d29b625478cbc1
+    fingerprint: ad25ce442693215bae28e530b9bcbe62
