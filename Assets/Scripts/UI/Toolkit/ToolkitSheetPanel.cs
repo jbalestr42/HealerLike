@@ -147,7 +147,7 @@ public sealed class ToolkitSheetPanel : IDisposable
 
         _source = source;
         _sourceSize = size;
-        _view.SetText(TextName, ToolkitRichText.Normalise(source, size));
+        _view.SetText(TextName, ToolkitRichText.Normalise(ToolkitStatusText.Format(source), size));
     }
 
     // Julien's text, or a muted line when his formatter cannot run (a character not yet initialised, or a data

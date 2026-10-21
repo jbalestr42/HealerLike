@@ -100,10 +100,10 @@ public class ToolkitCard : System.IDisposable
         _model = model;
         _button.userData = model;
         _title.text = _model.title;
-        _description.text = _model.description;
+        _description.text = ToolkitStatusText.Format(_model.description);
         if (_details != null)
         {
-            _details.text = _model.details ?? "";
+            _details.text = ToolkitStatusText.Format(_model.details);
             _details.style.display = string.IsNullOrEmpty(_model.details) ? DisplayStyle.None : DisplayStyle.Flex;
         }
 

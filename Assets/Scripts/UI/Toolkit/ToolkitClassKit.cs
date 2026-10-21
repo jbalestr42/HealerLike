@@ -166,6 +166,6 @@ public class ToolkitClassKit
     // patch's fallback/ folder: apply that file only if the other patch is not applied.
     static string Rich(string text)
     {
-        return ToolkitRichText.Normalise(text);
+        return ToolkitRichText.Normalise(ToolkitStatusText.Format(text));
     }
 }

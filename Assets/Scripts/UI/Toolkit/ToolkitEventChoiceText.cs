@@ -76,6 +76,6 @@ public static class ToolkitEventChoiceText
             return string.Empty;
         }
 
-        return ToolkitRichText.Normalise(text, ToolkitRichTextOptions.StripSizes);
+        return ToolkitRichText.Normalise(ToolkitStatusText.Format(text), ToolkitRichTextOptions.StripSizes);
     }
 }

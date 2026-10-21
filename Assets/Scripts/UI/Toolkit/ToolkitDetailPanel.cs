@@ -209,9 +209,10 @@ public class ToolkitDetailPanel : IDisposable
         return string.Join("\n", lines);
     }
 
+    // The attribute list, then what the statuses its description cites do
     static string GetStats(Entity entity)
     {
-        return ToolkitEntityInfo.Join(ToolkitEntityInfo.GetAttributeLines(entity));
+        return ToolkitStatusText.WithExplanation(ToolkitEntityInfo.Join(ToolkitEntityInfo.GetAttributeLines(entity)));
     }
 
     void BuildSections()

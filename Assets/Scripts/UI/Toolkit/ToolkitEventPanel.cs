@@ -236,7 +236,7 @@ public class ToolkitEventPanel
         _reportedEmpty = false;
         _isDrawing = true;
         _view.SetText(TitleName, string.IsNullOrEmpty(title) ? DefaultTitle : title);
-        _view.SetText(DescriptionName, description);
+        _view.SetText(DescriptionName, ToolkitStatusText.Format(description));
         _view.Show(DescriptionName, !string.IsNullOrEmpty(description));
         _view.SetCards(ListName, models);
         _view.Show(PanelName, true);

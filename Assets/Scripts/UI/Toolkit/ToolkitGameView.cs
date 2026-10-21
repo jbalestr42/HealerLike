@@ -265,7 +265,8 @@ public class ToolkitGameView
         }
 
         SetText("detail-title", model.title);
-        SetText("detail-description", model.description);
+        // The inspected card has room to explain the statuses its text cites
+        SetText("detail-description", ToolkitStatusText.WithExplanation(model.description));
         VisualElement icon = _root.Q("detail-icon");
         if (icon != null)
         {

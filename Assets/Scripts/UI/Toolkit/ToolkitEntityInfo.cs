@@ -144,7 +144,8 @@ public static class ToolkitEntityInfo
     // One text for a label: the lines joined, in markup the Toolkit labels accept
     public static string Join(List<string> lines)
     {
-        return ToolkitRichText.Normalise(string.Join("\n", lines), ToolkitRichTextOptions.StripSizes);
+        string text = ToolkitStatusText.Format(string.Join("\n", lines));
+        return ToolkitRichText.Normalise(text, ToolkitRichTextOptions.StripSizes);
     }
 
     static List<string> GetOnHitLines(Entity entity)
