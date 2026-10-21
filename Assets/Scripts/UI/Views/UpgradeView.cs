@@ -25,6 +25,21 @@ public class UpgradeView : AView
     [SerializeField] GameObject _upgradeEntity;
 
     List<GameObject> _upgradeButtons = new List<GameObject>();
+    List<GameObject> _upgradeButtonsSource;
+    System.Collections.ObjectModel.ReadOnlyCollection<GameObject> _upgradeButtonsView;
+
+    public IReadOnlyList<GameObject> upgradeButtons
+    {
+        get
+        {
+            if (_upgradeButtonsView == null || _upgradeButtonsSource != _upgradeButtons)
+            {
+                _upgradeButtonsSource = _upgradeButtons;
+                _upgradeButtonsView = _upgradeButtons.AsReadOnly();
+            }
+            return _upgradeButtonsView;
+        }
+    }
 
     // Never offered as a reward: those items only come from events (e.g. the Library)
     public static readonly List<string> RewardExcludedTags = new List<string> { TagNames.Cursed, TagNames.Library };

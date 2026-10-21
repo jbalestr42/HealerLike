@@ -1,0 +1,161 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
+using UnityEngine;
+using HealerLike.Render.Grammar;
+using HealerLike.Render.Spells;
+using SpellCellRow = HealerLike.Render.Stage.AtlasDerivationDump.SpellCellRow;
+using SpellEntryRow = HealerLike.Render.Stage.AtlasDerivationDump.SpellEntryRow;
+using SpellPieceRow = HealerLike.Render.Stage.AtlasDerivationDump.SpellPieceRow;
+using SpellRow = HealerLike.Render.Stage.AtlasDerivationDump.SpellRow;
+using HealerSkillRow = HealerLike.Render.Stage.AtlasDerivationDump.HealerSkillRow;
+using SpellChannels = HealerLike.Render.Stage.AtlasDerivationDump.SpellChannels;
+
+namespace HealerLike.Render.Stage
+{
+    public static partial class AtlasDerivationCollector
+    {
+        static void AppendSpellAtlas(AtlasDerivationDump.Document document, EffectVocabulary vocabulary)
+        {
+            // One row per cell: a Stone entry is the same cell drawn in the caster's other material
+            foreach (var pair in vocabulary.cells.Where(pair => pair.Key.side == LookSide.Plant)
+                .OrderBy(pair => pair.Key.operation.ToString())
+                .ThenBy(pair => pair.Key.aspect.ToString()))
+            {
+                EffectKey once;
+                EffectKey periodic;
+                bool hasOnce = vocabulary.TryGetElement(pair.Key.operation, pair.Key.aspect,
+                    EffectTempo.Once, out once);
+                bool hasPeriodic = vocabulary.TryGetElement(pair.Key.operation, pair.Key.aspect,
+                    EffectTempo.PerPeriod, out periodic);
+                string accent = AccentHex(vocabulary, pair.Value.once, pair.Key.operation);
+                document.spellCells.Add(new SpellCellRow { operation = pair.Key.operation.ToString(),
+                    aspect = pair.Key.aspect.ToString(), once = hasOnce ? once.ToString() : "",
+                    hasPeriodic = pair.Value.hasPeriodic, periodic = hasPeriodic ? periodic.ToString() : "", accent = accent });
+            }
+            foreach (var pair in vocabulary.entries.OrderBy(pair => pair.Key.ToString()))
+            {
+                EffectKey element = pair.Key;
+                ElementEntry entry = pair.Value;
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                EffectPresentation p = entry.presentation;
+                document.spellEntries.Add(new SpellEntryRow { element = element.ToString(), motion = entry.motion.ToString(),
+                    socket = entry.socket.ToString(), count = entry.count.ToString(), minCount = entry.minCount,
+                    cycleSeconds = entry.cycleSeconds, shapePartCount = EffectComposer.Shapes(entry),
+                    scale = p == null ? 1f : p.scale, billboard = p != null && p.billboard,
+                    closesOverHead = p != null && p.closesOverHead, scalesWithAmount = p != null && p.scalesWithAmount,
+                    isShield = p != null && p.isShield, avoidHead = p == null || p.avoidHead,
+                    colourRole = p == null ? "" : p.colourRole.ToString(),
+                    entranceSeconds = p == null ? 0f : p.entranceSeconds, releaseSeconds = p == null ? 0f : p.releaseSeconds,
+                    groundRadius = entry.groundRadius, groundStrength = entry.groundStrength,
+                    stackBeads = entry.stackBeads != null && entry.stackBeads.Length > 0,
+                    criticalRings = entry.criticalRings != null && entry.criticalRings.Length > 0,
+                    sideRim = entry.sideRim != null && entry.sideRim.Length > 0 });
+            }
+            AddPieces(document, "reach", vocabulary.reach.Keys.Select(k => k.ToString()));
+            AddPieces(document, "delivery", vocabulary.delivery.Keys.Select(k => k.ToString()));
+            AddPieces(document, "trigger", vocabulary.trigger.Keys.Select(k => k.ToString()));
+            AddPieces(document, "side", vocabulary.side.Keys.Select(k => k.ToString()));
+            AddPieces(document, "origin", vocabulary.origin.Keys.Select(k => k.ToString()));
+            List<CharacterData> characters = AtlasAssetCatalog.Characters();
+            foreach (string path in AtlasAssetCatalog.Paths<ABuffHandlerFactory>("Assets/Data"))
+            {
+                ABuffHandlerFactory handler = AtlasAssetCatalog.Required<ABuffHandlerFactory>(path);
+                // A class's own skills and items are sized at its base stats, the rest keep the plain context
+                EffectContext context = PlayerClassContext.For(handler, EffectContext.Default, characters);
+                foreach (bool same in new[] { true, false })
+                {
+                    EffectChannels channels = EffectDerivation.Channels(handler, same, context);
+                    SpellRow row = new SpellRow { path = path, kind = FirstFolder(path), ownerName = OwnerName(path),
+                        side = same ? "Same" : "Opposing", durationType = handler.durationType.ToString(),
+                        duration = handler.duration, isPeriodic = EffectDerivation.IsPeriodic(handler),
+                        periodSeconds = EffectDerivation.Period(handler), channels = new SpellChannels(channels),
+                        family = channels.family.ToString(), group = channels.group.ToString(), tempo = channels.tempo.ToString(),
+                        element = EffectComposer.Element(vocabulary, channels).ToString() };
+                    foreach (EffectChannels layer in EffectDerivation.Layers(handler, same, context))
+                    {
+                        row.layers.Add(new SpellChannels(layer));
+                    }
+
+                    foreach (ABuffFactory buff in EffectDerivation.Buffs(handler))
+                    {
+                        AConsumerFactory consumer = EffectDerivation.Consumer(buff);
+                        bool modifier = EffectDerivation.TryModifier(buff, out AttributeType type, out float delta);
+                        row.buffs.Add(new AtlasDerivationDump.BuffInput { kind = buff.GetType().Name,
+                            consumer = AssetDatabase.GetAssetPath(consumer), hasConsumer = consumer != null,
+                            harm = consumer == null ? 0f : EffectDerivation.Harm(consumer), hasModifier = modifier,
+                            attribute = type.ToString(), delta = delta, polarity = EffectDerivation.Polarity(type),
+                            prevention = buff is InvincibilityBuffFactory });
+                    }
+                    document.spells.Add(row);
+                }
+            }
+            foreach (string path in AssetDatabase.FindAssets("t:ACharacterSkillFactory", new[] { "Assets/Data/CharacterSkills" })
+                .Select(AssetDatabase.GUIDToAssetPath).OrderBy(path => path, StringComparer.Ordinal))
+            {
+                ACharacterSkillFactory factory = AssetDatabase.LoadAssetAtPath<ACharacterSkillFactory>(path);
+                // Skills without a target (BalanceLife, DarkPact, RaiseDead) still get a row, with no target side
+                CharacterSkillData data = factory is IGameDataSource source ? source.sourceData as CharacterSkillData : null;
+                if (data == null)
+                {
+                    continue;
+                }
+
+                BaseCharacterSkillData targeted = data as BaseCharacterSkillData;
+                SpellIconDescription description = SpellIconDerivation.Read(data, PlayerClassContext.Owner(data, characters));
+                HealerSkillRow row = new HealerSkillRow { path = path, name = data.name, skillClass = data.GetType().Name,
+                    isSingle = targeted != null && targeted.isSingle,
+                    entityType = targeted == null ? "" : targeted.entityType.ToString(),
+                    reach = description == null ? "" : description.context.targetCount == 1 ? "Single" : "All",
+                    origin = "Healer" };
+                if (description != null)
+                {
+                    foreach (ABuffHandlerFactory handler in description.handlers)
+                    {
+                        row.handlerPaths.Add(AssetDatabase.GetAssetPath(handler));
+                        foreach (EffectChannels layer in EffectDerivation.Layers(handler, description.isSameSide, description.context))
+                        {
+                            row.layers.Add(new SpellChannels(layer));
+                        }
+                    }
+                    foreach (EffectChannels layer in description.layers)
+                    {
+                        row.layers.Add(new SpellChannels(layer));
+                    }
+                }
+                document.healerSkills.Add(row);
+            }
+        }
+
+        static void AddPieces(AtlasDerivationDump.Document document, string kind, IEnumerable<string> keys)
+        { foreach (string key in keys.OrderBy(k => k))
+            {
+                document.spellPieces.Add(new SpellPieceRow { kind = kind, key = key });
+            }
+        }
+        static string FirstFolder(string path) { string[] p = path.Split('/'); return p.Length > 2 ? p[2] : ""; }
+        static string OwnerName(string path)
+        {
+            string folder = path.Substring(0, path.LastIndexOf('/'));
+            string[] assets = AssetDatabase.FindAssets("t:Object", new[] { folder }).Select(AssetDatabase.GUIDToAssetPath)
+                .Where(p => p != path).ToArray();
+            return assets.Length == 0 ? FirstFolder(path) : AssetDatabase.LoadMainAssetAtPath(assets[0]).name;
+        }
+        static string AccentHex(EffectVocabulary vocabulary, ElementEntry entry, EffectOperation operation)
+        {
+            if (entry == null || vocabulary.palette == null)
+            {
+                return "";
+            }
+
+            Color c = vocabulary.palette.Colour(entry.presentation == null ? ColourRole.Accent : entry.presentation.colourRole,
+                operation == EffectOperation.Heal ? EffectFamily.Heal : EffectFamily.Damage);
+            return ColorUtility.ToHtmlStringRGBA(c);
+        }
+    }
+}

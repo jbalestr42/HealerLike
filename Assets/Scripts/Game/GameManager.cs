@@ -13,6 +13,7 @@ public class GameManager : Singleton<GameManager>
     public AGameType gameType { get { return _gameType; } }
 
     GameState _state = GameState.None;
+    public GameState state { get { return _state; } }
 
     void Start()
     {

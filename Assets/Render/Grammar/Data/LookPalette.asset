@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a867614a5a8491cb038a28ccffb89e9, type: 3}
+  m_Name: LookPalette
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Grammar.LookPalette
+  plantBody: {r: 0.67, g: 0.93, b: 0.2, a: 1}
+  plantStem: {r: 0.16, g: 0.56, b: 0.32, a: 1}
+  stoneBody: {r: 0.76, g: 0.74, b: 0.67, a: 1}
+  stoneLimb: {r: 0.58, g: 0.6, b: 0.57, a: 1}
+  stoneOchre: {r: 0.88, g: 0.65, b: 0.25, a: 1}
+  stoneWilt: {r: 0.22, g: 0.25, b: 0.33, a: 1}
+  moss: {r: 0.43, g: 0.76, b: 0.22, a: 1}
+  damage: {r: 1, g: 0.3529412, b: 0.23529412, a: 1}
+  heal: {r: 1, g: 0.9647059, b: 0.8156863, a: 1}
+  rot: {r: 0.65, g: 0.32, b: 0.96, a: 1}
+  renew: {r: 1, g: 0.9647059, b: 0.8156863, a: 1}
+  boon: {r: 1, g: 0.77254903, b: 0.22745098, a: 1}
+  bane: {r: 0.35686275, g: 0.18039216, b: 0.54901963, a: 1}
+  baneLit: {r: 0.5058824, g: 0.5372549, b: 0.6470588, a: 1}
+  mana: {r: 0.20392157, g: 0.8784314, b: 0.9098039, a: 1}
+  mushroomStem: {r: 0.52, g: 0.76, b: 0.4, a: 1}
+  mushroomCap: {r: 0.32, g: 0.66, b: 0.44, a: 1}
+  mushroomCapPale: {r: 0.55, g: 0.73, b: 0.4, a: 1}

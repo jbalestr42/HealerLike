@@ -1,0 +1,71 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace HealerLike.Render.Stage
+{
+    public class StageRestObservation : IDisposable
+    {
+        readonly StageMapSession _session;
+        readonly List<ResourceAttribute> _health = new List<ResourceAttribute>();
+        public StageRestObservation(StageMapSession session)
+        {
+            _session = session;
+            foreach (GameObject ally in session.manager.entityManager.GetEntities(Entity.EntityType.Player))
+            {
+                ResourceAttribute health = ally.GetComponent<Entity>().health;
+                session.output.Check(health != null && health.OnAllConsumerProcessed != null,
+                    "Every rest observer has an initialized health resource");
+                _health.Add(health);
+            }
+
+            foreach (ResourceAttribute health in _health)
+            {
+                health.OnAllConsumerProcessed.AddListener(OnConsumer);
+            }
+        }
+
+        // Allies below full health when asked, among those observed
+        public int CountInjured()
+        {
+            int injured = 0;
+            foreach (ResourceAttribute health in _health)
+            {
+                if (health != null && IsInjured(health.Value, health.Max))
+                {
+                    injured++;
+                }
+            }
+
+            return injured;
+        }
+
+        public static bool IsInjured(float value, float max)
+        {
+            return max - value > 0.01f;
+        }
+
+        void OnConsumer(GameObject owner, ResourceModifier modifier, ConsumerResult result)
+        {
+            float value = result.value;
+            bool critical = result.isCritical;
+            if (value > 0f)
+            {
+                _session.manifest.restHealingEvents++;
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (ResourceAttribute health in _health)
+            {
+                if (health != null)
+                {
+                    health.OnAllConsumerProcessed.RemoveListener(OnConsumer);
+                }
+            }
+
+            _health.Clear();
+        }
+    }
+}

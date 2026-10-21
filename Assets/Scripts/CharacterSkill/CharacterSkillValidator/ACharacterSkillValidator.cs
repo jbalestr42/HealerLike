@@ -7,10 +7,11 @@ public abstract class ACharacterSkillValidatorFactory : ScriptableObject
     public abstract ACharacterSkillValidator Create();
 }
 
-public class CharacterSkillValidatorFactory<CharacterSkillValidatorType, DataType> : ACharacterSkillValidatorFactory where CharacterSkillValidatorType : ACharacterSkillValidator<DataType>, new()
+public class CharacterSkillValidatorFactory<CharacterSkillValidatorType, DataType> : ACharacterSkillValidatorFactory, IGameDataSource where CharacterSkillValidatorType : ACharacterSkillValidator<DataType>, new()
 {
     [InlineProperty]
     public DataType data;
+    public object sourceData { get { return data; } }
 
     public override ACharacterSkillValidator Create()
     {
@@ -29,7 +30,8 @@ public abstract class ACharacterSkillValidator
     public virtual bool IsGain(GameObject owner) => false;
 }
 
-public abstract class ACharacterSkillValidator<DataType> : ACharacterSkillValidator
+public abstract class ACharacterSkillValidator<DataType> : ACharacterSkillValidator, IGameDataSource
 {
     public DataType data;
+    public object sourceData { get { return data; } }
 }

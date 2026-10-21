@@ -1,0 +1,20 @@
+{
+    "name": "HealerLike.Render.Creatures.Editor",
+    "rootNamespace": "",
+    "references": [
+        "HealerLike.Runtime",
+        "HealerLike.Render",
+        "Oisif.Inspector"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

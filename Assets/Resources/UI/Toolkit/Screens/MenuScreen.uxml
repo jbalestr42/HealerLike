@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="menu-hero" class="menu-hero" picking-mode="Ignore">
+        <ui:Label name="menu-eyebrow" text="HEALERLIKE" class="eyebrow menu-eyebrow" picking-mode="Ignore" />
+        <ui:Label name="menu-title" text="A healer&apos;s&#10;journey" class="menu-title" picking-mode="Ignore" />
+        <ui:Label name="menu-tagline" text="Every life is in your hands." class="menu-description" picking-mode="Ignore" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -38,12 +38,13 @@ public abstract class ABuffHandlerFactory : ScriptableObject, ITaggable
     #endregion
 }
 
-public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory
+public class BuffHandlerFactory<BuffHandlerType, DataType> : ABuffHandlerFactory, IGameDataSource
                                             where BuffHandlerType : ABuffHandler<DataType>, new()
                                             where DataType : BuffHandlerBaseData
 {
     [InlineProperty]
     public DataType data;
+    public object sourceData { get { return data; } }
 
     public override ABuffHandler GetBuffHandler()
     {
@@ -116,7 +117,8 @@ public class BuffHandlerBaseData
 }
 
 [Serializable]
-public abstract class ABuffHandler<DataType> : ABuffHandler where DataType : BuffHandlerBaseData
+public abstract class ABuffHandler<DataType> : ABuffHandler, IGameDataSource where DataType : BuffHandlerBaseData
 {
     public DataType data;
+    public object sourceData { get { return data; } }
 }

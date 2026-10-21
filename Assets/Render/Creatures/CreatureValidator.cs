@@ -1,0 +1,189 @@
+using System.Collections.Generic;
+using UnityEngine;
+using HealerLike.Render.Deliveries;
+
+namespace HealerLike.Render.Creatures
+{
+    public static class CreatureValidator
+    {
+        // Roots reach at most the long band, 2.1 body units at a plant's one-cell body, plus their thickness
+        public static readonly float MaxRootReach = 2.2f;
+
+        // The largest Many + Heavy + MiniHead recipe needs 88 parts, plus at most one support.
+        public static readonly int MaxParts = 96;
+
+        public static bool TryValidate(CreatureRecipe data, out string error)
+        {
+            error = null;
+            if (!data || data.parts == null || data.parts.Length == 0 || data.parts.Length > MaxParts)
+            {
+                return Fail($"Require 1..{MaxParts} parts.", out error);
+            }
+
+            foreach (string presentationError in CreaturePresentationValidation.Errors(data))
+            {
+                return Fail(presentationError, out error);
+            }
+
+            HashSet<string> sourceIds = new HashSet<string>();
+            HashSet<string> ids = new HashSet<string>();
+            for (int i = 0; i < data.parts.Length; i++)
+            {
+                CreaturePart part = data.parts[i];
+                // The first part is the root, every other part hangs from an earlier one
+                bool isParentValid = part.parent >= 0 && part.parent < i;
+                if (i == 0)
+                {
+                    isParentValid = part.parent == -1;
+                }
+
+                if (string.IsNullOrEmpty(part.id) || !ids.Add(part.id) || !isParentValid)
+                {
+                    return Fail("Require unique IDs, one root, and earlier parents.", out error);
+                }
+
+                if (part.isSource && (!CreatureSources.Valid(part.sourceAnchor)
+                    || string.IsNullOrEmpty(part.sourceId) || !sourceIds.Add(part.sourceId)))
+                {
+                    return Fail("Invalid or duplicate anatomical source.", out error);
+                }
+
+                Vector3 position = part.localPosition;
+                Vector3 euler = part.localEuler;
+                if (
+                    !RenderMath.IsFinite(position)
+                    || !RenderMath.IsFinite(euler)
+                    || !Positive(part.dimensions)
+                    || !RenderMath.IsFinite(part.colour)
+                    || !float.IsFinite(part.glow)
+                    || part.glow < 0f
+                    || (int)part.primitive < 0
+                    || part.primitive > Primitive.Stone
+                    || !part.shape.IsValid()
+                )
+                {
+                    return Fail("Invalid primitive settings.", out error);
+                }
+            }
+
+            // Arm j grows from source socket j, so every arm needs its socket
+            if (
+                data.sourceLocal == null
+                || data.arms == null
+                || data.arms.Length > ArmPool.MaxArms
+                || data.arms.Length > data.sourceLocal.Length
+            )
+            {
+                return Fail("Invalid sockets or arms.", out error);
+            }
+
+            foreach (Vector3 source in data.sourceLocal)
+            {
+                if (!RenderMath.IsFinite(source))
+                {
+                    return Fail("Nonfinite socket.", out error);
+                }
+            }
+
+            foreach (ArmDefinition arm in data.arms)
+            {
+                Vector3 rootLocal = arm.rootLocal;
+                Vector3 pole = arm.bendPole;
+                if (
+                    arm.bodyPart < 0
+                    || arm.bodyPart >= data.parts.Length
+                    || arm.segmentCount < 2
+                    || arm.segmentCount > 128
+                    || !Positive(arm.segmentLength)
+                    || !Positive(arm.radius)
+                    || !RenderMath.IsFinite(rootLocal)
+                    || !RenderMath.IsFinite(pole)
+                    || !RenderMath.IsFinite(arm.colour)
+                    || arm.restJoints == null
+                    || arm.restJoints.Length != arm.segmentCount + 1
+                    || arm.restJoints[0] != Vector3.zero
+                )
+                {
+                    return Fail("Invalid arm.", out error);
+                }
+
+                for (int i = 0; i <= arm.segmentCount; i++)
+                {
+                    Vector3 joint = arm.restJoints[i];
+                    if (!RenderMath.IsFinite(joint))
+                    {
+                        return Fail("Rest pose does not preserve link lengths.", out error);
+                    }
+
+                    if (i > 0)
+                    {
+                        float link = Vector3.Distance(arm.restJoints[i - 1], arm.restJoints[i]);
+                        if (Mathf.Abs(link - arm.segmentLength) > 0.00001f)
+                        {
+                            return Fail("Rest pose does not preserve link lengths.", out error);
+                        }
+                    }
+                }
+            }
+
+            RootDefinition roots = data.roots;
+            // A stone stands on its limbs and grows no roots
+            bool isRootCountValid = roots.count == 0 || (roots.count >= 4 && roots.count <= 14);
+            if (
+                !isRootCountValid
+                || roots.segments < 1
+                || roots.segments > 4
+                || !Positive(roots.footRadius)
+                || !Positive(roots.thickness)
+                || roots.footRadius + roots.thickness > MaxRootReach
+                || !Positive(roots.hipHeight)
+                || !Positive(roots.kneeHeight)
+                || !RenderMath.IsFinite(roots.colour)
+                || !roots.segmentShape.IsValid()
+                || !roots.jointShape.IsValid()
+                || !Nonnegative(roots.taper)
+                || roots.taper > 1f
+                || !Nonnegative(roots.jointScale)
+                || roots.jointScale > 8f
+            )
+            {
+                return Fail("Roots reach past the longest band or have invalid settings.", out error);
+            }
+
+            IdleDefinition idle = data.idle;
+            if (
+                !Nonnegative(idle.swayDegrees)
+                || !Nonnegative(idle.swayFrequency)
+                || !Nonnegative(idle.breathAmount)
+                || idle.breathAmount >= 1f
+                || !Nonnegative(idle.breathFrequency)
+            )
+            {
+                return Fail("Invalid idle settings.", out error);
+            }
+
+            return true;
+        }
+
+        static bool Positive(float value)
+        {
+            return RenderMath.IsPositive(value);
+        }
+
+        static bool Nonnegative(float value)
+        {
+            return float.IsFinite(value) && value >= 0f;
+        }
+
+        static bool Positive(Vector3 value)
+        {
+            return Positive(value.x) && Positive(value.y) && Positive(value.z);
+        }
+
+        static bool Fail(string message, out string error)
+        {
+            error = message;
+            return false;
+        }
+    }
+}

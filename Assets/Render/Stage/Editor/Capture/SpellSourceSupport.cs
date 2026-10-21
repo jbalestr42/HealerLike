@@ -1,0 +1,99 @@
+using System.Collections;
+using System.Linq;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Grammar;
+using HealerLike.Render.Spells;
+using UnityEngine;
+using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
+
+namespace HealerLike.Render.Stage
+{
+    // A labelled support fixture on real entities: render-only head swap, real health/buff processing.
+    public static class SpellSourceSupport
+    {
+        public static IEnumerator Capture(RenderManager manager, StageCaptureSession session, SpellSourceRun.Proof proof)
+        {
+            Entity source = manager.entityManager.GetEntities(Entity.EntityType.Computer)
+                .Select(g => g.GetComponent<Entity>()).First();
+            Entity target = manager.entityManager.GetEntities(Entity.EntityType.Player)
+                .Select(g => g.GetComponent<Entity>()).First();
+            CreatureBuilder host = source.GetComponentInChildren<CreatureBuilder>();
+            CreatureRecipe original = host.rig.recipe;
+            Material material = host.rig.partTransforms[0].GetComponent<Renderer>().sharedMaterial;
+            CreatureRecipe fixture = LookComposer.Compose(new UnitChannels
+            {
+                side = LookSide.Stone, head = HeadKind.GiftHeal, count = CountBand.One,
+                stem = StemBand.Steady, mass = MassBand.Light, reach = ReachBand.Short,
+                accessory = AccessoryKind.None, accent = EffectFamily.Renew
+            }, manager.creatureLooks.vocabulary);
+            VisualElement ui = session.actions.ui.GetComponent<UIDocument>().rootVisualElement;
+            Label label = new Label("SUPPORT FIXTURE: mineral GiftHeal\nReal creature owner and recipient; harness applies existing heal/boon consumers.");
+            label.style.position = Position.Absolute;
+            label.style.top = Length.Percent(16f);
+            label.style.left = Length.Percent(4f);
+            label.style.fontSize = 11;
+            label.style.width = Length.Percent(92f);
+            label.style.whiteSpace = WhiteSpace.Normal;
+            label.style.color = Color.white;
+            label.style.backgroundColor = new Color(0, 0, 0, 0.8f);
+            ui.Add(label);
+            try
+            {
+                session.output.Check(host.rig.Recompose(fixture, material, material, manager.meshes), "Support fixture accepted");
+                manager.spellSink.Clear();
+                // The Regenerating tick is a flat heal, which needs no attribute on the creature. The Character heal
+                // instead requires the player-only HealPower attribute and is not a valid creature fixture.
+                ConsumerFactory healFactory = RenderAssets.Load<ConsumerFactory>(
+                    "Assets/Data/Statuses/RegeneratingStatus/RegeneratingConsumerFactory.asset");
+                target.health.AddResourceModifier(ResourceModifier.Create(healFactory, source.gameObject, target.gameObject));
+                yield return AStageRun.Wait(0.2f);
+                proof.supportHealLinks = Measure(manager, host, proof);
+                yield return session.Capture("02-mineral-heal-fixture", "Real resource outcome; labelled mineral healer fixture");
+                manager.spellSink.Clear();
+                BuffCharacterSkillFactory boonFactory = RenderAssets.Load<BuffCharacterSkillFactory>(
+                    "Assets/Data/CharacterSkills/SingleTargetBuffAttackRate/SingleTargetBuffAttackRate.asset");
+                ((BuffCharacterSkill)boonFactory.Create()).ApplySkillOnTarget(source.gameObject, target.gameObject);
+                target.buffManager.ForceUpdate();
+                yield return AStageRun.Wait(0.2f);
+                proof.supportBoonLinks = Measure(manager, host, proof);
+                session.output.Check(proof.supportHealLinks == 1, "Creature health outcome produced exactly one anatomical link");
+                session.output.Check(proof.supportBoonLinks == 1, "Creature boon application produced exactly one anatomical link");
+                yield return session.Capture("03-mineral-boon-fixture", "Real buff application; labelled support fixture");
+            }
+            finally
+            {
+                host.rig.Recompose(original, material, material, manager.meshes);
+                manager.spellSink.Clear();
+                label.RemoveFromHierarchy();
+                Object.Destroy(fixture);
+            }
+        }
+
+        public static int CountLinksFrom(SpellVisualSink sink, CreatureRig rig)
+        {
+            return sink.GetComponentsInChildren<SpellEffect>()
+                .Count(link => link.recipe.socket == EffectSocket.Link && link.IsCastFrom(rig));
+        }
+
+        static int Measure(RenderManager manager, CreatureBuilder host, SpellSourceRun.Proof proof)
+        {
+            CreatureSources.Resolve(host.rig, CreatureSources.Select(host.rig, 0), out Vector3 outlet);
+            int count = 0;
+            foreach (SpellEffect link in manager.spellSink.GetComponentsInChildren<SpellEffect>())
+            {
+                // The battle goes on under the fixture: another creature's status republished after the sink's
+                // Clear draws its own link (a Poisoner's Rot on any ally), which is not this fixture's outcome
+                if (link.recipe.socket != EffectSocket.Link || !link.IsCastFrom(host.rig))
+                {
+                    continue;
+                }
+
+                count++;
+                proof.supportMaxAttachmentError = Mathf.Max(proof.supportMaxAttachmentError,
+                    Vector3.Distance(outlet, link.castOrigin));
+            }
+            return count;
+        }
+    }
+}

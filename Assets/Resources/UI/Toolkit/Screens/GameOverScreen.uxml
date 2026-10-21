@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Template name="DialogFrame" src="../Controls/DialogFrame.uxml" />
+    <ui:Instance template="DialogFrame" class="dialog dialog--compact surface">
+        <ui:Label text="THE JOURNEY ENDS" class="eyebrow" />
+        <ui:Label name="gameover-title" text="Your party has fallen" class="dialog-title" />
+        <ui:Label text="Gather your strength for another journey." class="muted dialog-description" />
+        <ui:Button name="restart-button" text="Return to menu" class="button button--primary" />
+    </ui:Instance>
+</ui:UXML>

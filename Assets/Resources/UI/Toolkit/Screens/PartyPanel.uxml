@@ -1,0 +1,3 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:ScrollView name="party-list" mode="Horizontal" class="party-list compact-row" vertical-scroller-visibility="Hidden" horizontal-scroller-visibility="Hidden" />
+</ui:UXML>

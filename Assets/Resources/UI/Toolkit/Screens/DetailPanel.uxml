@@ -1,0 +1,34 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Template name="SectionHeading" src="../Controls/SectionHeading.uxml" />
+    <ui:Template name="ActionSection" src="../Controls/ActionSection.uxml" />
+    <ui:ScrollView name="detail-scroll" class="detail-scroll" horizontal-scroller-visibility="Hidden">
+        <ui:VisualElement class="detail-summary" picking-mode="Ignore">
+            <ui:VisualElement name="detail-icon" class="detail-icon" />
+            <ui:VisualElement class="detail-copy" picking-mode="Ignore">
+                <ui:Label name="detail-title" text="" class="heading detail-title" />
+                <ui:Label name="detail-description" text="" class="detail-description muted" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Instance template="ActionSection" name="detail-actions" class="detail-actions">
+            <ui:Button name="detail-inventory-button" text="Equipment" class="button" />
+            <ui:DropdownField name="detail-targeting" label="Target priority" class="detail-targeting" />
+            <ui:Button name="detail-equip-button" text="Select equipment" class="button" />
+        </ui:Instance>
+        <ui:Foldout name="detail-aiming" text="Targeting details" value="false" class="detail-attributes detail-section is-hidden">
+            <ui:Label name="detail-aiming-text" class="detail-description" />
+        </ui:Foldout>
+        <ui:Foldout name="detail-skills" text="Skills" value="false" class="detail-attributes detail-section is-hidden">
+            <ui:Label name="detail-skills-text" class="detail-description" />
+        </ui:Foldout>
+        <ui:Foldout name="detail-items" text="Items" value="false" class="detail-attributes detail-section is-hidden">
+            <ui:Label name="detail-items-text" class="detail-description" />
+        </ui:Foldout>
+        <ui:Foldout name="detail-effects" text="Effects" value="false" class="detail-attributes detail-section is-hidden">
+            <ui:Label name="detail-effects-text" class="detail-description" />
+        </ui:Foldout>
+        <ui:Foldout name="detail-attributes" text="All attributes" value="false" class="detail-attributes is-hidden">
+            <ui:Label name="detail-full-stats" class="detail-description" />
+        </ui:Foldout>
+    </ui:ScrollView>
+    <ui:Button name="detail-close-button" text="×" tooltip="Close details" class="button detail-close" />
+</ui:UXML>

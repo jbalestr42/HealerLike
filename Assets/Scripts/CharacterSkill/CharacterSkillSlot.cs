@@ -14,6 +14,8 @@ public class CharacterSkillSlot : MonoBehaviour
     bool _isEnabled = true;
     public bool isEnabled { get { return _isEnabled; } set { _isEnabled = value; } }
 
+    public UseCharacterSkillButton skillButton { get { return _skillButton; } }
+
     public void Init(ACharacterSkill skill, UseCharacterSkillButton skillButton, bool useValidators = true)
     {
         _skill = skill;

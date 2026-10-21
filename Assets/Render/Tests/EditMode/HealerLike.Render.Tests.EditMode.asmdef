@@ -1,0 +1,37 @@
+{
+    "name": "HealerLike.Render.Tests.EditMode",
+    "rootNamespace": "",
+    "references": [
+        "HealerLike.Runtime",
+        "HealerLike.Render",
+        "Oisif.Inspector",
+        "HealerLike.Render.Creatures.Editor",
+        "HealerLike.Render.Stage.Editor",
+        "HealerLike.Render.Stones.Editor",
+        "HealerLike.Render.Spells.Editor",
+        "HealerLike.Render.Studio.Editor",
+        "HealerLike.Render.Shaders.Editor",
+        "HealerLike.Tests.EditMode",
+        "QuickOutline",
+        "Unity.InputSystem",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

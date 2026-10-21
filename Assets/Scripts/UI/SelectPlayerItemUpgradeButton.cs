@@ -6,6 +6,8 @@ public class SelectPlayerItemUpgradeButton : MonoBehaviour
     [SerializeField] TMPro.TMP_Text _description;
     AItem _item;
 
+    public AItem item { get { return _item; } }
+
     public void Init(AItem item)
     {
         _item = item;

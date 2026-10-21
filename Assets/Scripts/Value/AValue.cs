@@ -9,8 +9,9 @@ public abstract class AValue
 }
 
 [Serializable]
-public abstract class AValue<DataType> : AValue
+public abstract class AValue<DataType> : AValue, IGameDataSource
 {
     [InlineProperty]
     public DataType data;
+    public object sourceData { get { return data; } }
 }

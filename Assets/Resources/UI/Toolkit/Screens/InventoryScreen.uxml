@@ -1,0 +1,24 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Template name="ActionSection" src="../Controls/ActionSection.uxml" />
+    <ui:VisualElement class="dialog dialog--wide surface">
+        <ui:VisualElement class="dialog-header">
+            <ui:VisualElement>
+                <ui:Label text="YOUR COLLECTION" class="eyebrow" />
+                <ui:Label text="Inventory" class="dialog-title" />
+            </ui:VisualElement>
+            <ui:Button name="inventory-close-button" text="Close" class="button button--quiet" />
+        </ui:VisualElement>
+        <ui:ScrollView name="inventory-body" class="dialog-body" horizontal-scroller-visibility="Hidden">
+            <ui:Label text="Select an item to inspect or equip it." class="muted dialog-description" />
+            <ui:Instance template="ActionSection" name="inventory-actions" class="inventory-actions">
+                <ui:Label name="inventory-detail" text="Select equipment from your collection." class="muted inventory-detail" />
+                <ui:VisualElement class="inventory-action-row">
+                    <ui:DropdownField name="inventory-target" label="Equip to" class="inventory-target" />
+                    <ui:DropdownField name="inventory-slot" label="Equipment slot" class="inventory-slot" />
+                    <ui:Button name="inventory-equip-button" text="Select equipment" class="button" />
+                </ui:VisualElement>
+            </ui:Instance>
+            <ui:ScrollView name="inventory-list" class="collection-list" horizontal-scroller-visibility="Hidden" />
+        </ui:ScrollView>
+    </ui:VisualElement>
+</ui:UXML>

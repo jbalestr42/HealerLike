@@ -1,0 +1,109 @@
+using System;
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UIElements;
+using static HealerLike.Render.Stage.AStageRun;
+
+namespace HealerLike.Render.Stage
+{
+    public sealed class StageCompactGestures
+    {
+        readonly StageCaptureSession _session;
+        public StageCompactGestures(StageCaptureSession session) { _session = session; }
+        // inBattle: the game camera follows the fight on its own, so only the reserved viewport is held still
+        public IEnumerator Hold(Button button, string image, bool persistent, bool inBattle = false)
+        {
+            yield return _session.actions.BringIntoView(button);
+            Vector2 point = StageInterfaceActions.ScreenPoint(button);
+            Vector3 camera = _session.manager.gameCamera.transform.position;
+            Rect viewport = _session.actions.ui.normalizedWorldViewport;
+            using (StagePresentationTouch touch = new StagePresentationTouch(_session.actions))
+            {
+                yield return touch.Frame(TouchPhase.Began, point);
+                yield return Still(touch, point, 0.55f);
+                _session.output.Check(StageInterfaceOutput.IsVisible(_session.actions.root.Q("detail-panel")),
+                    "Native held pointer opens details: " + image);
+                if (inBattle)
+                {
+                    _session.output.Check(viewport == _session.actions.ui.normalizedWorldViewport,
+                        "Inspection leaves the viewport stable while the battle camera moves: " + image);
+                }
+                else
+                {
+                    _session.output.Check(viewport == _session.actions.ui.normalizedWorldViewport
+                        && Vector3.Distance(camera, _session.manager.gameCamera.transform.position) < 0.01f,
+                        "Inspection leaves viewport and camera stable: " + image);
+                }
+                yield return _session.Capture(image, "Multi-frame StandaloneInputModule touch hold, real Toolkit pointer callbacks");
+                yield return touch.Frame(TouchPhase.Ended, point);
+                yield return touch.Frame(TouchPhase.Ended, point); // duplicate release must be harmless
+            }
+            yield return Wait(0.2f);
+            _session.output.Check(StageInterfaceOutput.IsVisible(_session.actions.root.Q("detail-panel")) == persistent,
+                "Correct popover lifetime after release: " + image);
+        }
+        public static IEnumerator Still(StagePresentationTouch touch, Vector2 point, float seconds)
+        {
+            float end = Time.realtimeSinceStartup + seconds;
+            do { yield return touch.Frame(TouchPhase.Stationary, point); } while (Time.realtimeSinceStartup < end);
+        }
+        public Vector2 DropPoint(Vector3 world)
+        {
+            Vector2 projected = _session.manager.gameCamera.WorldToScreenPoint(world);
+            return projected - Vector2.up * (56 * ToolkitScreenLayout.GetScale(Screen.width, Screen.height, false));
+        }
+        // The finger goes down on start, moves up past the tap slop so the press resolves to a roster drag, then
+        // travels to destination and rests there. It stays down: the caller owns the release.
+        public IEnumerator Pull(StagePresentationTouch touch, Vector2 start, Vector2 destination)
+        {
+            yield return touch.Frame(TouchPhase.Began, start);
+            yield return touch.Frame(TouchPhase.Moved, start + Vector2.up * 48);
+            yield return touch.Frame(TouchPhase.Moved, destination);
+            yield return Still(touch, destination, 0.25f);
+        }
+        // held runs while the finger is down over destination, before the release, for checks on the live drag
+        public IEnumerator Drag(Button button, Vector2 destination, string image, TouchPhase release = TouchPhase.Ended,
+            Action held = null)
+        {
+            yield return _session.actions.BringIntoView(button);
+            Vector2 start = StageInterfaceActions.ScreenPoint(button);
+            using (StagePresentationTouch touch = new StagePresentationTouch(_session.actions))
+            {
+                yield return Pull(touch, start, destination);
+                held?.Invoke();
+                if (image != null)
+                {
+                    yield return _session.Capture(image, "Owned roster drag through actual Toolkit pointer events");
+                }
+
+                StageRosterDrag roster = _session.actions.touch.roster;
+                bool legal = release == TouchPhase.Ended && roster.valid && !_session.actions.touch.IsOverInterface(destination);
+                Vector3 intended = roster.target;
+                int before = _session.manager.entityManager.GetEntities(Entity.EntityType.Player).Count;
+                yield return touch.Frame(release, destination);
+                yield return touch.Frame(release, destination);
+                if (legal)
+                {
+                    var entities = _session.manager.entityManager.GetEntities(Entity.EntityType.Player);
+                    _session.output.Check(entities.Count == before + 1
+                        && Vector3.Distance(entities[entities.Count - 1].transform.position, intended) < 0.01f,
+                        "Valid release creates one actual creature at the highlighted legal cell");
+                }
+            }
+            yield return Wait(0.25f);
+        }
+        public IEnumerator Scroll(Button button)
+        {
+            yield return _session.actions.BringIntoView(button);
+            Vector2 start = StageInterfaceActions.ScreenPoint(button);
+            using (StagePresentationTouch touch = new StagePresentationTouch(_session.actions))
+            {
+                yield return touch.Frame(TouchPhase.Began, start);
+                yield return touch.Frame(TouchPhase.Moved, start + Vector2.left * 80);
+                yield return touch.Frame(TouchPhase.Moved, start + Vector2.left * 140 + Vector2.up * 200);
+                yield return touch.Frame(TouchPhase.Ended, start + Vector2.left * 140 + Vector2.up * 200);
+            }
+            yield return Wait(0.2f);
+        }
+    }
+}

@@ -1,0 +1,212 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72656a68b4ca4b08aa7781878f3f168f, type: 3}
+  m_Name: Verdant Bloom
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Studio.SpellStudioPreset
+  displayName: Verdant Bloom
+  description: A full-strength critical heal. Lime spheres rise from the feet; scrub the first cycle to inspect the launch and critical ring. Amount controls the visible shape count.
+  vocabulary: {fileID: 11400000, guid: 2ebcc249811134625a66debb52a811c9, type: 2}
+  element: 1
+  family: 1
+  tempo: 0
+  periodSeconds: 1
+  stacks: 1
+  charges: 1
+  amount: 0.5
+  durationSeconds: 4
+  critical: 1
+  side: 1
+  scale: 1
+  overrideEntry: 1
+  entry:
+    parts:
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: 1.5, y: 0, z: 0}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.42249995, y: 0.42249995, z: 0.42249995}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: -1.1060905, y: 0.175, z: 1.0131946}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.46149993, y: 0.46149993, z: 0.46149993}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: 0.13124876, y: 0.35, z: -1.494247}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.50049996, y: 0.50049996, z: 0.50049996}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: 0.91252667, y: 0.52500004, z: 1.190502}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.5395, y: 0.5395, z: 0.5395}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: -1.4770317, y: 0.7, z: -0.26149073}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.5785, y: 0.5785, z: 0.5785}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: 1.2657809, y: 0.875, z: -0.8048594}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.61749995, y: 0.61749995, z: 0.61749995}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: -0.38972685, y: 1.0500001, z: 1.4484863}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.6565, y: 0.6565, z: 0.6565}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: -1.5, y: 0, z: 0}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.42249995, y: 0.42249995, z: 0.42249995}
+      glow: 0
+      minCount: 0
+    stackBeads:
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.9625, y: 0.15, z: -1.8}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.6875, y: 0.15, z: -1.8}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.41249996, y: 0.15, z: -1.8}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.1375, y: 0.15, z: -1.8}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.1375, y: 0.15, z: -1.8}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.41249996, y: 0.15, z: -1.8}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.6875, y: 0.15, z: -1.8}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.9625, y: 0.15, z: -1.8}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    criticalRings:
+    - id: CriticalRing
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 0, y: 0, z: 0}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 3.6749997, y: 1.05, z: 3.6749997}
+      glow: 0
+      minCount: 0
+    - id: CriticalRing
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 0, y: 0, z: 0}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 4.4625, y: 1.275, z: 4.4625}
+      glow: 0
+      minCount: 0
+    sideRim:
+    - id: SideRim
+      primitive: 3
+      role: 0
+      colour: 0
+      position: {x: 0, y: 0.05, z: 0}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 3.6, y: 0.5, z: 3.6}
+      glow: 0
+      minCount: 0
+    motion: 1
+    socket: 3
+    count: 3
+    minCount: 3
+    cycleSeconds: 0.6
+  overrideColour: 1
+  colour: {r: 0.54, g: 1, b: 0.26, a: 1}

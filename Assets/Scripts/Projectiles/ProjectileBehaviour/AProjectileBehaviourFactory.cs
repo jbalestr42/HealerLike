@@ -7,10 +7,11 @@ public abstract class AProjectileBehaviourFactory : ScriptableObject
     public abstract AProjectileBehaviour AddBehaviour(GameObject target);
 }
 
-public class ProjectileBehaviourFactory<ProjectileBehaviourType, ProjectileBehaviourData> : AProjectileBehaviourFactory where ProjectileBehaviourType : AProjectileBehaviour<ProjectileBehaviourData>, new()
+public class ProjectileBehaviourFactory<ProjectileBehaviourType, ProjectileBehaviourData> : AProjectileBehaviourFactory, IGameDataSource where ProjectileBehaviourType : AProjectileBehaviour<ProjectileBehaviourData>, new()
 {
     [InlineProperty]
     public ProjectileBehaviourData data;
+    public object sourceData { get { return data; } }
 
     public override AProjectileBehaviour AddBehaviour(GameObject target)
     {
@@ -28,7 +29,8 @@ public abstract class AProjectileBehaviour : MonoBehaviour
     public abstract void Init(GameObject source);
 }
 
-public abstract class AProjectileBehaviour<ProjectileBehaviourData> : AProjectileBehaviour
+public abstract class AProjectileBehaviour<ProjectileBehaviourData> : AProjectileBehaviour, IGameDataSource
 {
     public ProjectileBehaviourData data;
+    public object sourceData { get { return data; } }
 }

@@ -1,0 +1,581 @@
+using System;
+using System.Collections.Generic;
+using Object = UnityEngine.Object;
+using NUnit.Framework;
+using UnityEditor;
+using UnityEngine;
+using HealerLike.Render.Spells;
+
+namespace HealerLike.Render.Grammar
+{
+    public class SpellChannelAssetPinningTests
+    {
+        public struct HandlerRow
+        {
+            public string path;
+            public EffectOperation operation;
+            public EffectAspect aspect;
+            public EffectTempo tempo;
+            public EffectMagnitude magnitude;
+            public EffectTrigger trigger;
+
+            public HandlerRow(string path, EffectOperation operation, EffectAspect aspect,
+                              EffectTempo tempo, EffectMagnitude magnitude, EffectTrigger trigger)
+            {
+                this.path = path;
+                this.operation = operation;
+                this.aspect = aspect;
+                this.tempo = tempo;
+                this.magnitude = magnitude;
+                this.trigger = trigger;
+            }
+        }
+
+        // Handlers that draw nothing by design: each one names why. A handler leaves this list when it gets a
+        // pinned row below; a handler in neither list fails the coverage test. Empty at the October content: the one
+        // metadata-only buff (AddTagBuffFactory, the Taunt Totem's taunt tag) shares its handler with an armor
+        // modifier, which draws, and the tag itself reads Plain (see EffectKindDerivationTests)
+        // Julien's October 3 to 10 content (class units, blessings, banners, wards, the balance tools' items) came in
+        // with the merge of 3c873214 and has no pinned row yet: listed here until its look gets its treatment pass
+        public static readonly string[] AwaitingTreatment = {
+            "Entities/PurifierEntity/FortifiedStacksFactory",
+            "Entities/PurifierEntity/EmpoweredStacksFactory",
+            "Entities/PurifierEntity/HastedStacksFactory",
+            "EntityItems/BalanceArcItem/BuffHandlerFactory",
+            "EntityItems/BalanceBounceItem/BuffHandlerFactory",
+            "EntityItems/BalanceMortarShellItem/BuffHandlerFactory",
+            "EntityItems/BannerItem/BannerBuffHandlerFactory",
+            "EntityItems/BannerItem/BuffHandlerFactory",
+            "EntityItems/BeaconItem/BuffHandlerFactory",
+            "EntityItems/BloodWardItem/BloodWardBuffHandlerFactory",
+            "EntityItems/BloodWardItem/BuffHandlerFactory",
+            "EntityItems/PactItem/BuffHandlerFactory",
+            "EntityItems/RadiantItem/BuffHandlerFactory",
+            "EntityItems/RadiantItem/EmpoweredStacksFactory",
+            "EntityItems/VengeanceItem/BuffHandlerFactory",
+            "EntityItems/VengeanceItem/HastedStacksFactory",
+            // Julien's content up to October 20 (statuses and the items and units giving them, the Cleric rework, the
+            // ascension maluses, the elite rewards) came in with the merge of main: listed here until its treatment pass.
+            // A status given by stacks already reads as the buff of its status
+            "Entities/ArmoredFootmanEntity/GuardBuffHandlerFactory",
+            "Entities/HexAcolyteEntity/VulnerableStacksFactory",
+            "Entities/RavagerEntity/VulnerableStacksFactory",
+            "Entities/ShieldWardenEntity/RechargeBuffHandlerFactory",
+            "Entities/WarDrummerEntity/WarDrumBuffHandlerFactory",
+            "EntityItems/ArchonItem/BuffHandlerFactory",
+            "EntityItems/ArchonItem/FallenAcolyteBuffHandlerFactory",
+            "EntityItems/BlightAcolyteItem/BuffHandlerFactory",
+            "EntityItems/BlightAcolyteItem/LegacyBuffHandlerFactory",
+            "EntityItems/CenserItem/BlessedCenserBuffHandlerFactory",
+            "EntityItems/CenserItem/BuffHandlerFactory",
+            "EntityItems/CharmOfMercyItem/BuffHandlerFactory",
+            "EntityItems/FaithfulGuardItem/BuffHandlerFactory",
+            "EntityItems/FaithfulGuardItem/FortifiedStacksFactory",
+            "EntityItems/FrenzyItem/BuffHandlerFactory",
+            "EntityItems/FrostAcolyteItem/BuffHandlerFactory",
+            "EntityItems/FrostAcolyteItem/LegacyBuffHandlerFactory",
+            "EntityItems/HaloItem/BuffHandlerFactory",
+            "EntityItems/HaloItem/InvulnerableStacksFactory",
+            "EntityItems/HardenedFoesItem/BuffHandlerFactory",
+            "EntityItems/HexAcolyteItem/BuffHandlerFactory",
+            "EntityItems/HexAcolyteItem/LegacyBuffHandlerFactory",
+            "EntityItems/HolyWaterItem/BlessedHolyWaterBuffHandlerFactory",
+            "EntityItems/HolyWaterItem/BuffHandlerFactory",
+            "EntityItems/PoisonItem/BuffHandlerFactory",
+            "EntityItems/RadiantItem/HastedStacksFactory",
+            "EntityItems/SharpenedBladesItem/BuffHandlerFactory",
+            "EntityItems/SparkAcolyteItem/BuffHandlerFactory",
+            "EntityItems/SparkAcolyteItem/LegacyBuffHandlerFactory",
+            "EntityItems/SparkItem/BuffHandlerFactory",
+            "EntityItems/SwiftGraceItem/BlessedSwiftGraceBuffHandlerFactory",
+            "EntityItems/SwiftGraceItem/BuffHandlerFactory",
+            "EntityItems/TwinBladeItem/BuffHandlerFactory",
+            "EntityItems/TwinBladeItem/RaisingBuffHandlerFactory",
+            "EntityItems/ZealItem/BlessedZealBuffHandlerFactory",
+            "PlayerItems/BlessingItem/BuffHandlerFactory",
+            "PlayerItems/CostlySpellsItem/BuffHandlerFactory",
+            "PlayerItems/DrainedItem/BuffHandlerFactory",
+            "PlayerItems/FalteringFaithItem/BuffHandlerFactory",
+            "PlayerItems/RelicOfLightItem/BuffHandlerFactory",
+            "PlayerItems/RestlessItem/BuffHandlerFactory",
+            "PlayerItems/RosaryItem/BuffHandlerFactory",
+            "PlayerItems/RosaryItem/FreeSpellBuffHandlerFactory",
+            "Statuses/BlessedStatus/BlessedBuffHandlerFactory",
+            "Statuses/BlightedStatus/BlightedBuffHandlerFactory",
+            "Statuses/ChilledStatus/ChilledBuffHandlerFactory",
+            "Statuses/EmpoweredStatus/EmpoweredBuffHandlerFactory",
+            "Statuses/FortifiedStatus/FortifiedBuffHandlerFactory",
+            "Statuses/HastedStatus/HastedBuffHandlerFactory",
+            "Statuses/InvulnerableStatus/InvulnerableBuffHandlerFactory",
+            "Statuses/PoisonedStatus/PoisonedBuffHandlerFactory",
+            "Statuses/RegeneratingStatus/RegeneratingBuffHandlerFactory",
+            "Statuses/SunderedStatus/SunderedBuffHandlerFactory",
+            "Statuses/VulnerableStatus/VulnerableBuffHandlerFactory",
+        };
+
+        public static readonly HandlerRow[] HandlerRows = {
+            new HandlerRow("Entities/GuardianEntity/InvulnerableStacksFactory", EffectOperation.Ward,
+                EffectAspect.Prevention, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("Entities/HexerEntity/VulnerableStacksFactory", EffectOperation.Bane,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("Entities/ShamanEntity/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.Once, EffectMagnitude.Solid, EffectTrigger.Cast),
+            // 2 Hasted (25% faster each): the attack interval x0.8 per stack, 0.2 x 2 = 0.4 on the inclusive Solid bound
+            new HandlerRow("Entities/WarDrumEntity/HastedStacksFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/ArcItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/CarrionItem/BuffHandlerFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.OnDeath),
+            new HandlerRow("EntityItems/FrostItem/ChilledStacksFactory", EffectOperation.Bane,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/MortarShellItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/PlagueItem/BlightedStacksFactory", EffectOperation.Bane,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/PunchingBagRegenItem/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/RageItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/SelfDestructItem/BuffHandlerFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.OnDeath),
+            new HandlerRow("EntityItems/SiphonItem/BuffHandlerFactory", EffectOperation.ManaDrain,
+                EffectAspect.Offence, EffectTempo.Once, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/VenomItem/PoisonedStacksFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/VolleyItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+
+            // The legacy CharacterSkills and PlayerItems rows below belong to no class and keep the plain context
+            new HandlerRow("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("CharacterSkills/MultiTargetReduceDamage/BuffHandlerFactory", EffectOperation.Bane,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("CharacterSkills/PoisonSingleTarget/PoisonSingleTarget_BuffHandlerFactory",
+                EffectOperation.Damage, EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("CharacterSkills/SingleTargetBuffAttackRate/BuffHandlerFactory", EffectOperation.Bane,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("Entities/HitArmorBufferEntityEntity/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.Once, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/BoostCellItem/BoostBuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/BoostCellItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/BounceItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Conclave applies +20% damage or -30% attack interval through separate timed handlers.
+            new HandlerRow("EntityItems/ConclaveItem/New Buff Handler Factory 1", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/ConclaveItem/New Buff Handler Factory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            // +25% attack cooldown since the item rebalance (+50% before, its +10 damage taken out by e253279c): a penalty, so Bane, 0.25 Solid
+            new HandlerRow("EntityItems/ExplodeOnHitItem/BuffHandlerFactory 1", EffectOperation.Bane,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/ExplodeOnHitItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/IncreaseDamagePerHitItem/BuffHandlerFactory", EffectOperation.Bane,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/IncreaseDamageWithProjectileDistanceItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/MultipleShootItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/PoisonItem/PoisonedStacksFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/RegenHpItem/RegenHpItem_BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/SlowItem/ChilledStacksFactory", EffectOperation.Bane,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/TrinityItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.OnDeath),
+            new HandlerRow("PlayerItems/HealAllEntitiesOnRoundEndItem/HealAllEntitiesOnRoundEndItem_BuffHandlerFactory",
+                EffectOperation.Heal, EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.RoundEnd),
+            new HandlerRow("PlayerItems/ManaOnRoundEndItem/ManaOnRoundEndItem_BuffHandlerFactory", EffectOperation.Mana,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.RoundEnd),
+
+            // The Cleric, Druid and Warlock content (ade6ad91). A class's own skills and items are sized as it
+            // casts them, at its base stats (Cleric HealPower 25, Druid 20, Warlock 15, no class has HealthMax so a
+            // heal reads against 100). Periodic effects are sized per tick, like every creature effect.
+            // Curse (Warlock): 0.3 x HealPower damage each second for 6s, 0.3 x 15 = 4.5 per tick, 4.5 / 100 = 0.045
+            new HandlerRow("CharacterSkills/Curse/PoisonedStacksFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Divine Intervention (Cleric): invincible for 2s, no harm and no modifier, share 0
+            new HandlerRow("CharacterSkills/DivineIntervention/InvulnerableStacksFactory", EffectOperation.Ward,
+                EffectAspect.Prevention, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Rejuvenation (Druid): 0.15 x HealPower heal each second for 8s, 0.15 x 20 = 3 per tick, 0.03
+            new HandlerRow("CharacterSkills/Rejuvenation/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Shield (Cleric): +0.15 PercentArmor per Devotion spent, for 5s. Damage taken is scaled by
+            // (1 - PercentArmor), so the added fraction is its own share: 0.15, Solid
+            new HandlerRow("CharacterSkills/Shield/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            // Wild Growth (Druid): 0.1 x HealPower heal each second for 6s, 0.1 x 20 = 2 per tick, 0.02
+            new HandlerRow("CharacterSkills/WildGrowth/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Grove Keeper: a flat 2 heal each second for 4s
+            new HandlerRow("Entities/GroveKeeperEntity/RegeneratingStacksFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Blood Bond: life steal heals the most wounded ally for as long as the item is held
+            new HandlerRow("EntityItems/BloodBondItem/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Sap: a flat 3 heal every 2s while held
+            new HandlerRow("EntityItems/SapItem/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Zeal: Damage x1.5 while above 70% health, a +0.5 share
+            new HandlerRow("EntityItems/ZealItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            // Sacred Tome (Cleric's starting item): +10 HealPower against the Cleric's 25, 10 / 25 = 0.40, on the
+            // inclusive Solid bound
+            new HandlerRow("PlayerItems/HealPowerItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            // Verdant (Druid's starting item): 0.05 x HealPower heal on every player entity every 2s, 0.05 x 20 = 1
+            // per tick, 0.01
+            new HandlerRow("PlayerItems/VerdantItem/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+
+            // The October content (the 2026-10-02 merge): Soul Link, Thick Bark and the new items. Pinned from the
+            // derivation at d742ee83 with no live context: an unowned item reads at DefaultHealth=100 and base 1,
+            // Soul Link and Thick Bark at their class's base stats
+            // Soul Link (Warlock): the split damage is not a modifier, share 0. Kind Link, delivery Link
+            new HandlerRow("CharacterSkills/SoulLink/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("CharacterSkills/ThickBark/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.Once, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/AdrenalineItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/ArmorBreakerItem/SunderedStacksFactory", EffectOperation.Bane,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/BloodPriceItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            // Blood Price's cost: 3 health from its own holder at each attack, a harm like the Cursed Idol's curse
+            new HandlerRow("EntityItems/BloodPriceItem/PriceBuffHandlerFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/BoneCharmItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/BriarThornsItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/CursedIdolItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/CursedIdolItem/CurseBuffHandlerFactory", EffectOperation.Damage,
+                EffectAspect.Offence, EffectTempo.PerPeriod, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/EchoItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // +20% critical chance since the item rebalance (10% before): 0.2, Solid
+            new HandlerRow("EntityItems/ExecutionersEdgeItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/GlassCannonItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/GratitudeItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // The growing items' handlers read Flat and Plain alone; Growth comes from the holder's item (context)
+            new HandlerRow("EntityItems/GrowingSeedItem/GrowthBuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/HairTriggerItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/HeartStoneItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/HuntersMarkItem/VulnerableStacksFactory", EffectOperation.Bane,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/IronPlatingItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // +50% damage when alone: a 0.5 multiplier, Heavy like the other +50% items
+            new HandlerRow("EntityItems/LoneWolfItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/LuckyCoinItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/MartyrsHeartItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // +2 flat armor per adjacent ally: the modifier is armor, so Defence
+            new HandlerRow("EntityItems/PhalanxItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/PhylacteryItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/SecondWindItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/SecondWindItem/InvulnerableStacksFactory", EffectOperation.Ward,
+                EffectAspect.Prevention, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Taunt Totem: the taunt tag draws nothing, its +0.5 armor modifier draws
+            new HandlerRow("EntityItems/TauntTotemItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/ThornsOfLifeItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // Shorter skill cooldowns as the holder weakens: Boon
+            new HandlerRow("EntityItems/TitanFuryItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/TowerShieldItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/WarBannerItem/BoostBuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/WarBannerItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EntityItems/WhetstoneItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EventItems/AbyssalWellItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EventItems/BerserkersBrandItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EventItems/BlackCodexItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            // -30% skill cost against -15% max mana: one bonus, one curse, so the same-side Boon like the Glass Cannon
+            new HandlerRow("EventItems/BloodLedgerItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EventItems/BloodthirstBladeItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            new HandlerRow("EventItems/CodexOfMendingItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EventItems/GluttonsCharmItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EventItems/HastyGrimoireItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            // Hungering Mask: -5% HealthMax each battle survived, a growing cost, so Bane and Defence
+            new HandlerRow("EventItems/HungeringMaskItem/BattleGrowthBuffHandlerFactory", EffectOperation.Bane,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EventItems/HungeringMaskItem/KillGrowthBuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("EventItems/LeechFangItem/BuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EventItems/ReapersCoinItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            // -20% skill mana cost: a lower cost multiplier helps, so Boon
+            new HandlerRow("EventItems/ScrollOfThriftItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EventItems/ThornedCrownItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // -20% skill cooldown: a lower cooldown multiplier helps, so Boon
+            new HandlerRow("EventItems/TomeOfHasteItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("EventItems/WellspringManuscriptItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("PlayerItems/ChaliceOfPlentyItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("PlayerItems/EmergencyBeaconItem/BeaconBuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("PlayerItems/EmergencyBeaconItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("PlayerItems/EmergencyBeaconItem/HealBuffHandlerFactory", EffectOperation.Heal,
+                EffectAspect.Offence, EffectTempo.Once, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("PlayerItems/ManaCrystalItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            new HandlerRow("PlayerItems/MerchantsLedgerItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("PlayerItems/NecronomiconItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("PlayerItems/NecronomiconItem/SummonBuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Defence, EffectTempo.ForDuration, EffectMagnitude.Heavy, EffectTrigger.Cast),
+            // 10% of an overheal restored as the healer's mana: Mana
+            new HandlerRow("PlayerItems/OverflowingFontItem/BuffHandlerFactory", EffectOperation.Mana,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            // -15% skill cooldown: a lower cooldown multiplier helps, so Boon
+            new HandlerRow("PlayerItems/PrayerBeadsItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast),
+            // +3 mana to the healer per enemy death: Mana, like the ManaOnRoundEnd item
+            new HandlerRow("PlayerItems/TitheItem/BuffHandlerFactory", EffectOperation.Mana,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("PlayerItems/WarDrumsItem/BuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Light, EffectTrigger.Cast),
+            new HandlerRow("PlayerItems/WarDrumsItem/DrumsBuffHandlerFactory", EffectOperation.Boon,
+                EffectAspect.Offence, EffectTempo.ForDuration, EffectMagnitude.Solid, EffectTrigger.Cast)
+        };
+
+        // Pinned from handler duration fields and referenced buff/consumer assets. Cast is the
+        // no-owner-context default, not a claim that an equipped/on-hit item is cast by the healer.
+        // Multipliers use their fractional deltas directly; additive/consumer values retain DefaultHealth=100
+        // and expression base=1 until live target context is supplied, except a class's own skills and items,
+        // sized at that class's base stats (PlayerClassContext).
+        [Test]
+        public void Operation_LiveHandlers_MatchesAssetRowsWithSameSideFallback()
+        {
+            AssertRows((row, handler) => Assert.AreEqual(row.operation, EffectDerivation.Operation(handler, true), row.path));
+        }
+
+        [Test]
+        public void Aspect_LiveHandlers_MatchesAssetRows()
+        {
+            AssertRows((row, handler) => Assert.AreEqual(row.aspect, EffectDerivation.Aspect(handler), row.path));
+        }
+
+        [Test]
+        public void Tempo_LiveHandlers_MatchesAssetRows()
+        {
+            AssertRows((row, handler) => Assert.AreEqual(row.tempo, EffectDerivation.Tempo(handler), row.path));
+        }
+
+        [Test]
+        public void Magnitude_LiveHandlers_SizedByTheirOwningClass_MatchesAssetRows()
+        {
+            List<CharacterData> characters = Characters();
+            AssertRows((row, handler) => Assert.AreEqual(row.magnitude, EffectDerivation.Magnitude(handler,
+                PlayerClassContext.For(handler, EffectContext.Default, characters)), row.path));
+        }
+
+        // Every creature row is sized with no class at all: none of them may read a class's stats
+        [Test]
+        public void Owner_CreatureHandlers_BelongToNoClass()
+        {
+            List<CharacterData> characters = Characters();
+            AssertRows((row, handler) =>
+            {
+                if (row.path.StartsWith("Entities/") || row.path.StartsWith("EntityItems/"))
+                {
+                    Assert.IsNull(PlayerClassContext.Owner(handler, characters), row.path);
+                }
+            });
+        }
+
+        [TestCase("CharacterSkills/Shield/BuffHandlerFactory", "ClericCharacter")]
+        [TestCase("CharacterSkills/DivineIntervention/InvulnerableStacksFactory", "ClericCharacter")]
+        [TestCase("PlayerItems/HealPowerItem/BuffHandlerFactory", "ClericCharacter")]
+        [TestCase("CharacterSkills/Rejuvenation/BuffHandlerFactory", "DruidCharacter")]
+        [TestCase("CharacterSkills/WildGrowth/BuffHandlerFactory", "DruidCharacter")]
+        [TestCase("PlayerItems/VerdantItem/BuffHandlerFactory", "DruidCharacter")]
+        [TestCase("CharacterSkills/Curse/PoisonedStacksFactory", "WarlockCharacter")]
+        [TestCase("CharacterSkills/MultiTargetBuffAttackRate/BuffHandlerFactory", null)]
+        [TestCase("PlayerItems/DamageAllEnemyItem/BuffHandlerFactory", null)]
+        public void Owner_LiveHandlers_IsTheClassListingThem(string path, string expected)
+        {
+            ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>("Assets/Data/" + path + ".asset");
+            Assert.IsNotNull(handler, path);
+            CharacterData owner = PlayerClassContext.Owner(handler, Characters());
+            Assert.AreEqual(expected, owner == null ? null : owner.name, path);
+        }
+
+        // The instant class heals are skills, not handlers: 1 x HealPower scaled by the skill multiplier.
+        // Since Julien's 72227060: Heal (Cleric): 25 x 0.8 = 20, 0.2 Solid. Heal Group (Cleric): 25 x 0.4 = 10, 0.1,
+        // at LightMagnitudeMax, so Light
+        [TestCase("CharacterSkills/HealSingleTarget/HealSingleTarget", EffectMagnitude.Solid)]
+        [TestCase("CharacterSkills/Judgment/Judgment", EffectMagnitude.Light)]
+        public void Magnitude_LiveClassHealSkills_SizedByTheirOwningClass(string path, EffectMagnitude expected)
+        {
+            ACharacterSkillFactory factory = AssetDatabase.LoadAssetAtPath<ACharacterSkillFactory>(
+                "Assets/Data/" + path + ".asset");
+            CharacterSkillData data = ((IGameDataSource)factory).sourceData as CharacterSkillData;
+            SpellIconDescription description = SpellIconDerivation.Read(data, PlayerClassContext.Owner(data, Characters()));
+            Assert.AreEqual(1, description.layers.Count, path);
+            Assert.AreEqual(EffectOperation.Heal, description.layers[0].operation, path);
+            Assert.AreEqual(expected, description.layers[0].magnitude, path);
+        }
+
+        static List<CharacterData> Characters()
+        {
+            List<string> paths = new List<string>();
+            // The playable classes: Assets/Data/Balance holds a character for the balance tools only, with no skill
+            foreach (string guid in AssetDatabase.FindAssets("t:CharacterData", new[] { "Assets/Data/Characters" }))
+            {
+                paths.Add(AssetDatabase.GUIDToAssetPath(guid));
+            }
+
+            paths.Sort(StringComparer.Ordinal);
+            List<CharacterData> characters = new List<CharacterData>();
+            foreach (string path in paths)
+            {
+                characters.Add(AssetDatabase.LoadAssetAtPath<CharacterData>(path));
+            }
+
+            Assert.AreEqual(3, characters.Count);
+            return characters;
+        }
+
+        [Test]
+        public void Trigger_LiveHandlers_WithoutOwnerContext_UsesListenersOrCastDefault()
+        {
+            AssertRows((row, handler) => Assert.AreEqual(row.trigger, EffectDerivation.Trigger(handler), row.path));
+        }
+
+        static void AssertRows(Action<HandlerRow, ABuffHandlerFactory> assertion)
+        {
+            foreach (HandlerRow row in HandlerRows)
+            {
+                ABuffHandlerFactory handler = AssetDatabase.LoadAssetAtPath<ABuffHandlerFactory>(
+                    "Assets/Data/" + row.path + ".asset");
+                Assert.IsNotNull(handler, row.path);
+                assertion(row, handler);
+            }
+        }
+
+        [Test]
+        public void HandlerRows_CoverEveryLiveHandlerAsset()
+        {
+            HashSet<string> expected = new HashSet<string>();
+            foreach (HandlerRow row in HandlerRows)
+            {
+                expected.Add("Assets/Data/" + row.path + ".asset");
+            }
+
+            foreach (string path in AwaitingTreatment)
+            {
+                Assert.IsTrue(expected.Add("Assets/Data/" + path + ".asset"), "Pinned and awaiting at once: " + path);
+            }
+            string[] guids = AssetDatabase.FindAssets("t:ABuffHandlerFactory", new[] { "Assets/Data" });
+            HashSet<string> actual = new HashSet<string>();
+            foreach (string guid in guids)
+            {
+                actual.Add(AssetDatabase.GUIDToAssetPath(guid));
+            }
+
+            CollectionAssert.AreEquivalent(expected, actual, "Every live BuffHandlerFactory must have a pinned row or be listed as awaiting treatment.");
+        }
+
+        [Test]
+        public void DeliveryRows_CoverEveryProjectilePrefab()
+        {
+            string[] names = { "BulletSpeed", "ChainLightning", "ChannelingLightning", "CurveBullet",
+                "CurveBullet2", "CurveSphereBullet", "LaserBullet", "MortarShell", "StraightLaserBullet", "SwarmBullet" };
+            HashSet<string> expected = new HashSet<string>();
+            foreach (string name in names)
+            {
+                expected.Add("Assets/Prefabs/Projectiles/" + name + ".prefab");
+            }
+
+            HashSet<string> actual = new HashSet<string>();
+            foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefabs/Projectiles" }))
+            {
+                actual.Add(AssetDatabase.GUIDToAssetPath(guid));
+            }
+
+            CollectionAssert.AreEquivalent(expected, actual);
+        }
+
+        [TestCase("BulletSpeed", EffectDelivery.Rigid)]
+        [TestCase("ChainLightning", EffectDelivery.ChainSync)]
+        [TestCase("ChannelingLightning", EffectDelivery.ChainSync)]
+        [TestCase("CurveBullet", EffectDelivery.Arc)]
+        [TestCase("CurveBullet2", EffectDelivery.Arc)]
+        [TestCase("CurveSphereBullet", EffectDelivery.Arc)]
+        [TestCase("LaserBullet", EffectDelivery.Arc)]
+        [TestCase("MortarShell", EffectDelivery.Arc)]
+        // Speed 20 exceeds SpearSpeed=18: the shared reader returns Rigid.
+        [TestCase("StraightLaserBullet", EffectDelivery.Rigid)]
+        [TestCase("SwarmBullet", EffectDelivery.Swarm)]
+        public void Delivery_LiveProjectilePrefabs_MatchesAssetRow(string name, EffectDelivery expected)
+        {
+            Assert.AreEqual(expected, EffectDerivation.DeliveryChannel(RenderTestAssets.LoadProjectile(name)));
+        }
+
+        [Test]
+        public void Origin_LiveSourceKinds_MatchDocumentedDefaults()
+        {
+            GameObject character = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Character.prefab");
+            GameObject entity = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/BaseEntity.prefab");
+            GameObject item = new GameObject("Item source");
+            try
+            {
+                Assert.AreEqual(EffectOrigin.Healer, EffectDerivation.Origin(character));
+                Assert.AreEqual(EffectOrigin.Creature, EffectDerivation.Origin(entity));
+                Assert.AreEqual(EffectOrigin.Item, EffectDerivation.Origin(item));
+            }
+            finally
+            {
+                Object.DestroyImmediate(item);
+            }
+        }
+
+        [TestCase(1, EffectReach.Single)]
+        [TestCase(3, EffectReach.Group)]
+        [TestCase(int.MaxValue, EffectReach.All)]
+        public void Reach_TargetCount_UsesDocumentedDefaultBands(int targetCount, EffectReach expected)
+        {
+            Assert.AreEqual(expected, EffectDerivation.Reach(null, targetCount));
+        }
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "name": "HealerLike.Render.Stage.Editor",
+    "rootNamespace": "",
+    "references": [
+        "HealerLike.Runtime",
+        "HealerLike.Render",
+        "Oisif.Inspector",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

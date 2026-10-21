@@ -1,0 +1,185 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72656a68b4ca4b08aa7781878f3f168f, type: 3}
+  m_Name: Rotfall
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Studio.SpellStudioPreset
+  displayName: Rotfall
+  description: Three stacks of violet rot, ticking every 1.2 seconds for five cycles. The first tick starts after one period. Watch the drops swell, fall and reset.
+  vocabulary: {fileID: 11400000, guid: 2ebcc249811134625a66debb52a811c9, type: 2}
+  element: 3
+  family: 2
+  tempo: 1
+  periodSeconds: 1.2
+  stacks: 3
+  charges: 1
+  amount: 0.25
+  durationSeconds: 6
+  critical: 0
+  side: 2
+  scale: 1
+  overrideEntry: 1
+  entry:
+    parts:
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: 0.3, y: 0, z: 0}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.4, y: 0.88000005, z: 0.4}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: -0.22121812, y: 0, z: 0.20263894}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.4, y: 0.88000005, z: 0.4}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: 0.026249753, y: 0, z: -0.2988494}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.4, y: 0.88000005, z: 0.4}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: 0.18250534, y: 0, z: 0.23810042}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.4, y: 0.88000005, z: 0.4}
+      glow: 0
+      minCount: 0
+    - id: Primitive
+      primitive: 0
+      role: 0
+      colour: 5
+      position: {x: -0.29540634, y: 0, z: -0.052298147}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.4, y: 0.88000005, z: 0.4}
+      glow: 0
+      minCount: 0
+    stackBeads:
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.9625, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.6875, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.41249996, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: -0.1375, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.1375, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.41249996, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.6875, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    - id: StackBead
+      primitive: 0
+      role: 0
+      colour: 6
+      position: {x: 0.9625, y: -0.9, z: -1.3}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.175, y: 0.175, z: 0.175}
+      glow: 0
+      minCount: 0
+    criticalRings:
+    - id: CriticalRing
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 0, y: 0, z: 0}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 3.6749997, y: 1.05, z: 3.6749997}
+      glow: 0
+      minCount: 0
+    - id: CriticalRing
+      primitive: 3
+      role: 0
+      colour: 5
+      position: {x: 0, y: 0, z: 0}
+      euler: {x: 90, y: 0, z: 0}
+      size: {x: 4.4625, y: 1.275, z: 4.4625}
+      glow: 0
+      minCount: 0
+    sideRim:
+    - id: SideRim
+      primitive: 3
+      role: 0
+      colour: 0
+      position: {x: 0, y: 0.1, z: 0}
+      euler: {x: 0, y: 0, z: 0}
+      size: {x: 0.9, y: 0.5, z: 0.9}
+      glow: 0
+      minCount: 0
+    motion: 3
+    socket: 2
+    count: 1
+    minCount: 2
+    cycleSeconds: 1
+  overrideColour: 1
+  colour: {r: 0.62, g: 0.3, b: 0.8, a: 1}

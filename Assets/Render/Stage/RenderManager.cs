@@ -1,0 +1,358 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using HealerLike.Render.Creatures;
+using HealerLike.Render.Deliveries;
+using HealerLike.Render.Environment;
+using HealerLike.Render.Grass;
+using HealerLike.Render.Look;
+using HealerLike.Render.Spells;
+using HealerLike.Render.Stones;
+using HealerLike.Render.Zones;
+
+namespace HealerLike.Render.Stage
+{
+    // Attaches the render layer to every loaded scene that holds an EntityManager: dresses the scene, runs the
+    // render services in order, and hands what the game spawns to SpawnDressing
+    public class RenderManager : MonoBehaviour
+    {
+        [SerializeField] CreatureLooks _creatureLooks;
+        [SerializeField] SpellLooks _spellLooks;
+        [SerializeField] PrimitiveMeshes _meshes;
+        [SerializeField] StageDressing _dressing;
+        [SerializeField] EnvironmentRoot _environmentPrefab;
+        [SerializeField] LookController _look;
+        [SerializeField] ZoneRegistry _zones;
+        // What the grass answers each thing with; the defaults stand in without it
+        [SerializeField] GroundVocabulary _groundVocabulary;
+        [SerializeField] GrassField _grass;
+        [SerializeField] SpellVisualSink _spellSink;
+        [SerializeField] StoneEffects _stoneEffects;
+        [SerializeField] BattleFocus _battleFocus;
+        [SerializeField] StageRangeDriver _rangeDriver;
+        [SerializeField] StageKeyLight _keyLight;
+        [SerializeField] DeliveryVocabulary _deliveryVocabulary;
+
+        RenderRegistry _registry = new RenderRegistry();
+        Scene _scene;
+        StageInterface _interface;
+        StageCreaturePlacement _placement;
+        public StageCreaturePlacement placement { get { return _placement; } }
+        readonly StageEnvironment _environment = new StageEnvironment();
+        readonly StageBackdrop _backdrop = new StageBackdrop();
+        public StageBackdrop backdrop { get { return _backdrop; } }
+        public EnvironmentRoot environment { get { return _environment.root; } }
+        SpawnDressing _spawns = new SpawnDressing();
+        int _deliveryToken;
+        bool _isLandscape = false;
+
+        EntityManager _entityManager;
+        public EntityManager entityManager { get { return _entityManager; } }
+
+        PlayerBehaviour _player;
+        public PlayerBehaviour player { get { return _player; } }
+
+        Camera _gameCamera;
+        public Camera gameCamera { get { return _gameCamera; } }
+
+        Bounds _board;
+        public Bounds board { get { return _board; } }
+
+        public EnvironmentGust gust { get { return _environment.gust; } }
+
+        public EnvironmentForeground foreground { get { return _environment.foreground; } }
+
+        public Pose overviewPose { get { return _dressing.OverviewPose(_isLandscape); } }
+
+        public RenderRegistry registry { get { return _registry; } }
+        public ZoneRegistry zones { get { return _zones; } }
+
+        // Everything the render layer tells the grass goes through here: effects, held marks and bodies
+        readonly StageGround _ground = new StageGround();
+        public Ground ground { get { return _ground.ground; } }
+        public GrassField grass { get { return _grass; } }
+        public LookController look { get { return _look; } }
+        public SpellVisualSink spellSink { get { return _spellSink; } }
+        public StoneEffects stoneEffects { get { return _stoneEffects; } }
+        public CreatureLooks creatureLooks { get { return _creatureLooks; } }
+        public SpellLooks spellLooks { get { return _spellLooks; } }
+        public PrimitiveMeshes meshes { get { return _meshes; } }
+        public Renderer boardGround { get { return _dressing.boardGround; } }
+        public StageKeyLight keyLight { get { return _keyLight; } }
+        public DeliveryVocabulary deliveryVocabulary { get { return _deliveryVocabulary; } }
+
+        void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+            _interface = gameObject.AddComponent<StageInterface>();
+            _interface.Init(this, _battleFocus);
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
+        }
+
+        public void Init(EntityManager entityManager, PlayerBehaviour player)
+        {
+            if (entityManager == null || player == null || entityManager.board == null || entityManager.board.layout == null)
+            {
+                Debug.LogError("[RenderManager] Init needs the EntityManager with its board, and the PlayerBehaviour.");
+                return;
+            }
+
+            if (entityManager == _entityManager)
+            {
+                return;
+            }
+
+            Detach();
+            _entityManager = entityManager;
+            _player = player;
+            _scene = entityManager.gameObject.scene;
+
+            // Attach steps, all on scene instances, never on assets
+            _gameCamera = _dressing.AdoptCamera(_scene);
+            if (_gameCamera == null)
+            {
+                _entityManager = null;
+                return;
+            }
+
+            _dressing.SwapPipeline();
+            _dressing.SetLighting(_scene, _keyLight.keyLight);
+            _board = _dressing.SetBoard(_scene, entityManager.board);
+            _dressing.FrameBoard(_board);
+            _dressing.Frame(_gameCamera, _isLandscape);
+
+            // Init chain
+            InitWorld(entityManager.board.layout.cellSize);
+            _spellSink.Init(this);
+            _battleFocus.Init(this);
+            _rangeDriver.Init(_gameCamera);
+            _spawns.Init(this, _rangeDriver, _battleFocus);
+            if (_placement == null)
+            {
+                _placement = gameObject.AddComponent<StageCreaturePlacement>();
+            }
+            _placement.Init(_creatureLooks, _meshes, StageSceneObjects.Find<InteractionManager>(_scene),
+                _gameCamera, StageCalibration.CellSize);
+            _placement.isRosterPlacement = () => _interface.ui != null
+                && (_interface.ui.GetComponent<StageTouchInput>()?.roster?.active ?? false);
+            _keyLight.Init();
+            Debug.Log($"[RenderManager] Attached to {_scene.name}");
+        }
+
+        // The world every attachment shares, around the framed camera and the board: fog, zones, the grass and
+        // its ground, the environment ring
+        void InitWorld(float cellSize)
+        {
+            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board,
+                _gameCamera.transform.eulerAngles.y));
+            _zones.Init();
+            _ground.Init(gameObject, _groundVocabulary, _gameCamera, _board.max.y, cellSize);
+            Rect boardRect = new Rect(_board.min.x, _board.min.z, _board.size.x, _board.size.z);
+            _grass.Init(boardRect, cellSize, _board.max.y, _gameCamera, _zones.buffer, ZonePacker.MaxZones);
+            _environment.Init(_environmentPrefab, this, boardRect, cellSize);
+        }
+
+        // The menu's living backdrop: the battle meadow with no game in it, framed as a calm establishing shot, and
+        // a few grammar creatures idling on the grass. Everything it spawns lives in the menu scene and goes when
+        // that scene unloads; the grass and the environment are the manager's own and are released with Detach.
+        public bool AttachBackdrop(Scene scene)
+        {
+            Detach();
+            _gameCamera = _dressing.AdoptCamera(scene);
+            if (_gameCamera == null)
+            {
+                return false;
+            }
+
+            _scene = scene;
+            _dressing.SwapPipeline();
+            _dressing.SetLighting(scene, _keyLight.keyLight);
+            _board = StageBackdrop.Board;
+            Pose pose = StageBackdrop.RestPose(_board);
+            _gameCamera.transform.SetPositionAndRotation(pose.position, pose.rotation);
+            InitWorld(StageCalibration.CellSize);
+            _keyLight.Init();
+            ToolkitGameUI menu = StageSceneObjects.Find<ToolkitGameUI>(scene);
+            _backdrop.Init(scene, _creatureLooks, _meshes, _gameCamera, _board, StageCalibration.CellSize,
+                StageBackdrop.Signatures(menu != null ? menu.gameData : null));
+            Debug.Log($"[RenderManager] Backdrop on {scene.name}, {_backdrop.creatureCount} creatures");
+            return true;
+        }
+
+        void LateUpdate()
+        {
+            if (_entityManager == null)
+            {
+                if (_backdrop.isAttached)
+                {
+                    TickBackdrop(Time.deltaTime, Time.time);
+                }
+
+                return;
+            }
+
+            // Observers published and producers moved their zones in Update, so the frame is final here
+            _spellSink.Tick();
+            _zones.PublishFrame(Time.deltaTime);
+            ground.Advance(Time.deltaTime);
+            _grass.UpdateField(_zones, ground);
+            _environment.Tick(_zones);
+            _battleFocus.Tick();
+            if (_placement != null)
+            {
+                _placement.Tick();
+            }
+        }
+
+        // The backdrop's frame: the world moves as in a battle, with no spells, focus or placement to drive
+        void TickBackdrop(float deltaTime, float time)
+        {
+            _zones.PublishFrame(deltaTime);
+            ground.Advance(deltaTime);
+            _grass.UpdateField(_zones, ground);
+            _environment.Tick(_zones);
+            _backdrop.Tick(time, deltaTime);
+        }
+
+        // One counter for every projectile, so a token never names two deliveries on one rig
+        public int NextDeliveryToken()
+        {
+            if (++_deliveryToken == 0)
+            {
+                ++_deliveryToken;
+            }
+
+            return _deliveryToken;
+        }
+
+        // Asset tuning never detaches the game or reframes its camera. Existing views keep their owners and
+        // subscriptions; SpawnDressing continues to dress later spawns with the same edited vocabulary.
+        public int RebuildViews()
+        {
+            int rebuilt = _spawns.RebuildViews();
+            if (_placement != null)
+            {
+                _placement.Refresh(_creatureLooks, _meshes);
+            }
+            if (_interface != null)
+            {
+                _interface.RefreshCreatureIcons();
+            }
+            return rebuilt;
+        }
+
+        // Landscape keeps the wide framing, the look is calibrated for portrait
+        public void SetLandscape(bool isLandscape)
+        {
+            _isLandscape = isLandscape;
+            // The menu backdrop keeps its establishing shot and fog; only a game board is framed by orientation
+            if (_gameCamera == null || _entityManager == null)
+            {
+                return;
+            }
+
+            _dressing.Frame(_gameCamera, isLandscape);
+            _look.Init(StageCalibration.BackgroundFog(_gameCamera.transform.position, _board,
+                _gameCamera.transform.eulerAngles.y));
+            FrameEnvironment(true);
+            _battleFocus.MarkDirty();
+        }
+
+        public void FrameViewport(Rect viewport, float aspect)
+        {
+            if (_gameCamera == null || _entityManager == null || aspect <= 0f)
+            {
+                return;
+            }
+
+            _isLandscape = aspect > 1f;
+            _dressing.FrameBoard(_board, aspect, viewport);
+            _dressing.Frame(_gameCamera, _isLandscape, aspect);
+            _battleFocus.SetViewport(viewport);
+            FrameEnvironment(true);
+        }
+
+        // Refresh scenery only after the camera settles or its orientation changes, never every render frame.
+        public void FrameEnvironment(bool force = false) => _environment.Frame(_gameCamera, _board, force);
+
+        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            _interface.Attach(scene);
+            EntityManager entityManager = StageSceneObjects.Find<EntityManager>(scene);
+            if (entityManager == null)
+            {
+                if (StageBackdrop.Hosts(scene.path))
+                {
+                    AttachBackdrop(scene);
+                }
+
+                return;
+            }
+
+            // The game's unparented Instantiate calls land in the active scene and unload with it
+            SceneManager.SetActiveScene(scene);
+            Init(entityManager, StageSceneObjects.Find<PlayerBehaviour>(scene));
+        }
+
+        void OnSceneUnloaded(Scene scene)
+        {
+            if (scene == _scene)
+            {
+                Detach();
+            }
+        }
+
+        void OnDestroy()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            SceneManager.sceneUnloaded -= OnSceneUnloaded;
+            Detach();
+            if (_dressing != null)
+            {
+                _dressing.RestorePipeline();
+            }
+        }
+
+        void Detach()
+        {
+            _backdrop.Clear();
+            _spawns.Clear();
+            _ground.Clear();
+            if (_placement != null)
+            {
+                _placement.Clear();
+            }
+            if (_battleFocus != null)
+            {
+                _battleFocus.Clear();
+            }
+
+            _environment.Clear();
+
+            if (_dressing != null)
+            {
+                _dressing.Clear();
+            }
+
+            // The children can go first when the manager itself is destroyed
+            if (_grass != null)
+            {
+                _grass.Release();
+            }
+
+            if (_spellSink != null)
+            {
+                _spellSink.Clear();
+            }
+
+            if (_rangeDriver != null)
+            {
+                _rangeDriver.Clear();
+            }
+
+            _entityManager = null;
+            _player = null;
+        }
+
+    }
+}

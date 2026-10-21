@@ -8,12 +8,13 @@ public abstract class AConsumerFactory : ScriptableObject
     public abstract AConsumer GetConsumer(GameObject source, GameObject target);
 }
 
-public class ConsumerFactory<ConsumerType, DataType> : AConsumerFactory
+public class ConsumerFactory<ConsumerType, DataType> : AConsumerFactory, IGameDataSource
                                             where ConsumerType : AConsumer<DataType>, new()
                                             where DataType : ConsumerBaseData
 {
     [InlineProperty]
     public DataType data;
+    public object sourceData { get { return data; } }
 
     public override AConsumer GetConsumer(GameObject source, GameObject target)
     {
@@ -42,9 +43,10 @@ public class ConsumerBaseData
     public bool canBeCritical = true;
 }
 
-public abstract class AConsumer<DataType> : AConsumer where DataType : ConsumerBaseData
+public abstract class AConsumer<DataType> : AConsumer, IGameDataSource where DataType : ConsumerBaseData
 {
     public DataType data;
+    public object sourceData { get { return data; } }
     public override bool ignoreDamageReduction => data.ignoreDamageReduction;
     public override bool ignoreConsumerPrevention => data.ignoreConsumerPrevention;
     public override bool canBeCritical => data.canBeCritical;

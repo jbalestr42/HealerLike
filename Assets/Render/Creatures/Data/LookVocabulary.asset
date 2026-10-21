@@ -1,0 +1,7288 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c09d50bce8e404199b93b2100b6bebb, type: 3}
+  m_Name: LookVocabulary
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.LookVocabulary
+  layout:
+    plantBodySink: 0.84
+    plantStemFoot: 0.8
+    stoneBodyLift: 0.8
+    stoneNeck: 0.55
+    shoulderOffset: 0.7
+    limbSpread: 0.36
+    limbDepth: 0.05
+    limbWidth: 0.48
+    limbThickness: 0.5
+    limbSplay: 18
+    limbAsymmetry: 0.1
+    limbBodyOverlap: 0.5
+    minBranch: 0.7
+    maxBranch: 1.65
+    threeHeadScale: 0.76
+    fiveHeadScale: 0.64
+    threeHeadSpread: 43
+    fiveHeadSpread: 31
+    stoneBranch: 0.35
+    stoneBranchThickness: 0.24
+    branchThickness: 0.19
+    headClearance: 1.25
+    foreshortening: 0.85
+    extendAccessorySupports: 1
+    plantAccessoryClearance: 0.25
+    stoneAccessoryClearance: 0.3
+  heads:
+    _entries:
+    - key: 0
+      value:
+        plant:
+        - id: BudBody
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.01, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.17, y: 1.12, z: 1}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: BudBody
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.14, y: 0.22, z: 0.14}
+          glow: 0.6
+          minCount: 0
+        stone:
+        - id: BudBody
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.12
+            bend: 0
+            bow: 0
+            bevel: 0.25
+            asymmetry: 0.13
+            fracture: 0.74
+            ridge: 0.65
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.01, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.17, y: 1.12, z: 1}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.62
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: BudBody
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.14, y: 0.22, z: 0.14}
+          glow: 0.6
+          minCount: 0
+        plantStemScale: 0.45
+        plantStem:
+          rid: -2
+        carriesCount: 0
+    - key: 1
+      value:
+        plant:
+        - id: SpearJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.12, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.2, y: 0.24, z: 0.2}
+          glow: 0
+          minCount: 0
+        - id: SpearBlade
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.65
+            taper: 0.78
+            bend: 0.2
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.21, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.48, y: 1.8, z: 0.31}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: SpearBlade
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.11, y: 0.2, z: 0.11}
+          glow: 0.6
+          minCount: 0
+        stone:
+        - id: SpearJoint
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.12
+            bend: 0
+            bow: 0
+            bevel: 0.25
+            asymmetry: 0.13
+            fracture: 0.74
+            ridge: 0.65
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.12, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.2, y: 0.24, z: 0.2}
+          glow: 0
+          minCount: 0
+        - id: SpearBlade
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.82
+            bend: 0.04
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0.45
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.21, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.5, y: 1.35, z: 0.36}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.62
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: SpearBlade
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.11, y: 0.2, z: 0.11}
+          glow: 0.6
+          minCount: 0
+        plantStemScale: 0.95
+        plantStem:
+          rid: -2
+        carriesCount: 0
+    - key: 2
+      value:
+        plant:
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.16, y: 0.25, z: 0.0075}
+          euler: {x: 1.4474499, y: 0.4235484, z: 32.619244}
+          size: {x: 0.47, y: 0.59382236, z: 0.47}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.32, y: 0.5, z: 0.015}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.3384, y: 0.3384, z: 0.3384}
+          glow: 0
+          minCount: 0
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.375, y: 0.89, z: 0}
+          euler: {x: 357.81897, y: 359.84695, z: 8.02724}
+          size: {x: 0.53, y: 0.78828925, z: 0.53}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.43, y: 1.28, z: -0.015}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.3816, y: 0.3816, z: 0.3816}
+          glow: 0
+          minCount: 0
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.19500001, y: 1.61, z: -0.015}
+          euler: {x: 0, y: 0, z: 324.54453}
+          size: {x: 0.45, y: 0.81024694, z: 0.45}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.04, y: 1.94, z: -0.015}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.324, y: 0.324, z: 0.324}
+          glow: 0
+          minCount: 0
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.405, y: 1.895, z: 0}
+          euler: {x: 2.335633, y: 357.35883, z: 262.97162}
+          size: {x: 0.38, y: 0.7361385, z: 0.38}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.77, y: 1.85, z: 0.015}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.2736, y: 0.2736, z: 0.2736}
+          glow: 0
+          minCount: 0
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.95, y: 1.585, z: 0.022499999}
+          euler: {x: 1.3411523, y: 355.64053, z: 214.18613}
+          size: {x: 0.31, y: 0.64087826, z: 0.31}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.13, y: 1.32, z: 0.03}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22320001, y: 0.22320001, z: 0.22320001}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.13, y: 0.92, z: 0.03}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.5, y: 0.78, z: 0.43}
+          glow: 0.6
+          minCount: 0
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.68, y: 1.585, z: 0.0075}
+          euler: {x: 1.6054815, y: 2.5813484, z: 116.24586}
+          size: {x: 0.27, y: 1.6061522, z: 0.27}
+          glow: 0
+          minCount: 1
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -1.4, y: 1.23, z: 0.03}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.19440001, y: 0.19440001, z: 0.19440001}
+          glow: 0
+          minCount: 1
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -1.4, y: 0.87, z: 0.03}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.34, y: 0.64, z: 0.31}
+          glow: 0.6
+          minCount: 1
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.41, y: 1.515, z: 0.022499999}
+          euler: {x: 0.594848, y: 359.01724, z: 242.37076}
+          size: {x: 0.27, y: 1.444827, z: 0.27}
+          glow: 0
+          minCount: 1
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 2.05, y: 1.18, z: 0.03}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.19440001, y: 0.19440001, z: 0.19440001}
+          glow: 0
+          minCount: 1
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 2.05, y: 0.81999993, z: 0.03}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.34, y: 0.64, z: 0.31}
+          glow: 0.6
+          minCount: 1
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -1.8499999, y: 1.23, z: 0.03}
+          euler: {x: 0, y: 0, z: 90}
+          size: {x: 0.27, y: 0.9, z: 0.27}
+          glow: 0
+          minCount: 2
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -2.3, y: 1.23, z: 0.03}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.19440001, y: 0.19440001, z: 0.19440001}
+          glow: 0
+          minCount: 2
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -2.3, y: 0.87, z: 0.03}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.34, y: 0.64, z: 0.31}
+          glow: 0.6
+          minCount: 2
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 2.5, y: 1.18, z: 0.03}
+          euler: {x: 0, y: 0, z: 270}
+          size: {x: 0.27, y: 0.9000001, z: 0.27}
+          glow: 0
+          minCount: 2
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 2.95, y: 1.18, z: 0.03}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.19440001, y: 0.19440001, z: 0.19440001}
+          glow: 0
+          minCount: 2
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 2.95, y: 0.81999993, z: 0.03}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.34, y: 0.64, z: 0.31}
+          glow: 0.6
+          minCount: 2
+        stone:
+        - id: ArchPier
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.23
+            asymmetry: 0.12
+            fracture: 0.8
+            ridge: 0.72
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.36, y: 0.46, z: 0.015}
+          euler: {x: 0, y: -7, z: -13}
+          size: {x: 0.8, y: 1.13, z: 0.72}
+          glow: 0
+          minCount: 0
+        - id: ArchLintel
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.03
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.1
+            fracture: 0.55
+            ridge: 0.18
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.2, y: 1.18, z: -0.02}
+          euler: {x: 0, y: 4, z: -10}
+          size: {x: 1.55, y: 0.53, z: 0.76}
+          glow: 0
+          minCount: 0
+        - id: ArchKeystone
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.12
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.1
+            fracture: 0.65
+            ridge: 0.42
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.99, y: 0.82, z: 0.01}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.42, y: 0.59, z: 0.46}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.13
+            bend: 0
+            bow: 0
+            bevel: 0.19
+            asymmetry: 0.1
+            fracture: 0.65
+            ridge: 0.48
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1, y: 0.35, z: 0.02}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.44, y: 0.54, z: 0.45}
+          glow: 0.6
+          minCount: 0
+        - id: CanopySlab
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.12
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -1.105, y: 1.12, z: 0.02}
+          euler: {x: 0, y: 0, z: 90}
+          size: {x: 0.29, y: 1.49, z: 0.29}
+          glow: 0
+          minCount: 1
+        - id: PodBlock
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.12
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -1.85, y: 0.90999997, z: 0.02}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.22, y: 0.42000002, z: 0.22}
+          glow: 0
+          minCount: 1
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.13
+            bend: 0
+            bow: 0
+            bevel: 0.19
+            asymmetry: 0.1
+            fracture: 0.65
+            ridge: 0.48
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -1.85, y: 0.43, z: 0.02}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.37, y: 0.58, z: 0.37}
+          glow: 0.6
+          minCount: 1
+        - id: CanopySlab
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.12
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.4300001, y: 1.12, z: 0.02}
+          euler: {x: 0, y: 0, z: 270}
+          size: {x: 0.29, y: 1.14, z: 0.29}
+          glow: 0
+          minCount: 1
+        - id: PodBlock
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.12
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 2, y: 0.90999997, z: 0.02}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.22, y: 0.42000002, z: 0.22}
+          glow: 0
+          minCount: 1
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.13
+            bend: 0
+            bow: 0
+            bevel: 0.19
+            asymmetry: 0.1
+            fracture: 0.65
+            ridge: 0.48
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 2, y: 0.43, z: 0.02}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.37, y: 0.58, z: 0.37}
+          glow: 0.6
+          minCount: 1
+        - id: CanopySlab
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.12
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -2.35, y: 1.12, z: 0.02}
+          euler: {x: 0, y: 0, z: 90}
+          size: {x: 0.29, y: 0.9999999, z: 0.29}
+          glow: 0
+          minCount: 2
+        - id: PodBlock
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.12
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -2.85, y: 0.90999997, z: 0.02}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.22, y: 0.42000002, z: 0.22}
+          glow: 0
+          minCount: 2
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.13
+            bend: 0
+            bow: 0
+            bevel: 0.19
+            asymmetry: 0.1
+            fracture: 0.65
+            ridge: 0.48
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -2.85, y: 0.43, z: 0.02}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.37, y: 0.58, z: 0.37}
+          glow: 0.6
+          minCount: 2
+        - id: CanopySlab
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.12
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 2.475, y: 1.12, z: 0.02}
+          euler: {x: 0, y: 0, z: 270}
+          size: {x: 0.29, y: 0.95000005, z: 0.29}
+          glow: 0
+          minCount: 2
+        - id: PodBlock
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.12
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 2.95, y: 0.90999997, z: 0.02}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.22, y: 0.42000002, z: 0.22}
+          glow: 0
+          minCount: 2
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.13
+            bend: 0
+            bow: 0
+            bevel: 0.19
+            asymmetry: 0.1
+            fracture: 0.65
+            ridge: 0.48
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 2.95, y: 0.43, z: 0.02}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.37, y: 0.58, z: 0.37}
+          glow: 0.6
+          minCount: 2
+        plantStemScale: 0.6
+        plantStem:
+          rid: 4204219571951632558
+        carriesCount: 1
+    - key: 3
+      value:
+        plant:
+        - id: ConductorCollar
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 16
+            lengthSegments: 8
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.23
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.28, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.55, y: 0.3, z: 1.18}
+          glow: 0
+          minCount: 0
+        - id: ConductorMast
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.22
+            taper: 0.35
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.53, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.24, y: 1.02, z: 0.24}
+          glow: 0
+          minCount: 0
+        - id: ConductorLower
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.74, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.62, y: 0.58, z: 0.54}
+          glow: 0
+          minCount: 0
+        - id: ConductorUpper
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.035, y: 1.22, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.39, y: 0.44, z: 0.36}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: ConductorUpper
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.14, y: 0.19, z: 0.14}
+          glow: 0.6
+          minCount: 0
+        stone:
+        - id: ConductorCollar
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 8
+            lengthSegments: 4
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.23
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.28, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.55, y: 0.3, z: 1.18}
+          glow: 0
+          minCount: 0
+        - id: ConductorMast
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.53, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.24, y: 1.02, z: 0.24}
+          glow: 0
+          minCount: 0
+        - id: ConductorLower
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.12
+            bend: 0
+            bow: 0
+            bevel: 0.25
+            asymmetry: 0.13
+            fracture: 0.74
+            ridge: 0.65
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.74, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.62, y: 0.58, z: 0.54}
+          glow: 0
+          minCount: 0
+        - id: ConductorUpper
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.12
+            bend: 0
+            bow: 0
+            bevel: 0.25
+            asymmetry: 0.13
+            fracture: 0.74
+            ridge: 0.65
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.035, y: 1.22, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.39, y: 0.44, z: 0.36}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.62
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: ConductorUpper
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.14, y: 0.19, z: 0.14}
+          glow: 0.6
+          minCount: 0
+        plantStemScale: 0.35
+        plantStem:
+          rid: -2
+        carriesCount: 0
+    - key: 4
+      value:
+        plant:
+        - id: ForkBranch
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.8
+            taper: 0.13
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.285, y: 0.23, z: 0}
+          euler: {x: 0, y: 0, z: 51.095863}
+          size: {x: 0.29, y: 0.73246163, z: 0.29}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.57, y: 0.46, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.25, y: 0.25, z: 0.25}
+          glow: 0
+          minCount: 0
+        - id: ForkLeft
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.7
+            taper: 0.35
+            bend: 0.12
+            bow: -0.9
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.57, y: 0.46, z: 0}
+          euler: {x: 0, y: 0, z: 354}
+          size: {x: 0.96, y: 2.02, z: 0.42}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: ForkLeft
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.14, y: 0.22, z: 0.14}
+          glow: 0.6
+          minCount: 0
+        - id: ForkBranch
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.8
+            taper: 0.13
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.285, y: 0.23, z: 0}
+          euler: {x: 0, y: 0, z: 308.90414}
+          size: {x: 0.29, y: 0.73246163, z: 0.29}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.57, y: 0.46, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.25, y: 0.25, z: 0.25}
+          glow: 0
+          minCount: 0
+        - id: ForkRight
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.7
+            taper: 0.35
+            bend: 0.12
+            bow: -0.9
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.57, y: 0.46, z: 0}
+          euler: {x: 0.00000052357854, y: 180, z: 354}
+          size: {x: 0.87, y: 1.84, z: 0.42}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: ForkRight
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.14, y: 0.22, z: 0.14}
+          glow: 0.6
+          minCount: 0
+        stone:
+        - id: ForkLeft
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.1
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.1
+            fracture: 0.82
+            ridge: 0.72
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.54, y: 0, z: 0.04}
+          euler: {x: 0.000000026680427, y: 351, z: 3}
+          size: {x: 0.82, y: 1.55, z: 0.72}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.62
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: ForkLeft
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.14, y: 0.22, z: 0.14}
+          glow: 0.6
+          minCount: 0
+        - id: ForkRight
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.1
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.1
+            fracture: 0.82
+            ridge: 0.72
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.52, y: 0.035, z: -0.06}
+          euler: {x: -0.00000010672171, y: 12.999999, z: 349}
+          size: {x: 0.74, y: 1.3, z: 0.67}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.62
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: ForkRight
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.14, y: 0.22, z: 0.14}
+          glow: 0.6
+          minCount: 0
+        plantStemScale: 0.25
+        plantStem:
+          rid: -2
+        carriesCount: 0
+    - key: 5
+      value:
+        plant:
+        - id: HealBranch
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.22
+            taper: 0.35
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.25, y: 0.365, z: 0}
+          euler: {x: 0, y: 0, z: 34.408474}
+          size: {x: 0.12, y: 0.8848164, z: 0.12}
+          glow: 0
+          minCount: 0
+        - id: HealSeed
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.5, y: 0.92, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.3, y: 0.43, z: 0.27}
+          glow: 0.6
+          minCount: 0
+        - id: HealBranch
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.22
+            taper: 0.35
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.5, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.12, y: 1, z: 0.12}
+          glow: 0
+          minCount: 0
+        - id: HealSeed
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 1.19, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.3, y: 0.43, z: 0.27}
+          glow: 0.6
+          minCount: 0
+        - id: HealBranch
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.22
+            taper: 0.35
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.25, y: 0.365, z: 0}
+          euler: {x: 0, y: 0, z: 325.59152}
+          size: {x: 0.12, y: 0.8848164, z: 0.12}
+          glow: 0
+          minCount: 0
+        - id: HealSeed
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.5, y: 0.92, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.3, y: 0.43, z: 0.27}
+          glow: 0.6
+          minCount: 0
+        stone:
+        - id: HealPedestal
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.92, y: 0.38, z: 0.72}
+          glow: 0
+          minCount: 0
+        - id: HealCore
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.22
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.3, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.51, y: 0.54, z: 0.47}
+          glow: 0
+          minCount: 0
+        - id: HealSeed
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.22
+            asymmetry: 0.06
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 0
+          sourceAnchor: 0
+          colour: 5
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.32, y: 0.3, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.35, y: 0.4, z: 0.34}
+          glow: 0.6
+          minCount: 0
+        - id: HealSeed
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.22
+            asymmetry: 0.06
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 0
+          sourceAnchor: 0
+          colour: 5
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.32, y: 0.3, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.35, y: 0.4, z: 0.34}
+          glow: 0.6
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.62
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: HealCore
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.26, y: 0.27, z: 0.25}
+          glow: 0.6
+          minCount: 0
+        plantStemScale: 0.7
+        plantStem:
+          rid: -2
+        carriesCount: 0
+    - key: 6
+      value:
+        plant:
+        - id: CrownBase
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.16, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.5, y: 0.3, z: 0.46}
+          glow: 0
+          minCount: 0
+        - id: DefencePlate
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.62
+            taper: 0.35
+            bend: 0.35
+            bow: 0.38
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.14142136, y: 0.2, z: 0.14142136}
+          euler: {x: 0, y: 315, z: 334}
+          size: {x: 0.72, y: 1.4, z: 0.32}
+          glow: 0
+          minCount: 0
+        - id: DefencePlate
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.62
+            taper: 0.35
+            bend: 0.35
+            bow: 0.38
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.14142136, y: 0.2, z: 0.14142136}
+          euler: {x: 0, y: 225, z: 334}
+          size: {x: 0.72, y: 1.4, z: 0.32}
+          glow: 0
+          minCount: 0
+        - id: DefencePlate
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.62
+            taper: 0.35
+            bend: 0.35
+            bow: 0.38
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.14142133, y: 0.2, z: -0.14142138}
+          euler: {x: 0, y: 134.99998, z: 334}
+          size: {x: 0.72, y: 1.4, z: 0.32}
+          glow: 0
+          minCount: 0
+        - id: DefencePlate
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.62
+            taper: 0.35
+            bend: 0.35
+            bow: 0.38
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.14142141, y: 0.2, z: -0.1414213}
+          euler: {x: 0, y: 44.999977, z: 334}
+          size: {x: 0.72, y: 1.4, z: 0.32}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.32, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.18, y: 0.27, z: 0.18}
+          glow: 0.6
+          minCount: 0
+        stone:
+        - id: CrownBase
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.16, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.5, y: 0.3, z: 0.46}
+          glow: 0
+          minCount: 0
+        - id: DefencePlate
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.08
+            fracture: 0.72
+            ridge: 0.55
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.14142136, y: 0.2, z: 0.14142136}
+          euler: {x: 0, y: 315, z: 334}
+          size: {x: 0.65, y: 1.16, z: 0.32}
+          glow: 0
+          minCount: 0
+        - id: DefencePlate
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.08
+            fracture: 0.72
+            ridge: 0.55
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.14142136, y: 0.2, z: 0.14142136}
+          euler: {x: 0, y: 225, z: 334}
+          size: {x: 0.65, y: 1.16, z: 0.32}
+          glow: 0
+          minCount: 0
+        - id: DefencePlate
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.08
+            fracture: 0.72
+            ridge: 0.55
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.14142133, y: 0.2, z: -0.14142138}
+          euler: {x: 0, y: 134.99998, z: 334}
+          size: {x: 0.65, y: 1.16, z: 0.32}
+          glow: 0
+          minCount: 0
+        - id: DefencePlate
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.08
+            fracture: 0.72
+            ridge: 0.55
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.14142141, y: 0.2, z: -0.1414213}
+          euler: {x: 0, y: 44.999977, z: 334}
+          size: {x: 0.65, y: 1.16, z: 0.32}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.62
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.32, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.18, y: 0.27, z: 0.18}
+          glow: 0.6
+          minCount: 0
+        plantStemScale: 0.25
+        plantStem:
+          rid: -2
+        carriesCount: 0
+    - key: 7
+      value:
+        plant:
+        - id: CrownBase
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.16, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.5, y: 0.3, z: 0.46}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.1
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.5022947, y: 1.19, z: 0}
+          euler: {x: 0, y: 0, z: 30.000002}
+          size: {x: 0.25, y: 0.68, z: 0.24}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.1
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.000000025352605, y: 1.5, z: 0}
+          euler: {x: 0, y: 0, z: 90}
+          size: {x: 0.25, y: 0.68, z: 0.24}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.1
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.5022947, y: 1.19, z: 0}
+          euler: {x: 0, y: 0, z: 150}
+          size: {x: 0.25, y: 0.68, z: 0.24}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.1
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.50229466, y: 0.5699999, z: 0}
+          euler: {x: 0, y: 0, z: 210.00002}
+          size: {x: 0.25, y: 0.68, z: 0.24}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.1
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.0000000069164305, y: 0.26, z: 0}
+          euler: {x: 0, y: 0, z: 270}
+          size: {x: 0.25, y: 0.68, z: 0.24}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.1
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.50229484, y: 0.5700001, z: 0}
+          euler: {x: 0, y: 0, z: 330.00003}
+          size: {x: 0.25, y: 0.68, z: 0.24}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.32, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.18, y: 0.27, z: 0.18}
+          glow: 0.6
+          minCount: 0
+        stone:
+        - id: CrownBase
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.16, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.5, y: 0.3, z: 0.46}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.5022947, y: 1.19, z: 0}
+          euler: {x: 0, y: 0, z: 30.000002}
+          size: {x: 0.25, y: 0.68, z: 0.37}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.000000025352605, y: 1.5, z: 0}
+          euler: {x: 0, y: 0, z: 90}
+          size: {x: 0.25, y: 0.68, z: 0.37}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.5022947, y: 1.19, z: 0}
+          euler: {x: 0, y: 0, z: 150}
+          size: {x: 0.25, y: 0.68, z: 0.37}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.50229466, y: 0.5699999, z: 0}
+          euler: {x: 0, y: 0, z: 210.00002}
+          size: {x: 0.25, y: 0.68, z: 0.37}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.0000000069164305, y: 0.26, z: 0}
+          euler: {x: 0, y: 0, z: 270}
+          size: {x: 0.25, y: 0.68, z: 0.37}
+          glow: 0
+          minCount: 0
+        - id: OffenceLoop
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.50229484, y: 0.5700001, z: 0}
+          euler: {x: 0, y: 0, z: 330.00003}
+          size: {x: 0.25, y: 0.68, z: 0.37}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.62
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.32, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.18, y: 0.27, z: 0.18}
+          glow: 0.6
+          minCount: 0
+        plantStemScale: 0.45
+        plantStem:
+          rid: -2
+        carriesCount: 0
+    - key: 8
+      value:
+        plant:
+        - id: BaneCrown
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 1.05, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.66, y: 0.36, z: 0.6}
+          glow: 0
+          minCount: 0
+        - id: BaneStem
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.22
+            taper: 0.35
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.475, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.17, y: 0.95, z: 0.17}
+          glow: 0
+          minCount: 0
+        - id: BanePendant
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.82
+            taper: 0.35
+            bend: 0.35
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.43, y: 0.65, z: 0}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.34, y: 0.85, z: 0.31}
+          glow: 0.6
+          minCount: 0
+        - id: BanePendant
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.82
+            taper: 0.35
+            bend: 0.35
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.21500003, y: 0.65, z: 0.37239093}
+          euler: {x: 0, y: -120.00001, z: 180}
+          size: {x: 0.34, y: 0.85, z: 0.31}
+          glow: 0.6
+          minCount: 0
+        - id: BanePendant
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.82
+            taper: 0.35
+            bend: 0.35
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.21499996, y: 0.65, z: -0.37239096}
+          euler: {x: 0, y: -240.00002, z: 180}
+          size: {x: 0.34, y: 0.85, z: 0.31}
+          glow: 0.6
+          minCount: 0
+        stone:
+        - id: BaneCrown
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.12
+            bend: 0
+            bow: 0
+            bevel: 0.25
+            asymmetry: 0.13
+            fracture: 0.74
+            ridge: 0.65
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 1.05, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.66, y: 0.36, z: 0.6}
+          glow: 0
+          minCount: 0
+        - id: BaneStem
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.475, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.17, y: 0.95, z: 0.17}
+          glow: 0
+          minCount: 0
+        - id: BanePendant
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.82
+            bend: 0.04
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0.45
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.43, y: 0.65, z: 0}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.34, y: 0.85, z: 0.31}
+          glow: 0.6
+          minCount: 0
+        - id: BanePendant
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.82
+            bend: 0.04
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0.45
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.21500003, y: 0.65, z: 0.37239093}
+          euler: {x: 0, y: -120.00001, z: 180}
+          size: {x: 0.34, y: 0.85, z: 0.31}
+          glow: 0.6
+          minCount: 0
+        - id: BanePendant
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.82
+            bend: 0.04
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0.45
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.21499996, y: 0.65, z: -0.37239096}
+          euler: {x: 0, y: -240.00002, z: 180}
+          size: {x: 0.34, y: 0.85, z: 0.31}
+          glow: 0.6
+          minCount: 0
+        plantStemScale: 0.55
+        plantStem:
+          rid: -2
+        carriesCount: 0
+    - key: 9
+      value:
+        plant:
+        - id: WardJoint
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.22
+            taper: 0.35
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.04, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.25, y: 0.23, z: 0.25}
+          glow: 0
+          minCount: 0
+        - id: WardSeed
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.53, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.6, y: 0.92, z: 0.6}
+          glow: 0
+          minCount: 0
+        - id: WardShell0
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.8
+            taper: 0.35
+            bend: -0.3
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.19, y: 0.04, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.43, y: 1.2, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: WardShell1
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.8
+            taper: 0.35
+            bend: -0.3
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.09500001, y: 0.04, z: 0.16454482}
+          euler: {x: 0, y: 240, z: 0}
+          size: {x: 0.43, y: 1.2, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: WardShell2
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.8
+            taper: 0.35
+            bend: -0.3
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.094999984, y: 0.04, z: -0.16454484}
+          euler: {x: 0, y: 119.99999, z: 0}
+          size: {x: 0.43, y: 1.2, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: WardShell0
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.15, y: 0.2, z: 0.15}
+          glow: 0.6
+          minCount: 0
+        stone:
+        - id: WardJoint
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.04, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.25, y: 0.23, z: 0.25}
+          glow: 0
+          minCount: 0
+        - id: WardSeed
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.12
+            bend: 0
+            bow: 0
+            bevel: 0.25
+            asymmetry: 0.13
+            fracture: 0.74
+            ridge: 0.65
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.53, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.6, y: 0.92, z: 0.6}
+          glow: 0
+          minCount: 0
+        - id: WardShell0
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.82
+            bend: -0.2
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.19, y: 0.04, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.43, y: 1.2, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: WardShell1
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.82
+            bend: -0.2
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.09500001, y: 0.04, z: 0.16454482}
+          euler: {x: 0, y: 240, z: 0}
+          size: {x: 0.43, y: 1.2, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: WardShell2
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.82
+            bend: -0.2
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 1
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.094999984, y: 0.04, z: -0.16454484}
+          euler: {x: 0, y: 119.99999, z: 0}
+          size: {x: 0.43, y: 1.2, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.62
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 1
+          attachTo: WardShell0
+          attachAt: 2
+          position: {x: 0, y: -0.06, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.15, y: 0.2, z: 0.15}
+          glow: 0.6
+          minCount: 0
+        plantStemScale: 0.45
+        plantStem:
+          rid: -2
+        carriesCount: 0
+    - key: 10
+      value:
+        plant:
+        - id: PulseStalk
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.22
+            taper: 0.35
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.21, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.42, z: 0.22}
+          glow: 0
+          minCount: 0
+        - id: PulseCap
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1.6
+            taper: 0.65
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.59, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.35, y: 0.45, z: 1.05}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.84, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.16, y: 0.13, z: 0.16}
+          glow: 0.6
+          minCount: 0
+        stone:
+        - id: PulseStalk
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.21, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.42, z: 0.22}
+          glow: 0
+          minCount: 0
+        - id: PulseCap
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.59, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.35, y: 0.45, z: 1.05}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.62
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 2
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.84, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.16, y: 0.13, z: 0.16}
+          glow: 0.6
+          minCount: 0
+        plantStemScale: 0.45
+        plantStem:
+          rid: -2
+        carriesCount: 0
+    - key: 11
+      value:
+        plant:
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.07980762, y: 0.26500002, z: 0}
+          euler: {x: 0, y: 0, z: 16.760242}
+          size: {x: 0.28, y: 0.55351335, z: 0.28}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.15961523, y: 0.53000003, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.20160002, y: 0.20160002, z: 0.20160002}
+          glow: 0
+          minCount: 0
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.18512458, y: 0.7888855, z: 0}
+          euler: {x: 0, y: 0, z: 5.627486}
+          size: {x: 0.28, y: 0.52027845, z: 0.28}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.2106339, y: 1.047771, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.20160002, y: 0.20160002, z: 0.20160002}
+          glow: 0
+          minCount: 0
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.047337923, y: 1.24122, z: 0}
+          euler: {x: 0, y: 0, z: 319.8313}
+          size: {x: 0.28, y: 0.50631267, z: 0.28}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.11595806, y: 1.4346691, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.20160002, y: 0.20160002, z: 0.20160002}
+          glow: 0
+          minCount: 0
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.36, y: 1.4346691, z: 0}
+          euler: {x: 0, y: 0, z: 270}
+          size: {x: 0.28, y: 0.48808393, z: 0.28}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.604042, y: 1.4346691, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.20160002, y: 0.20160002, z: 0.20160002}
+          glow: 0
+          minCount: 0
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.767338, y: 1.24122, z: 0}
+          euler: {x: 0, y: 0, z: 220.16867}
+          size: {x: 0.28, y: 0.5063127, z: 0.28}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.93063396, y: 1.0477709, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.20160002, y: 0.20160002, z: 0.20160002}
+          glow: 0
+          minCount: 0
+        - id: Growth
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.78
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.9051246, y: 0.7888855, z: 0}
+          euler: {x: 0, y: 0, z: 174.37247}
+          size: {x: 0.28, y: 0.52027833, z: 0.28}
+          glow: 0
+          minCount: 0
+        - id: GrowthJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.87961525, y: 0.53000003, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.20160002, y: 0.20160002, z: 0.20160002}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.9
+            taper: 0.25
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.87961525, y: 0.37000003, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.32, y: 0.41, z: 0.3}
+          glow: 0.6
+          minCount: 0
+        stone:
+        - id: CurlBlock
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.07980762, y: 0.26500002, z: 0}
+          euler: {x: 0, y: 0, z: 16.760242}
+          size: {x: 0.34, y: 0.55351335, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: CurlBlock
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.18512458, y: 0.7888855, z: 0}
+          euler: {x: 0, y: 0, z: 5.627486}
+          size: {x: 0.34, y: 0.52027845, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: CurlBlock
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.047337923, y: 1.24122, z: 0}
+          euler: {x: 0, y: 0, z: 319.8313}
+          size: {x: 0.34, y: 0.50631267, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: CurlBlock
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.36, y: 1.4346691, z: 0}
+          euler: {x: 0, y: 0, z: 270}
+          size: {x: 0.34, y: 0.48808393, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: CurlBlock
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.767338, y: 1.24122, z: 0}
+          euler: {x: 0, y: 0, z: 220.16867}
+          size: {x: 0.34, y: 0.5063127, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: CurlBlock
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 3
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.9051246, y: 0.7888855, z: 0}
+          euler: {x: 0, y: 0, z: 174.37247}
+          size: {x: 0.34, y: 0.52027833, z: 0.34}
+          glow: 0
+          minCount: 0
+        - id: Bud
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.62
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.52
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 4
+          isSource: 1
+          sourceAnchor: 1
+          colour: 5
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.87961525, y: 0.37000003, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.32, y: 0.41, z: 0.3}
+          glow: 0.6
+          minCount: 0
+        plantStemScale: 0.6
+        plantStem:
+          rid: -2
+        carriesCount: 0
+  accessories:
+    _entries:
+    - key: 1
+      value:
+        socket: 0
+        isCentered: 0
+        plant:
+        - id: Offshoot
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.22
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.875, y: 0.21, z: 0}
+          euler: {x: 0, y: 0, z: 283.49573}
+          size: {x: 0.14, y: 1.7996944, z: 0.14}
+          glow: 0
+          minCount: 0
+        - id: OffshootJoint
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.75, y: 0.42, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.2, y: 0.2, z: 0.2}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: Offshoot
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.875, y: 0.21, z: 0}
+          euler: {x: 0, y: 0, z: 283.49573}
+          size: {x: 0.14, y: 1.7996944, z: 0.14}
+          glow: 0
+          minCount: 0
+        - id: OffshootJoint
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.75, y: 0.42, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.2, y: 0.2, z: 0.2}
+          glow: 0
+          minCount: 0
+        miniHeadAt: {x: 1.75, y: 0.42, z: 0}
+        miniHeadScale: 0.46
+    - key: 2
+      value:
+        socket: 0
+        isCentered: 0
+        plant:
+        - id: HookStem
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.22
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.5, y: 0.04, z: 0}
+          euler: {x: 0, y: 0, z: 274.5739}
+          size: {x: 0.16, y: 1.0031949, z: 0.16}
+          glow: 0
+          minCount: 0
+        - id: HookBend
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.22
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.1600001, y: 0.28, z: 0}
+          euler: {x: 0, y: 0, z: 321.34018}
+          size: {x: 0.2, y: 0.51224995, z: 0.2}
+          glow: 0
+          minCount: 0
+        - id: HookTip
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.55
+            taper: 0.35
+            bend: 0.1
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.28, y: 0.73, z: 0}
+          euler: {x: 0, y: 0, z: 30}
+          size: {x: 0.25, y: 0.49, z: 0.22}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: HookStem
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.5, y: 0.04, z: 0}
+          euler: {x: 0, y: 0, z: 274.5739}
+          size: {x: 0.16, y: 1.0031949, z: 0.16}
+          glow: 0
+          minCount: 0
+        - id: HookBend
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.1600001, y: 0.28, z: 0}
+          euler: {x: 0, y: 0, z: 321.34018}
+          size: {x: 0.2, y: 0.51224995, z: 0.2}
+          glow: 0
+          minCount: 0
+        - id: HookTip
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.88
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.28, y: 0.73, z: 0}
+          euler: {x: 0, y: 0, z: 30}
+          size: {x: 0.25, y: 0.49, z: 0.22}
+          glow: 0
+          minCount: 0
+        miniHeadAt: {x: 1.75, y: 0.42, z: 0}
+        miniHeadScale: 0.46
+    - key: 3
+      value:
+        socket: 0
+        isCentered: 0
+        plant:
+        - id: Antenna
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.22
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.57, y: 0.59, z: 0}
+          euler: {x: 0, y: 0, z: 315.98776}
+          size: {x: 0.13, y: 1.6407315, z: 0.13}
+          glow: 0
+          minCount: 0
+        - id: AntennaSeed
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.14, y: 1.26, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.25, y: 0.35, z: 0.24}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: Antenna
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.57, y: 0.59, z: 0}
+          euler: {x: 0, y: 0, z: 315.98776}
+          size: {x: 0.13, y: 1.6407315, z: 0.13}
+          glow: 0
+          minCount: 0
+        - id: AntennaSeed
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.14, y: 1.26, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.25, y: 0.35, z: 0.24}
+          glow: 0
+          minCount: 0
+        miniHeadAt: {x: 1.75, y: 0.42, z: 0}
+        miniHeadScale: 0.46
+    - key: 4
+      value:
+        socket: 0
+        isCentered: 1
+        plant:
+        - id: ThornCollarRing
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 16
+            lengthSegments: 8
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.33
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: -0.12, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.44, y: 0.1, z: 0.44}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.08
+            taper: 0.92
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.46, y: -0.275, z: 0}
+          euler: {x: 0, y: 0, z: 241.87625}
+          size: {x: 0.1, y: 0.6576473, z: 0.1}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.08
+            taper: 0.92
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.22999999, y: -0.275, z: 0.3983717}
+          euler: {x: 49.798157, y: 260.77008, z: 223.09085}
+          size: {x: 0.1, y: 0.6576473, z: 0.1}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.08
+            taper: 0.92
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.23000003, y: -0.275, z: 0.39837167}
+          euler: {x: 49.798157, y: 99.22988, z: 136.90915}
+          size: {x: 0.1, y: 0.6576473, z: 0.1}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.08
+            taper: 0.92
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.46, y: -0.275, z: -0.000000040214474}
+          euler: {x: -0.0000044175576, y: -0.000007370064, z: 118.12374}
+          size: {x: 0.1, y: 0.6576473, z: 0.1}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.08
+            taper: 0.92
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.22999996, y: -0.275, z: -0.3983717}
+          euler: {x: 310.20184, y: 260.77008, z: 136.90915}
+          size: {x: 0.1, y: 0.6576473, z: 0.1}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.08
+            taper: 0.92
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.22999996, y: -0.275, z: -0.3983717}
+          euler: {x: 310.20184, y: 99.229904, z: 223.09085}
+          size: {x: 0.1, y: 0.6576473, z: 0.1}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: ThornCollarRing
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 8
+            lengthSegments: 4
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.33
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: -0.12, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.44, y: 0.1, z: 0.44}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.88
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.46, y: -0.275, z: 0}
+          euler: {x: 0, y: 0, z: 241.87625}
+          size: {x: 0.14, y: 0.6576473, z: 0.14}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.88
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.22999999, y: -0.275, z: 0.3983717}
+          euler: {x: 49.798157, y: 260.77008, z: 223.09085}
+          size: {x: 0.14, y: 0.6576473, z: 0.14}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.88
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.23000003, y: -0.275, z: 0.39837167}
+          euler: {x: 49.798157, y: 99.22988, z: 136.90915}
+          size: {x: 0.14, y: 0.6576473, z: 0.14}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.88
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.46, y: -0.275, z: -0.000000040214474}
+          euler: {x: -0.0000044175576, y: -0.000007370064, z: 118.12374}
+          size: {x: 0.14, y: 0.6576473, z: 0.14}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.88
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.22999996, y: -0.275, z: -0.3983717}
+          euler: {x: 310.20184, y: 260.77008, z: 136.90915}
+          size: {x: 0.14, y: 0.6576473, z: 0.14}
+          glow: 0
+          minCount: 0
+        - id: Thorn
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.88
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.22999996, y: -0.275, z: -0.3983717}
+          euler: {x: 310.20184, y: 99.229904, z: 223.09085}
+          size: {x: 0.14, y: 0.6576473, z: 0.14}
+          glow: 0
+          minCount: 0
+        miniHeadAt: {x: 1.75, y: 0.42, z: 0}
+        miniHeadScale: 0.46
+    - key: 5
+      value:
+        socket: 0
+        isCentered: 1
+        plant:
+        - id: TierRing
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 16
+            lengthSegments: 8
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.24
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: -0.04, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.14, y: 0.09, z: 0.88}
+          glow: 0
+          minCount: 0
+        - id: TierRing
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 16
+            lengthSegments: 8
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.24
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: -0.18, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.0699999, y: 0.09, z: 0.84}
+          glow: 0
+          minCount: 0
+        - id: TierRing
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 16
+            lengthSegments: 8
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.24
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: -0.32, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1, y: 0.09, z: 0.8}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: TierRing
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 8
+            lengthSegments: 4
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.24
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0.02, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.25, y: 0.12, z: 1}
+          glow: 0
+          minCount: 0
+        - id: TierRing
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 8
+            lengthSegments: 4
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.24
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: -0.2, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.4, y: 0.12, z: 1.12}
+          glow: 0
+          minCount: 0
+        - id: TierRing
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 8
+            lengthSegments: 4
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.24
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: -0.42, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.55, y: 0.12, z: 1.24}
+          glow: 0
+          minCount: 0
+        miniHeadAt: {x: 1.75, y: 0.42, z: 0}
+        miniHeadScale: 0.46
+    - key: 6
+      value:
+        socket: 0
+        isCentered: 1
+        plant:
+        - id: TwinSeedStem
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.22
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.25, y: -0.1, z: 0}
+          euler: {x: 0, y: 0, z: 111.801414}
+          size: {x: 0.12, y: 0.53851646, z: 0.12}
+          glow: 0
+          minCount: 0
+        - id: TwinSeed
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.58, y: -0.35, z: 0}
+          euler: {x: 0, y: 0, z: 22}
+          size: {x: 0.34, y: 0.56, z: 0.35}
+          glow: 0
+          minCount: 0
+        - id: TwinSeedStem
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.22
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.25, y: -0.1, z: 0}
+          euler: {x: 0, y: 0, z: 248.19858}
+          size: {x: 0.12, y: 0.53851646, z: 0.12}
+          glow: 0
+          minCount: 0
+        - id: TwinSeed
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.58, y: -0.35, z: 0}
+          euler: {x: 0, y: 0, z: -22}
+          size: {x: 0.34, y: 0.56, z: 0.35}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: TwinSeedStem
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.215, y: -0.16, z: 0}
+          euler: {x: 0, y: 0, z: 126.656105}
+          size: {x: 0.12, y: 0.5360037, z: 0.12}
+          glow: 0
+          minCount: 0
+        - id: TwinSeed
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.51, y: -0.51, z: 0}
+          euler: {x: 0, y: 0, z: 22}
+          size: {x: 0.34, y: 0.66, z: 0.35}
+          glow: 0
+          minCount: 0
+        - id: TwinSeedStem
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.215, y: -0.16, z: 0}
+          euler: {x: 0, y: 0, z: 233.3439}
+          size: {x: 0.12, y: 0.5360037, z: 0.12}
+          glow: 0
+          minCount: 0
+        - id: TwinSeed
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.51, y: -0.51, z: 0}
+          euler: {x: 0, y: 0, z: -22}
+          size: {x: 0.34, y: 0.66, z: 0.35}
+          glow: 0
+          minCount: 0
+        miniHeadAt: {x: 1.75, y: 0.42, z: 0}
+        miniHeadScale: 0.46
+    - key: 7
+      value:
+        socket: 0
+        isCentered: 0
+        plant:
+        - id: BeadStalk
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.22
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.5, y: 0.45, z: 0}
+          euler: {x: 0, y: 0, z: 311.9872}
+          size: {x: 0.1, y: 1.3453624, z: 0.1}
+          glow: 0
+          minCount: 0
+        - id: StalkBead
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.82, y: 0.3, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.27, y: 0.27, z: 0.27}
+          glow: 0
+          minCount: 0
+        - id: StalkBead
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.93, y: 0.59000003, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.24000001, y: 0.24000001, z: 0.24000001}
+          glow: 0
+          minCount: 0
+        - id: StalkBead
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.04, y: 0.88, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.21000001, y: 0.21000001, z: 0.21000001}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: BeadStalk
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.5, y: 0.45, z: 0}
+          euler: {x: 0, y: 0, z: 311.9872}
+          size: {x: 0.1, y: 1.3453624, z: 0.1}
+          glow: 0
+          minCount: 0
+        - id: StalkBead
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.82, y: 0.3, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.27, y: 0.27, z: 0.27}
+          glow: 0
+          minCount: 0
+        - id: StalkBead
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.93, y: 0.59000003, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.24000001, y: 0.24000001, z: 0.24000001}
+          glow: 0
+          minCount: 0
+        - id: StalkBead
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.04, y: 0.88, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.21000001, y: 0.21000001, z: 0.21000001}
+          glow: 0
+          minCount: 0
+        miniHeadAt: {x: 1.75, y: 0.42, z: 0}
+        miniHeadScale: 0.46
+    - key: 8
+      value:
+        socket: 0
+        isCentered: 1
+        plant:
+        - id: SmallRing
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 16
+            lengthSegments: 8
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.23
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: -0.2, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.05, y: 0.19, z: 0.89}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: SmallRing
+          primitive: 0
+          shape:
+            kind: 6
+            radialSegments: 8
+            lengthSegments: 4
+            fullness: 1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.23
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: -0.2, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.05, y: 0.19, z: 0.89}
+          glow: 0
+          minCount: 0
+        miniHeadAt: {x: 1.75, y: 0.42, z: 0}
+        miniHeadScale: 0.46
+    - key: 9
+      value:
+        socket: 0
+        isCentered: 1
+        plant:
+        - id: CrownCone
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.55
+            taper: 0.35
+            bend: 0.1
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.25, y: 1.08, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.44, z: 0.22}
+          glow: 0
+          minCount: 0
+        - id: CrownCone
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.55
+            taper: 0.35
+            bend: 0.1
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 1.08, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.58, z: 0.22}
+          glow: 0
+          minCount: 0
+        - id: CrownCone
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.55
+            taper: 0.35
+            bend: 0.1
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.25, y: 1.08, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.44, z: 0.22}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: CrownCone
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.88
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.25, y: 1.08, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.44, z: 0.22}
+          glow: 0
+          minCount: 0
+        - id: CrownCone
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.88
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 1.08, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.58, z: 0.22}
+          glow: 0
+          minCount: 0
+        - id: CrownCone
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.88
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.25, y: 1.08, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.44, z: 0.22}
+          glow: 0
+          minCount: 0
+        miniHeadAt: {x: 1.75, y: 0.42, z: 0}
+        miniHeadScale: 0.46
+    - key: 10
+      value:
+        socket: 0
+        isCentered: 0
+        plant:
+        - id: DripBeam
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.22
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.73999995, y: 0.34, z: 0}
+          euler: {x: 0, y: 0, z: 273.31778}
+          size: {x: 0.15, y: 1.382317, z: 0.15}
+          glow: 0
+          minCount: 0
+        - id: DripStem
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.22
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.65, y: 0.18, z: 0}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.09, y: 0.32, z: 0.09}
+          glow: 0
+          minCount: 0
+        - id: DripSeed
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.65, y: -0.11999999, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.34, z: 0.2}
+          glow: 0
+          minCount: 0
+        - id: DripStem
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.22
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.02, y: 0.050000012, z: 0}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.09, y: 0.58, z: 0.09}
+          glow: 0
+          minCount: 0
+        - id: DripSeed
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.02, y: -0.38, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.34, z: 0.2}
+          glow: 0
+          minCount: 0
+        - id: DripStem
+          primitive: 0
+          shape:
+            kind: 2
+            radialSegments: 12
+            lengthSegments: 6
+            fullness: 0.3
+            taper: 0.22
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.39, y: 0.18, z: 0}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.09, y: 0.32, z: 0.09}
+          glow: 0
+          minCount: 0
+        - id: DripSeed
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.16
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.39, y: -0.11999999, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.34, z: 0.2}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: DripBeam
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.73999995, y: 0.34, z: 0}
+          euler: {x: 0, y: 0, z: 273.31778}
+          size: {x: 0.15, y: 1.382317, z: 0.15}
+          glow: 0
+          minCount: 0
+        - id: DripStem
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.65, y: 0.18, z: 0}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.09, y: 0.32, z: 0.09}
+          glow: 0
+          minCount: 0
+        - id: DripSeed
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.65, y: -0.11999999, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.34, z: 0.2}
+          glow: 0
+          minCount: 0
+        - id: DripStem
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.02, y: 0.050000012, z: 0}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.09, y: 0.58, z: 0.09}
+          glow: 0
+          minCount: 0
+        - id: DripSeed
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.02, y: -0.38, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.34, z: 0.2}
+          glow: 0
+          minCount: 0
+        - id: DripStem
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.1
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.39, y: 0.18, z: 0}
+          euler: {x: 0, y: 0, z: 180}
+          size: {x: 0.09, y: 0.32, z: 0.09}
+          glow: 0
+          minCount: 0
+        - id: DripSeed
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.2
+            asymmetry: 0.06
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 1.39, y: -0.11999999, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.22, y: 0.34, z: 0.2}
+          glow: 0
+          minCount: 0
+        miniHeadAt: {x: 1.75, y: 0.42, z: 0}
+        miniHeadScale: 0.46
+    - key: 11
+      value:
+        socket: 1
+        isCentered: 1
+        plant:
+        - id: ShardBarb
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.55
+            taper: 0.35
+            bend: 0.2
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.48, y: 0.26, z: 0}
+          euler: {x: 0, y: 180, z: 24}
+          size: {x: 0.3, y: 0.98, z: 0.26}
+          glow: 0
+          minCount: 0
+        - id: ShardBarb
+          primitive: 0
+          shape:
+            kind: 3
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 0.55
+            taper: 0.35
+            bend: 0.2
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.48, y: 0.26, z: 0}
+          euler: {x: 0, y: 0, z: -24}
+          size: {x: 0.3, y: 0.98, z: 0.26}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: ShardBarb
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.9
+            bend: 0.12
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.48, y: 0.26, z: 0}
+          euler: {x: 0, y: 180, z: 24}
+          size: {x: 0.3, y: 0.98, z: 0.26}
+          glow: 0
+          minCount: 0
+        - id: ShardBarb
+          primitive: 8
+          shape:
+            kind: 5
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.9
+            bend: 0.12
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.05
+            fracture: 0.74
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 1
+          role: 5
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.48, y: 0.26, z: 0}
+          euler: {x: 0, y: 0, z: -24}
+          size: {x: 0.3, y: 0.98, z: 0.26}
+          glow: 0
+          minCount: 0
+        miniHeadAt: {x: 1.75, y: 0.42, z: 0}
+        miniHeadScale: 0.46
+  bodies:
+    _entries:
+    - key: 0
+      value:
+        scale: 0.85
+        headScale: 0.85
+        stemScale: 1
+        bodyLift: 0
+        plant:
+        - id: Body
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1.1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 0
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.7, y: 0.602, z: 0.63}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: Body
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.05
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.13
+            fracture: 0.72
+            ridge: 0.38
+            tubeRatio: 0.2
+            faceted: 1
+          role: 0
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.72, y: 0.45360002, z: 0.61200005}
+          glow: 0
+          minCount: 0
+    - key: 1
+      value:
+        scale: 1
+        headScale: 0.85
+        stemScale: 1
+        bodyLift: 0
+        plant:
+        - id: Body
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1.1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 0
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1, y: 0.86, z: 0.9}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: Body
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.05
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.13
+            fracture: 0.72
+            ridge: 0.38
+            tubeRatio: 0.2
+            faceted: 1
+          role: 0
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1, y: 0.63, z: 0.85}
+          glow: 0
+          minCount: 0
+    - key: 2
+      value:
+        scale: 1.16
+        headScale: 0.85
+        stemScale: 0.35
+        bodyLift: 0.52
+        plant:
+        - id: Body
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1.1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 0
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 0.88, y: 0.7568, z: 0.792}
+          glow: 0
+          minCount: 0
+        - id: BaseBulb
+          primitive: 0
+          shape:
+            kind: 1
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1.1
+            taper: 0
+            bend: 0
+            bow: 0
+            bevel: 0.18
+            asymmetry: 0
+            fracture: 0
+            ridge: 0
+            tubeRatio: 0.2
+            faceted: 0
+          role: 0
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0.05, y: -0.5, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.06, y: 0.64, z: 0.93}
+          glow: 0
+          minCount: 0
+        stone:
+        - id: Body
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.05
+            bend: 0
+            bow: 0
+            bevel: 0.16
+            asymmetry: 0.13
+            fracture: 0.72
+            ridge: 0.38
+            tubeRatio: 0.2
+            faceted: 1
+          role: 0
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: 0, y: 0, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1, y: 0.63, z: 0.85}
+          glow: 0
+          minCount: 0
+        - id: BaseBlock
+          primitive: 8
+          shape:
+            kind: 4
+            radialSegments: 12
+            lengthSegments: 10
+            fullness: 1
+            taper: 0.08
+            bend: 0
+            bow: 0
+            bevel: 0.12
+            asymmetry: 0.1
+            fracture: 0.6
+            ridge: 0.25
+            tubeRatio: 0.2
+            faceted: 1
+          role: 0
+          isSource: 0
+          sourceAnchor: 0
+          colour: 0
+          pivot: 0
+          attachTo: 
+          attachAt: 0
+          position: {x: -0.09, y: -0.46, z: 0}
+          euler: {x: 0, y: 0, z: 0}
+          size: {x: 1.12, y: 0.54, z: 0.94}
+          glow: 0
+          minCount: 0
+  stems:
+    _entries:
+    - key: 0
+      value:
+        length: 1.8
+        thickness: 0.13
+        limbLength: 0.5
+        plantShape:
+          kind: 2
+          radialSegments: 12
+          lengthSegments: 6
+          fullness: 0.4
+          taper: 0.2
+          bend: 0
+          bow: 0
+          bevel: 0.18
+          asymmetry: 0
+          fracture: 0
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 0
+        stoneLimbShape:
+          kind: 4
+          radialSegments: 12
+          lengthSegments: 10
+          fullness: 1
+          taper: 0.16
+          bend: 0
+          bow: 0
+          bevel: 0.14
+          asymmetry: 0.09
+          fracture: 0.5
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 1
+    - key: 1
+      value:
+        length: 0.8
+        thickness: 0.16
+        limbLength: 0.34
+        plantShape:
+          kind: 2
+          radialSegments: 12
+          lengthSegments: 6
+          fullness: 0.4
+          taper: 0.2
+          bend: 0
+          bow: 0
+          bevel: 0.18
+          asymmetry: 0
+          fracture: 0
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 0
+        stoneLimbShape:
+          kind: 4
+          radialSegments: 12
+          lengthSegments: 10
+          fullness: 1
+          taper: 0.16
+          bend: 0
+          bow: 0
+          bevel: 0.14
+          asymmetry: 0.09
+          fracture: 0.5
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 1
+    - key: 2
+      value:
+        length: 0.5
+        thickness: 0.23
+        limbLength: 0.22
+        plantShape:
+          kind: 2
+          radialSegments: 12
+          lengthSegments: 6
+          fullness: 0.4
+          taper: 0.2
+          bend: 0
+          bow: 0
+          bevel: 0.18
+          asymmetry: 0
+          fracture: 0
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 0
+        stoneLimbShape:
+          kind: 4
+          radialSegments: 12
+          lengthSegments: 10
+          fullness: 1
+          taper: 0.16
+          bend: 0
+          bow: 0
+          bevel: 0.14
+          asymmetry: 0.09
+          fracture: 0.5
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 1
+  roots:
+    _entries:
+    - key: 0
+      value:
+        reach: 1.1
+        thicknessScale: 1
+        taper: 0.6
+        jointScale: 2.65
+        segmentShape:
+          kind: 2
+          radialSegments: 12
+          lengthSegments: 6
+          fullness: 0.7
+          taper: 0.27
+          bend: 0
+          bow: 0
+          bevel: 0.18
+          asymmetry: 0
+          fracture: 0
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 0
+        jointShape:
+          kind: 1
+          radialSegments: 12
+          lengthSegments: 10
+          fullness: 1
+          taper: 0
+          bend: 0
+          bow: 0
+          bevel: 0.18
+          asymmetry: 0
+          fracture: 0
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 0
+    - key: 1
+      value:
+        reach: 1.5
+        thicknessScale: 1
+        taper: 0.6
+        jointScale: 2.65
+        segmentShape:
+          kind: 2
+          radialSegments: 12
+          lengthSegments: 6
+          fullness: 0.7
+          taper: 0.27
+          bend: 0
+          bow: 0
+          bevel: 0.18
+          asymmetry: 0
+          fracture: 0
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 0
+        jointShape:
+          kind: 1
+          radialSegments: 12
+          lengthSegments: 10
+          fullness: 1
+          taper: 0
+          bend: 0
+          bow: 0
+          bevel: 0.18
+          asymmetry: 0
+          fracture: 0
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 0
+    - key: 2
+      value:
+        reach: 2.1
+        thicknessScale: 1
+        taper: 0.6
+        jointScale: 2.65
+        segmentShape:
+          kind: 2
+          radialSegments: 12
+          lengthSegments: 6
+          fullness: 0.7
+          taper: 0.27
+          bend: 0
+          bow: 0
+          bevel: 0.18
+          asymmetry: 0
+          fracture: 0
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 0
+        jointShape:
+          kind: 1
+          radialSegments: 12
+          lengthSegments: 10
+          fullness: 1
+          taper: 0
+          bend: 0
+          bow: 0
+          bevel: 0.18
+          asymmetry: 0
+          fracture: 0
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 0
+  palette: {fileID: 11400000, guid: 97a6ebe080b14b84947880de49d6bb14, type: 2}
+  bodyUnit: 0.55
+  plantScale: 1.8
+  stoneScale: 2.2
+  maxParts: 96
+  isReachPinned: 0
+  pinnedReach: 1.3
+  rootCount: 8
+  rootThickness: 0.2
+  rootHip: 0.28
+  rootKnee: 0.22
+  armCount: 2
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 4204219571951632558
+      type: {class: LookVocabulary/PlantStemEntry, ns: HealerLike.Render.Creatures, asm: HealerLike.Render}
+      data:
+        segments: 2
+        thicknessScale: 2.8
+        bow: 0.12
+        jointScale: 0.76
+        segmentShape:
+          kind: 2
+          radialSegments: 12
+          lengthSegments: 6
+          fullness: 0.85
+          taper: 0.12
+          bend: 0
+          bow: 0
+          bevel: 0.18
+          asymmetry: 0
+          fracture: 0
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 0
+        jointShape:
+          kind: 1
+          radialSegments: 12
+          lengthSegments: 10
+          fullness: 1
+          taper: 0
+          bend: 0
+          bow: 0
+          bevel: 0.18
+          asymmetry: 0
+          fracture: 0
+          ridge: 0
+          tubeRatio: 0.2
+          faceted: 0

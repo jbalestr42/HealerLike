@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Template name="DialogFrame" src="../Controls/DialogFrame.uxml" />
+    <ui:Instance template="DialogFrame" class="dialog dialog--wide surface">
+        <ui:Label text="A MOMENT TO GROW" class="eyebrow" />
+        <ui:Label name="upgrade-title" text="Choose a reward" class="dialog-title" />
+        <ui:Label text="Select an upgrade to strengthen your next encounter." class="muted dialog-description" />
+        <ui:ScrollView name="upgrade-list" class="collection-list choice-list" horizontal-scroller-visibility="Hidden" />
+    </ui:Instance>
+</ui:UXML>

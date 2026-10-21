@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="dialog dialog--compact sheet-dialog surface">
+        <ui:VisualElement class="dialog-header">
+            <ui:VisualElement>
+                <ui:Label text="YOUR HEALER" class="eyebrow" />
+                <ui:Label text="Character" class="dialog-title" />
+            </ui:VisualElement>
+            <ui:Button name="sheet-close-button" text="Close" class="button button--quiet" />
+        </ui:VisualElement>
+        <ui:ScrollView name="sheet-body" class="dialog-body" horizontal-scroller-visibility="Hidden">
+            <ui:Label name="sheet-text" class="sheet-text" />
+        </ui:ScrollView>
+    </ui:VisualElement>
+</ui:UXML>

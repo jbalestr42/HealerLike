@@ -1,0 +1,22 @@
+{
+    "name": "HealerLike.Render.Studio.Editor",
+    "rootNamespace": "",
+    "references": [
+        "HealerLike.Runtime",
+        "HealerLike.Render",
+        "Oisif.Inspector",
+        "HealerLike.Render.Creatures.Editor",
+        "HealerLike.Render.Stage.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,104 @@
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using HealerLike.Render.Stage;
+
+namespace HealerLike.Render.Studio.Editor
+{
+    // Separate session key so this opt-in Studio capture does not alter the shared stage capture modes.
+    [InitializeOnLoad]
+    public static class CreatureLivePaletteCapture
+    {
+        static readonly string key = "CreatureLivePaletteCapture.Running";
+        static CreatureLivePaletteRun run;
+
+        static CreatureLivePaletteCapture()
+        {
+            EditorApplication.playModeStateChanged += OnPlayMode;
+            EditorApplication.update += Watch;
+        }
+
+        public static void Capture()
+        {
+            Begin(false);
+        }
+
+        public static void CaptureShapes()
+        {
+            Begin(true);
+        }
+
+        // A plain boot opens the Toolkit menu; the palette run plays Main, so its session selects it up front
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void SelectBootTarget()
+        {
+            if (SessionState.GetBool(key, false))
+            {
+                StageTarget.Select(StageTarget.MainPath);
+            }
+        }
+
+        static void Begin(bool shapes)
+        {
+            EditorSceneManager.OpenScene(StageSceneAuthoring.ScenePath);
+            SessionState.SetBool(key, true);
+            SessionState.SetBool(key + ".Shapes", shapes);
+            SessionState.SetInt(key + ".Code", 1);
+            SessionState.SetFloat(key + ".Deadline", (float)EditorApplication.timeSinceStartup + 120f);
+            EditorApplication.isPlaying = true;
+        }
+
+        public static void Finish(bool passed)
+        {
+            if (run != null)
+            {
+                EditorApplication.update -= run.Step;
+                run.StopObserving();
+                run.Restore();
+                run = null;
+            }
+            SessionState.SetInt(key + ".Code", passed ? 0 : 1);
+            EditorApplication.isPlaying = false;
+        }
+
+        static void OnPlayMode(PlayModeStateChange state)
+        {
+            if (!SessionState.GetBool(key, false))
+            {
+                return;
+            }
+            if (state == PlayModeStateChange.EnteredPlayMode)
+            {
+                run = new CreatureLivePaletteRun(SessionState.GetBool(key + ".Shapes", false));
+                run.Begin();
+                EditorApplication.update += run.Step;
+            }
+            if (state == PlayModeStateChange.ExitingPlayMode && run != null)
+            {
+                run.StopObserving();
+                run.Restore();
+            }
+            if (state == PlayModeStateChange.EnteredEditMode)
+            {
+                int code = SessionState.GetInt(key + ".Code", 1);
+                SessionState.SetBool(key, false);
+                EditorApplication.Exit(code);
+            }
+        }
+
+        static void Watch()
+        {
+            if (SessionState.GetBool(key, false) && EditorApplication.isPlaying)
+            {
+                System.Type gameView = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView");
+                EditorWindow.GetWindow(gameView, false, null, false).Repaint();
+            }
+            if (SessionState.GetBool(key, false)
+                && EditorApplication.timeSinceStartup > SessionState.GetFloat(key + ".Deadline", 0f))
+            {
+                Debug.LogError("[CreatureLivePaletteCapture] Timed out waiting for the live asset edit.");
+                Finish(false);
+            }
+        }
+    }
+}

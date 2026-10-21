@@ -1,0 +1,233 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace HealerLike.Render.Grammar
+{
+    // This is the skill-factory boundary. Channel derivations consume its description, not concrete factories.
+    public static class SkillDescriptionReader
+    {
+        public static SkillDescription Read(ASkillFactory skill, EntityData data)
+        {
+            SkillDescription description = new SkillDescription();
+            if (skill is ShootProjectileSkillFactory shoot)
+            {
+                ReadShooter(shoot.data, data, description);
+            }
+            else if (skill is ConfigurableSkillFactory configurable)
+            {
+                description.shots = SkillProjectiles.Read(configurable.data);
+                description.head = ProjectileHead(description.shots);
+                if (configurable.data != null)
+                {
+                    description.cadence = SkillWalker.Waits(configurable.data.skillStepFactories, data);
+                }
+                float total = 0f;
+                foreach (SkillWalker.Shot shot in description.shots)
+                {
+                    total += shot.count;
+                }
+                description.hits = Mathf.Max(1, Mathf.RoundToInt(total) + ItemWalker.Bounces(data));
+            }
+            else if (skill is ApplyBuffOnTargetSkillFactory support)
+            {
+                if (support.data != null)
+                {
+                    ABuffHandlerFactory handler = support.data.buffHandlerFactory;
+                    description.accent = EffectDerivation.Family(handler, support.data.targetAlly);
+                    description.head = Gift(description.accent, EffectDerivation.Group(handler));
+                    description.cadence = support.data.rate;
+                }
+            }
+            else if (skill is HealTargetSkillFactory heal)
+            {
+                description.head = HeadKind.GiftHeal;
+                description.accent = EffectFamily.Heal;
+                if (heal.data != null)
+                {
+                    description.cadence = heal.data.rate;
+                }
+            }
+            else if (skill is AreaOfEffectSkillFactory)
+            {
+                description.head = HeadKind.Pulse;
+                description.hits = LookDerivation.ManyHits;
+                float rate = SkillWalker.ReadAttribute(data, AttributeType.AttackRate,
+                    LookDerivation.DefaultAttackRate);
+                description.cadence = rate > 0f ? 1f / rate : 0f;
+            }
+            else if (skill is ApplyConsumerOnTimeFactory self)
+            {
+                description.head = HeadKind.SelfTick;
+                if (self.data != null)
+                {
+                    description.accent = EffectDerivation.ConsumerFamily(self.data.consumerFactory, true);
+                    description.cadence = self.data.rate;
+                }
+            }
+            else if (skill is SummonSkillFactory summon)
+            {
+                // A growing bud announces creation; its clock belongs to the summon skill.
+                description.head = HeadKind.Bud;
+                description.accent = EffectFamily.Boon;
+                if (summon.data != null)
+                {
+                    description.cadence = summon.data.cooldown;
+                }
+            }
+            else if (skill is ApplyBuffPeriodicallySkillFactory periodic)
+            {
+                if (periodic.data != null)
+                {
+                    ReadPeriodic(periodic.data.periodicBuff, description);
+                }
+            }
+            else if (skill is MarkedStrikeSkillFactory strike)
+            {
+                // The gameplay MarkedStrikeView draws the mark, the arc and the impact; the creature reads only
+                // its clock, one strike per interval plus the delay between mark and strike
+                if (strike.data != null)
+                {
+                    description.cadence = strike.data.interval + strike.data.delay;
+                }
+            }
+            else if (skill is PurifySkillFactory purify)
+            {
+                // A purifier takes a debuff off an ally and gives an ally one buff of its list, at its own rate: a
+                // boon gift, its aspect read from the first buff of the list, defensive when the list is empty
+                description.accent = EffectFamily.Boon;
+                description.head = HeadKind.GiftBoonDefence;
+                if (purify.data != null)
+                {
+                    ABuffHandlerFactory handler = purify.data.buffHandlerFactories?.Find(entry => entry != null);
+                    if (handler != null)
+                    {
+                        description.head = Gift(EffectFamily.Boon, EffectDerivation.Group(handler));
+                    }
+                    description.cadence = purify.data.rate;
+                }
+            }
+            else if (skill is FuseSkillFactory fuse)
+            {
+                // A lit fuse blows up once, on every opponent, after a delay drawn between its two bounds: the
+                // creature reads that mean delay as its clock and the explosion as its accent
+                description.hits = LookDerivation.ManyHits;
+                if (fuse.data != null)
+                {
+                    description.cadence = (fuse.data.minDelay + Mathf.Max(fuse.data.minDelay, fuse.data.maxDelay)) * 0.5f;
+                    if (fuse.data.explosion != null)
+                    {
+                        description.accent = EffectDerivation.ConsumerFamily(fuse.data.explosion, false);
+                    }
+                }
+            }
+            else if (skill != null)
+            {
+                Debug.LogError($"[SkillDescriptionReader] No reading for {skill.GetType().Name}");
+            }
+
+            if (HasSplash(description.shots, data))
+            {
+                description.hits = LookDerivation.ManyHits;
+            }
+            return description;
+        }
+
+        static void ReadShooter(ShootProjectileSkillData skill, EntityData data, SkillDescription description)
+        {
+            description.shots = SkillProjectiles.Read(skill);
+            description.head = ProjectileHead(description.shots);
+            description.cadence = SkillWalker.ReadAttribute(data, AttributeType.AttackRate,
+                LookDerivation.DefaultAttackRate);
+            if (skill == null || skill.projectiles == null)
+            {
+                return;
+            }
+
+            int bounces = ItemWalker.Bounces(data);
+            bool hasAccent = false;
+            foreach (ProjectileData entry in skill.projectiles)
+            {
+                if (entry == null)
+                {
+                    continue;
+                }
+                description.hits = Mathf.Max(description.hits,
+                    entry.numberOfProjectileToShootPerTarget + SkillWalker.Bounces(entry.projectilePrefab) + bounces);
+                if (!hasAccent && entry.onHitConsumer != null && entry.onHitConsumer.Count > 0)
+                {
+                    description.accent = EffectDerivation.ConsumerFamily(entry.onHitConsumer[0], false);
+                    hasAccent = true;
+                }
+            }
+        }
+
+        static void ReadPeriodic(List<ABuffHandlerFactory> handlers, SkillDescription description)
+        {
+            if (handlers == null)
+            {
+                return;
+            }
+
+            description.cadence = 0f;
+            bool isEveryBoon = handlers.Count > 0;
+            foreach (ABuffHandlerFactory handler in handlers)
+            {
+                description.cadence += EffectDerivation.Duration(handler);
+                if (EffectDerivation.Family(handler, true) != EffectFamily.Boon)
+                {
+                    isEveryBoon = false;
+                }
+            }
+
+            if (isEveryBoon)
+            {
+                description.head = HeadKind.Ward;
+                description.accent = EffectFamily.Boon;
+            }
+            else if (handlers.Count > 0)
+            {
+                ABuffHandlerFactory first = handlers[0];
+                description.accent = EffectDerivation.Family(first, true);
+                description.head = Gift(description.accent, EffectDerivation.Group(first));
+            }
+        }
+
+        static HeadKind ProjectileHead(List<SkillWalker.Shot> shots)
+        {
+            return LookDerivation.DeliveryHead(SkillProjectiles.Dominant(shots));
+        }
+
+        public static bool HasSplash(List<SkillWalker.Shot> shots, EntityData data)
+        {
+            foreach (SkillWalker.Shot shot in shots)
+            {
+                if (ProjectileDescriptionReader.Read(shot.prefab).hasSplash)
+                {
+                    return true;
+                }
+            }
+            foreach (AProjectileBehaviourFactory behaviour in ItemWalker.Behaviours(data))
+            {
+                if (behaviour is AreaOfEffectProjectileBehaviourFactory)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        static HeadKind Gift(EffectFamily family, AttributeGroup group)
+        {
+            switch (family)
+            {
+                case EffectFamily.Heal:
+                case EffectFamily.Renew:
+                    return HeadKind.GiftHeal;
+                case EffectFamily.Boon:
+                    return group == AttributeGroup.Offence ? HeadKind.GiftBoonOffence : HeadKind.GiftBoonDefence;
+                default:
+                    return HeadKind.GiftBane;
+            }
+        }
+    }
+}

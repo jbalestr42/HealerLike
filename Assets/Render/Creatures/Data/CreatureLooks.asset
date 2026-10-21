@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33feae8c4683243f88c7b531bbda0301, type: 3}
+  m_Name: CreatureLooks
+  m_EditorClassIdentifier: HealerLike.Render::HealerLike.Render.Creatures.CreatureLooks
+  entities:
+    _entries: []
+  characters:
+    _entries: []
+  plant: {fileID: 6580333430975781026, guid: f3681cd4a3a14e3f93a606c27a69fd00, type: 3}
+  stone: {fileID: 6580333430975781026, guid: 107d713a6215458dbc7aef841f403985, type: 3}
+  character: {fileID: 8779204663335450006, guid: f3d0be9e8d9e5446c970e3f1915de7d3, type: 3}
+  vocabulary: {fileID: 11400000, guid: f2459e8a480e34ee99e9a27a496c3c8a, type: 2}

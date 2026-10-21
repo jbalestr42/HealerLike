@@ -1,0 +1,138 @@
+using NUnit.Framework;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Rendering.Universal;
+
+namespace HealerLike.Render.Stage
+{
+
+public class StageKeyLightTests
+{
+    GameObject _lightGo;
+    Light _light;
+    UniversalRenderPipelineAsset _pipeline;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _lightGo = new GameObject("KeyLightTest");
+        _light = _lightGo.AddComponent<Light>();
+        _light.type = LightType.Directional;
+        _light.shadows = LightShadows.Soft;
+        _pipeline = ScriptableObject.CreateInstance<UniversalRenderPipelineAsset>();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Object.DestroyImmediate(_lightGo);
+        Object.DestroyImmediate(_pipeline);
+    }
+
+    [Test]
+    public void Aim_KeyDirection_PointsTheLightAlongIt()
+    {
+        Quaternion rotation = StageKeyLight.Aim(StageKeyLight.KeyDirection);
+
+        Assert.That(Vector3.Angle(-(rotation * Vector3.forward), StageKeyLight.KeyDirection), Is.LessThan(0.01f));
+        Vector3 viewerGroundAxes = Quaternion.Inverse(Quaternion.Euler(0f, StageCalibration.PortraitYaw, 0f))
+            * StageKeyLight.KeyDirection;
+        Assert.That(viewerGroundAxes.x, Is.GreaterThan(0f), "Sun is on the viewer's right.");
+        Assert.That(viewerGroundAxes.y, Is.GreaterThan(0f), "Sun is above the board.");
+        Assert.That(viewerGroundAxes.z, Is.LessThan(0f), "Sun is toward the viewer, over their shoulder.");
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(RenderManagerAuthoring.PrefabPath);
+        Light shipped = prefab.GetComponentInChildren<StageKeyLight>().keyLight;
+        Assert.That(Quaternion.Angle(shipped.transform.rotation, rotation), Is.LessThan(0.05f),
+            "The shipped light must match authoring and the stone shadow fallback.");
+    }
+
+    [Test]
+    public void KeyDirection_PortraitCamera_CastsShadowsToTheUpperLeft()
+    {
+        Quaternion camera = Quaternion.Euler(StageCalibration.PortraitPitch, StageCalibration.PortraitYaw, 0f);
+        Vector3 toLight = StageKeyLight.KeyDirection.normalized;
+        // Where a point above the ground lands along the light, seen in the camera's axes
+        Vector3 shadow = Quaternion.Inverse(camera) * new Vector3(-toLight.x, 0f, -toLight.z);
+
+        Assert.That(shadow.x, Is.LessThan(0f));
+        Assert.That(shadow.y, Is.GreaterThan(0f));
+        Assert.That(Mathf.Atan2(shadow.y, -shadow.x) * Mathf.Rad2Deg, Is.InRange(10f, 45f)); // above the horizontal
+    }
+
+    [Test]
+    public void RendersRealShadows_ShadowDistanceCoversTheBoard_FollowsThePipeline()
+    {
+        _pipeline.shadowDistance = 70f;
+        bool isSupported = _pipeline.supportsMainLightShadows
+                           && _pipeline.mainLightRenderingMode == LightRenderingMode.PerPixel;
+
+        bool isReal = StageKeyLight.RendersRealShadows(_pipeline, _light, 50f);
+
+        Assert.That(isReal, Is.EqualTo(isSupported));
+    }
+
+    [Test]
+    public void RendersRealShadows_ShadowDistanceShortOfTheBoard_ReturnsFalse()
+    {
+        _pipeline.shadowDistance = 70f;
+
+        bool isReal = StageKeyLight.RendersRealShadows(_pipeline, _light, 80f);
+
+        Assert.That(isReal, Is.False);
+    }
+
+    [Test]
+    public void RendersRealShadows_LightWithoutShadows_ReturnsFalse()
+    {
+        _pipeline.shadowDistance = 70f;
+        _light.shadows = LightShadows.None;
+
+        bool isReal = StageKeyLight.RendersRealShadows(_pipeline, _light, 50f);
+
+        Assert.That(isReal, Is.False);
+    }
+
+    [Test]
+    public void RendersRealShadows_PointLight_ReturnsFalse()
+    {
+        _pipeline.shadowDistance = 70f;
+        _light.type = LightType.Point;
+
+        bool isReal = StageKeyLight.RendersRealShadows(_pipeline, _light, 50f);
+
+        Assert.That(isReal, Is.False);
+    }
+
+    [Test]
+    public void RendersRealShadows_NoPipeline_ReturnsFalse()
+    {
+        bool isReal = StageKeyLight.RendersRealShadows(null, _light, 50f);
+
+        Assert.That(isReal, Is.False);
+    }
+
+    [Test]
+    public void RendersRealShadows_NoLight_ReturnsFalse()
+    {
+        _pipeline.shadowDistance = 70f;
+
+        bool isReal = StageKeyLight.RendersRealShadows(_pipeline, null, 50f);
+
+        Assert.That(isReal, Is.False);
+    }
+
+    [Test]
+    public void Refresh_LightWithoutShadows_ReportsNoRealShadows()
+    {
+        StageKeyLight keyLight = _lightGo.AddComponent<StageKeyLight>();
+        keyLight.keyLight = _light;
+        TestHelpers.SetPrivateField(keyLight, "_realShadows", true);
+        _light.shadows = LightShadows.None;
+
+        keyLight.Refresh();
+
+        Assert.That(keyLight.realShadows, Is.False);
+    }
+}
+
+}
