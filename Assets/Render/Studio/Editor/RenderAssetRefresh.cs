@@ -6,7 +6,7 @@ using HealerLike.Render.Stage;
 
 namespace HealerLike.Render.Studio.Editor
 {
-    // Dirty revisions catch Odin and ordinary Inspector edits, including unsaved assets. Poll only in Play mode;
+    // Dirty revisions catch Inspector edits, including unsaved assets. Poll only in Play mode;
     // Undo also requests a refresh because a restored serialized value can carry an earlier dirty revision.
     [InitializeOnLoad]
     public static class RenderAssetRefresh

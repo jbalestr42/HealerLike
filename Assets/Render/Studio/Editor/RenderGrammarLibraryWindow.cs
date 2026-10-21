@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Studio.Editor
 {
-    // The renderer's shared vocabularies and override tables in one window, each drawn by its own Odin inspector
+    // The renderer's shared vocabularies and override tables in one window, each drawn by its own inspector
     // so the serialized dictionaries stay editable. The studios listen to OnAssetChanged to preview edits at once.
     public class RenderGrammarLibraryWindow : EditorWindow
     {

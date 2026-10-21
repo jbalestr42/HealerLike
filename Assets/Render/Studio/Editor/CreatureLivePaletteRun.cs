@@ -247,7 +247,7 @@ namespace HealerLike.Render.Studio.Editor
         {
             if (_hasShapeEdit && _vocabulary)
             {
-                // Odin dictionaries need their exact saved value restored; EditorJsonUtility omits them.
+                // Only the edited body entry is restored, so the other unsaved vocabulary edits are kept.
                 _vocabulary.bodies[_editedMass].plant[0] = _originalBody;
                 EditorUtility.SetDirty(_vocabulary);
                 _hasShapeEdit = false;

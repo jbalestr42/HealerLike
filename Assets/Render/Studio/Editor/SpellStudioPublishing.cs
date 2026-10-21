@@ -22,7 +22,7 @@ namespace HealerLike.Render.Studio.Editor
                 return false;
             }
 
-            // Odin serializes the dictionary into backing data, so only a complete snapshot can undo it
+            // A complete snapshot undoes the dictionary entry with its serialized key and value lists
             Undo.RegisterCompleteObjectUndo(preset.vocabulary, "Apply Spell Studio shape");
             preset.vocabulary.entries[recipe.element] = SpellPresetBounds.CloneEntry(recipe.entry);
             EditorUtility.SetDirty(preset.vocabulary);

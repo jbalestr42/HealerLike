@@ -127,7 +127,7 @@ namespace HealerLike.Render.Creatures
             public ShapeProfile segmentShape;
             public ShapeProfile jointShape;
 
-            // Odin assets predating profiles can omit this field; zero is their original unscaled thickness.
+            // Assets predating profiles can omit this field; zero is their original unscaled thickness.
             public float effectiveThicknessScale
             {
                 get
@@ -185,7 +185,7 @@ namespace HealerLike.Render.Creatures
 
         public LayoutEntry layout = new LayoutEntry();
 
-        // Older Odin assets can omit the new reference entirely.
+        // Older assets can omit the new reference entirely.
         public LayoutEntry layoutSettings
         {
             get { return layout != null ? layout : new LayoutEntry(); }

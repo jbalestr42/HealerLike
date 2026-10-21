@@ -5,7 +5,7 @@ using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Studio.Editor
 {
-    // Cached side-by-side production previews, with the real shared assets editable beside them through Odin.
+    // Cached side-by-side production previews, with the real shared assets editable beside them through their inspectors.
     public class CreatureRosterPane
     {
         readonly CreatureRoster _roster = new CreatureRoster();
