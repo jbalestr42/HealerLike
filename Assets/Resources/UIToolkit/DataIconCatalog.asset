@@ -2437,18 +2437,6 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: 6fcc80a9cd0bc4bb2b2ee00bfb21f925, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Spell:Spell:ShootProjectileSkillData:ShootProjectileSkillData
-  - source: {fileID: 11400000, guid: 077b917b52626e948a672f7c5de7a52b, type: 2}
-    generated: {fileID: 2800000, guid: 02782fe9cb5d34bfb9636d8926d5925f, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:SimulationPlan:WaveRobustnessSimulation
-  - source: {fileID: 11400000, guid: 091bad2235660224b89bc677283758a6, type: 2}
-    generated: {fileID: 2800000, guid: 8a7899003e369418c9f7eb9c49b70274, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:HealerBotProfile:DruidNoHealBot
-  - source: {fileID: 11400000, guid: 0a4de8fa7959bff498e0def3debaf8e6, type: 2}
-    generated: {fileID: 2800000, guid: 0db920f09072b4ed1b7eea501a4f795a, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:SimulationPlan:ItemDpsSimulation
   - source: {fileID: 11400000, guid: 185c219754eb4419b88a3d9a91aac482, type: 2}
     generated: {fileID: 2800000, guid: 75f39355244184b19b19601a769adee5, type: 3}
     artworkOverride: {fileID: 0}
@@ -2481,18 +2469,10 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: cf1507f67f81541f68c39afe978bffd5, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Creature:Creature:EntityData:Blood Warden
-  - source: {fileID: 11400000, guid: 33e0f896ed6e1844c878dd15407891fa, type: 2}
-    generated: {fileID: 2800000, guid: 3fb484aa0151b4a2c9275d954df2287a, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:HealerBotProfile:WarlockNoHealBot
   - source: {fileID: 11400000, guid: 36abb6b8b53f43589cd5f6187f377471, type: 2}
     generated: {fileID: 2800000, guid: b1682fd7a2f884f088511d2ba43c5bc0, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Data:Data:ConsumerData:ConsumerData
-  - source: {fileID: 11400000, guid: 370b9e9523a24b5287507825bc22912c, type: 2}
-    generated: {fileID: 2800000, guid: 94b5d66046dfd4f019204c5d24c965c8, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:SimulationPlan:CharacterDpsSimulation
   - source: {fileID: 11400000, guid: 3bca0069df8c462fa29003e63212ae68, type: 2}
     generated: {fileID: 2800000, guid: 60d9d01cb5d744123ba68d1f2a1f8aa9, type: 3}
     artworkOverride: {fileID: 0}
@@ -2509,10 +2489,6 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: 3b850ffaf54ca4b8eaa5f7c974ba0dd7, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Data:Data:ConsumerData:ConsumerData
-  - source: {fileID: 11400000, guid: 3f94d2d3385ff86438ba9cb2c9030642, type: 2}
-    generated: {fileID: 2800000, guid: 4b1e6e95d55ca40ecba638303549df9f, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:HealerBotProfile:DruidHealerBot
   - source: {fileID: 11400000, guid: 3fcc0e34157a2a24da1715d7b4c02567, type: 2}
     generated: {fileID: 2800000, guid: c72982a723d404c4dbe6d261ede5d8e7, type: 3}
     artworkOverride: {fileID: 0}
@@ -2557,10 +2533,6 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: cb7a7bc01ce6b4ec0be1abe90c03db61, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Data:Data:ApplyBuffToAlliesBuffData:ApplyBuffToAlliesBuffData
-  - source: {fileID: 11400000, guid: 66fa833609f14b4c964ae5ae7eb4fe77, type: 2}
-    generated: {fileID: 2800000, guid: 8b70a6f489f864edfac62c8b4ca1f318, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:SimulationPlan:CharacterSpellRobustnessSimulation
   - source: {fileID: 11400000, guid: 6ad287f4967b4799870cc11657c15a2b, type: 2}
     generated: {fileID: 2800000, guid: 43b23e971a418403b9ed0ec9b553ed2f, type: 3}
     artworkOverride: {fileID: 0}
@@ -2593,10 +2565,6 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: 3ce4ba66441e947f094e738ae355fb8d, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Creature:Creature:EntityData:Pact Bearer
-  - source: {fileID: 11400000, guid: 7c648fa01a2e4344b82d476a756c644e, type: 2}
-    generated: {fileID: 2800000, guid: 8367bea906d554dbaaf0d02ce3069f12, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:HealerBotProfile:WarlockHealerBot
   - source: {fileID: 11400000, guid: 7e945089df164891bc03e2ddf8ec096b, type: 2}
     generated: {fileID: 2800000, guid: d98bc2f76cde5430eb76fac367069e8a, type: 3}
     artworkOverride: {fileID: 0}
@@ -2621,18 +2589,10 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: 103714e29fc7a4f59acab5e47cf35583, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Spell:Spell:FuseSkillData:FuseSkillData
-  - source: {fileID: 11400000, guid: 8734317024d19c8488b5f95dbf97dc3e, type: 2}
-    generated: {fileID: 2800000, guid: 3daaf9c0ab3644fa3ba696aaf9ae6c18, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:HealerBotProfile:ClericNoHealBot
   - source: {fileID: 11400000, guid: 88ca5c875e59415ab9f15abfc15d52b9, type: 2}
     generated: {fileID: 2800000, guid: 927c792d1470240218f26ac275f6bbf3, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
-  - source: {fileID: 11400000, guid: 890d9a626abb11a45b7d74f21591bf90, type: 2}
-    generated: {fileID: 2800000, guid: 68026700e69b64a4bbe9f4bd00f9a9bf, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:SimulationPlan:CharacterSpellDpsSimulation
   - source: {fileID: 11400000, guid: 8c2d734b862d50d4886a7ff7d37eb7e5, type: 2}
     generated: {fileID: 2800000, guid: eddb8cb266bca455f97ef796925dbe52, type: 3}
     artworkOverride: {fileID: 0}
@@ -2693,10 +2653,6 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: c148b18c1144244b3bd702c2b8d31514, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Data:Data:BounceProjectileBehaviourData:BounceProjectileBehaviourData
-  - source: {fileID: 11400000, guid: a71466cfd702e64438cffa51ca3a7ada, type: 2}
-    generated: {fileID: 2800000, guid: 3ac64c027e7e44f2788d1a5034ac22c8, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:SimulationPlan:BalanceTeamDpsSimulation
   - source: {fileID: 11400000, guid: a964e1041d6144d4844f9f224e623125, type: 2}
     generated: {fileID: 2800000, guid: 8dce8543d65de4f9a8428e9f0755a32a, type: 3}
     artworkOverride: {fileID: 0}
@@ -2705,10 +2661,6 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: b944899f162fb449db2b04808bb0add7, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Spell:Spell:ShootProjectileSkillData:ShootProjectileSkillData
-  - source: {fileID: 11400000, guid: ac54295e681c56a448e0f6a9bee7b179, type: 2}
-    generated: {fileID: 2800000, guid: b799abb9e190c44b2a27b0ccc36a9b99, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:SimulationPlan:ItemRobustnessSimulation
   - source: {fileID: 11400000, guid: adc0e3eace811214ba8162643ac94500, type: 2}
     generated: {fileID: 2800000, guid: db8251a5ef3c34758b9c1b36a16dbb84, type: 3}
     artworkOverride: {fileID: 0}
@@ -2745,18 +2697,10 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: 63c7f150f65224359b3302b21edc61cd, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
-  - source: {fileID: 11400000, guid: c014fb82df860c248badfe392f136e61, type: 2}
-    generated: {fileID: 2800000, guid: d70905e99ea2d4eb4a80b844c42feef3, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:HealerBotProfile:ClericHealerBot
   - source: {fileID: 11400000, guid: c3e4823636f94b73a8f69beb17bd5b85, type: 2}
     generated: {fileID: 2800000, guid: 70425988a259b47219d342939672484e, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Data:Data:ItemData:Banner
-  - source: {fileID: 11400000, guid: c4315d678ceabbc418438b4199a62d92, type: 2}
-    generated: {fileID: 2800000, guid: 7061c37c272f5423c99bf6fd0281f6db, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:SimulationPlan:WaveDpsSimulation
   - source: {fileID: 11400000, guid: c4ba792f39b34e8ca9bcf77805119bfc, type: 2}
     generated: {fileID: 2800000, guid: f920e4dbf51ce4befb71892142a9b0cc, type: 3}
     artworkOverride: {fileID: 0}
@@ -2765,10 +2709,6 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: 55035b7d3afab465ba8716fcc1300ff3, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
-  - source: {fileID: 11400000, guid: c915d10115147b24a93f7a48654cbb15, type: 2}
-    generated: {fileID: 2800000, guid: 24030a3c7a0a34cfbb6ec55b57f5021e, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:SimulationPlan:QuickTestSimulation
   - source: {fileID: 11400000, guid: c9884898c96443c3996a9002b8968fc0, type: 2}
     generated: {fileID: 2800000, guid: 02e4753d4d6b148a086fe305e399622f, type: 3}
     artworkOverride: {fileID: 0}
@@ -2817,10 +2757,6 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: 61867f6d70f974f22a7d8da6b61dbf5c, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Data:Data:BuffHandlerData:BuffHandlerData
-  - source: {fileID: 11400000, guid: e6998095fd474165ac33ec2fb5d89e6d, type: 2}
-    generated: {fileID: 2800000, guid: 8cbf8140e744f4fe791084d6fa9c7584, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:SimulationPlan:CharacterRobustnessSimulation
   - source: {fileID: 11400000, guid: e85cf5282617a01438e560dff6d97937, type: 2}
     generated: {fileID: 2800000, guid: b1eab4ae2c077405c8fa0018fd33c1ad, type: 3}
     artworkOverride: {fileID: 0}
@@ -2865,10 +2801,6 @@ MonoBehaviour:
     generated: {fileID: 2800000, guid: 9bb8a3ed42ba5491799ee0706a8683a7, type: 3}
     artworkOverride: {fileID: 0}
     fingerprint: 3:Creature:Creature:EntityData:Balance Sniper
-  - source: {fileID: 11400000, guid: fe035affa7047e14297a74275d94ad1d, type: 2}
-    generated: {fileID: 2800000, guid: 76d2c9e3a3d80429f8e23fedeb06837f, type: 3}
-    artworkOverride: {fileID: 0}
-    fingerprint: 3:Data:Data:SimulationPlan:AllWavesAllFloorsSimulation
   - source: {fileID: 11400000, guid: ffe85c5c82103de43b7d43e9a4baef43, type: 2}
     generated: {fileID: 2800000, guid: a000d02375fba42b6896b61e16bcf898, type: 3}
     artworkOverride: {fileID: 0}

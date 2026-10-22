@@ -70,7 +70,26 @@ public static class DataIconBaker
             }
         }
 
-        return true;
+        // An editor-only assembly (e.g. HealerLike.Balance) has no script in a player, so its assets would load there
+        // as missing scripts through the catalog
+        return PlayerAssemblyNames().Contains(assemblyName);
+    }
+
+    static HashSet<string> _playerAssemblyNames;
+
+    static HashSet<string> PlayerAssemblyNames()
+    {
+        if (_playerAssemblyNames == null)
+        {
+            _playerAssemblyNames = new HashSet<string>();
+            foreach (UnityEditor.Compilation.Assembly assembly in UnityEditor.Compilation.CompilationPipeline.GetAssemblies(
+                UnityEditor.Compilation.AssembliesType.PlayerWithoutTestAssemblies))
+            {
+                _playerAssemblyNames.Add(assembly.name);
+            }
+        }
+
+        return _playerAssemblyNames;
     }
 
     // The icons and the catalog it writes sit in the catalog folder, which the import watcher ignores, so a bake

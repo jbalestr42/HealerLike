@@ -152,7 +152,17 @@ public class ToolkitGameUI : MonoBehaviour
     void Start()
     {
         _started = true;
+        RegisterStatuses();
         Init();
+    }
+
+    // The menu scene has no DataManager, so its texts ({status:X}) need the statuses of the game data from here
+    void RegisterStatuses()
+    {
+        if (_gameData != null)
+        {
+            StatusKeywords.Register(_gameData.statuses);
+        }
     }
 
     void OnEnable()
