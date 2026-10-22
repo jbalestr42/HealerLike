@@ -955,7 +955,14 @@ PlayerSettings:
   virtualTexturingSupportEnabled: 0
   insecureHttpOption: 0
   androidVulkanDenyFilterList: []
-  androidVulkanAllowFilterList: []
+  androidVulkanAllowFilterList:
+  - vendorName: ARM
+    deviceName: 
+    brandName: 
+    productName: 
+    androidOsVersionString: 
+    vulkanApiVersionString: 
+    driverVersionString: 
   androidVulkanDeviceFilterListAsset: {fileID: 0}
   d3d12DeviceFilterListAsset: {fileID: 0}
   webGPUDeviceFilterListAsset: {fileID: 0}
