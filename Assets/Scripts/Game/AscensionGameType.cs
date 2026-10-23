@@ -10,6 +10,8 @@ public class AscensionGameType : AGameType, IEventRoomHost
     [HideInInspector] public static UnityEvent OnRoundStart = new UnityEvent();
     [HideInInspector] public static UnityEvent OnBattleStart = new UnityEvent();
     [HideInInspector] public static UnityEvent OnRoundEnd = new UnityEvent();
+    // The next room picked on the map, before it is entered
+    [HideInInspector] public static UnityEvent<MapNode> OnRoomSelected = new UnityEvent<MapNode>();
 
     public enum State
     {
@@ -17,6 +19,8 @@ public class AscensionGameType : AGameType, IEventRoomHost
         InitializeGame,
         ShowMap,
         SelectRoom,
+        // The room picked on the map, entered on the next update
+        EnterRoom,
         InitializeRound,
         WaitForRoundToStart,
         StartBattle,
@@ -45,10 +49,6 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     public State state { get { return _state; } }
     EntityManager _entities = null;
-    GameView _gameView;
-    UpgradeView _upgradeView;
-    MapView _mapView;
-    EventView _eventView;
     System.Random _random;
     int _seedUsed;
     string _runId;
@@ -70,10 +70,34 @@ public class AscensionGameType : AGameType, IEventRoomHost
     // The kind of fight of the wave: Combat, Elite or Boss (an event played as a combat is a Combat)
     MapNodeType _currentFightType;
 
-#if UNITY_EDITOR
-    // Editor only, every item of the game to try them (Items button)
-    ItemCatalogView _itemCatalog;
-#endif
+    // The choices of the reward on screen, empty outside of one
+    List<RewardChoice> _rewardChoices = new List<RewardChoice>();
+    public IReadOnlyList<RewardChoice> rewardChoices => _rewardChoices;
+
+    // The choices of the event or rest room on screen, null outside of one
+    EventPrompt _currentEvent;
+    public EventPrompt currentEvent => _currentEvent;
+
+    // The run ended on a win (the boss beaten), on a loss otherwise
+    bool _isVictory = false;
+    public bool isVictory => _isVictory;
+
+    // Once the first room is entered: the skills of the character are shown from then on
+    bool _hasStartedARound = false;
+    public bool hasStartedARound => _hasStartedARound;
+
+    // Arranging the units and giving them items before a fight
+    public bool isPreparing => _state == State.WaitForRoundToStart;
+    public bool canStartBattle => isPreparing;
+    public bool canSelectRoom => _state == State.SelectRoom;
+    // The map can be looked at while arranging the units before a fight
+    public bool canLookAtMap => isPreparing && screens.current == GameScreen.Game;
+
+    // Taken on Start
+    GameManager _game;
+    PlayerBehaviour _player;
+    GameScreens screens => _game.screens;
+    PlayerBehaviour player => _player;
 
     // Rooms climbed so far, the room being played included
     public int currentRound => _run != null ? _run.currentFloor + 1 : 0;
@@ -81,29 +105,8 @@ public class AscensionGameType : AGameType, IEventRoomHost
     void Start()
     {
         _entities = EntityManager.instance;
-        _gameView = UIManager.instance.GetView<GameView>(ViewType.Game);
-        _gameView.characterSkillInventory.Show(false);
-        _gameView.entityInventory.Show(false);
-        _gameView.gameHUD.ShowManaBar(false);
-
-        _upgradeView = UIManager.instance.GetView<UpgradeView>(ViewType.Upgrade);
-        _mapView = UIManager.instance.GetView<MapView>(ViewType.Map);
-        _eventView = UIManager.instance.GetView<EventView>(ViewType.Event);
-
-        _gameView.gameHUD.nextWaveButton.onClick.AddListener(StartBattle);
-#if UNITY_EDITOR
-        _gameView.gameHUD.CreateEditorButton("Kill Wave").onClick.AddListener(KillEnemyWave);
-        _gameView.gameHUD.CreateEditorButton("Items").onClick.AddListener(ToggleItemCatalog);
-#endif
-        if (_gameView.gameHUD.mapButton != null)
-        {
-            _gameView.gameHUD.mapButton.onClick.AddListener(LookAtMap);
-            _gameView.gameHUD.mapButton.interactable = false;
-        }
-        _upgradeView.OnItemSelected.AddListener(OnItemSelected);
-        _upgradeView.OnPlayerItemSelected.AddListener(OnPlayerItemSelected);
-        _upgradeView.OnEntitySelected.AddListener(OnEntitySelected);
-        _mapView.OnNodeSelected.AddListener(OnRoomSelected);
+        _game = GameManager.instance;
+        _player = PlayerBehaviour.instance;
         _entities.OnEntityKilled.AddListener(OnEntityKilled);
         _entities.OnEntitySummoned.AddListener(OnEntitySummoned);
         _entities.OnEntitySpawned.AddListener(OnEntitySpawned);
@@ -133,7 +136,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
             return;
         }
 
-        _gameView.playerInventory.TakeItemsOf(entity);
+        player.TakeItemsOf(entity);
         _run.AddDeadAlly(entity.data);
     }
 
@@ -151,10 +154,6 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 break;
 
             case State.InitializeGame:
-                _gameView.gameHUD.inventoryButton.enabled = true;
-                _gameView.gameHUD.ShowManaBar(true);
-                _gameView.gameHUD.manaTooltip = () => GetManaTooltip(PlayerBehaviour.instance.character.mana);
-
                 int runAscensionLevel = GetAscensionLevel(ascension, CharacterSelection.ascensionLevel);
                 Debug.Log($"[AscensionGameType] Ascension level: {runAscensionLevel}");
 
@@ -163,7 +162,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 {
                     GiveItems(PlayerBehaviour.instance.character, ascension.GetCharacterItems(runAscensionLevel));
                 }
-                _gameView.entityInventory.Init(PlayerBehaviour.instance.character.entityPool);
+                player.roster.Init(PlayerBehaviour.instance.character.entityPool);
                 if (ascension != null)
                 {
                     ReturnToInventory(EntityManager.instance.board.SetCenterBlocked(BoardCellType.Player, ascension.BlocksPlayerCenter(runAscensionLevel)));
@@ -176,33 +175,26 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 _runId = System.DateTime.Now.ToString("yyyyMMdd-HHmmss");
                 _runMapSettings = GetRunMapSettings(_mapSettings, ascension, runAscensionLevel);
                 _run = new RunState(MapGenerator.Generate(_runMapSettings, seed), runAscensionLevel);
-                if (_gameView.gameHUD.ascensionIndicator != null)
-                {
-                    _gameView.gameHUD.ascensionIndicator.Show(ascension, runAscensionLevel);
-                }
 
                 SetState(State.ShowMap);
                 break;
 
             case State.ShowMap:
-                _gameView.gameHUD.nextWaveButton.interactable = false;
-                SetMapButtonInteractable(false);
-                UIManager.instance.AddView(ViewType.Map);
-                _mapView.Display(_run, true);
+                // The room can be picked as soon as the map is on screen
                 SetState(State.SelectRoom);
+                screens.Open(GameScreen.Map);
                 break;
 
             case State.SelectRoom:
                 // Wait for the player to click on one of the next rooms of the map
                 break;
 
-            case State.InitializeRound:
-                _gameView.gameHUD.inventoryButton.interactable = true;
-                _gameView.gameHUD.nextWaveButton.interactable = true;
-                SetMapButtonInteractable(true);
-                _gameView.characterSkillInventory.Show(true);
-                _gameView.entityInventory.Show(true);
+            case State.EnterRoom:
+                EnterRoom(_run.currentNode);
+                break;
 
+            case State.InitializeRound:
+                _hasStartedARound = true;
                 RefillManaForCombat(PlayerBehaviour.instance.character.mana);
                 List<Entity> enemies = LoadEnemies(_currentWave);
                 if (ascension != null)
@@ -221,11 +213,6 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 break;
 
             case State.StartBattle:
-                _gameView.gameHUD.inventoryButton.interactable = false;
-                _gameView.gameHUD.nextWaveButton.interactable = false;
-                SetMapButtonInteractable(false);
-                _gameView.entityInventory.Show(false);
-                _gameView.playerInventory.HideInventory();
                 EnableAllEntities(true);
                 StartCombatLog();
                 // TODO: Show countdown before starting the battle
@@ -287,9 +274,9 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 break;
 
             case State.GameOver:
-                UIManager.instance.AddView(ViewType.GameOver);
-                UIManager.instance.GetView<GameOverView>(ViewType.GameOver).ShowResult(false);
+                _isVictory = false;
                 SetState(State.None);
+                screens.Open(GameScreen.GameOver);
                 break;
 
             default:
@@ -298,15 +285,21 @@ public class AscensionGameType : AGameType, IEventRoomHost
         }
     }
 
-    void StartBattle()
+    // Once the units are arranged
+    public void StartBattle()
     {
+        if (!canStartBattle)
+        {
+            return;
+        }
+
         SetState(State.StartBattle);
     }
 
 #if UNITY_EDITOR
     // Editor only, to skip a fight: every enemy dies and the fight is won on the next update, started first when the
     // units are still being placed
-    void KillEnemyWave()
+    public void KillEnemyWave()
     {
         if (_state != State.WaitForRoundToStart && _state != State.StartBattle && _state != State.OnGoingBattle)
         {
@@ -318,18 +311,6 @@ public class AscensionGameType : AGameType, IEventRoomHost
             StartBattle();
         }
         _entities.KillAll(Entity.EntityType.Computer);
-    }
-
-    // Editor only, to try the items: every item of the game, made the first time it is opened
-    void ToggleItemCatalog()
-    {
-        if (_itemCatalog == null)
-        {
-            SandboxButton buttonPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<SandboxButton>("Assets/Prefabs/UI/SandboxButton.prefab");
-            _itemCatalog = ItemCatalogView.Create(_gameView.playerInventory.inventory, buttonPrefab, DataManager.instance.items, AddUnitItem, AddPlayerItem);
-            return;
-        }
-        _itemCatalog.Show(!_itemCatalog.gameObject.activeSelf);
     }
 #endif
 
@@ -343,15 +324,17 @@ public class AscensionGameType : AGameType, IEventRoomHost
         return _state == State.GameEnd;
     }
 
-    void OnRoomSelected(MapNode node)
+    // One of the next rooms of the map, picked on the map
+    public void SelectRoom(MapNode node)
     {
-        if (_state != State.SelectRoom || !_run.TravelTo(node))
+        if (!canSelectRoom || !_run.TravelTo(node))
         {
             return;
         }
 
-        UIManager.instance.PopCurrentView();
-        EnterRoom(node);
+        screens.Close();
+        SetState(State.EnterRoom);
+        OnRoomSelected.Invoke(node);
     }
 
     void EnterRoom(MapNode node)
@@ -415,6 +398,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 label = choice.label,
                 description = choice.description,
                 isAvailable = choice.isAvailable,
+                source = choice.source,
                 onSelected = () =>
                 {
                     close();
@@ -517,9 +501,9 @@ public class AscensionGameType : AGameType, IEventRoomHost
         Debug.Log("[AscensionGameType] Boss defeated, the run is won");
         UnlockNextAscensionLevel();
         EnableAllEntities(false);
-        UIManager.instance.AddView(ViewType.GameOver);
-        UIManager.instance.GetView<GameOverView>(ViewType.GameOver).ShowResult(true);
+        _isVictory = true;
         SetState(State.GameEnd);
+        screens.Open(GameScreen.GameOver);
     }
 
     // Saved right away, so the level stays unlocked even if the game is closed on the end screen
@@ -548,24 +532,26 @@ public class AscensionGameType : AGameType, IEventRoomHost
         }
     }
 
-    // The map can be looked at while arranging the units before a fight
-    void LookAtMap()
+    // Only to look at it, no room can be picked
+    public void LookAtMap()
     {
-        if (_state != State.WaitForRoundToStart)
+        if (!canLookAtMap)
         {
             return;
         }
 
-        UIManager.instance.AddView(ViewType.Map);
-        _mapView.Display(_run, false);
+        screens.Open(GameScreen.Map);
     }
 
-    void SetMapButtonInteractable(bool isInteractable)
+    // Back to the units, only from a map opened to look at it
+    public void CloseMap()
     {
-        if (_gameView.gameHUD.mapButton != null)
+        if (!isPreparing || screens.current != GameScreen.Map)
         {
-            _gameView.gameHUD.mapButton.interactable = isInteractable;
+            return;
         }
+
+        screens.Close();
     }
 
     // Beating an elite is the only way to get a unit, the other rooms give items
@@ -596,9 +582,10 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     void ShowRewards(int choiceCount)
     {
-        UIManager.instance.AddView(ViewType.Upgrade);
-        _upgradeView.FillChoices(GetRewardChoiceCount(choiceCount, PlayerBehaviour.instance.character.gameObject));
+        Character character = PlayerBehaviour.instance.character;
+        _rewardChoices = RewardChoice.Roll(GetRewardChoiceCount(choiceCount, character.gameObject), character.data);
         SetState(State.SelectUpgrade);
+        screens.Open(GameScreen.Reward);
     }
 
     // The choices of the room, plus the ones the character gets from its RewardChoices (e.g. the Merchant's
@@ -614,29 +601,29 @@ public class AscensionGameType : AGameType, IEventRoomHost
         return Mathf.Max(1, roomChoiceCount + Mathf.RoundToInt(attributes.Get(AttributeType.RewardChoices).Value));
     }
 
-    public void OnItemSelected(AItem item)
+    // One of the reward choices on screen, then back to the map
+    public void SelectReward(RewardChoice choice)
     {
-        AddUnitItem(item);
-        CloseRewards();
-    }
+        if (_state != State.SelectUpgrade || !_rewardChoices.Contains(choice))
+        {
+            return;
+        }
 
-    public void OnPlayerItemSelected(AItem item)
-    {
-        AddPlayerItem(item);
-        CloseRewards();
-    }
+        switch (choice.type)
+        {
+            case RewardChoiceType.Unit:
+                AddUnit(choice.unit);
+                break;
+            case RewardChoiceType.PlayerItem:
+                AddPlayerItem(choice.item);
+                break;
+            case RewardChoiceType.EntityItem:
+                AddUnitItem(choice.item);
+                break;
+        }
 
-    // The unit joins the ones the player can place on the board
-    public void OnEntitySelected(EntityData entity)
-    {
-        AddUnit(entity);
-        CloseRewards();
-    }
-
-    void CloseRewards()
-    {
-        _upgradeView.ClearChoices();
-        UIManager.instance.PopCurrentView();
+        _rewardChoices.Clear();
+        screens.Close();
         SetState(State.ShowMap);
     }
 
@@ -739,10 +726,17 @@ public class AscensionGameType : AGameType, IEventRoomHost
         LeaveRestRoom();
     }
 
-    // A resurrected ally placed on the board for the first time since it came back
+    // An ally placed on the board leaves the roster; a resurrected one gets the ascension consumers the first time
+    // it is placed since it came back
     void OnEntitySpawned(Entity entity)
     {
-        if (entity == null || entity.entityType != Entity.EntityType.Player || ascension == null || !_resurrectedAllies.Remove(entity.data))
+        if (entity == null || entity.entityType != Entity.EntityType.Player)
+        {
+            return;
+        }
+
+        player.roster.Remove(entity.data);
+        if (ascension == null || !_resurrectedAllies.Remove(entity.data))
         {
             return;
         }
@@ -822,7 +816,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 continue;
             }
 
-            choices.Add(new EventChoice { label = ally.title, description = ally.description, onSelected = () => resurrect(ally) });
+            choices.Add(new EventChoice { label = ally.title, description = ally.description, source = ally, onSelected = () => resurrect(ally) });
         }
         choices.Add(new EventChoice { label = "Back", onSelected = back });
         return choices;
@@ -867,8 +861,8 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 EntityManager.instance.TakeBack(unit, entity.entityType);
                 continue;
             }
-            _gameView.playerInventory.TakeItemsOf(entity);
-            _gameView.entityInventory.AddEntity(entity.data);
+            player.TakeItemsOf(entity);
+            player.roster.Add(entity.data);
             EntityManager.instance.TakeBack(unit, entity.entityType);
         }
     }
@@ -898,7 +892,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     public void AddUnit(EntityData unit)
     {
-        _gameView.entityInventory.AddEntity(unit);
+        player.roster.Add(unit);
     }
 
     public IReadOnlyList<AItemFactory> GetItems(List<string> includedTags, List<string> excludedTags = null)
@@ -909,18 +903,19 @@ public class AscensionGameType : AGameType, IEventRoomHost
 
     public void AddPlayerItem(AItem item)
     {
-        PlayerBehaviour.instance.character.inventoryHandler.AddItem(item, -1);
+        player.character.inventoryHandler.AddItem(item, -1);
     }
 
     public void AddUnitItem(AItem item)
     {
-        _gameView.playerInventory.AddItem(item);
+        player.stash.AddItem(item, -1);
     }
 
+    // Its screen is closed before the picked choice applies (see SelectEventChoice)
     public void ShowChoices(string title, string description, IReadOnlyList<EventChoice> choices)
     {
-        UIManager.instance.AddView(ViewType.Event);
-        _eventView.Display(title, description, CloseBeforeEachChoice(choices, () => UIManager.instance.PopCurrentView()));
+        _currentEvent = new EventPrompt(title, description, CloseBeforeEachChoice(choices, CloseEvent));
+        screens.Open(GameScreen.Event);
     }
 
     public void EndEvent()
@@ -934,4 +929,19 @@ public class AscensionGameType : AGameType, IEventRoomHost
     }
 
     #endregion
+
+    // One of the choices of the event on screen, only the first one picked counts
+    public void SelectEventChoice(EventChoice choice)
+    {
+        if (_currentEvent != null)
+        {
+            _currentEvent.Select(choice);
+        }
+    }
+
+    void CloseEvent()
+    {
+        _currentEvent = null;
+        screens.Close();
+    }
 }

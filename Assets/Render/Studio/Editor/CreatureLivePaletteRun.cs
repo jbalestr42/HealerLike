@@ -41,7 +41,7 @@ namespace HealerLike.Render.Studio.Editor
             yield return Wait(0.5f);
             _player.PlaceAllies(_manager, StagePlayer.LoadAllies());
             yield return Wait(0.7f);
-            _hud.nextWaveButton.onClick.Invoke();
+            _ascension.StartBattle();
             float shotDeadline = Time.realtimeSinceStartup + 15f;
             while (!_view && Time.realtimeSinceStartup < shotDeadline)
             {

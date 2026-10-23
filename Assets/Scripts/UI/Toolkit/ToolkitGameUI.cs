@@ -56,7 +56,7 @@ public class ToolkitGameUI : MonoBehaviour
         }
     }
     public bool acceptsWorldInput => _view != null && !_context.isPaused && !_context.isInventoryOpen
-        && !_context.isSheetOpen && _context.IsCurrentView(ViewType.Game);
+        && !_context.isSheetOpen && _context.IsCurrentView(GameScreen.Game);
     public void WorldPointerDown() { _view?.ClosePopover(); }
     public void CancelGestures() { _view?.CancelGestures(); }
     public void InspectEntity(Entity entity, Vector2 screenPoint)
@@ -227,11 +227,11 @@ public class ToolkitGameUI : MonoBehaviour
         _partyPanel.Init(_context, _view, _detailPanel);
         _spellBar.Init(_context, _view);
         _rewardPanel.Init(this, _context, _view);
-        _eventPanel.Init(this, _context, _view, _hideLegacyCanvases ? _legacyCanvases : null);
+        _eventPanel.Init(this, _context, _view);
         _mapPanel.Init(_context, _view);
         if (_hideLegacyCanvases)
         {
-            _legacyCanvases.Hide(_context);
+            _legacyCanvases.Hide(_context, FindAnyObjectByType<UIManager>());
         }
 
         Refresh();
@@ -287,13 +287,15 @@ public class ToolkitGameUI : MonoBehaviour
 
         _mobileLayout.Refresh();
         _mapPanel.Refresh();
-        _view.Show("pause-panel", _context.isPaused && _context.IsCurrentView(ViewType.Game));
+        _view.Show("pause-panel", _context.isPaused && _context.IsCurrentView(GameScreen.Game));
         _view.Show("inventory-panel", _context.isInventoryOpen && !_context.isPaused);
-        _view.Show("upgrade-panel", _context.IsCurrentView(ViewType.Upgrade));
-        _view.Show("gameover-panel", _context.IsCurrentView(ViewType.GameOver));
+        _view.Show("upgrade-panel", _context.IsCurrentView(GameScreen.Reward));
+        _view.Show("gameover-panel", _context.IsCurrentView(GameScreen.GameOver));
+        if (_context.IsCurrentView(GameScreen.GameOver) && _context.ascension != null)
+        {
+            _view.SetText("gameover-title", GetResultTitle(_context.ascension.isVictory));
+        }
         _sheetPanel.Refresh();
-        // Before the early returns below: his event canvas comes down only when this panel draws a card in its
-        // place, and a refresh that stopped short of the panel would leave that decision stale
         _eventPanel.Refresh();
         if (_context.isMenu)
         {
@@ -301,14 +303,14 @@ public class ToolkitGameUI : MonoBehaviour
             return;
         }
 
-        if (_context.legacy == null || _context.game == null || _context.player == null)
+        if (_context.game == null || _context.player == null)
         {
             return;
         }
 
-        bool isStart = LegacyUiReader.GameState(_context.game) == GameManager.GameState.None;
+        bool isStart = _context.game.state == GameManager.GameState.None;
         bool isPreparing = _context.IsPreparing();
-        bool hasOverlay = LegacyUiReader.CurrentView(_context.ui) != ViewType.Game;
+        bool hasOverlay = _context.currentScreen != GameScreen.Game;
         _encounterBar.Refresh(isStart, isPreparing, hasOverlay);
         if (!isPreparing || hasOverlay)
         {
@@ -326,6 +328,11 @@ public class ToolkitGameUI : MonoBehaviour
         {
             _inventoryPanel.Refresh();
         }
+    }
+
+    public static string GetResultTitle(bool isVictory)
+    {
+        return isVictory ? "Victory!" : "Your party has fallen";
     }
 
     void ReleaseView()

@@ -34,7 +34,7 @@ public class ToolkitMobileLayout : IDisposable
     public void Refresh()
     {
         bool blocked = _context.isMenu || _context.isPaused || _context.isInventoryOpen || _context.isSheetOpen
-            || (_context.ui != null && !_context.IsCurrentView(ViewType.Game));
+            || (_context.screens != null && !_context.IsCurrentView(GameScreen.Game));
         if (blocked) { _view.CancelGestures(); }
         // A modal over the game closes the popover for as long as it is open. The menu closes it once, as it opens:
         // after that the popover is the class screen's own (its kit chips), and closing it every refresh hid it the
@@ -44,7 +44,7 @@ public class ToolkitMobileLayout : IDisposable
         _wasMenu = _context.isMenu;
         _view.Show("cancel-button", _context.hasInteraction && !blocked);
         _view.SetButton("pause-button", null, !_context.isMenu
-            && (_context.ui == null || _context.IsCurrentView(ViewType.Game)));
+            && (_context.screens == null || _context.IsCurrentView(GameScreen.Game)));
         // This control lives in Pause and must remain operable while paused.
         _view.SetButton("focus-button", null, !_context.isMenu);
     }

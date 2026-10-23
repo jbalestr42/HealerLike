@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class GameManager : Singleton<GameManager>
 {
@@ -15,11 +15,15 @@ public class GameManager : Singleton<GameManager>
     GameState _state = GameState.None;
     public GameState state { get { return _state; } }
 
+    // The screens of the game, the board first
+    GameScreens _screens = new GameScreens();
+    public GameScreens screens { get { return _screens; } }
+
     void Start()
     {
         _gameType = GetComponent<AGameType>();
 
-        UIManager.instance.AddView(ViewType.Game);
+        _screens.Open(GameScreen.Game);
         // The character was picked in the menu: the run starts with the scene
         SetState(GameState.StartGame);
         

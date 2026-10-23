@@ -174,7 +174,7 @@ public class CursedTreasureItemsDataTests
                 expected.Add(LoadAt(folder));
             }
             CollectionAssert.AreEquivalent(expected, chest);
-            CollectionAssert.IsEmpty(dataManager.GetItems(new List<string> { TagNames.Entity }, UpgradeView.RewardExcludedTags).FindAll(expected.Contains));
+            CollectionAssert.IsEmpty(dataManager.GetItems(new List<string> { TagNames.Entity }, RewardChoice.ExcludedTags).FindAll(expected.Contains));
         }
         finally
         {

@@ -54,8 +54,8 @@ namespace UI.Toolkit
             _host = new GameObject("Sheet fixture");
             _host.SetActive(false);
             _context = new ToolkitGameContext();
-            _context.ui = _host.AddComponent<UIManager>();
-            TestHelpers.SetPrivateField(_context.ui, "_currentView", ViewType.Game);
+            _context.game = _host.AddComponent<GameManager>();
+            _context.game.screens.Open(GameScreen.Game);
             _context.player = _host.AddComponent<PlayerBehaviour>();
             _context.player.character = _character;
 
@@ -172,7 +172,7 @@ namespace UI.Toolkit
         public void Refresh_AnotherScreenIsCurrent_ClosesTheSheet()
         {
             _context.isSheetOpen = true;
-            TestHelpers.SetPrivateField(_context.ui, "_currentView", ViewType.Map);
+            _context.game.screens.Open(GameScreen.Map);
 
             _sheet.Refresh();
 

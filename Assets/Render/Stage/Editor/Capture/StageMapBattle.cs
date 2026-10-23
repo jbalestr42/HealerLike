@@ -116,7 +116,7 @@ namespace HealerLike.Render.Stage
                 }
 
                 // A won boss fight shows the game-over panel too, so the boss survives on the run state instead
-                _session.output.Check(boss ? LegacyUiReader.AscensionState(_session.ascension)
+                _session.output.Check(boss ? _session.ascension.state
                     != AscensionGameType.State.GameOver
                     : !StageInterfaceOutput.IsVisible(_session.actions.root.Q("gameover-panel")),
                     "Party survives " + prefix);
@@ -130,7 +130,7 @@ namespace HealerLike.Render.Stage
                 }
 
                 if (Time.realtimeSinceStartup >= nextDamage
-                    && LegacyUiReader.AscensionState(_session.ascension) == AscensionGameType.State.OnGoingBattle)
+                    && _session.ascension.state == AscensionGameType.State.OnGoingBattle)
                 {
                     nextDamage = Time.realtimeSinceStartup + 3f;
                     Button damage = _spells.SpellButton("Damage all enemy");

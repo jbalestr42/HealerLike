@@ -104,7 +104,7 @@ namespace HealerLike.Render.Stage
                 {
                     focus.enabled = focusEnabled;
                 }
-                _hud.nextWaveButton.onClick.Invoke();
+                _ascension.StartBattle();
                 yield return Wait(5f);
                 Time.timeScale = 0f;
                 if (focus != null)

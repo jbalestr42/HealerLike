@@ -236,62 +236,38 @@ public class ResourceValidatorTests
         Assert.IsTrue(new ResourceValidatorData().useCostMultiplier);
     }
 
-    // A skill button showing the cost given to it
-    UseCharacterSkillButton CreateButton(GameObject go)
-    {
-        UseCharacterSkillButton button = go.AddComponent<UseCharacterSkillButton>();
-        TestHelpers.SetPrivateField(button, "_costText", go.AddComponent<TMPro.TextMeshProUGUI>());
-        return button;
-    }
-
     [Test]
-    public void Init_TheFirstPositiveCost_IsShownOnTheButton()
+    public void Init_TheFirstPositiveCost_IsTheCostOfTheSkill()
     {
-        GameObject buttonGo = new GameObject("Button");
+        CharacterSkillState state = new CharacterSkillState();
+        (ResourceAttribute devotion, ResourceValidator gain) = CreateDevotionValidator(-1f);
+        ConsumerFactory manaCost = ScriptableObject.CreateInstance<ConsumerFactory>();
+        manaCost.data = new ConsumerData { value = new FlatValue { data = new FlatValueData { value = 8f } } };
+        ResourceValidator mana = new ResourceValidator { data = new ResourceValidatorData { consumer = manaCost } };
         try
         {
-            UseCharacterSkillButton button = CreateButton(buttonGo);
-            (ResourceAttribute devotion, ResourceValidator gain) = CreateDevotionValidator(-1f);
-            ConsumerFactory manaCost = ScriptableObject.CreateInstance<ConsumerFactory>();
-            manaCost.data = new ConsumerData { value = new FlatValue { data = new FlatValueData { value = 8f } } };
-            ResourceValidator mana = new ResourceValidator { data = new ResourceValidatorData { consumer = manaCost } };
-            try
-            {
-                // The gain first: not a cost, the mana cost after it is shown
-                gain.Init(button, _characterGo);
-                mana.Init(button, _characterGo);
+            // The gain first: not a cost, the mana cost after it is shown
+            gain.Init(state, _characterGo);
+            mana.Init(state, _characterGo);
 
-                Assert.IsTrue(button.hasCost);
-                Assert.AreEqual("8", buttonGo.GetComponent<TMPro.TextMeshProUGUI>().text);
-            }
-            finally
-            {
-                Object.DestroyImmediate(manaCost);
-            }
+            Assert.IsTrue(state.hasCost);
+            Assert.AreEqual(8f, state.cost, 0.001f);
         }
         finally
         {
-            Object.DestroyImmediate(buttonGo);
+            Object.DestroyImmediate(manaCost);
         }
     }
 
     [Test]
     public void Init_OnlyAGain_ShowsNoCost()
     {
-        GameObject buttonGo = new GameObject("Button");
-        try
-        {
-            UseCharacterSkillButton button = CreateButton(buttonGo);
-            (ResourceAttribute devotion, ResourceValidator gain) = CreateDevotionValidator(-1f);
+        CharacterSkillState state = new CharacterSkillState();
+        (ResourceAttribute devotion, ResourceValidator gain) = CreateDevotionValidator(-1f);
 
-            gain.Init(button, _characterGo);
+        gain.Init(state, _characterGo);
 
-            Assert.IsFalse(button.hasCost);
-        }
-        finally
-        {
-            Object.DestroyImmediate(buttonGo);
-        }
+        Assert.IsFalse(state.hasCost);
     }
 
     [Test]

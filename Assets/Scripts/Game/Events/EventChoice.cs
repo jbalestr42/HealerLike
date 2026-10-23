@@ -9,5 +9,8 @@ public class EventChoice
     // Shown but can't be picked, e.g. resurrect when no unit is dead
     public bool isAvailable = true;
 
+    // The unit or item the choice gives (e.g. to show its icon), null for the others (Heal, Leave...)
+    public object source;
+
     public Action onSelected;
 }

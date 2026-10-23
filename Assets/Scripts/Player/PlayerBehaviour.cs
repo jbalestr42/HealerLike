@@ -12,6 +12,14 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
     [SerializeField] Character _character;
     public Character character { get { return _character; } set { _character = value; } }
 
+    // The items the player keeps to give to the units
+    InventoryHandler _stash = new InventoryHandler();
+    public InventoryHandler stash => _stash;
+
+    // The units the player can place on the board
+    UnitRoster _roster = new UnitRoster();
+    public UnitRoster roster => _roster;
+
     void Start()
     {
         _skillInputs.ForEach(input => input.asset.Enable());
@@ -36,5 +44,11 @@ public class PlayerBehaviour : Singleton<PlayerBehaviour>
         }
 
         OnCharacterInit.Invoke(_character);
+    }
+
+    // The items added to the unit (not its innate ones) come back to the stash
+    public void TakeItemsOf(Entity entity)
+    {
+        _stash.TakeAllItems(entity.inventoryHandler);
     }
 }

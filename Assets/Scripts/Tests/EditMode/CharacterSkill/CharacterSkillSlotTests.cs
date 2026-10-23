@@ -28,9 +28,7 @@ public class BlockingValidatorFactory : CharacterSkillValidatorFactory<BlockingV
 public class CharacterSkillSlotTests
 {
     GameObject _owner;
-    GameObject _buttonGo;
     CharacterSkillSlot _slot;
-    UseCharacterSkillButton _skillButton;
     FakeCharacterSkill _skill;
     BlockingValidatorFactory _validatorFactory;
 
@@ -40,11 +38,6 @@ public class CharacterSkillSlotTests
         _owner = new GameObject("Character");
         _slot = _owner.AddComponent<CharacterSkillSlot>();
 
-        _buttonGo = new GameObject("SkillButton");
-        _skillButton = _buttonGo.AddComponent<UseCharacterSkillButton>();
-        TestHelpers.SetPrivateField(_skillButton, "_button", _buttonGo.AddComponent<UnityEngine.UI.Button>());
-        TestHelpers.SetPrivateField(_skillButton, "_nameText", _buttonGo.AddComponent<TMPro.TextMeshProUGUI>());
-
         _validatorFactory = ScriptableObject.CreateInstance<BlockingValidatorFactory>();
         _skill = new FakeCharacterSkill { data = new CharacterSkillData { name = "Skill", validators = new List<ACharacterSkillValidatorFactory> { _validatorFactory } } };
     }
@@ -53,14 +46,13 @@ public class CharacterSkillSlotTests
     public void TearDown()
     {
         Object.DestroyImmediate(_owner);
-        Object.DestroyImmediate(_buttonGo);
         Object.DestroyImmediate(_validatorFactory);
     }
 
     [Test]
     public void UseSkill_WithValidators_IsBlockedByAFailingValidator()
     {
-        _slot.Init(_skill, _skillButton);
+        _slot.Init(_skill);
 
         _slot.UseSkill();
 
@@ -70,20 +62,20 @@ public class CharacterSkillSlotTests
     [Test]
     public void UseSkill_WithoutValidators_IgnoresThem()
     {
-        _slot.Init(_skill, _skillButton, useValidators: false);
+        _slot.Init(_skill, useValidators: false);
 
         _slot.UseSkill();
         _slot.UseSkill();
 
         Assert.AreEqual(2, _skill.useCount);
-        Assert.IsFalse(_skillButton.hasCooldown);
-        Assert.IsFalse(_skillButton.hasCost);
+        Assert.IsFalse(_slot.state.hasCooldown);
+        Assert.IsFalse(_slot.state.hasCost);
     }
 
     [Test]
     public void UseSkill_Disabled_IsBlockedEvenWithoutValidators()
     {
-        _slot.Init(_skill, _skillButton, useValidators: false);
+        _slot.Init(_skill, useValidators: false);
         _slot.isEnabled = false;
 
         _slot.UseSkill();
@@ -95,7 +87,7 @@ public class CharacterSkillSlotTests
     [Test]
     public void UseSkill_EnabledAgain_CanBeUsed()
     {
-        _slot.Init(_skill, _skillButton, useValidators: false);
+        _slot.Init(_skill, useValidators: false);
         _slot.isEnabled = false;
         _slot.isEnabled = true;
 
@@ -112,7 +104,7 @@ public class CharacterSkillSlotTests
         TestHelpers.WithLoggingDisabled(() => character = _owner.AddComponent<Character>());
         List<CharacterSkillData> used = new List<CharacterSkillData>();
         character.OnSkillUsed.AddListener(used.Add);
-        _slot.Init(_skill, _skillButton, useValidators: false);
+        _slot.Init(_skill, useValidators: false);
 
         _slot.UseSkill();
 
@@ -126,7 +118,7 @@ public class CharacterSkillSlotTests
         TestHelpers.WithLoggingDisabled(() => character = _owner.AddComponent<Character>());
         int used = 0;
         character.OnSkillUsed.AddListener(skill => used++);
-        _slot.Init(_skill, _skillButton);
+        _slot.Init(_skill);
 
         _slot.UseSkill();
 
@@ -174,7 +166,7 @@ public class CharacterSkillSlotTests
                 CreateResourceValidator(ResourceType.Mana, 20f, created),
                 CreateResourceValidator(ResourceType.Devotion, -1f, created),
             };
-            _slot.Init(_skill, _skillButton, useValidators: false);
+            _slot.Init(_skill, useValidators: false);
 
             _slot.UseSkill();
             TestHelpers.InvokePrivate(devotion, "Update");
@@ -183,7 +175,7 @@ public class CharacterSkillSlotTests
             Assert.AreEqual(1, _skill.useCount, "Used without the mana it costs");
             Assert.AreEqual(1f, devotion.Value, 0.001f);
             Assert.AreEqual(0f, mana.Value, 0.001f);
-            Assert.IsFalse(_skillButton.hasCost);
+            Assert.IsFalse(_slot.state.hasCost);
         }
         finally
         {

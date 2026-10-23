@@ -5,6 +5,8 @@ public class InteractionManager : Singleton<InteractionManager>
 {
     AInteraction _interaction = null;
     ISelectable _selectable = null;
+    // The unit clicked on the board, null when none is
+    public ISelectable selected => _selectable;
     IDraggable _draggable = null;
     bool _isOver = false;
     Ray ray;

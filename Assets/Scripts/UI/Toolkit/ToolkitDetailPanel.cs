@@ -70,7 +70,8 @@ public class ToolkitDetailPanel : IDisposable
 
             return;
         }
-        GameObject worldSelection = LegacyUiReader.SelectedObject(_context.legacy);
+        Component selected = _context.interaction != null ? _context.interaction.selected as Component : null;
+        GameObject worldSelection = selected != null ? selected.gameObject : null;
         if (worldSelection != _lastWorldSelection)
         {
             _lastWorldSelection = worldSelection;

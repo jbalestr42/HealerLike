@@ -67,7 +67,6 @@ public class SelectableEntity : MonoBehaviour, ISelectable
         {
             _targetLines.Show(true);
         }
-        UIManager.instance.GetView<GameView>(ViewType.Game).ShowPanel(PanelType.Entity, gameObject);
     }
 
     public void UnSelect()
@@ -78,7 +77,6 @@ public class SelectableEntity : MonoBehaviour, ISelectable
         {
             _targetLines.Show(false);
         }
-        UIManager.instance.GetView<GameView>(ViewType.Game).HidePanel(PanelType.Entity);
     }
 
     #endregion

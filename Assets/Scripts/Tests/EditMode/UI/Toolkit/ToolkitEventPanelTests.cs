@@ -1,66 +1,35 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
-using TMPro;
 using UnityEngine;
-using UnityEngine.TestTools;
-using UnityEngine.UI;
 using UnityEngine.UIElements;
-using UiButton = UnityEngine.UI.Button;
 
 namespace UI.Toolkit
 {
 
-    // The event and rest choices of Julien's EventView become Toolkit cards, and his canvas is the fallback
+    // The choices of an event or rest room become Toolkit cards, a pick goes to the run
     public class ToolkitEventPanelTests
     {
-        static readonly Regex PanelError = new Regex(@"^\[ToolkitEventPanel\]");
-
-        GameObject _host;
-        GameObject _eventGo;
-        Canvas _eventCanvas;
-        GraphicRaycaster _eventRaycaster;
-        EventView _eventView;
-        UIManager _ui;
-        ToolkitGameContext _context;
+        ToolkitTestRun _run;
         VisualElement _root;
         ToolkitGameView _view;
-        ToolkitLegacyCanvases _legacyCanvases;
         ToolkitEventPanel _panel;
 
         [SetUp]
         public void SetUp()
         {
-            _host = new GameObject("Event adapter fixture");
-            _ui = _host.AddComponent<UIManager>();
-            _eventGo = new GameObject("Event view", typeof(RectTransform));
-            _eventGo.transform.SetParent(_host.transform);
-            _eventCanvas = _eventGo.AddComponent<Canvas>();
-            _eventCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            _eventRaycaster = _eventGo.AddComponent<GraphicRaycaster>();
-            TestHelpers.WithLoggingDisabled(() => _eventView = _eventGo.AddComponent<EventView>());
-            GameObject container = new GameObject("Choices", typeof(RectTransform));
-            container.transform.SetParent(_eventGo.transform);
-            TestHelpers.SetPrivateField(_eventView, "_choiceContainer", (RectTransform)container.transform);
-            TestHelpers.SetPrivateField(_ui, "_views", new Dictionary<ViewType, AView> { { ViewType.Event, _eventView } });
-            TestHelpers.SetPrivateField(_ui, "_currentView", ViewType.Event);
-            _context = new ToolkitGameContext();
-            _context.ui = _ui;
+            _run = new ToolkitTestRun();
             _root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
             _view = new ToolkitGameView(_root);
-            _legacyCanvases = new ToolkitLegacyCanvases();
-            _legacyCanvases.Hide(_context);
             _panel = new ToolkitEventPanel();
-            _panel.findAsset = label => null;
-            _panel.Init(null, _context, _view, _legacyCanvases);
+            _panel.Init(null, _run.context, _view);
         }
 
         [TearDown]
         public void TearDown()
         {
             _view.Release();
-            Object.DestroyImmediate(_host);
+            _run.Dispose();
         }
 
         static EventChoice Choice(string label, System.Action onSelected = null, bool isAvailable = true,
@@ -73,11 +42,6 @@ namespace UI.Toolkit
                 isAvailable = isAvailable,
                 onSelected = onSelected,
             };
-        }
-
-        void Display(params EventChoice[] choices)
-        {
-            _eventView.Display("Rest", "Take a break", choices);
         }
 
         List<string> CardTitles()
@@ -93,15 +57,15 @@ namespace UI.Toolkit
         [Test]
         public void BuildModels_RestChoices_OneCardPerChoiceWithItsLabelDescriptionAndAvailability()
         {
-            Display(Choice("Heal", description: "Every unit recovers 30% of its max health."), Choice("Resurrect"));
+            EventChoice heal = Choice("Heal", description: "Every unit recovers 30% of its max health.");
 
-            List<ToolkitCardModel> models = _panel.BuildModels(_eventView.choiceButtons);
+            List<ToolkitCardModel> models = _panel.BuildModels(new[] { heal, Choice("Resurrect") });
 
             Assert.AreEqual(2, models.Count);
             Assert.AreEqual("Heal", models[0].title);
             Assert.AreEqual("Every unit recovers 30% of its max health.", models[0].description);
             Assert.IsTrue(models[0].isEnabled);
-            Assert.AreSame(_eventView.choiceButtons[0], models[0].source);
+            Assert.AreSame(heal, models[0].source);
             Assert.IsNotNull(models[0].activate);
             Assert.AreEqual("Resurrect", models[1].title);
         }
@@ -109,9 +73,7 @@ namespace UI.Toolkit
         [Test]
         public void BuildModels_UnavailableChoice_IsADisabledCardWithAnUnavailableStatus()
         {
-            Display(Choice("Heal"), Choice("Resurrect", isAvailable: false));
-
-            List<ToolkitCardModel> models = _panel.BuildModels(_eventView.choiceButtons);
+            List<ToolkitCardModel> models = _panel.BuildModels(new[] { Choice("Heal"), Choice("Resurrect", isAvailable: false) });
 
             Assert.IsFalse(models[1].isEnabled);
             Assert.AreEqual("Unavailable", models[1].status);
@@ -120,32 +82,36 @@ namespace UI.Toolkit
         [Test]
         public void BuildModels_ChoiceWithoutDescription_HasAnEmptyDescription()
         {
-            _eventView.Display("Rest", "", new List<EventChoice> { new EventChoice { label = "Back" } });
-
-            List<ToolkitCardModel> models = _panel.BuildModels(_eventView.choiceButtons);
+            List<ToolkitCardModel> models = _panel.BuildModels(new[] { new EventChoice { label = "Back" } });
 
             Assert.AreEqual(string.Empty, models[0].description);
         }
 
         [Test]
-        public void BuildModels_FoundAsset_BecomesTheIconSource()
+        public void BuildModels_ChoiceGivingAUnit_ShowsTheUnit()
         {
-            object asset = new object();
-            _panel.findAsset = label => label == "Heal" ? asset : null;
-            Display(Choice("Heal"), Choice("Leave"));
+            EntityData unit = ScriptableObject.CreateInstance<EntityData>();
+            try
+            {
+                EventChoice recruit = Choice("Zealot");
+                recruit.source = unit;
 
-            List<ToolkitCardModel> models = _panel.BuildModels(_eventView.choiceButtons);
+                List<ToolkitCardModel> models = _panel.BuildModels(new[] { recruit, Choice("Leave") });
 
-            Assert.AreSame(asset, models[0].iconSource);
-            Assert.IsInstanceOf<ToolkitEventPanel.ChoiceIcon>(models[1].iconSource);
+                Assert.AreSame(unit, models[0].iconSource);
+                Assert.AreEqual("Unit · Choose", models[0].status);
+                Assert.IsInstanceOf<ToolkitEventPanel.ChoiceIcon>(models[1].iconSource);
+            }
+            finally
+            {
+                Object.DestroyImmediate(unit);
+            }
         }
 
         [Test]
         public void BuildModels_NoAsset_UsesAProceduralIconLabelledWithTheChoice()
         {
-            Display(Choice("Leave"));
-
-            ToolkitCardModel model = _panel.BuildModels(_eventView.choiceButtons)[0];
+            ToolkitCardModel model = _panel.BuildModels(new[] { Choice("Leave") })[0];
 
             IDataIconMetadata icon = model.iconSource as IDataIconMetadata;
             Assert.IsNotNull(icon);
@@ -155,188 +121,81 @@ namespace UI.Toolkit
         }
 
         [Test]
-        public void Activate_Card_InvokesHisChoiceOnceAndNeverTwice()
+        public void Activate_Card_ClosesTheEventThenAppliesTheChoiceOnce()
         {
             int picked = 0;
-            Display(Choice("Heal", () => picked++));
-            ToolkitCardModel model = _panel.BuildModels(_eventView.choiceButtons)[0];
+            _run.ShowEvent("Rest", "Take a break", Choice("Heal", () => picked++));
+            _panel.Refresh();
+            ToolkitCardModel model = _panel.BuildModels(_run.ascension.currentEvent.choices)[0];
 
             model.activate.Invoke(model);
             model.activate.Invoke(model);
 
-            Assert.AreEqual(1, picked, "His own Select counts the first pick only.");
+            Assert.AreEqual(1, picked);
+            Assert.AreEqual(GameScreen.Game, _run.game.screens.current);
+            Assert.IsNull(_run.ascension.currentEvent);
         }
 
         [Test]
-        public void Activate_ChoiceButtonDestroyed_InvokesNothingAndWarns()
+        public void Activate_UnavailableChoice_AppliesNothing()
         {
             int picked = 0;
-            Display(Choice("Heal", () => picked++));
-            ToolkitCardModel model = _panel.BuildModels(_eventView.choiceButtons)[0];
-            Object.DestroyImmediate(((UiButton)model.source).gameObject);
-            LogAssert.Expect(LogType.Warning, new Regex(@"^\[ToolkitEventPanel\]"));
+            _run.ShowEvent("Rest", "", Choice("Resurrect", () => picked++, isAvailable: false));
+            ToolkitCardModel model = _panel.BuildModels(_run.ascension.currentEvent.choices)[0];
 
             model.activate.Invoke(model);
 
             Assert.AreEqual(0, picked);
+            Assert.AreEqual(GameScreen.Event, _run.game.screens.current);
         }
 
         [Test]
-        public void Refresh_ActivatableChoices_DrawsOurPanelAndHidesHisCanvas()
+        public void Refresh_EventOnScreen_DrawsItsTitleDescriptionAndCards()
         {
-            Display(Choice("Heal"), Choice("Resurrect", isAvailable: false));
+            _run.ShowEvent("Rest", "Take a break", Choice("Heal"), Choice("Resurrect", isAvailable: false));
 
             _panel.Refresh();
 
-            Assert.IsTrue(_panel.isDrawing);
             Assert.IsFalse(IsPanelHidden());
+            Assert.AreEqual("Rest", _root.Q<Label>("event-title").text);
+            Assert.AreEqual("Take a break", _root.Q<Label>("event-description").text);
             CollectionAssert.AreEqual(new[] { "Heal", "Resurrect" }, CardTitles());
-            Assert.IsFalse(_eventCanvas.enabled);
-            Assert.IsFalse(_eventRaycaster.enabled);
         }
 
         [Test]
-        public void Refresh_NoActivatableChoice_KeepsHisCanvasVisibleAndLogsOneError()
+        public void Refresh_EventWithoutTitleNorDescription_ShowsTheDefaultTitleAndHidesTheDescription()
         {
-            Display(Choice("Resurrect", isAvailable: false));
-            LogAssert.Expect(LogType.Error, PanelError);
+            _run.ShowEvent("", "", Choice("Leave"));
 
             _panel.Refresh();
-            _panel.Refresh();
 
-            Assert.IsFalse(_panel.isDrawing);
-            Assert.IsTrue(IsPanelHidden());
-            Assert.IsTrue(_eventCanvas.enabled, "His canvas is the only way out of the room.");
-            Assert.IsTrue(_eventRaycaster.enabled);
+            Assert.AreEqual(ToolkitEventPanel.DefaultTitle, _root.Q<Label>("event-title").text);
+            Assert.IsTrue(_root.Q("event-description").ClassListContains("is-hidden"));
         }
 
         [Test]
-        public void Refresh_NoChoiceAtAll_KeepsHisCanvasVisibleWithoutAnError()
+        public void Refresh_NextEventOfTheRoom_ReplacesTheCards()
         {
-            _eventView.Display("Rest", "", new List<EventChoice>());
-
+            _run.ShowEvent("Rest", "", Choice("Heal"), Choice("Resurrect"));
             _panel.Refresh();
 
-            Assert.IsFalse(_panel.isDrawing);
-            Assert.IsTrue(_eventCanvas.enabled);
-        }
-
-        [Test]
-        public void Refresh_FallbackThenAnActivatableChoice_TakesOver()
-        {
-            Display(Choice("Resurrect", isAvailable: false));
-            LogAssert.Expect(LogType.Error, PanelError);
-            _panel.Refresh();
-
-            Display(Choice("Heal"));
-            _panel.Refresh();
-
-            Assert.IsTrue(_panel.isDrawing);
-            Assert.IsFalse(_eventCanvas.enabled);
-        }
-
-        [Test]
-        public void Refresh_EventViewDisplayedAgain_ReplacesTheCards()
-        {
-            Display(Choice("Heal"), Choice("Resurrect"));
-            _panel.Refresh();
-
-            Display(Choice("Zealot"), Choice("Back"));
+            // Resurrect opens the choice of the unit
+            _run.ShowEvent("Resurrect", "Choose the unit to bring back.", Choice("Zealot"), Choice("Back"));
             _panel.Refresh();
 
             CollectionAssert.AreEqual(new[] { "Zealot", "Back" }, CardTitles());
         }
 
         [Test]
-        public void Refresh_ChoiceBecomesUnavailable_RedrawsItsCard()
+        public void Refresh_OffTheEventScreen_HidesThePanel()
         {
-            Display(Choice("Heal"), Choice("Resurrect"));
+            _run.ShowEvent("Rest", "", Choice("Heal", () => { }));
+            _panel.Refresh();
+            _run.ascension.SelectEventChoice(_run.ascension.currentEvent.choices[0]);
+
             _panel.Refresh();
 
-            _eventView.choiceButtons[1].interactable = false;
-            _panel.Refresh();
-
-            Assert.IsTrue(_root.Q("event-list").Query(className: "is-disabled").ToList().Count == 1);
-        }
-
-        [Test]
-        public void Refresh_LeavingTheEventView_HidesOurPanelAndPutsHisCanvasBack()
-        {
-            Display(Choice("Heal"));
-            _panel.Refresh();
-
-            TestHelpers.SetPrivateField(_ui, "_currentView", ViewType.Game);
-            _panel.Refresh();
-
-            Assert.IsFalse(_panel.isDrawing);
             Assert.IsTrue(IsPanelHidden());
-            Assert.IsTrue(_eventCanvas.enabled, "Off his event screen his canvas is as the scene had it.");
-            Assert.IsTrue(_eventRaycaster.enabled);
-        }
-
-        [Test]
-        public void HiddenLegacyScreens_PanelNeverRefreshed_LeaveHisChoicesOnScreen()
-        {
-            // The state of a HUD refresh that returns before the panel: Hide has run, the panel has not
-            Display(Choice("Heal"), Choice("Leave"));
-
-            Assert.IsFalse(_panel.isDrawing);
-            Assert.IsTrue(IsPanelHidden());
-            Assert.IsTrue(_eventCanvas.enabled, "With no card of ours drawn, his screen is the way out of the room.");
-            Assert.IsTrue(_eventRaycaster.enabled);
-        }
-
-        [Test]
-        public void Refresh_SameChoicesDisplayedAgain_RebindsTheCardsToHisNewButtons()
-        {
-            Display(Choice("Heal"), Choice("Resurrect"));
-            _panel.Refresh();
-
-            // A resurrect pick pops his view and displays the same labels again, with new button objects
-            int picked = 0;
-            Display(Choice("Heal", () => picked++), Choice("Resurrect"));
-            _panel.Refresh();
-            UnityEngine.UIElements.Button card = _root.Q("event-list").Query<UnityEngine.UIElements.Button>("data-card")
-                .ToList().First(button => button.Q<Label>("card-title")?.text == "Heal");
-            ToolkitCardModel model = (ToolkitCardModel)card.userData;
-
-            Assert.AreSame(_eventView.choiceButtons[0], model.source);
-            model.activate.Invoke(model);
-
-            Assert.AreEqual(1, picked, "The card drawn after the redisplay presses his new button, not the destroyed one.");
-        }
-
-        [Test]
-        public void Refresh_ScreenTextOfHisView_FillsOurTitleAndDescription()
-        {
-            TMP_Text title = new GameObject("Title", typeof(RectTransform)).AddComponent<TextMeshProUGUI>();
-            TMP_Text description = new GameObject("Description", typeof(RectTransform)).AddComponent<TextMeshProUGUI>();
-            title.transform.SetParent(_eventGo.transform);
-            description.transform.SetParent(_eventGo.transform);
-            TestHelpers.SetPrivateField(_eventView, "_title", title);
-            TestHelpers.SetPrivateField(_eventView, "_description", description);
-            Display(Choice("Heal"));
-
-            _panel.Refresh();
-
-            Assert.AreEqual("Rest", _root.Q<Label>("event-title").text);
-            Assert.AreEqual("Take a break", _root.Q<Label>("event-description").text);
-            Assert.IsFalse(_root.Q("event-description").ClassListContains("is-hidden"));
-        }
-
-        [Test]
-        public void Refresh_HostKeepsHisCanvases_DrawsNothing()
-        {
-            ToolkitEventPanel hosted = new ToolkitEventPanel();
-            hosted.Init(null, _context, _view, null);
-            _eventCanvas.enabled = true;
-            Display(Choice("Heal"));
-
-            hosted.Refresh();
-
-            Assert.IsFalse(hosted.isDrawing);
-            Assert.IsTrue(IsPanelHidden());
-            Assert.IsTrue(_eventCanvas.enabled);
         }
     }
 }

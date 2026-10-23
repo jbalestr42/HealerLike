@@ -50,10 +50,8 @@ public class Character : MonoBehaviour, IBuffable
         // Init skills
         foreach (ACharacterSkillFactory skillFactory in _data.skills)
         {
-            UseCharacterSkillButton skillButton = UIManager.instance.GetView<GameView>(ViewType.Game).characterSkillInventory.Create();
             CharacterSkillSlot skillSlot = gameObject.AddComponent<CharacterSkillSlot>();
-            skillButton.character = this;
-            skillSlot.Init(skillFactory.Create(), skillButton, !_hasUnrestrictedSkills);
+            skillSlot.Init(skillFactory.Create(), !_hasUnrestrictedSkills);
             _skillSlots.Add(skillSlot);
         }
 

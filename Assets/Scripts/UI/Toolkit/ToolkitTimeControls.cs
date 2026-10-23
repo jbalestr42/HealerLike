@@ -42,7 +42,7 @@ public class ToolkitTimeControls : System.IDisposable
 
     public void TogglePause()
     {
-        if (_context.isMenu || (_context.ui != null && !_context.IsCurrentView(ViewType.Game) && !_context.isPaused))
+        if (_context.isMenu || (_context.screens != null && !_context.IsCurrentView(GameScreen.Game) && !_context.isPaused))
         {
             return;
         }

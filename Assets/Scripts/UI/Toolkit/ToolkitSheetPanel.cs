@@ -70,7 +70,7 @@ public sealed class ToolkitSheetPanel : IDisposable
         }
 
         Character character = GetCharacter();
-        bool isAvailable = !_context.isMenu && _context.IsCurrentView(ViewType.Game) && character != null;
+        bool isAvailable = !_context.isMenu && _context.IsCurrentView(GameScreen.Game) && character != null;
         if (!isAvailable)
         {
             _context.isSheetOpen = false;
@@ -115,7 +115,7 @@ public sealed class ToolkitSheetPanel : IDisposable
         return _context != null
             && !_context.isMenu
             && !_context.isPaused
-            && _context.IsCurrentView(ViewType.Game)
+            && _context.IsCurrentView(GameScreen.Game)
             && GetCharacter() != null;
     }
 

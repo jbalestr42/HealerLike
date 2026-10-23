@@ -1,4 +1,3 @@
-﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class CharacterSkillInventory : MonoBehaviour
@@ -6,16 +5,14 @@ public class CharacterSkillInventory : MonoBehaviour
     [SerializeField] GameObject _inventoryContainer;
     [SerializeField] GameObject _inventoryCharacterSkillPrefab;
 
-    List<UseCharacterSkillButton> _characterSkillButtons = new List<UseCharacterSkillButton>();
-
-	public UseCharacterSkillButton Create()
+    // A button using the skill of the slot
+    public UseCharacterSkillButton Create(CharacterSkillSlot slot, Character character)
     {
-        var characterSkillButton = Instantiate(_inventoryCharacterSkillPrefab, _inventoryContainer.transform);
+        GameObject characterSkillButton = Instantiate(_inventoryCharacterSkillPrefab, _inventoryContainer.transform);
         UseCharacterSkillButton skillButton = characterSkillButton.GetComponent<UseCharacterSkillButton>();
-        _characterSkillButtons.Add(skillButton);
-
+        skillButton.Init(slot, character);
         return skillButton;
-	}
+    }
 
     public void Show(bool show)
     {

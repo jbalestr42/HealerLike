@@ -17,34 +17,34 @@ public class ResourceValidatorData
 }
 
 // The skill costs the value of the consumer in a resource of the character, a negative cost giving it instead. The
-// first validator of a skill with a positive cost shows it on the skill button
+// first validator of a skill with a positive cost is the cost the skill shows
 public class ResourceValidator : ACharacterSkillValidator<ResourceValidatorData>
 {
     ResourceAttribute resource;
     GameObject _owner;
-    // The button shows its cost
+    // The skill shows this cost
     bool _showsCost;
 
-    public override void Init(UseCharacterSkillButton skillButton, GameObject owner)
+    public override void Init(CharacterSkillState state, GameObject owner)
     {
         resource = ResourceAttribute.Get(owner, data.resourceType);
         _owner = owner;
 
-        // A gain isn't a cost, and the button has room for a single one
-        if (GetCost(owner) > 0f && !skillButton.hasCost)
+        // A gain isn't a cost, and a skill shows a single one
+        if (GetCost(owner) > 0f && !state.hasCost)
         {
             _showsCost = true;
-            skillButton.hasCost = true;
-            skillButton.SetCost(GetCost(owner));
+            state.hasCost = true;
+            state.cost = GetCost(owner);
         }
     }
 
     // The multiplier can change during the run (e.g. an item lowering the costs)
-    public override void Update(UseCharacterSkillButton skillButton)
+    public override void Update(CharacterSkillState state)
     {
         if (_showsCost)
         {
-            skillButton.SetCost(GetCost(_owner));
+            state.cost = GetCost(_owner);
         }
     }
 

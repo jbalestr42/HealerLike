@@ -70,7 +70,7 @@ namespace HealerLike.Render.Stage
             Character character = _session.manager.player.character;
             foreach (Button card in _session.actions.Cards("spell-list"))
             {
-                if (ascension == null || LegacyUiReader.AscensionState(ascension) != AscensionGameType.State.OnGoingBattle)
+                if (ascension == null || ascension.state != AscensionGameType.State.OnGoingBattle)
                 {
                     yield break;
                 }

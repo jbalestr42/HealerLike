@@ -32,34 +32,8 @@ namespace HealerLike.Render.Stage
             _session.output.Check(Contains(_session.actions.root.worldBound, dialog.worldBound),
                 "Map dialog remains within screen: " + name);
             _session.output.Check(
-                LegacyUiReader.CurrentView(Object.FindAnyObjectByType<UIManager>()) == ViewType.Map,
-                    "Map is backed by the original UI view stack: " + name);
-            // The authored MapView owns MapCanvas as a child. ToolkitLegacyCanvases suppresses
-            // screen canvases below UIManager, including inactive views before they are opened.
-            UIManager owner = Object.FindAnyObjectByType<UIManager>();
-            int screenCanvases = 0;
-            int raycasters = 0;
-            foreach (Canvas legacy in _session.mapView.GetComponentsInChildren<Canvas>(true))
-            {
-                if (legacy.renderMode == RenderMode.WorldSpace)
-                {
-                    continue;
-                }
-
-                screenCanvases++;
-                _session.output.Check(legacy.transform.IsChildOf(owner.transform) && !legacy.enabled,
-                    "Original map screen canvas belongs to UIManager and stays disabled: " + legacy.name);
-                foreach (UnityEngine.UI.GraphicRaycaster raycaster
-                    in legacy.GetComponents<UnityEngine.UI.GraphicRaycaster>())
-                {
-                    raycasters++;
-                    _session.output.Check(!raycaster.enabled, "Original map input raycaster stays disabled: "
-                        + raycaster.name);
-                }
-            }
-
-            _session.output.Check(screenCanvases > 0 && raycasters > 0,
-                "Authored map supplies screen canvas and input raycaster descendants for suppression checks");
+                Object.FindAnyObjectByType<GameManager>().screens.current == GameScreen.Map,
+                    "The game has its map screen open: " + name);
             RunState run = _session.ascension.run;
             MapFrame frame = new MapFrame
             {
@@ -129,7 +103,7 @@ namespace HealerLike.Render.Stage
             yield return StageMapActions.SelectFirst(_session.actions, true);
             _session.output.Check(run.currentNode.type == expected && run.visitedNodes.Count == visited + 1
                 && _session.manifest.roomSelections == events + 1, "One eligible touch selects exactly one "
-                + expected + " room through original MapView event");
+                + expected + " room");
         }
 
         public IEnumerator PlanningMap()
@@ -156,7 +130,7 @@ namespace HealerLike.Render.Stage
             yield return _session.actions.PointerTap("map-close-button");
             yield return Wait(0.3f);
             _session.output.Check(!StageInterfaceOutput.IsVisible(_session.actions.root.Q("map-panel"))
-                && LegacyUiReader.AscensionState(_session.ascension) == AscensionGameType.State.WaitForRoundToStart,
+                && _session.ascension.state == AscensionGameType.State.WaitForRoundToStart,
                 "Map Back returns to the same combat preparation");
         }
 

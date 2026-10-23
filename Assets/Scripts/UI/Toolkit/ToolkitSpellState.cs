@@ -1,11 +1,8 @@
-using UnityEngine;
-using UnityEngine.UI;
-
-// Cost comes from the authored resource value. Cooldown is the existing UI's numeric fill,
-// the same remaining fraction written by UseCharacterSkillButton.SetCooldown. No text parsing.
+// What a spell card shows of its skill: its cost, its cooldown and whether it can be cast now
 public struct ToolkitSpellState
 {
     public float cost;
+    // The share of the cooldown left, 0 when ready
     public float remaining;
     public float duration;
     public bool insufficientMana;
@@ -19,31 +16,12 @@ public struct ToolkitSpellState
             return state;
         }
 
-        UseCharacterSkillButton button = slot.skillButton;
-        foreach (ACharacterSkillValidatorFactory factory in slot.data.validators)
-        {
-            if (button != null && button.hasCost && factory is ResourceValidatorFactory resource && resource.data?.consumer?.data?.value != null)
-            {
-                state.cost += resource.data.consumer.data.value.GetValue(character.gameObject);
-            }
-
-            if (button != null && button.hasCooldown && factory is DurationValidatorFactory duration && duration.data != null)
-            {
-                state.duration = Mathf.Max(state.duration, duration.data.duration);
-            }
-        }
-        if (button != null && button.hasCooldown)
-        {
-            foreach (Image image in button.GetComponentsInChildren<Image>(true))
-            {
-                if (image.type == Image.Type.Filled && image.fillMethod == Image.FillMethod.Radial360)
-                {
-                    state.remaining = Mathf.Max(state.remaining, image.fillAmount);
-                }
-            }
-        }
+        CharacterSkillState skill = slot.state;
+        state.cost = skill.hasCost ? skill.cost : 0f;
+        state.duration = skill.hasCooldown ? skill.cooldownDuration : 0f;
+        state.remaining = skill.cooldownProgress;
         state.insufficientMana = character.mana != null && character.mana.Value < state.cost;
-        state.canUse = button != null && button.button != null && button.button.interactable;
+        state.canUse = slot.CanUseSkill();
         return state;
     }
 }

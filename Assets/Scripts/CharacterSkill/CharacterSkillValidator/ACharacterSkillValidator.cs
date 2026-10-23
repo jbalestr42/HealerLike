@@ -21,8 +21,9 @@ public class CharacterSkillValidatorFactory<CharacterSkillValidatorType, DataTyp
 
 public abstract class ACharacterSkillValidator
 {
-    public virtual void Init(UseCharacterSkillButton skillButton, GameObject owner) {}
-    public virtual void Update(UseCharacterSkillButton skillButton) {}
+    // Writes what the skill shows of it (cost, cooldown) in state
+    public virtual void Init(CharacterSkillState state, GameObject owner) {}
+    public virtual void Update(CharacterSkillState state) {}
     public abstract bool IsValid(GameObject owner);
     public abstract void OnSkillUsed(GameObject owner);
     // Only gives something when the skill is used (e.g. the Devotion of a heal), never blocking it: still applied to

@@ -17,16 +17,17 @@ public class DurationValidator : ACharacterSkillValidator<DurationValidatorData>
     // Cooldown of the last use, the SkillCooldownMultiplier of the owner applied to the data duration
     float _duration = 0f;
 
-    public override void Init(UseCharacterSkillButton skillButton, GameObject owner)
+    public override void Init(CharacterSkillState state, GameObject owner)
     {
         _duration = GetDuration(owner);
         _startTimer = Time.time - _duration;
-        skillButton.hasCooldown = true;
+        state.hasCooldown = true;
     }
 
-    public override void Update(UseCharacterSkillButton skillButton)
+    public override void Update(CharacterSkillState state)
     {
-        skillButton.SetCooldown(Mathf.Max(_duration - (Time.time - _startTimer), 0f), _duration);
+        state.cooldown = Mathf.Max(_duration - (Time.time - _startTimer), 0f);
+        state.cooldownDuration = _duration;
     }
 
     public override bool IsValid(GameObject owner)

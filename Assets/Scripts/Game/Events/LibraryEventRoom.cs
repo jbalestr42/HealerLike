@@ -41,7 +41,7 @@ public class LibraryEventRoom : AEventRoom
         foreach (AItemFactory item in items)
         {
             AItem preview = item.GetItem();
-            choices.Add(new EventChoice { label = preview.title, description = preview.description, onSelected = () => take(item) });
+            choices.Add(new EventChoice { label = preview.title, description = preview.description, source = preview, onSelected = () => take(item) });
         }
 
         if (canLeave || choices.Count == 0)

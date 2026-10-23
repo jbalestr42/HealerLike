@@ -75,7 +75,7 @@ namespace HealerLike.Render.Stage
                     // The same during a wave, then with the decor plants' sway stopped
                     _player.PlaceAllies(_manager, StagePlayer.LoadAllies());
                     Observe();
-                    _hud.nextWaveButton.onClick.Invoke();
+                    _ascension.StartBattle();
                     float deadline = Time.realtimeSinceStartup + 12f;
                     while (ascension.state != AscensionGameType.State.OnGoingBattle)
                     {

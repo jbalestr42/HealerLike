@@ -75,7 +75,7 @@ namespace HealerLike.Render.Stage
                 yield return Wait(0.5f);
                 _player.PlaceAllies(_manager, StagePlayer.LoadAllies());
                 yield return Wait(0.5f);
-                _hud.nextWaveButton.onClick.Invoke();
+                _ascension.StartBattle();
                 yield return Wait(2f);
                 Character character = _manager.player.character;
                 CharacterView view = character.GetComponentInChildren<CharacterView>();

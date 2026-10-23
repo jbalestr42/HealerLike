@@ -93,11 +93,6 @@ namespace HealerLike.Render.Stage
             randomField.SetValue(owner, new System.Random(Seed));
             seedUsedField.SetValue(owner, Seed);
             runField.SetValue(owner, new RunState(MapGenerator.Generate(settings, Seed)));
-            MapView mapView = UnityEngine.Object.FindAnyObjectByType<MapView>(FindObjectsInactive.Include);
-            if (mapView != null)
-            {
-                mapView.Display(owner.run, true);
-            }
         }
 
         public void Dispose()

@@ -9,25 +9,21 @@ namespace UI.Toolkit
     public class ToolkitRosterTests
     {
         [Test]
-        public void DraggingSecondIdenticalChoiceRetainsBothSlotsWhenGameplayConsumesTheFirst()
+        public void DraggingSecondIdenticalUnitRetainsBothCardsWhenTheRosterGivesTheFirst()
         {
             GameObject root = new GameObject("Identical roster fixture");
             root.SetActive(false);
             EntityData data = ScriptableObject.CreateInstance<EntityData>();
             try
             {
-                SelectEntityButton a = root.AddComponent<SelectEntityButton>(); a.data = data;
-                SelectEntityButton b = root.AddComponent<SelectEntityButton>(); b.data = data;
                 Entity deployed = null;
                 TestHelpers.WithLoggingDisabled(() => deployed = root.AddComponent<Entity>());
                 deployed.data = data;
-                GameView legacy = root.AddComponent<GameView>();
-                TestHelpers.SetPrivateField(legacy, "_entityInventory", root.AddComponent<EntityInventory>());
-                List<SelectEntityButton> choices = new List<SelectEntityButton> { a, b };
-                TestHelpers.SetPrivateField(legacy.entityInventory, "_entityButtons", choices);
+                PlayerBehaviour player = root.AddComponent<PlayerBehaviour>();
+                player.roster.Init(new[] { data, data });
                 EntityManager entities = root.AddComponent<EntityManager>();
                 TestHelpers.SetPrivateField(entities, "_entities", new Dictionary<Entity.EntityType, List<GameObject>>());
-                ToolkitGameContext context = new ToolkitGameContext { legacy = legacy, entities = entities };
+                ToolkitGameContext context = new ToolkitGameContext { player = player, entities = entities };
                 TemplateContainer tree = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
                 ToolkitGameView view = new ToolkitGameView(tree);
                 try
@@ -37,10 +33,9 @@ namespace UI.Toolkit
                     panel.Refresh(true);
                     List<Button> cards = tree.Q("party-list").Query<Button>("data-card").ToList();
                     string[] keys = cards.Select(c => ((ToolkitCardModel)c.userData).key).ToArray();
-                    // Exercise the production callback, including its choice bookkeeping.
+                    // The second card is dragged: the production callback ties it to the unit placed
                     ((ToolkitCardModel)cards[1].userData).deployed(deployed);
-                    // The gameplay side consumes the first matching EntityData, even for a drag of the second card.
-                    choices.RemoveAt(0);
+                    player.roster.Remove(data);
                     entities.GetEntities(Entity.EntityType.Player).Add(deployed.gameObject);
                     for (int refresh = 0; refresh < 2; refresh++)
                     {
@@ -52,7 +47,6 @@ namespace UI.Toolkit
                         Assert.That(models[0].source, Is.SameAs(data));
                         Assert.That(models[0].canDrag, Is.True);
                         Assert.That(models[1].source, Is.SameAs(deployed));
-                        Assert.That(models.Count(m => ReferenceEquals(m.source, deployed)), Is.EqualTo(1));
                         Assert.That(models[1].canDrag, Is.False);
                     }
                 }
@@ -60,32 +54,59 @@ namespace UI.Toolkit
             }
             finally { Object.DestroyImmediate(root); Object.DestroyImmediate(data); }
         }
+
         [Test]
-        public void SameDataChoicesKeepDistinctIdentityAndOrderAcrossDeployment()
+        public void SameDataUnitsKeepDistinctKeysAndOrderAcrossDeployment()
         {
             GameObject root = new GameObject("Roster fixture");
             EntityData data = ScriptableObject.CreateInstance<EntityData>();
             try
             {
-                SelectEntityButton a = root.AddComponent<SelectEntityButton>(); a.data = data;
-                SelectEntityButton b = root.AddComponent<SelectEntityButton>(); b.data = data;
                 Entity deployed = null;
                 TestHelpers.WithLoggingDisabled(() => deployed = root.AddComponent<Entity>());
                 deployed.data = data;
                 ToolkitRoster roster = new ToolkitRoster();
-                roster.Sync(new[] { a, b }, new Entity[0]);
+                roster.Sync(new[] { data, data }, new Entity[0]);
                 string first = roster.entries[0].key, second = roster.entries[1].key;
                 Assert.That(first, Is.Not.EqualTo(second));
-                roster.Sync(new[] { b }, new[] { deployed });
+
+                // Placed without a drag of its card: the first copy is the one placed
+                roster.Sync(new[] { data }, new[] { deployed });
+
                 Assert.That(roster.entries.Count, Is.EqualTo(2));
                 Assert.That(roster.entries[0].key, Is.EqualTo(first));
                 Assert.That(roster.entries[0].entity, Is.SameAs(deployed));
                 Assert.That(roster.entries[1].key, Is.EqualTo(second));
-                Assert.That(roster.entries[1].choice, Is.SameAs(b));
-                roster.Sync(new[] { b }, new[] { deployed });
+                Assert.That(roster.entries[1].isDeployed, Is.False);
+                roster.Sync(new[] { data }, new[] { deployed });
                 Assert.That(roster.entries.Count, Is.EqualTo(2));
             }
             finally { Object.DestroyImmediate(root); Object.DestroyImmediate(data); }
+        }
+
+        [Test]
+        public void UnitBackToTheRoster_LosesItsBoardCardAndGetsAWaitingOne()
+        {
+            GameObject root = new GameObject("Roster fixture");
+            GameObject unit = new GameObject("Unit");
+            EntityData data = ScriptableObject.CreateInstance<EntityData>();
+            try
+            {
+                Entity deployed = null;
+                TestHelpers.WithLoggingDisabled(() => deployed = unit.AddComponent<Entity>());
+                deployed.data = data;
+                ToolkitRoster roster = new ToolkitRoster();
+                roster.Sync(new EntityData[0], new[] { deployed });
+
+                // Taken back from the board: the unit is destroyed and its data back in the roster
+                TestHelpers.WithLoggingDisabled(() => Object.DestroyImmediate(unit));
+                roster.Sync(new[] { data }, new Entity[0]);
+
+                Assert.That(roster.entries.Count, Is.EqualTo(1));
+                Assert.That(roster.entries[0].isDeployed, Is.False);
+                Assert.That(roster.entries[0].data, Is.SameAs(data));
+            }
+            finally { Object.DestroyImmediate(root); Object.DestroyImmediate(data); if (unit != null) { TestHelpers.WithLoggingDisabled(() => Object.DestroyImmediate(unit)); } }
         }
     }
 }

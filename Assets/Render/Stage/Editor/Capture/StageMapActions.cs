@@ -74,7 +74,7 @@ namespace HealerLike.Render.Stage
             for (int room = 0; room < 32; room++)
             {
                 AscensionGameType ascension = UnityEngine.Object.FindAnyObjectByType<AscensionGameType>();
-                if (LegacyUiReader.AscensionState(ascension) == AscensionGameType.State.WaitForRoundToStart)
+                if (ascension.state == AscensionGameType.State.WaitForRoundToStart)
                 {
                     yield break;
                 }

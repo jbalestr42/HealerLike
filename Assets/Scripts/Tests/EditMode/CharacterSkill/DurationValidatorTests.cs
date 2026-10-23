@@ -55,6 +55,34 @@ public class DurationValidatorTests
 
         Assert.IsFalse(_validator.IsValid(_owner));
     }
+
+    [Test]
+    public void Init_TheSkillShowsACooldown_ReadyAtFirst()
+    {
+        CharacterSkillState state = new CharacterSkillState();
+
+        _validator.Init(state, _owner);
+        _validator.Update(state);
+
+        Assert.IsTrue(state.hasCooldown);
+        Assert.AreEqual(0f, state.cooldown, 0.0001f);
+        Assert.AreEqual(0f, state.cooldownProgress, 0.0001f);
+    }
+
+    [Test]
+    public void Update_AfterAUse_TheWholeCooldownIsLeft()
+    {
+        CharacterSkillState state = new CharacterSkillState();
+        _validator.Init(state, _owner);
+
+        _validator.OnSkillUsed(_owner);
+        _validator.Update(state);
+
+        // Same frame: no game time has passed since the use
+        Assert.AreEqual(10f, state.cooldown, 0.0001f);
+        Assert.AreEqual(10f, state.cooldownDuration, 0.0001f);
+        Assert.AreEqual(1f, state.cooldownProgress, 0.0001f);
+    }
 }
 
 }

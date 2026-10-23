@@ -81,18 +81,14 @@ public class ToolkitGameActions : IDisposable
             return;
         }
 
-        if (_context.isPaused || _context.legacy == null || !_context.IsCurrentView(ViewType.Game))
+        if (_context.isPaused || _context.ascension == null || !_context.IsCurrentView(GameScreen.Game))
         {
             return;
         }
 
-        // The run starts with the gameplay scene, and a finished one leaves his end screen over the Game view, so
-        // here there is only a battle to start. A new expedition goes through the end panel's "Return to menu".
-        GameHUD hud = _context.legacy.gameHUD;
-        if (hud.nextWaveButton.interactable)
-        {
-            hud.nextWaveButton.onClick.Invoke();
-        }
+        // The run starts with the gameplay scene, and a finished one leaves the end screen over the board, so here
+        // there is only a battle to start. A new expedition goes through the end panel's "Return to menu".
+        _context.ascension.StartBattle();
     }
 
     // The sandbox is a menu choice only, a running expedition never leaves through it

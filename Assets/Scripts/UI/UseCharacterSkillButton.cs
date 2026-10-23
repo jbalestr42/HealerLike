@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class UseCharacterSkillButton : MonoBehaviour
 {
@@ -9,33 +9,30 @@ public class UseCharacterSkillButton : MonoBehaviour
     [SerializeField] TMPro.TMP_Text _costText;
     [SerializeField] UnityEngine.UI.Image _cooldownImage;
 
-    public string costText { get { return _costText != null ? _costText.text : null; } }
-    public string cooldownText { get { return _cooldownText != null ? _cooldownText.text : null; } }
-    public Character character { get; set; }
-    public CharacterSkillData data { get; set; }
-    public bool hasCooldown { get; set; } = false;
-    public bool hasCost { get; set; } = false;
+    CharacterSkillSlot _slot;
+    Character _character;
 
-    public void SetName(string name)
+    public void Init(CharacterSkillSlot slot, Character character)
     {
-        _nameText.text = name;
+        _slot = slot;
+        _character = character;
+        _nameText.text = slot.data.name;
+        _button.onClick.AddListener(slot.UseSkill);
     }
 
-    public void SetCooldown(float cooldown, float duration)
+    void Update()
     {
-        float progress = cooldown / duration;
-        _cooldownImage.fillAmount = hasCooldown ? progress : 0f;
-        _cooldownText.text = hasCooldown && progress != 0f ? $"{cooldown:F0}s" : "";
-    }
+        if (_slot == null)
+        {
+            return;
+        }
 
-    public void SetCost(float cost)
-    {
-        _costText.text = hasCost ? cost.ToString("F0") : "";
-    }
-
-    public void Enable(bool enabled)
-    {
-        _button.interactable = enabled;
+        CharacterSkillState state = _slot.state;
+        float progress = state.cooldownProgress;
+        _cooldownImage.fillAmount = progress;
+        _cooldownText.text = progress != 0f ? $"{state.cooldown:F0}s" : "";
+        _costText.text = state.hasCost ? state.cost.ToString("F0") : "";
+        _button.interactable = _slot.CanUseSkill();
     }
 
     public void OnPointerEnter()
@@ -50,10 +47,11 @@ public class UseCharacterSkillButton : MonoBehaviour
 
     void ShowToolTip(bool show)
     {
-        UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.Show(show);
-        if (show)
+        ToolTip toolTip = UIManager.instance.GetView<GameView>(ViewType.Game).toolTip;
+        toolTip.Show(show);
+        if (show && _slot != null)
         {
-            UIManager.instance.GetView<GameView>(ViewType.Game).toolTip.SetText(TextConvertor.Convert(data.description, character, data));
+            toolTip.SetText(TextConvertor.Convert(_slot.data.description, _character, _slot.data));
         }
     }
 }

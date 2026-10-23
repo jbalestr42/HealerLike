@@ -40,7 +40,6 @@ public class ToolkitEncounterBar
 
     public void Refresh(bool isStart, bool isPreparing, bool hasOverlay)
     {
-        GameHUD hud = _context.legacy.gameHUD;
         bool isAvailable = !_context.isPaused && !hasOverlay;
         _view.Show("field-toolbar", isStart || isPreparing || _context.hasInteraction);
         _view.Show("start-button", isStart);
@@ -64,7 +63,7 @@ public class ToolkitEncounterBar
             _view.SetButton(
                 "wave-button",
                 "Start battle",
-                isAvailable && isPreparing && hud.nextWaveButton.interactable
+                isAvailable && isPreparing && _context.ascension != null && _context.ascension.canStartBattle
             );
         }
 
@@ -90,7 +89,7 @@ public class ToolkitEncounterBar
     }
 
     // The views that replace the battle text in the header, in the order they are checked
-    static readonly ViewType[] PhaseViews = { ViewType.Map, ViewType.Upgrade, ViewType.Event };
+    static readonly GameScreen[] PhaseViews = { GameScreen.Map, GameScreen.Reward, GameScreen.Event };
 
     string GetRoomText()
     {
@@ -109,9 +108,9 @@ public class ToolkitEncounterBar
             : $"Room {run.currentFloor + 1} · {MapView.GetNodeLabel(run.currentNode.type)}";
     }
 
-    ViewType GetCurrentPhaseView()
+    GameScreen GetCurrentPhaseView()
     {
-        foreach (ViewType view in PhaseViews)
+        foreach (GameScreen view in PhaseViews)
         {
             if (_context.IsCurrentView(view))
             {
@@ -119,7 +118,7 @@ public class ToolkitEncounterBar
             }
         }
 
-        return ViewType.Game;
+        return GameScreen.Game;
     }
 
     string GetPhaseText(bool isStart, bool isPreparing)
@@ -128,25 +127,25 @@ public class ToolkitEncounterBar
         return PhaseText(GetCurrentPhaseView(), isStart, isPreparing, run != null && run.isOnBoss);
     }
 
-    public static string PhaseText(ViewType view, bool isStart, bool isPreparing, bool isOnBoss)
+    public static string PhaseText(GameScreen view, bool isStart, bool isPreparing, bool isOnBoss)
     {
         if (isStart)
         {
             return isOnBoss ? "SUMMIT REACHED" : "READY";
         }
 
-        if (view == ViewType.Map)
+        if (view == GameScreen.Map)
         {
             return "EXPEDITION MAP";
         }
 
-        if (view == ViewType.Upgrade)
+        if (view == GameScreen.Reward)
         {
             return "CHOOSE A REWARD";
         }
 
         // Event rooms and the rest room share this view, so the text names neither; the room text beside it does
-        if (view == ViewType.Event)
+        if (view == GameScreen.Event)
         {
             return "MAKE A CHOICE";
         }
@@ -168,7 +167,7 @@ public class ToolkitEncounterBar
     }
 
     public static string StatusText(
-        ViewType view,
+        GameScreen view,
         bool isPaused,
         bool hasInteraction,
         bool isStart,
@@ -193,7 +192,7 @@ public class ToolkitEncounterBar
         }
 
         // The same fall-through the phase text had: an event or rest screen is not a battle
-        if (view == ViewType.Event)
+        if (view == GameScreen.Event)
         {
             return "Pick an option to continue.";
         }

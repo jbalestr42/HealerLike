@@ -112,7 +112,7 @@ public class ToolkitInventoryPanel : IDisposable
         }
 
         _view.SetButton("detail-inventory-button", "Equipment", isPreparing && !_context.isPaused);
-        InventoryHandler stash = _context.legacy != null ? _context.stash : null;
+        InventoryHandler stash = _context.stash;
         bool isFromStash = _context.selectedItemOwner == stash;
         Character character = _context.player != null ? _context.player.character : null;
         bool isHealerItem = character != null && _context.selectedItemOwner == character.inventoryHandler;
@@ -195,7 +195,7 @@ public class ToolkitInventoryPanel : IDisposable
         ToolkitCardModel model = new ToolkitCardModel();
         model.iconSource = item;
         model.title = item.title;
-        model.description = LegacyUiReader.ItemDescription(item);
+        model.description = ToolkitItemEntry.GetDescription(item);
         if (string.IsNullOrEmpty(model.description))
         {
             model.description = isInnate ? status : $"{location} · Select to manage equipment";
@@ -258,7 +258,7 @@ public class ToolkitInventoryPanel : IDisposable
     {
         AItem item = _context.selectedItem;
         InventoryHandler owner = _context.selectedItemOwner;
-        if (item == null || owner == null || _context.legacy == null || _context.isPaused || !_context.IsPreparing())
+        if (item == null || owner == null || _context.stash == null || _context.isPaused || !_context.IsPreparing())
         {
             return;
         }
@@ -286,8 +286,6 @@ public class ToolkitInventoryPanel : IDisposable
             return;
         }
 
-        LegacyInventoryAdapter.Synchronize(owner);
-        LegacyInventoryAdapter.Synchronize(destination);
         _context.selectedItem = null;
         _context.selectedItemOwner = null;
         _gameUI.Refresh();

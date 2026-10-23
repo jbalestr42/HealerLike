@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using UiButton = UnityEngine.UI.Button;
 
 namespace HealerLike.Render.Stage
 {
@@ -141,39 +140,38 @@ namespace HealerLike.Render.Stage
             ResourceAttribute mana = _manager.player.character.mana;
             _manifest.manaBeforeRest = mana.Value;
             _manifest.manaMax = mana.Max;
-            EntityInventory units = Object.FindAnyObjectByType<UIManager>()
-                .GetView<GameView>(ViewType.Game).entityInventory;
+            UnitRoster units = _manager.player.roster;
 
             yield return StageMapActions.SelectFirst(_session.actions, true);
             _output.Check(ascension.run.currentNode.type == MapNodeType.Rest, "The first room is the rest room");
             yield return choice.WaitForChoices("Rest");
             _manifest.manaInRest = mana.Value;
-            _output.Check(LegacyUiReader.AscensionState(ascension) == AscensionGameType.State.Rest,
-                "Entering the rest room waits on Julien's choice screen");
+            _output.Check(ascension.state == AscensionGameType.State.Rest,
+                "Entering the rest room waits on the choice screen");
             yield return _session.Capture("01-rest-choices");
             choice.CheckCards("rest");
-            UiButton resurrect = choice.Choice("Resurrect");
+            EventChoice resurrect = choice.Choice("Resurrect");
             yield return choice.CheckSeam("rest", resurrect);
             yield return choice.Tap(resurrect);
             yield return choice.WaitForChoices("Resurrect");
             yield return _session.Capture("02-resurrect-choices");
             choice.CheckCards("resurrect");
 
-            _manifest.unitsBeforeResurrect = units.entityButtons.Count;
-            UiButton target = choice.Choice(ally.title);
+            _manifest.unitsBeforeResurrect = units.units.Count;
+            EventChoice target = choice.Choice(ally.title);
             yield return choice.CheckSeam("resurrect", target);
             yield return choice.Tap(target);
             yield return StageMapActions.WaitForSelection(_session.actions);
-            _manifest.unitsAfterResurrect = units.entityButtons.Count;
+            _manifest.unitsAfterResurrect = units.units.Count;
             _manifest.resurrected = ally.title;
             _output.Check(ascension.run.deadAllies.Count == 0, "The touched Resurrect choice took "
                 + ally.title + " off the dead allies");
             _output.Check(_manifest.unitsAfterResurrect == _manifest.unitsBeforeResurrect + 1
-                && units.entityButtons[units.entityButtons.Count - 1].data == ally,
+                && units.units[units.units.Count - 1] == ally,
                 "The touched Resurrect choice put " + ally.title + " back in the unit inventory");
-            _output.Check(!choice.view.gameObject.activeSelf
-                && LegacyUiReader.AscensionState(ascension) == AscensionGameType.State.SelectRoom,
-                "After the choice Julien's screen closed and the run offers the next room");
+            _output.Check(choice.prompt == null
+                && ascension.state == AscensionGameType.State.SelectRoom,
+                "After the choice the choice screen closed and the run offers the next room");
             yield return _session.Capture("03-after-rest");
         }
 
@@ -183,22 +181,22 @@ namespace HealerLike.Render.Stage
             yield return StageMapActions.SelectFirst(_session.actions, true);
             _output.Check(ascension.run.currentNode.type == MapNodeType.Event, "The second room is the event room");
             yield return choice.WaitForChoices(null);
-            _output.Check(LegacyUiReader.AscensionState(ascension) == AscensionGameType.State.PlayEvent,
-                "Entering the event room waits on Julien's choice screen");
+            _output.Check(ascension.state == AscensionGameType.State.PlayEvent,
+                "Entering the event room waits on the choice screen");
             yield return _session.Capture("04-library-choices");
             choice.CheckCards("library");
-            UiButton item = null;
-            foreach (UiButton button in choice.view.choiceButtons)
+            EventChoice item = null;
+            foreach (EventChoice offered in choice.prompt.choices)
             {
-                if (button.name != "Choice Leave" && button.IsInteractable())
+                if (offered.label != "Leave" && offered.isAvailable)
                 {
-                    item = button;
+                    item = offered;
                     break;
                 }
             }
 
             _output.Check(item != null, "The Library offers at least one item");
-            string title = item.name.Substring("Choice ".Length);
+            string title = item.label;
             _manifest.itemsBeforeLibrary = inventory.items.Count;
             yield return choice.CheckSeam("library", item);
             yield return choice.Tap(item);
@@ -208,9 +206,9 @@ namespace HealerLike.Render.Stage
             _output.Check(_manifest.itemsAfterLibrary == _manifest.itemsBeforeLibrary + 1
                 && inventory.items[inventory.items.Count - 1].item.title == title,
                 "The touched Library choice added " + title + " to the character's items");
-            _output.Check(!choice.view.gameObject.activeSelf
-                && LegacyUiReader.AscensionState(ascension) == AscensionGameType.State.SelectRoom,
-                "After the event Julien's screen closed and the run offers the boss");
+            _output.Check(choice.prompt == null
+                && ascension.state == AscensionGameType.State.SelectRoom,
+                "After the event the choice screen closed and the run offers the boss");
             yield return _session.Capture("05-after-library");
         }
 

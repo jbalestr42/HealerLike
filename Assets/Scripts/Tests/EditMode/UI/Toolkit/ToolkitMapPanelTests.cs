@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -7,49 +6,26 @@ using UnityEngine.UIElements;
 namespace UI.Toolkit
 {
 
+    // The run map: a room picked on it moves the run on, a map looked at while preparing goes back to the units
     public class ToolkitMapPanelTests
     {
-        GameObject _host;
+        ToolkitTestRun _testRun;
         ToolkitGameContext _context;
         ToolkitGameView _view;
         ToolkitMapPanel _panel;
-        MapView _legacyMap;
         RunState _run;
-        int _selections;
 
         [SetUp]
         public void SetUp()
         {
-            _host = new GameObject("Map adapter fixture");
-            _host.SetActive(false);
+            _testRun = new ToolkitTestRun();
+            _context = _testRun.context;
             _run = ToolkitRunMapPresentationTests.CreateRun();
-            _context = new ToolkitGameContext();
-            _context.ui = _host.AddComponent<UIManager>();
-            _context.ascension = _host.AddComponent<AscensionGameType>();
-            _context.legacy = _host.AddComponent<GameView>();
-            _host.AddComponent<CanvasGroup>();
-            GameHUD hud = _host.AddComponent<GameHUD>();
-            var hudButton = _host.AddComponent<UnityEngine.UI.Button>();
-            TestHelpers.SetPrivateField(hud, "_mapButton", hudButton);
-            TestHelpers.SetPrivateField(hud, "_inventoryButton", hudButton);
-            TestHelpers.SetPrivateField(_context.legacy, "_gameHUD", hud);
-            GameObject mapHost = new GameObject("Legacy map", typeof(RectTransform), typeof(CanvasGroup));
-            mapHost.SetActive(false);
-            mapHost.transform.SetParent(_host.transform);
-            _legacyMap = mapHost.AddComponent<MapView>();
-            _legacyMap.OnNodeSelected.AddListener(node => _selections++);
-            TestHelpers.SetPrivateField(
-                _context.ui,
-                "_views",
-                new Dictionary<ViewType, AView> { { ViewType.Game, _context.legacy }, { ViewType.Map, _legacyMap } }
-            );
-            TestHelpers.SetPrivateField(_context.ui, "_viewStack", new List<ViewType> { ViewType.Game, ViewType.Map });
-            SetView(ViewType.Map, AscensionGameType.State.SelectRoom);
             TestHelpers.SetPrivateField(_context.ascension, "_run", _run);
+            OpenMap(AscensionGameType.State.SelectRoom);
             _view = new ToolkitGameView(Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree());
             _panel = new ToolkitMapPanel();
             _panel.Init(_context, _view);
-            _selections = 0;
         }
 
         [TearDown]
@@ -57,13 +33,13 @@ namespace UI.Toolkit
         {
             _panel.Dispose();
             _view.Release();
-            Object.DestroyImmediate(_host);
+            _testRun.Dispose();
         }
 
-        void SetView(ViewType view, AscensionGameType.State state)
+        void OpenMap(AscensionGameType.State state)
         {
-            TestHelpers.SetPrivateField(_context.ui, "_currentView", view);
-            TestHelpers.SetPrivateField(_context.ascension, "_state", state);
+            _testRun.SetState(state);
+            _testRun.game.screens.Open(GameScreen.Map);
         }
 
         void Select(MapNode node)
@@ -74,70 +50,76 @@ namespace UI.Toolkit
         }
 
         [Test]
-        public void Select_AvailableRoomForwardsEventWithoutMutatingRun()
+        public void Select_AvailableRoom_TravelsAndClosesTheMap()
         {
-            Select(_run.map.startNodes[0]);
-            Assert.AreEqual(1, _selections);
-            Assert.IsNull(_run.currentNode, "Only Julien's listener is allowed to advance the run.");
+            MapNode room = _run.map.startNodes[0];
+
+            Select(room);
+
+            Assert.AreSame(room, _run.currentNode);
+            Assert.AreEqual(GameScreen.Game, _context.currentScreen);
+            Assert.AreEqual(AscensionGameType.State.EnterRoom, _context.ascension.state);
         }
 
         [Test]
-        public void Select_LockedOrOldRunNodeDoesNotForward()
+        public void Select_LockedOrOldRunNode_DoesNotTravel()
         {
             Select(_run.map.boss);
             Select(ToolkitRunMapPresentationTests.CreateRun().map.startNodes[0]);
-            Assert.AreEqual(0, _selections);
-        }
 
-        [TestCase(ViewType.Map, AscensionGameType.State.WaitForRoundToStart)]
-        [TestCase(ViewType.Game, AscensionGameType.State.SelectRoom)]
-        [TestCase(ViewType.Map, AscensionGameType.State.InitializeRound)]
-        public void Select_OutsideLiveSelectionStateDoesNotForward(ViewType view, AscensionGameType.State state)
-        {
-            SetView(view, state);
-            Select(_run.map.startNodes[0]);
-            Assert.AreEqual(0, _selections);
+            Assert.IsNull(_run.currentNode);
+            Assert.AreEqual(GameScreen.Map, _context.currentScreen);
         }
 
         [Test]
-        public void Select_QueuedSecondClickAfterGameplayTravelCannotAdvanceAgain()
+        public void Select_MapOnlyLookedAt_DoesNotTravel()
         {
-            _legacyMap.OnNodeSelected.AddListener(node =>
-            {
-                _run.TravelTo(node);
-                SetView(ViewType.Game, AscensionGameType.State.InitializeRound);
-            });
-            Select(_run.map.startNodes[0]);
-            Select(_run.GetAvailableNodes()[0]);
-            Assert.AreEqual(1, _selections);
-            Assert.AreEqual(0, _run.currentFloor);
-        }
+            _testRun.SetState(AscensionGameType.State.WaitForRoundToStart);
 
-        [Test]
-        public void Close_SelectionIsMandatoryButInspectReturnsToGame()
-        {
-            Assert.IsFalse(_panel.Close());
-            SetView(ViewType.Map, AscensionGameType.State.WaitForRoundToStart);
-            Assert.IsTrue(_panel.Close());
-            Assert.AreEqual(ViewType.Game, LegacyUiReader.CurrentView(_context.ui));
+            Select(_run.map.startNodes[0]);
+
             Assert.IsNull(_run.currentNode);
         }
 
         [Test]
-        public void Open_ForwardsOnlyTheExistingPlanningButton()
+        public void Select_QueuedSecondClickAfterTravel_CannotAdvanceAgain()
         {
-            SetView(ViewType.Game, AscensionGameType.State.WaitForRoundToStart);
-            int opens = 0;
-            _context.legacy.gameHUD.mapButton.onClick.AddListener(() => opens++);
-            TestHelpers.InvokePrivate(_panel, "Open");
-            Assert.AreEqual(1, opens);
+            Select(_run.map.startNodes[0]);
+            Select(_run.GetAvailableNodes()[0]);
+
+            Assert.AreEqual(0, _run.currentFloor);
+        }
+
+        [Test]
+        public void Close_SelectionIsMandatoryButALookedAtMapReturnsToTheUnits()
+        {
+            Assert.IsFalse(_panel.Close());
+
+            _testRun.SetState(AscensionGameType.State.WaitForRoundToStart);
+
+            Assert.IsTrue(_panel.Close());
+            Assert.AreEqual(GameScreen.Game, _context.currentScreen);
+            Assert.IsNull(_run.currentNode);
+        }
+
+        [Test]
+        public void Open_WhilePreparing_LooksAtTheMap_NotWithTheInventoryOpenNorPaused()
+        {
+            _testRun.game.screens.Close();
+            _testRun.SetState(AscensionGameType.State.WaitForRoundToStart);
+
             _context.isInventoryOpen = true;
             TestHelpers.InvokePrivate(_panel, "Open");
-            Assert.AreEqual(1, opens);
+            Assert.AreEqual(GameScreen.Game, _context.currentScreen);
+
             _context.isInventoryOpen = false;
             _context.isPaused = true;
             TestHelpers.InvokePrivate(_panel, "Open");
-            Assert.AreEqual(1, opens);
+            Assert.AreEqual(GameScreen.Game, _context.currentScreen);
+
+            _context.isPaused = false;
+            TestHelpers.InvokePrivate(_panel, "Open");
+            Assert.AreEqual(GameScreen.Map, _context.currentScreen);
         }
 
         [Test]

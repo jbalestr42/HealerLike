@@ -102,7 +102,7 @@ namespace HealerLike.Render.Stage
             yield return _session.Resize(844, 390);
             yield return graph.Map("13-boss-landscape", "short-route-fixture", true);
             yield return graph.SelectRoom(MapNodeType.Boss);
-            _session.output.Check(!_session.ascension.IsOver() && LegacyUiReader.AscensionState(_session.ascension)
+            _session.output.Check(!_session.ascension.IsOver() && _session.ascension.state
                 != AscensionGameType.State.GameOver, "Entering the boss room starts a fight rather than ending the run");
             yield return battle.Boss("13b-boss");
             _session.output.Check(_session.ascension.IsOver() && _session.ascension.run.visitedNodes.Count == 6,
@@ -144,16 +144,16 @@ namespace HealerLike.Render.Stage
         {
             yield return Wait(0.3f);
             GameManager game = Object.FindAnyObjectByType<GameManager>();
-            _session.output.Check(game != null && LegacyUiReader.GameState(game) == GameManager.GameState.None,
+            _session.output.Check(game != null && game.state == GameManager.GameState.None,
                 "A won run leaves GameManager with no run going");
             Button start = _session.actions.root.Q<Button>("start-button");
             Button restart = _session.actions.root.Q<Button>("restart-button");
-            ViewType view = LegacyUiReader.CurrentView(Object.FindAnyObjectByType<UIManager>());
+            GameScreen view = Object.FindAnyObjectByType<GameManager>().screens.current;
             _session.manifest.unobserved.Add("In-game Start expedition after a won run: "
                 + (StageInterfaceOutput.IsVisible(start) ? "shown" : "hidden") + ", "
                 + (start.enabledInHierarchy ? "enabled" : "disabled") + ", picked at its center: "
-                + PickedName(start) + "; legacy current view " + view + ", so the reload branch "
-                + (view == ViewType.Game ? "is" : "is not") + " reachable from this screen");
+                + PickedName(start) + "; current screen " + view + ", so the reload branch "
+                + (view == GameScreen.Game ? "is" : "is not") + " reachable from this screen");
             _session.output.Check(restart != null && StageInterfaceOutput.IsVisible(restart)
                 && restart.enabledInHierarchy && PickedName(restart) == restart.name,
                 "After a won run the end panel's Return to menu is the reachable way on");
@@ -186,7 +186,7 @@ namespace HealerLike.Render.Stage
                 int injured = rest.CountInjured();
                 yield return graph.SelectRoom(MapNodeType.Rest);
                 yield return choice.WaitForChoices("Rest");
-                _session.output.Check(LegacyUiReader.AscensionState(_session.ascension)
+                _session.output.Check(_session.ascension.state
                     == AscensionGameType.State.Rest && !StageInterfaceOutput.IsVisible(
                     _session.actions.root.Q("map-panel")), "Entering the rest room waits on Julien's choice screen "
                     + "and the map has not come back");

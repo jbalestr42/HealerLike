@@ -30,7 +30,7 @@ namespace HealerLike.Render.Stage
                 List<EntityData> allies = StagePlayer.LoadAllies();
                 float nextCast = 0f;
                 // AStageRun has already selected the first map room through Toolkit navigation.
-                _state = LegacyUiReader.AscensionState(UnityEngine.Object.FindAnyObjectByType<AscensionGameType>());
+                _state = (UnityEngine.Object.FindAnyObjectByType<AscensionGameType>()).state;
                 while (_roundsDone < Rounds && _state != AscensionGameType.State.GameOver)
                 {
                     if (_state == AscensionGameType.State.SelectRoom)
@@ -44,7 +44,7 @@ namespace HealerLike.Render.Stage
                         yield return Wait(1f);
                         _player.PlaceAllies(_manager, allies);
                         _state = AscensionGameType.State.None;
-                        _hud.nextWaveButton.onClick.Invoke();
+                        _ascension.StartBattle();
                     }
                     else if (_state == AscensionGameType.State.SelectUpgrade)
                     {

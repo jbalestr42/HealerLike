@@ -48,6 +48,19 @@ public class GameHUD : MonoBehaviour
     {
         PlayerBehaviour.instance.OnCharacterInit.AddListener(OnCharacterInit);
         AddTooltips();
+        AddSpeedButton(_playSpeedx0Button, 0f);
+        AddSpeedButton(_playSpeedx05Button, 0.5f);
+        AddSpeedButton(_playSpeedx1Button, 1f);
+        AddSpeedButton(_playSpeedx2Button, 2f);
+        AddSpeedButton(_playSpeedx3Button, 3f);
+    }
+
+    static void AddSpeedButton(UnityEngine.UI.Button button, float timeScale)
+    {
+        if (button != null)
+        {
+            button.onClick.AddListener(() => TimeManager.ChangeTimeScale(timeScale));
+        }
     }
 
     void AddTooltips()

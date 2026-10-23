@@ -25,7 +25,7 @@ public class RecruitEventRoom : AEventRoom
         List<EventChoice> choices = new List<EventChoice>();
         foreach (EntityData unit in units)
         {
-            choices.Add(new EventChoice { label = unit.title, description = CharacterCardText.GetUnitDetails(unit), onSelected = () => recruit(unit) });
+            choices.Add(new EventChoice { label = unit.title, description = CharacterCardText.GetUnitDetails(unit), source = unit, onSelected = () => recruit(unit) });
         }
         choices.Add(new EventChoice { label = "Leave", description = "Recruit no one.", onSelected = leave });
         return choices;

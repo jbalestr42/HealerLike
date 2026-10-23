@@ -83,7 +83,7 @@ public static class ReferenceTeamGenerator
     // Same roll as the reward screen: a unit, a player item or a unit item. Nothing when the pool is empty
     public static void AddRandomReward(ReferenceTeam team, RewardPools pools, System.Random random)
     {
-        RewardChoiceType type = UpgradeView.PickChoiceType((float)random.NextDouble(), (float)random.NextDouble(), pools.unitChance, pools.playerItemChance, pools.units.Count > 0);
+        RewardChoiceType type = RewardChoice.PickChoiceType((float)random.NextDouble(), (float)random.NextDouble(), pools.unitChance, pools.playerItemChance, pools.units.Count > 0);
         team.rewardCount++;
         if (type == RewardChoiceType.Unit)
         {

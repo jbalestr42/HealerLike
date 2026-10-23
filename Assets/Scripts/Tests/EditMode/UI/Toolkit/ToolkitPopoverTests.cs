@@ -29,8 +29,8 @@ namespace UI.Toolkit
                     entity.attributeManager.Add(AttributeType.CriticalChanceResist, new Attribute(0));
                     ResourceAttribute health = owner.AddComponent<ResourceAttribute>(); health.Init(ResourceType.Health, AttributeType.HealthMax, new RawResourceConsumerResolver());
                     TestHelpers.SetPrivateField(entity, "_health", health);
-                    GameView legacy = owner.AddComponent<GameView>();
-                    ToolkitGameContext context = new ToolkitGameContext { legacy = legacy };
+                    InteractionManager interaction = owner.AddComponent<InteractionManager>();
+                    ToolkitGameContext context = new ToolkitGameContext { interaction = interaction };
                     details.Init(context, view);
                     view.OnInspect.AddListener(details.OnInspect);
                     view.OnInspectEnded.AddListener(details.OnInspectEnded);
@@ -38,8 +38,7 @@ namespace UI.Toolkit
                     {
                         popover.Open(new ToolkitCardModel { source = entity });
                         // A hold release deliberately leaves the popover open, followed by 100 ms refreshes.
-                        TestHelpers.SetPrivateField(legacy, "_selectedPanel", PanelType.Entity);
-                        TestHelpers.SetPrivateField(legacy, "_selectedObject", other);
+                        TestHelpers.SetPrivateField(interaction, "_selectable", other.AddComponent<SelectableEntity>());
                         TestHelpers.SetPrivateField(health, "_value", 63f);
                         details.Refresh(); details.Refresh();
                         Assert.That(popover.isOpen, Is.True);

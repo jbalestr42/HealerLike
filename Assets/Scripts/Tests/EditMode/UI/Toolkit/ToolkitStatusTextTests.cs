@@ -138,9 +138,9 @@ public class ToolkitStatusTextTests
     }
 
     [Test]
-    public void EventChoiceNormalise_Keyword_ShowsTheKeyword()
+    public void EventPanelBuildModels_Keyword_ShowsTheKeyword()
     {
-        string text = ToolkitEventChoiceText.Normalise("Your units become {status:Blessed}");
+        string text = new ToolkitEventPanel().BuildModels(new[] { new EventChoice { label = "Bless", description = "Your units become {status:Blessed}" } })[0].description;
 
         StringAssert.Contains(">Blessed</color>", text);
         StringAssert.DoesNotContain("{status:", text);

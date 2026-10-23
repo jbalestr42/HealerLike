@@ -21,7 +21,7 @@ namespace UI.Toolkit
         [TestCase(false)]
         public void PhaseText_EventView_DoesNotReadAsBattle(bool isPreparing)
         {
-            string text = ToolkitEncounterBar.PhaseText(ViewType.Event, false, isPreparing, false);
+            string text = ToolkitEncounterBar.PhaseText(GameScreen.Event, false, isPreparing, false);
 
             Assert.AreNotEqual("IN BATTLE", text);
             Assert.AreNotEqual("PREPARATION", text);
@@ -31,7 +31,7 @@ namespace UI.Toolkit
         public void PhaseText_EventView_NamesNeitherEventNorRest()
         {
             // The same view hosts the event rooms and the rest room, so the text cannot claim either one.
-            string text = ToolkitEncounterBar.PhaseText(ViewType.Event, false, false, false);
+            string text = ToolkitEncounterBar.PhaseText(GameScreen.Event, false, false, false);
 
             StringAssert.DoesNotContain("EVENT", text);
             StringAssert.DoesNotContain("REST", text);
@@ -40,44 +40,44 @@ namespace UI.Toolkit
         [Test]
         public void PhaseText_MapView_StaysExpeditionMap()
         {
-            Assert.AreEqual("EXPEDITION MAP", ToolkitEncounterBar.PhaseText(ViewType.Map, false, true, false));
+            Assert.AreEqual("EXPEDITION MAP", ToolkitEncounterBar.PhaseText(GameScreen.Map, false, true, false));
         }
 
         [Test]
         public void PhaseText_UpgradeView_StaysChooseAReward()
         {
-            Assert.AreEqual("CHOOSE A REWARD", ToolkitEncounterBar.PhaseText(ViewType.Upgrade, false, false, false));
+            Assert.AreEqual("CHOOSE A REWARD", ToolkitEncounterBar.PhaseText(GameScreen.Reward, false, false, false));
         }
 
         [Test]
         public void PhaseText_GameViewPreparing_ReadsPreparation()
         {
-            Assert.AreEqual("PREPARATION", ToolkitEncounterBar.PhaseText(ViewType.Game, false, true, false));
+            Assert.AreEqual("PREPARATION", ToolkitEncounterBar.PhaseText(GameScreen.Game, false, true, false));
         }
 
         [Test]
         public void PhaseText_GameViewNotPreparing_ReadsInBattle()
         {
-            Assert.AreEqual("IN BATTLE", ToolkitEncounterBar.PhaseText(ViewType.Game, false, false, false));
+            Assert.AreEqual("IN BATTLE", ToolkitEncounterBar.PhaseText(GameScreen.Game, false, false, false));
         }
 
         [Test]
         public void PhaseText_StartOnBoss_ReadsSummitReached()
         {
-            Assert.AreEqual("SUMMIT REACHED", ToolkitEncounterBar.PhaseText(ViewType.Game, true, true, true));
+            Assert.AreEqual("SUMMIT REACHED", ToolkitEncounterBar.PhaseText(GameScreen.Game, true, true, true));
         }
 
         [Test]
         public void PhaseText_StartOffBoss_ReadsReady()
         {
-            Assert.AreEqual("READY", ToolkitEncounterBar.PhaseText(ViewType.Game, true, true, false));
+            Assert.AreEqual("READY", ToolkitEncounterBar.PhaseText(GameScreen.Game, true, true, false));
         }
 
         [TestCase(true)]
         [TestCase(false)]
         public void StatusText_EventView_DoesNotReadAsCombatOrDeployment(bool isPreparing)
         {
-            string text = ToolkitEncounterBar.StatusText(ViewType.Event, false, false, false, isPreparing, false, 1f);
+            string text = ToolkitEncounterBar.StatusText(GameScreen.Event, false, false, false, isPreparing, false, 1f);
 
             StringAssert.DoesNotContain("Combat", text);
             StringAssert.DoesNotContain("Deploy", text);
@@ -86,7 +86,7 @@ namespace UI.Toolkit
         [Test]
         public void StatusText_EventViewPaused_StillReadsPaused()
         {
-            Assert.AreEqual("Paused", ToolkitEncounterBar.StatusText(ViewType.Event, true, false, false, false, false, 1f));
+            Assert.AreEqual("Paused", ToolkitEncounterBar.StatusText(GameScreen.Event, true, false, false, false, false, 1f));
         }
 
         [Test]
@@ -94,7 +94,7 @@ namespace UI.Toolkit
         {
             Assert.AreEqual(
                 "Combat · 2× speed",
-                ToolkitEncounterBar.StatusText(ViewType.Game, false, false, false, false, false, 2f)
+                ToolkitEncounterBar.StatusText(GameScreen.Game, false, false, false, false, false, 2f)
             );
         }
 
@@ -103,7 +103,7 @@ namespace UI.Toolkit
         {
             Assert.AreEqual(
                 "Open Party to deploy your allies.",
-                ToolkitEncounterBar.StatusText(ViewType.Game, false, false, false, true, true, 1f)
+                ToolkitEncounterBar.StatusText(GameScreen.Game, false, false, false, true, true, 1f)
             );
         }
 

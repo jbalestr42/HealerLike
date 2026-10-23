@@ -36,6 +36,6 @@ public class RewardPools
 
     static bool IsReward(AItemFactory item, string tagName)
     {
-        return item != null && item.HasTag(tagName) && !UpgradeView.RewardExcludedTags.Exists(item.HasTag);
+        return item != null && item.HasTag(tagName) && !RewardChoice.ExcludedTags.Exists(item.HasTag);
     }
 }

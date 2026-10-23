@@ -20,7 +20,7 @@ namespace HealerLike.Render.Stage
 
         public IEnumerator HealThroughInterface()
         {
-            if (LegacyUiReader.AscensionState(_session.ascension) != AscensionGameType.State.OnGoingBattle)
+            if (_session.ascension.state != AscensionGameType.State.OnGoingBattle)
             {
                 yield break;
             }
@@ -101,7 +101,7 @@ namespace HealerLike.Render.Stage
         public IEnumerator CastThroughInterface(Button button, Entity target, bool healing)
         {
             yield return _session.actions.BringIntoView(button);
-            if (LegacyUiReader.AscensionState(_session.ascension) != AscensionGameType.State.OnGoingBattle
+            if (_session.ascension.state != AscensionGameType.State.OnGoingBattle
                 || !button.enabledInHierarchy || !StageInterfaceOutput.IsVisible(button))
             {
                 yield break;
@@ -131,8 +131,8 @@ namespace HealerLike.Render.Stage
                 yield return Wait(0.2f);
                 InteractionManager interaction = Object.FindAnyObjectByType<InteractionManager>();
                 if (data.isSingle && target != null
-                    && LegacyUiReader.AscensionState(_session.ascension) == AscensionGameType.State.OnGoingBattle
-                    && LegacyUiReader.CurrentView(Object.FindAnyObjectByType<UIManager>()) == ViewType.Game
+                    && _session.ascension.state == AscensionGameType.State.OnGoingBattle
+                    && Object.FindAnyObjectByType<GameManager>().screens.current == GameScreen.Game
                     && interaction.GetInteraction()is SingleTargetInteraction single
                     && single.IsValidTarget(target.gameObject) && TargetPoint(target, out Vector2 point))
                 {
@@ -146,8 +146,8 @@ namespace HealerLike.Render.Stage
                     {
                         yield return finger.Frame(TouchPhase.Began, point);
                         bool stillInBattle
-                            = LegacyUiReader.AscensionState(_session.ascension) == AscensionGameType.State.OnGoingBattle
-                            && LegacyUiReader.CurrentView(Object.FindAnyObjectByType<UIManager>()) == ViewType.Game;
+                            = _session.ascension.state == AscensionGameType.State.OnGoingBattle
+                            && Object.FindAnyObjectByType<GameManager>().screens.current == GameScreen.Game;
                         Vector2 release = point;
                         bool hit = stillInBattle && TargetPoint(target, out release);
                         evidence.releaseTargetVerifiedByRaycast = hit;
@@ -173,7 +173,7 @@ namespace HealerLike.Render.Stage
                 if (interaction.GetInteraction() != null)
                 {
                     if (StageInterfaceOutput.IsVisible(_session.actions.root.Q("cancel-button"))
-                        && LegacyUiReader.CurrentView(Object.FindAnyObjectByType<UIManager>()) == ViewType.Game)
+                        && Object.FindAnyObjectByType<GameManager>().screens.current == GameScreen.Game)
                     {
                         yield return _session.actions.PointerTap("cancel-button");
                     }

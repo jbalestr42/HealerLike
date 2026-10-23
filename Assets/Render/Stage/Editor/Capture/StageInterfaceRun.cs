@@ -49,7 +49,7 @@ namespace HealerLike.Render.Stage
                 _output.manifest.checks.Add("Authored map settings retained; capture-only map seed fixed to 271828");
                 yield return StageMapActions.WaitForSelection(_session.actions);
                 _output.Check(
-                    LegacyUiReader.GameState(Object.FindAnyObjectByType<GameManager>())
+                    (Object.FindAnyObjectByType<GameManager>()).state
                     == GameManager.GameState.Running, "The scene started real gameplay");
                 yield return _session.Capture("01b-phone-map");
                 yield return _session.Resize(1440, 900);

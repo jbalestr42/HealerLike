@@ -11,8 +11,8 @@ public class ToolkitPartyPanel
 
     public void Refresh(bool canDeploy)
     {
-        IReadOnlyList<SelectEntityButton> choices = _context.legacy.entityInventory != null
-            ? LegacyUiReader.AvailableEntities(_context.legacy.entityInventory) : System.Array.Empty<SelectEntityButton>();
+        IReadOnlyList<EntityData> units = _context.player != null
+            ? _context.player.roster.units : System.Array.Empty<EntityData>();
         List<Entity> entities = new List<Entity>();
         if (_context.entities != null && _context.entities.entities != null)
         {
@@ -25,7 +25,7 @@ public class ToolkitPartyPanel
             }
         }
 
-        _roster.Sync(choices, entities);
+        _roster.Sync(units, entities);
         List<ToolkitCardModel> models = new List<ToolkitCardModel>();
         foreach (ToolkitRoster.Entry entry in _roster.entries)
         {
@@ -33,8 +33,8 @@ public class ToolkitPartyPanel
             ToolkitCardModel model = new ToolkitCardModel { key = entry.key, iconSource = entity != null ? (object)entity : entry.data,
                 title = entry.data.title, description = entry.data.description,
                 source = entity != null ? (object)entity : entry.data, canDrag = entity == null && canDeploy,
-                isEnabled = true, activate = Inspect, canBeginDrag = () => entry.entity == null && entry.choice != null && _context.IsPreparing(),
-                deployed = spawned => entry.entity = spawned };
+                isEnabled = true, activate = Inspect, canBeginDrag = () => !entry.isDeployed && _context.IsPreparing(),
+                deployed = spawned => ToolkitRoster.Deploy(entry, spawned) };
             if (entity != null && entity.health != null)
             {
                 model.healthFraction = entity.health.Value / Mathf.Max(1, entity.health.Max);

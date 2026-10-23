@@ -134,7 +134,7 @@ public class LibraryItemsDataTests
         {
             ItemFactory item = Load((string)cursedItem[0]);
             CollectionAssert.Contains(data.items, item, item.title);
-            Assert.IsTrue(UpgradeView.RewardExcludedTags.Exists(item.HasTag), item.title);
+            Assert.IsTrue(RewardChoice.ExcludedTags.Exists(item.HasTag), item.title);
         }
     }
 

@@ -146,7 +146,7 @@ namespace HealerLike.Render.Stage
                 yield return _session.Resize(Width, Height);
                 _player.PlaceAllies(_manager, StagePlayer.LoadAllies());
                 yield return Wait(0.5f);
-                _hud.nextWaveButton.onClick.Invoke();
+                _ascension.StartBattle();
                 yield return Wait(1f);
                 focus = Object.FindAnyObjectByType<BattleFocus>();
                 focusEnabled = focus && focus.enabled;

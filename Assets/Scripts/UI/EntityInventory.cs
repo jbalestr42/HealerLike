@@ -1,7 +1,7 @@
-﻿using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
+// A button per unit of the roster, to place it on the board
 public class EntityInventory : MonoBehaviour
 {
     [SerializeField] GameObject _inventoryConainer;
@@ -9,49 +9,38 @@ public class EntityInventory : MonoBehaviour
     [SerializeField] GameObject _inventoryEntity;
 
     List<SelectEntityButton> _entityButtons = new List<SelectEntityButton>();
-    List<SelectEntityButton> _entityButtonsSource;
-    System.Collections.ObjectModel.ReadOnlyCollection<SelectEntityButton> _entityButtonsView;
+    UnitRoster _roster;
 
-    public IReadOnlyList<SelectEntityButton> entityButtons
+    public void Bind(UnitRoster roster)
     {
-        get
+        _roster = roster;
+        _roster.OnChanged.AddListener(Refresh);
+        Refresh();
+    }
+
+    void OnDestroy()
+    {
+        if (_roster != null)
         {
-            if (_entityButtonsView == null || _entityButtonsSource != _entityButtons)
-            {
-                _entityButtonsSource = _entityButtons;
-                _entityButtonsView = _entityButtons.AsReadOnly();
-            }
-            return _entityButtonsView;
+            _roster.OnChanged.RemoveListener(Refresh);
         }
     }
 
-	public void Init(List<EntityData> entitiesData)
+    void Refresh()
     {
+        foreach (SelectEntityButton button in _entityButtons)
+        {
+            Destroy(button.gameObject);
+        }
         _entityButtons.Clear();
-		foreach (var data in entitiesData)
-        {
-            AddEntity(data);
-        }
 
-        EntityManager.instance.OnEntitySpawned.AddListener(UpdateUsableEntities);
-	}
-    
-    public void AddEntity(EntityData data)
-    {
-        var entityButton = Instantiate(_inventoryEntity);
-        entityButton.GetComponent<SelectEntityButton>().data = data;
-        entityButton.GetComponentInChildren<TMPro.TMP_Text>().text = data.title;
-        entityButton.transform.SetParent(_inventoryConainer.transform);
-        _entityButtons.Add(entityButton.GetComponent<SelectEntityButton>());
-    }
-
-    public void UpdateUsableEntities(Entity entity)
-    {
-        var entityButton = _entityButtons.Where(x => x.data == entity.data).FirstOrDefault();
-        if (entityButton != null)
+        foreach (EntityData data in _roster.units)
         {
-            _entityButtons.Remove(entityButton);
-            GameObject.Destroy(entityButton.gameObject);
+            GameObject entityButton = Instantiate(_inventoryEntity);
+            entityButton.GetComponent<SelectEntityButton>().data = data;
+            entityButton.GetComponentInChildren<TMPro.TMP_Text>().text = data.title;
+            entityButton.transform.SetParent(_inventoryConainer.transform);
+            _entityButtons.Add(entityButton.GetComponent<SelectEntityButton>());
         }
     }
 

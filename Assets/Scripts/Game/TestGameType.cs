@@ -4,11 +4,11 @@ public class TestGameType : AGameType
 {
     public override void StartGame()
     {
-        PlayerInventory playerInventory = UIManager.instance.GetView<GameView>(ViewType.Game).playerInventory;
+        InventoryHandler stash = PlayerBehaviour.instance.stash;
         foreach (AItemFactory itemFactory in DataManager.instance.GetItems(new List<string> { TagNames.Entity }))
         {
-            playerInventory.AddItem(itemFactory.GetItem());
-            playerInventory.AddItem(itemFactory.GetItem());
+            stash.AddItem(itemFactory.GetItem(), -1);
+            stash.AddItem(itemFactory.GetItem(), -1);
         }
     }
 

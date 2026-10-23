@@ -17,7 +17,7 @@ namespace UI.Toolkit
         {
             ToolkitGameContext context = new ToolkitGameContext();
             context.isMenu = true;
-            Assert.IsFalse(context.IsCurrentView(ViewType.Map));
+            Assert.IsFalse(context.IsCurrentView(GameScreen.Map));
         }
 
         [Test]

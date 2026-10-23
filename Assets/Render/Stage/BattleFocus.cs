@@ -20,7 +20,6 @@ namespace HealerLike.Render.Stage
 
         readonly BattleBodyBounds _bodies = new BattleBodyBounds();
         RenderManager _manager;
-        Button _nextWaveButton;
         Camera _camera;
         Pose _target;
         Vector3 _velocity;
@@ -68,18 +67,8 @@ namespace HealerLike.Render.Stage
                 _toggle.onClick.AddListener(Toggle);
             }
 
-            // A wave starts on the HUD's next wave button, the round ends on the game type's signal
-            GameView gameView = FindAnyObjectByType<GameView>(FindObjectsInactive.Include);
-            if (gameView != null && gameView.gameHUD != null)
-            {
-                _nextWaveButton = gameView.gameHUD.nextWaveButton;
-            }
-
-            if (_nextWaveButton != null)
-            {
-                _nextWaveButton.onClick.AddListener(Focus);
-            }
-
+            // A wave starts and the round ends on the signals of the game type
+            AscensionGameType.OnBattleStart.AddListener(Focus);
             AscensionGameType.OnRoundEnd.AddListener(Overview);
             SetLabel();
         }
@@ -92,13 +81,8 @@ namespace HealerLike.Render.Stage
             {
                 _toggle.onClick.RemoveListener(Toggle);
             }
+            AscensionGameType.OnBattleStart.RemoveListener(Focus);
             AscensionGameType.OnRoundEnd.RemoveListener(Overview);
-            if (_nextWaveButton != null)
-            {
-                _nextWaveButton.onClick.RemoveListener(Focus);
-            }
-
-            _nextWaveButton = null;
         }
 
         void OnDestroy()

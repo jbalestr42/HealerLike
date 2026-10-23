@@ -1,7 +1,7 @@
 using System;
 using UnityEngine.UIElements;
 
-// Adapts the existing map view's public actions. It never advances or copies the run itself.
+// The run map: the next room picked on it, or looked at while arranging the units. The run moves on its own.
 public sealed class ToolkitMapPanel : IDisposable
 {
     ToolkitGameContext _context;
@@ -33,9 +33,9 @@ public sealed class ToolkitMapPanel : IDisposable
         }
 
         RunState run = _context.ascension != null ? _context.ascension.run : null;
-        bool visible = run != null && _context.IsCurrentView(ViewType.Map);
+        bool visible = run != null && _context.IsCurrentView(GameScreen.Map);
         bool canSelect =
-            visible && LegacyUiReader.AscensionState(_context.ascension) == AscensionGameType.State.SelectRoom;
+            visible && _context.ascension.canSelectRoom;
         _view.Show("map-panel", visible);
         _view.Show("map-button", run != null);
         _open.SetEnabled(CanOpen());
@@ -65,14 +65,12 @@ public sealed class ToolkitMapPanel : IDisposable
         return _context != null
             && _context.ascension != null
             && _context.ascension.run != null
-            && _context.IsCurrentView(ViewType.Game)
+            && _context.IsCurrentView(GameScreen.Game)
             && _context.IsPreparing()
             && !_context.isPaused
             && !_context.isInventoryOpen
             && !_context.hasInteraction
-            && _context.legacy != null
-            && _context.legacy.gameHUD.mapButton != null
-            && _context.legacy.gameHUD.mapButton.interactable;
+            && _context.ascension.canLookAtMap;
     }
 
     void Open()
@@ -82,7 +80,7 @@ public sealed class ToolkitMapPanel : IDisposable
             return;
         }
 
-        _context.legacy.gameHUD.mapButton.onClick.Invoke();
+        _context.ascension.LookAtMap();
         Refresh();
     }
 
@@ -93,12 +91,12 @@ public sealed class ToolkitMapPanel : IDisposable
 
     public bool Close()
     {
-        if (_context == null || !_context.IsCurrentView(ViewType.Map) || !_context.IsPreparing())
+        if (_context == null || _context.ascension == null || !_context.IsCurrentView(GameScreen.Map) || !_context.IsPreparing())
         {
             return false;
         }
 
-        _context.ui.PopCurrentView();
+        _context.ascension.CloseMap();
         Refresh();
         return true;
     }
@@ -114,15 +112,15 @@ public sealed class ToolkitMapPanel : IDisposable
         // Recheck on click, including a queued second click after travel or a restarted run.
         if (
             run == null
-            || !_context.IsCurrentView(ViewType.Map)
-            || LegacyUiReader.AscensionState(_context.ascension) != AscensionGameType.State.SelectRoom
+            || !_context.IsCurrentView(GameScreen.Map)
+            || !_context.ascension.canSelectRoom
             || !run.CanTravelTo(node)
         )
         {
             return;
         }
 
-        _context.ui.GetView<MapView>(ViewType.Map).OnNodeSelected.Invoke(node);
+        _context.ascension.SelectRoom(node);
         Refresh();
     }
 

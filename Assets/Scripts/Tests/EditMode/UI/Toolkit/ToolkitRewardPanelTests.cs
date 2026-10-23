@@ -1,20 +1,18 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
-using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
 namespace UI.Toolkit
 {
 
-    // The reward screen shows one card per choice of Julien's upgrade view, whatever the kind of the choice
+    // The reward screen shows one card per reward choice of the run, whatever the kind of the choice
     public class ToolkitRewardPanelTests
     {
-        GameObject _host;
-        UpgradeView _upgradeView;
-        List<GameObject> _choices;
+        ToolkitTestRun _run;
         VisualElement _root;
         ToolkitGameView _view;
         ToolkitRewardPanel _panel;
@@ -23,22 +21,11 @@ namespace UI.Toolkit
         [SetUp]
         public void SetUp()
         {
-            _host = new GameObject("Reward adapter fixture");
-            _host.SetActive(false);
-            ToolkitGameContext context = new ToolkitGameContext();
-            context.ui = _host.AddComponent<UIManager>();
-            GameObject viewHost = new GameObject("Legacy upgrade view", typeof(RectTransform), typeof(CanvasGroup));
-            viewHost.transform.SetParent(_host.transform);
-            _upgradeView = viewHost.AddComponent<UpgradeView>();
-            _choices = new List<GameObject>();
-            TestHelpers.SetPrivateField(_upgradeView, "_upgradeButtons", _choices);
-            TestHelpers.SetPrivateField(
-                context.ui, "_views", new Dictionary<ViewType, AView> { { ViewType.Upgrade, _upgradeView } });
-            TestHelpers.SetPrivateField(context.ui, "_currentView", ViewType.Upgrade);
+            _run = new ToolkitTestRun();
             _root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
             _view = new ToolkitGameView(_root);
             _panel = new ToolkitRewardPanel();
-            _panel.Init(null, context, _view);
+            _panel.Init(null, _run.context, _view);
         }
 
         [TearDown]
@@ -51,7 +38,7 @@ namespace UI.Toolkit
             }
 
             _objects.Clear();
-            Object.DestroyImmediate(_host);
+            _run.Dispose();
         }
 
         public static EntityData CreateUnit(string title, List<Object> owned)
@@ -65,20 +52,19 @@ namespace UI.Toolkit
             return unit;
         }
 
-        // A choice the way Julien's view builds it: a button object carrying the component of its kind
-        public static GameObject CreateChoice<T>(string fieldName, object value, List<Object> owned) where T : Component
-        {
-            GameObject choice = new GameObject(typeof(T).Name, typeof(RectTransform));
-            choice.SetActive(false);
-            owned.Add(choice);
-            T button = choice.AddComponent<T>();
-            TestHelpers.SetPrivateField(button, fieldName, value);
-            return choice;
-        }
-
         public static Item CreateItem(string name)
         {
             return new Item { data = new ItemData { name = name, description = $"{name} description" } };
+        }
+
+        RewardChoice UnitChoice(string title)
+        {
+            return new RewardChoice { type = RewardChoiceType.Unit, unit = CreateUnit(title, _objects) };
+        }
+
+        static RewardChoice ItemChoice(RewardChoiceType type, string name)
+        {
+            return new RewardChoice { type = type, item = CreateItem(name) };
         }
 
         List<VisualElement> Cards()
@@ -91,46 +77,55 @@ namespace UI.Toolkit
             return _root.Q("upgrade-list").Query<Label>("card-title").ToList().Select(label => label.text).ToList();
         }
 
-        [Test]
-        public void UnitChoice_IsACardWithItsTitleDetailsAndIcon()
+        static IEnumerable<RewardChoiceType> Kinds()
         {
-            EntityData zealot = CreateUnit("Zealot", _objects);
-            GameObject choice = CreateChoice<SelectEntityUpgradeButton>("_entity", zealot, _objects);
+            foreach (RewardChoiceType kind in Enum.GetValues(typeof(RewardChoiceType)))
+            {
+                yield return kind;
+            }
+        }
+
+        // A kind added to the rewards and unknown to the panel fails here by name
+        [TestCaseSource(nameof(Kinds))]
+        public void EveryRewardKind_BecomesACardThatCanBeChosen(RewardChoiceType kind)
+        {
+            RewardChoice choice = kind == RewardChoiceType.Unit ? UnitChoice("Zealot") : ItemChoice(kind, "Ward");
 
             List<ToolkitCardModel> models = _panel.BuildModels(new[] { choice });
 
-            Assert.AreEqual(1, models.Count, "A unit reward must not be skipped.");
-            ToolkitCardModel model = models[0];
-            Assert.AreEqual(SelectEntityUpgradeButton.GetTitle(zealot), model.title);
+            Assert.AreEqual(1, models.Count, $"A {kind} choice produced no card.");
+            Assert.IsNotEmpty(models[0].title, $"A {kind} card has no title.");
+            Assert.IsNotNull(models[0].iconSource, $"A {kind} card has nothing to draw an icon from.");
+            Assert.IsNotNull(models[0].activate, $"A {kind} card cannot be chosen.");
+            Assert.AreSame(choice, models[0].source);
+        }
+
+        [Test]
+        public void UnitChoice_IsACardWithItsTitleDetailsAndIcon()
+        {
+            RewardChoice choice = UnitChoice("Zealot");
+
+            ToolkitCardModel model = _panel.BuildModels(new[] { choice })[0];
+
             Assert.AreEqual("New unit: Zealot", model.title);
-            Assert.AreEqual(CharacterCardText.GetUnitDetails(zealot), model.description);
-            Assert.AreSame(zealot, model.iconSource, "The icon service resolves the unit from its data.");
-            Assert.AreSame(choice.GetComponent<SelectEntityUpgradeButton>(), model.source,
-                "Activating the card dispatches Julien's own unit selection.");
-            Assert.IsNotNull(model.activate);
+            Assert.AreEqual(CharacterCardText.GetUnitDetails(choice.unit), model.description);
+            Assert.AreSame(choice.unit, model.iconSource, "The icon service resolves the unit from its data.");
             StringAssert.EndsWith("· Choose reward", model.status);
             StringAssert.Contains("unit", model.status.ToLowerInvariant());
         }
 
         [Test]
-        public void RewardOnlyUnit_OutsideTheCharacterRoster_IsACardLikeAnyUnit()
+        public void ItemChoices_TellThePartyEquipmentFromTheHealerUpgrade()
         {
-            CharacterData character = ScriptableObject.CreateInstance<CharacterData>();
-            _objects.Add(character);
-            character.entities = new List<EntityData> { CreateUnit("Cleric", _objects) };
-            GameplayTag reward = ScriptableObject.CreateInstance<GameplayTag>();
-            _objects.Add(reward);
-            reward.name = TagNames.Reward;
-            EntityData hermit = CreateUnit("Hermit", _objects);
-            hermit.tags = new List<GameplayTag> { reward };
-            Assert.IsFalse(character.entities.Contains(hermit));
-            GameObject choice = CreateChoice<SelectEntityUpgradeButton>("_entity", hermit, _objects);
+            List<ToolkitCardModel> models = _panel.BuildModels(new[]
+            {
+                ItemChoice(RewardChoiceType.EntityItem, "Ward"),
+                ItemChoice(RewardChoiceType.PlayerItem, "Bloom"),
+            });
 
-            List<ToolkitCardModel> models = _panel.BuildModels(new[] { choice });
-
-            Assert.AreEqual(1, models.Count);
-            Assert.AreEqual("New unit: Hermit", models[0].title);
-            Assert.AreSame(hermit, models[0].iconSource);
+            Assert.AreEqual("Ward description", models[0].description);
+            StringAssert.StartsWith("Party equipment", models[0].status);
+            StringAssert.StartsWith("Healer upgrade", models[1].status);
         }
 
         [Test]
@@ -142,21 +137,33 @@ namespace UI.Toolkit
                 .ToList();
             Assert.IsNotEmpty(rewardUnits, "The game data offers units as rewards.");
 
-            List<GameObject> choices = rewardUnits
-                .Select(unit => CreateChoice<SelectEntityUpgradeButton>("_entity", unit, _objects))
-                .ToList();
-            List<ToolkitCardModel> models = _panel.BuildModels(choices);
+            List<ToolkitCardModel> models = _panel.BuildModels(
+                rewardUnits.Select(unit => new RewardChoice { type = RewardChoiceType.Unit, unit = unit }).ToList());
 
-            CollectionAssert.AreEqual(rewardUnits.Select(SelectEntityUpgradeButton.GetTitle).ToList(),
+            CollectionAssert.AreEqual(rewardUnits.Select(unit => $"New unit: {unit.title}").ToList(),
                 models.Select(model => model.title).ToList());
         }
 
         [Test]
-        public void MixedChoices_AllThreeKindsAreDrawnInOrder()
+        public void ChoiceWithoutItsUnitOrItem_IsSkipped()
         {
-            _choices.Add(CreateChoice<SelectItemUpgradeButton>("_item", CreateItem("Ward"), _objects));
-            _choices.Add(CreateChoice<SelectEntityUpgradeButton>("_entity", CreateUnit("Zealot", _objects), _objects));
-            _choices.Add(CreateChoice<SelectPlayerItemUpgradeButton>("_item", CreateItem("Bloom"), _objects));
+            List<ToolkitCardModel> models = _panel.BuildModels(new[]
+            {
+                new RewardChoice { type = RewardChoiceType.Unit },
+                new RewardChoice { type = RewardChoiceType.EntityItem },
+                ItemChoice(RewardChoiceType.EntityItem, "Ward"),
+            });
+
+            CollectionAssert.AreEqual(new[] { "Ward" }, models.Select(model => model.title).ToList());
+        }
+
+        [Test]
+        public void Refresh_RewardScreen_DrawsTheChoicesInOrder()
+        {
+            _run.ShowRewards(
+                ItemChoice(RewardChoiceType.EntityItem, "Ward"),
+                UnitChoice("Zealot"),
+                ItemChoice(RewardChoiceType.PlayerItem, "Bloom"));
 
             _panel.Refresh();
 
@@ -165,79 +172,25 @@ namespace UI.Toolkit
         }
 
         [Test]
-        public void UnitChoiceWithoutUnit_IsSkippedWithoutThrowing()
+        public void Activate_PartyEquipment_GoesToTheStashAndClosesTheRewards()
         {
-            _choices.Add(CreateChoice<SelectEntityUpgradeButton>("_entity", null, _objects));
-            _choices.Add(CreateChoice<SelectItemUpgradeButton>("_item", CreateItem("Ward"), _objects));
+            RewardChoice ward = ItemChoice(RewardChoiceType.EntityItem, "Ward");
+            _run.ShowRewards(ward, ItemChoice(RewardChoiceType.EntityItem, "Bloom"));
+            ToolkitCardModel model = _panel.BuildModels(_run.ascension.rewardChoices)[0];
 
-            _panel.Refresh();
+            model.activate.Invoke(model);
 
-            CollectionAssert.AreEqual(new[] { "Ward" }, CardTitles());
+            CollectionAssert.AreEqual(new[] { ward.item }, _run.player.stash.items.Select(entry => entry.item).ToList());
+            Assert.AreEqual(GameScreen.Game, _run.game.screens.current);
+            Assert.IsEmpty(_run.ascension.rewardChoices);
         }
 
         [Test]
-        public void ChoicesWithNoCard_LogAnErrorNamingTheirComponents()
-        {
-            GameObject unknown = new GameObject("Unknown reward", typeof(RectTransform));
-            unknown.SetActive(false);
-            _objects.Add(unknown);
-            unknown.AddComponent<CanvasGroup>();
-            unknown.AddComponent<UnityEngine.UI.Image>();
-            _choices.Add(unknown);
-            LogAssert.Expect(LogType.Error, new Regex(@"ToolkitRewardPanel.*1 choice.*Unknown reward \[Image\]"));
-
-            _panel.Refresh();
-
-            Assert.IsEmpty(Cards());
-        }
-
-        [Test]
-        public void ChoicesWithNoCard_AreReportedOncePerScreen()
-        {
-            _choices.Add(CreateChoice<SelectItemUpgradeButton>("_item", null, _objects));
-            _choices.Add(CreateChoice<SelectPlayerItemUpgradeButton>("_item", null, _objects));
-            LogAssert.Expect(LogType.Error, new Regex("2 choice.*SelectItemUpgradeButton.*SelectPlayerItemUpgradeButton"));
-
-            _panel.Refresh();
-            _panel.Refresh();
-
-            LogAssert.NoUnexpectedReceived();
-        }
-
-        [Test]
-        public void EmptyChoiceList_IsNotAnError()
+        public void Refresh_OffTheRewardScreen_DrawsNothing()
         {
             _panel.Refresh();
 
             Assert.IsEmpty(Cards());
-            LogAssert.NoUnexpectedReceived();
-        }
-
-        [Test]
-        public void SomeChoicesDrawn_IsNotAnError()
-        {
-            _choices.Add(CreateChoice<SelectItemUpgradeButton>("_item", null, _objects));
-            _choices.Add(CreateChoice<SelectItemUpgradeButton>("_item", CreateItem("Ward"), _objects));
-
-            _panel.Refresh();
-
-            CollectionAssert.AreEqual(new[] { "Ward" }, CardTitles());
-            LogAssert.NoUnexpectedReceived();
-        }
-
-        [Test]
-        public void ReaderUnit_NullButton_IsNullWithoutLogging()
-        {
-            Assert.IsNull(LegacyUiReader.Unit(null));
-        }
-
-        [Test]
-        public void ReaderUnit_ReadsTheCurrentUnitOfTheButton()
-        {
-            EntityData zealot = CreateUnit("Zealot", _objects);
-            GameObject choice = CreateChoice<SelectEntityUpgradeButton>("_entity", zealot, _objects);
-
-            Assert.AreSame(zealot, LegacyUiReader.Unit(choice.GetComponent<SelectEntityUpgradeButton>()));
         }
     }
 }

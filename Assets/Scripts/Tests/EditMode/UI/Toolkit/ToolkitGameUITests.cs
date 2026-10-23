@@ -48,7 +48,7 @@ namespace UI.Toolkit
             Application.logMessageReceived += OnLogMessage;
             ToolkitGameUI gameUI = Object.FindAnyObjectByType<ToolkitGameUI>();
             AscensionGameType ascension = Object.FindAnyObjectByType<AscensionGameType>();
-            Assert.AreEqual(AscensionGameType.State.SelectRoom, LegacyUiReader.AscensionState(ascension));
+            Assert.AreEqual(AscensionGameType.State.SelectRoom, ascension.state);
             MapNode first = ascension.run.GetAvailableNodes()[0];
             Button room = gameUI
                 .GetComponent<UIDocument>()
@@ -176,7 +176,7 @@ namespace UI.Toolkit
                 "The empty battlefield area must let world interactions through."
             );
             GameManager gameManager = Object.FindAnyObjectByType<GameManager>();
-            Assert.AreEqual(GameManager.GameState.Running, LegacyUiReader.GameState(gameManager));
+            Assert.AreEqual(GameManager.GameState.Running, gameManager.state);
             Assert.Greater(root.Q("party-list").Query<Button>().ToList().Count, 0);
             Assert.Greater(root.Q("spell-list").Query<Button>().ToList().Count, 0);
             Assert.IsTrue(root.Q<Button>("wave-button").enabledSelf);

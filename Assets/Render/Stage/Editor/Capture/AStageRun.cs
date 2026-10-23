@@ -14,7 +14,7 @@ namespace HealerLike.Render.Stage
 
         protected RenderManager _manager;
         public RenderManager manager { get { return _manager; } }
-        protected GameHUD _hud;
+        protected AscensionGameType _ascension;
         protected int _attacks;
         protected int _heals;
         protected int _maxZones;
@@ -175,7 +175,7 @@ namespace HealerLike.Render.Stage
                 yield return null;
             }
 
-            while (bootsIntoGame && (_hud == null || _manager == null || _manager.entityManager == null))
+            while (bootsIntoGame && (_ascension == null || _manager == null || _manager.entityManager == null))
             {
                 if (Time.realtimeSinceStartup > deadline)
                 {
@@ -185,8 +185,7 @@ namespace HealerLike.Render.Stage
                 }
 
                 _manager = Object.FindAnyObjectByType<RenderManager>();
-                GameView gameView = Object.FindAnyObjectByType<GameView>();
-                _hud = gameView != null ? gameView.gameHUD : null;
+                _ascension = Object.FindAnyObjectByType<AscensionGameType>();
                 yield return null;
             }
 

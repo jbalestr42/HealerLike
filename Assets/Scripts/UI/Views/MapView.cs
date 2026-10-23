@@ -20,6 +20,8 @@ public class MapView : AView
     }
 
     public UnityEvent<MapNode> OnNodeSelected = new UnityEvent<MapNode>();
+    // The close button of a map opened to look at it
+    public UnityEvent OnCloseRequested = new UnityEvent();
 
     // Area where the map is drawn, the view itself when not set
     [SerializeField] RectTransform _container;
@@ -91,7 +93,7 @@ public class MapView : AView
     {
         if (_closeButton != null)
         {
-            _closeButton.onClick.AddListener(() => UIManager.instance.PopCurrentView());
+            _closeButton.onClick.AddListener(OnCloseRequested.Invoke);
         }
     }
 

@@ -25,7 +25,7 @@ namespace HealerLike.Render.Stage
             _manager.SetLandscape(false);
             yield return Wait(0.5f);
             _player.PlaceAllies(_manager, StagePlayer.LoadAllies());
-            _hud.nextWaveButton.onClick.Invoke();
+            _ascension.StartBattle();
             float started = Time.time;
             float nextCast = started + 1f;
             int shot = 0;

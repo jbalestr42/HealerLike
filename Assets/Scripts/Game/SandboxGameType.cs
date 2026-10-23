@@ -57,12 +57,6 @@ public class SandboxGameType : AGameType
 
         PlayerBehaviour.instance.character.hasUnrestrictedSkills = true;
         PlayerBehaviour.instance.Init(_data.CreateCharacterData(playedCharacter));
-        // The mana gained from the items, even if the skills don't cost any here, and the Devotion of the Cleric: the
-        // HUD is hidden in the scene, so it starts after the character it shows
-        GameHUD gameHUD = UIManager.instance.GetView<GameView>(ViewType.Game).gameHUD;
-        gameHUD.ShowResourcesOnly();
-        gameHUD.ShowCharacter(PlayerBehaviour.instance.character);
-
         _panel.Init(this, _data, PlayerBehaviour.instance.character);
         if (playedCharacter != null)
         {
