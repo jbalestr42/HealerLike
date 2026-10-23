@@ -95,8 +95,7 @@ public class GameHUD : MonoBehaviour
     public static string GetDevotionTooltip(float value, float max)
     {
         return $"<b>Devotion</b> {Mathf.RoundToInt(value)} / {Mathf.RoundToInt(max)}"
-            + "\nSome of your spells give Devotion, others spend it all for a stronger effect."
-            + "\nBack to 0 at the start of each fight.";
+            + "\n" + ToolkitHudStatus.DevotionDescription;
     }
 
     void ShowTooltip(string text, RectTransform target)

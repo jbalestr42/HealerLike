@@ -39,6 +39,11 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitDetailPanel _detailPanel = new ToolkitDetailPanel();
     ToolkitInventoryPanel _inventoryPanel = new ToolkitInventoryPanel();
     ToolkitSheetPanel _sheetPanel = new ToolkitSheetPanel();
+    ToolkitHudStatus _hudStatus = new ToolkitHudStatus();
+    ToolkitItemBar _itemBar = new ToolkitItemBar();
+#if UNITY_EDITOR
+    ToolkitEditorTools _editorTools = new ToolkitEditorTools();
+#endif
     ToolkitMobileLayout _mobileLayout = new ToolkitMobileLayout();
     IToolkitIconProvider _iconProvider;
     IToolkitRosterDrag _rosterDrag;
@@ -56,7 +61,11 @@ public class ToolkitGameUI : MonoBehaviour
         }
     }
     public bool acceptsWorldInput => _view != null && !_context.isPaused && !_context.isInventoryOpen
-        && !_context.isSheetOpen && _context.IsCurrentView(GameScreen.Game);
+        && !_context.isSheetOpen && _context.IsCurrentView(GameScreen.Game)
+#if UNITY_EDITOR
+        && !_editorTools.isOpen
+#endif
+        ;
     public void WorldPointerDown() { _view?.ClosePopover(); }
     public void CancelGestures() { _view?.CancelGestures(); }
     public void InspectEntity(Entity entity, Vector2 screenPoint)
@@ -229,6 +238,11 @@ public class ToolkitGameUI : MonoBehaviour
         _rewardPanel.Init(this, _context, _view);
         _eventPanel.Init(this, _context, _view);
         _mapPanel.Init(_context, _view);
+        _hudStatus.Init(_context, _view);
+        _itemBar.Init(_context, _view);
+#if UNITY_EDITOR
+        _editorTools.Init(_context, _view);
+#endif
         if (_hideLegacyCanvases)
         {
             _legacyCanvases.Hide(_context, FindAnyObjectByType<UIManager>());
@@ -297,6 +311,7 @@ public class ToolkitGameUI : MonoBehaviour
         }
         _sheetPanel.Refresh();
         _eventPanel.Refresh();
+        _itemBar.Refresh(!_context.isMenu);
         if (_context.isMenu)
         {
             _encounterBar.RefreshMenu(_mobileLayout.isPopoverOpen);
@@ -319,6 +334,10 @@ public class ToolkitGameUI : MonoBehaviour
         }
 
         _encounterBar.RefreshMana();
+        _hudStatus.Refresh();
+#if UNITY_EDITOR
+        _editorTools.Refresh();
+#endif
         _partyPanel.Refresh(isPreparing && !isStart && !hasOverlay);
         _spellBar.Refresh(!isStart && !hasOverlay && !_context.isPaused);
         _rewardPanel.Refresh();
@@ -347,6 +366,11 @@ public class ToolkitGameUI : MonoBehaviour
         _mobileLayout.Dispose();
         _inventoryPanel.Dispose();
         _sheetPanel.Dispose();
+        _hudStatus.Dispose();
+        _itemBar.Dispose();
+#if UNITY_EDITOR
+        _editorTools.Dispose();
+#endif
         _detailPanel.Dispose();
         _mapPanel.Dispose();
         if (_view != null)

@@ -10,6 +10,7 @@ public class ToolkitKitRow : IDisposable
     public static readonly string ChipClass = "kit-chip";
     public static readonly string IconClass = "kit-chip__icon";
     public static readonly string LabelClass = "kit-chip__label";
+    public static readonly string OutlinedClass = "kit-chip--outlined";
 
     class Chip
     {
@@ -17,6 +18,7 @@ public class ToolkitKitRow : IDisposable
         public VisualElement icon;
         public Label label;
         public ToolkitKitEntry entry;
+        public ToolkitInfoTrigger trigger;
     }
 
     readonly ToolkitGameView _view;
@@ -103,20 +105,14 @@ public class ToolkitKitRow : IDisposable
         chip.label.AddToClassList(LabelClass);
         chip.root.Add(chip.icon);
         chip.root.Add(chip.label);
-        chip.root.RegisterCallback<PointerEnterEvent>(OnPointerEnter);
-        chip.root.RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
-        chip.root.RegisterCallback<PointerDownEvent>(OnPointerDown);
-        chip.root.RegisterCallback<ClickEvent>(OnClick);
+        chip.trigger = new ToolkitInfoTrigger(_view, chip.root, () => chip.entry != null ? chip.entry.ToModel() : null);
         _row.Add(chip.root);
         return chip;
     }
 
     void RemoveChip(Chip chip)
     {
-        chip.root.UnregisterCallback<PointerEnterEvent>(OnPointerEnter);
-        chip.root.UnregisterCallback<PointerLeaveEvent>(OnPointerLeave);
-        chip.root.UnregisterCallback<PointerDownEvent>(OnPointerDown);
-        chip.root.UnregisterCallback<ClickEvent>(OnClick);
+        chip.trigger.Dispose();
         chip.root.RemoveFromHierarchy();
         chip.entry = null;
     }
@@ -124,9 +120,36 @@ public class ToolkitKitRow : IDisposable
     void Bind(Chip chip, ToolkitKitEntry entry)
     {
         chip.entry = entry;
-        chip.label.text = entry.showLabel ? entry.title : "";
-        chip.label.style.display = entry.showLabel ? DisplayStyle.Flex : DisplayStyle.None;
+        string label = GetLabel(entry);
+        chip.label.text = label;
+        chip.label.style.display = label.Length > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+        chip.root.EnableInClassList(OutlinedClass, entry.outline.HasValue);
+        if (entry.outline.HasValue)
+        {
+            chip.root.style.borderLeftColor = entry.outline.Value;
+            chip.root.style.borderRightColor = entry.outline.Value;
+            chip.root.style.borderTopColor = entry.outline.Value;
+            chip.root.style.borderBottomColor = entry.outline.Value;
+        }
+        else
+        {
+            chip.root.style.borderLeftColor = StyleKeyword.Null;
+            chip.root.style.borderRightColor = StyleKeyword.Null;
+            chip.root.style.borderTopColor = StyleKeyword.Null;
+            chip.root.style.borderBottomColor = StyleKeyword.Null;
+        }
         SetIcon(chip);
+    }
+
+    // Its badge (e.g. a count), else its name when it keeps one, else nothing
+    public static string GetLabel(ToolkitKitEntry entry)
+    {
+        if (!string.IsNullOrEmpty(entry.badge))
+        {
+            return entry.badge;
+        }
+
+        return entry.showLabel ? entry.title : "";
     }
 
     void SetIcon(Chip chip)
@@ -137,46 +160,5 @@ public class ToolkitKitRow : IDisposable
         }
 
         chip.icon.style.backgroundImage = new StyleBackground(_view.GetIcon(chip.entry.iconSource, out bool isPortrait));
-    }
-
-    void Open(VisualElement element)
-    {
-        Chip chip = element != null ? element.userData as Chip : null;
-        if (chip == null || chip.entry == null)
-        {
-            return;
-        }
-
-        _view.inspectAnchor = element.worldBound;
-        _view.OnInspectRequested.Invoke(chip.entry.ToModel());
-    }
-
-    void OnPointerEnter(PointerEnterEvent evt)
-    {
-        Open(evt.currentTarget as VisualElement);
-    }
-
-    // A touch keeps the popover open until a tap outside it, a mouse closes it as the pointer leaves
-    void OnPointerLeave(PointerLeaveEvent evt)
-    {
-        if (evt.pointerType == PointerType.touch || evt.pointerType == PointerType.pen)
-        {
-            return;
-        }
-
-        _view.ClosePopover();
-    }
-
-    // The chip sits inside the card's button: the press ends here, so a tap on an icon reads details instead of
-    // choosing the class
-    void OnPointerDown(PointerDownEvent evt)
-    {
-        evt.StopPropagation();
-        Open(evt.currentTarget as VisualElement);
-    }
-
-    void OnClick(ClickEvent evt)
-    {
-        evt.StopPropagation();
     }
 }

@@ -6,6 +6,8 @@ public class ToolkitGameContext
     public EntityManager entities;
     public InteractionManager interaction;
     public AscensionGameType ascension;
+    // The game data played, null without a DataManager (e.g. the menu)
+    public GameData data;
     public bool isMenu = false;
     public bool isPaused = false;
     public bool isInventoryOpen = false;
@@ -36,6 +38,8 @@ public class ToolkitGameContext
         entities = UnityEngine.Object.FindAnyObjectByType<EntityManager>();
         interaction = UnityEngine.Object.FindAnyObjectByType<InteractionManager>();
         ascension = UnityEngine.Object.FindAnyObjectByType<AscensionGameType>();
+        DataManager dataManager = UnityEngine.Object.FindAnyObjectByType<DataManager>();
+        data = dataManager != null ? dataManager.data : null;
         isMenu = game == null;
     }
 

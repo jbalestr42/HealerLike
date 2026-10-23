@@ -106,3 +106,30 @@
 #hud-root.compact-hud .detail-scroll #unity-vertical-scroller { min-width: 6px; width: 6px; margin-left: 3px; }
 #hud-root.compact-hud .detail-scroll .unity-slider--vertical { width: 6px; margin: 0; }
 #hud-root.compact-hud .detail-scroll .unity-base-slider__dragger { min-width: 6px; width: 6px; }
+
+/* The ascension level and the Devotion beside the room, each opening its details in the popover */
+#hud-root.compact-hud .hud-chip {
+    margin-left: 8px; padding: 2px 10px; min-height: 28px; flex-shrink: 0;
+    font-size: 13px; -unity-font-style: bold; white-space: nowrap; -unity-text-align: middle-center;
+    color: rgb(248, 247, 223); background-color: rgba(16, 63, 56, 0.85);
+    border-color: rgba(245, 242, 216, 0.65); border-width: 1px; border-radius: 14px;
+}
+#hud-root.compact-hud .devotion-value { color: rgba(248, 247, 223, 0.55); }
+#hud-root.compact-hud .devotion-value.is-lit { color: rgb(255, 214, 102); }
+#hud-root.compact-hud.is-mobile .hud-chip { margin-left: 4px; padding: 2px 6px; font-size: 12px; }
+
+/* The healer's items over the top left of the field, each opening its details in the popover */
+#hud-root.compact-hud .item-bar {
+    position: absolute; left: 0; top: 0; max-width: 70%;
+    flex-direction: row; flex-wrap: wrap;
+}
+#hud-root.compact-hud .item-bar .kit-chip {
+    flex-direction: row; align-items: center; margin: 0 4px 4px 0; padding: 3px;
+    background-color: rgba(16, 63, 56, 0.7); border-color: rgba(0, 0, 0, 0); border-width: 2px; border-radius: 10px;
+}
+#hud-root.compact-hud .item-bar .kit-chip__icon {
+    width: 30px; height: 30px; border-radius: 8px; -unity-background-scale-mode: scale-to-fit;
+}
+#hud-root.compact-hud .item-bar .kit-chip__label {
+    font-size: 13px; -unity-font-style: bold; color: rgb(248, 247, 223); margin: 0 4px;
+}

@@ -178,5 +178,61 @@ namespace UI.Toolkit
         {
             Assert.That(ToolkitEntityInfo.GetAttributeLines(_entity), Is.Empty);
         }
+
+        [Test]
+        public void GetSideLine_AllyBeingPlaced_SaysAllyAndPlacement()
+        {
+            _entity.entityType = Entity.EntityType.Player;
+            TestHelpers.SetPrivateField(_entity, "_isDraggable", true);
+
+            Assert.That(ToolkitEntityInfo.GetSideLine(_entity), Is.EqualTo("Ally · placement"));
+        }
+
+        [Test]
+        public void GetSideLine_EnemyFighting_SaysEnemyAndInBattle()
+        {
+            _entity.entityType = Entity.EntityType.Computer;
+            TestHelpers.SetPrivateField(_entity, "_isDraggable", false);
+
+            Assert.That(ToolkitEntityInfo.GetSideLine(_entity), Is.EqualTo("Enemy · in battle"));
+        }
+
+        [Test]
+        public void GetShieldLine_NoShield_IsEmpty()
+        {
+            Assert.That(ToolkitEntityInfo.GetShieldLine(_entity), Is.Empty);
+        }
+
+        [Test]
+        public void GetShieldLine_Shielded_ShowsItsValue()
+        {
+            GameObject shieldObject = new GameObject("Shield");
+            _objects.Add(shieldObject);
+            ResourceAttribute shield = TestHelpers.CreateResourceAttribute(shieldObject, ResourceType.Mana, AttributeType.ManaMax, 100f);
+            shield.SetValue(12f);
+            TestHelpers.SetPrivateField(_entity, "_shield", shield);
+
+            Assert.That(ToolkitEntityInfo.GetShieldLine(_entity), Is.EqualTo("Shield: <b>12</b>"));
+        }
+
+        [Test]
+        public void GetCombat_BeforeAnyFight_IsEmpty()
+        {
+            Assert.That(ToolkitEntityInfo.GetCombat(_entity).lines, Is.Empty);
+        }
+
+        [Test]
+        public void GetCombat_AfterAFight_ShowsTheCombatMeter()
+        {
+            _entity.combatMeter.StartFight(0f);
+            _entity.combatMeter.AddDamage(1f, 30f);
+            _entity.combatMeter.EndFight(2f);
+
+            ToolkitInfoSection section = ToolkitEntityInfo.GetCombat(_entity);
+
+            Assert.That(section.lines.Count, Is.EqualTo(1), "The damage of the last fight");
+            StringAssert.Contains("30 damage", section.lines[0]);
+            Assert.That(section.count, Is.EqualTo(1));
+        }
     }
 }

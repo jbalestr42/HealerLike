@@ -137,6 +137,44 @@ namespace UI.Toolkit
         }
 
         [Test]
+        public void Refresh_EntryWithABadge_ShowsTheBadgeInsteadOfTheName()
+        {
+            ToolkitKitEntry entry = Entry("Rosary", true);
+            entry.badge = "4";
+
+            _row.Refresh(new[] { entry });
+
+            Assert.AreEqual("4", _row.ChipAt(0).Q<Label>(null, ToolkitKitRow.LabelClass).text);
+        }
+
+        [Test]
+        public void Refresh_OutlinedEntry_TakesItsColor()
+        {
+            ToolkitKitEntry entry = Entry("Heavy Chains");
+            entry.outline = Color.red;
+
+            _row.Refresh(new[] { entry });
+
+            VisualElement chip = _row.ChipAt(0);
+            Assert.IsTrue(chip.ClassListContains(ToolkitKitRow.OutlinedClass));
+            Assert.AreEqual(Color.red, chip.style.borderTopColor.value);
+        }
+
+        [Test]
+        public void Refresh_OutlineRemoved_ClearsIt()
+        {
+            ToolkitKitEntry entry = Entry("Heavy Chains");
+            entry.outline = Color.red;
+            _row.Refresh(new[] { entry });
+
+            _row.Refresh(new[] { Entry("Rosary") });
+
+            VisualElement chip = _row.ChipAt(0);
+            Assert.IsFalse(chip.ClassListContains(ToolkitKitRow.OutlinedClass));
+            Assert.AreEqual(StyleKeyword.Null, chip.style.borderTopColor.keyword);
+        }
+
+        [Test]
         public void Dispose_Row_RemovesTheChips()
         {
             _row.Refresh(new[] { Entry("Heal") });

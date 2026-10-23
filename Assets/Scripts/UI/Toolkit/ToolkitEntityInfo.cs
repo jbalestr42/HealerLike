@@ -37,6 +37,33 @@ public static class ToolkitEntityInfo
         return line;
     }
 
+    // "Ally · placement", "Enemy · in battle": its side, and whether it can still be moved
+    public static string GetSideLine(Entity entity)
+    {
+        string side = entity.entityType == Entity.EntityType.Player ? "Ally" : "Enemy";
+        string state = entity.isDraggable ? "placement" : "in battle";
+        return $"{side} · {state}";
+    }
+
+    // "Shield: 12", empty without any
+    public static string GetShieldLine(Entity entity)
+    {
+        return EntityInfoFormatter.FormatShield(entity.shield) ?? "";
+    }
+
+    // What the creature did in the fights, nothing before its first one
+    public static ToolkitInfoSection GetCombat(Entity entity)
+    {
+        ToolkitInfoSection section = new ToolkitInfoSection();
+        if (entity.combatMeter.hasFought)
+        {
+            section.lines.AddRange(EntityInfoFormatter.GetCombatMeterLines(entity.combatMeter, Time.time));
+        }
+
+        section.count = section.lines.Count;
+        return section;
+    }
+
     // The creature description, then every attribute with the modifiers applied on it
     public static List<string> GetAttributeLines(Entity entity)
     {

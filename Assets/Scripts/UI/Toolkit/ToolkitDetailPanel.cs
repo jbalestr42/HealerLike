@@ -182,11 +182,17 @@ public class ToolkitDetailPanel : IDisposable
 
     static string GetSummary(Entity entity)
     {
-        List<string> lines = new List<string>();
+        List<string> lines = new List<string> { ToolkitEntityInfo.GetSideLine(entity) };
         string health = ToolkitEntityInfo.GetHealthLine(entity);
         if (health.Length > 0)
         {
             lines.Add(health);
+        }
+
+        string shield = ToolkitEntityInfo.GetShieldLine(entity);
+        if (shield.Length > 0)
+        {
+            lines.Add(shield);
         }
 
         List<string> combat = new List<string>();
@@ -219,6 +225,7 @@ public class ToolkitDetailPanel : IDisposable
     void BuildSections()
     {
         _sections.Clear();
+        AddSection("detail-combat", "Combat", false, ToolkitEntityInfo.GetCombat);
         AddSection("detail-aiming", "Targeting details", false, ToolkitEntityInfo.GetTargeting);
         AddSection("detail-skills", "Skills", true, ToolkitEntityInfo.GetSkills);
         AddSection("detail-items", "Items", true, ToolkitEntityInfo.GetItems);

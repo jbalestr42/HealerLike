@@ -14,6 +14,9 @@
             <ui:DropdownField name="detail-targeting" label="Target priority" class="detail-targeting" />
             <ui:Button name="detail-equip-button" text="Select equipment" class="button" />
         </ui:Instance>
+        <ui:Foldout name="detail-combat" text="Combat" value="false" class="detail-attributes detail-section is-hidden">
+            <ui:Label name="detail-combat-text" class="detail-description" />
+        </ui:Foldout>
         <ui:Foldout name="detail-aiming" text="Targeting details" value="false" class="detail-attributes detail-section is-hidden">
             <ui:Label name="detail-aiming-text" class="detail-description" />
         </ui:Foldout>
