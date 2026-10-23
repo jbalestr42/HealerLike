@@ -10,7 +10,7 @@ namespace HealerLike.Render.Stage
     // RenderStage.unity with its one RenderManager, and the battle focus controls the manager nests
     public static class StageSceneAuthoring
     {
-        public static readonly string ScenePath = "Assets/Render/Stage/RenderStage.unity";
+        public static readonly string ScenePath = "Assets/Scenes/RenderStage.unity";
         public static readonly string ControlsPath = "Assets/Render/Stage/Prefabs/BattleFocusControls.prefab";
 
         public static Scene Create(GameObject manager)
