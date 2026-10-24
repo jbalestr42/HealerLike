@@ -72,15 +72,16 @@ namespace UI.Toolkit
         }
 
         [Test]
-        public void Template_ManaGauge_HoldsItsFillAndTheValueAboveTheSpells()
+        public void Template_ManaGauge_HoldsItsFillAndTheValueBeforeTheDevotion()
         {
             VisualElement gauge = _view.root.Q("mana-gauge");
+            VisualElement devotion = _view.root.Q(ToolkitHudStatus.DevotionName);
 
             Assert.IsNotNull(gauge);
             Assert.AreSame(gauge, _view.root.Q("mana-fill").parent);
             Assert.AreSame(gauge, _view.root.Q<Label>("mana-value").parent);
-            Assert.AreSame(gauge.parent, _view.root.Q("spell-list").parent);
-            Assert.Less(gauge.parent.IndexOf(gauge), gauge.parent.IndexOf(_view.root.Q("spell-list")));
+            Assert.AreSame(gauge.parent, devotion.parent);
+            Assert.Less(gauge.parent.IndexOf(gauge), gauge.parent.IndexOf(devotion));
         }
 
         [TestCase(50f, 100f, 0.5f)]

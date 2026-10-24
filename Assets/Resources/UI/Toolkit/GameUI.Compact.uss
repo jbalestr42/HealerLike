@@ -39,16 +39,21 @@
     flex-shrink: 0; display: flex; background-color: transparent; border-width: 0;
 }
 #hud-root.compact-hud .command-dock {
-    min-height: 120px; height: 120px; max-height: 120px; padding: 0; margin: 0;
+    min-height: 96px; height: 96px; max-height: 96px; padding: 0; margin: 0;
     flex-direction: column; flex-shrink: 0; background-color: transparent; border-width: 0;
 }
-/* The mana gauge above the spells, its value over the fill */
 #hud-root.compact-hud .spell-section {
-    flex-direction: column; align-items: stretch; min-width: 0; height: 120px;
+    flex-direction: column; align-items: stretch; min-width: 0; height: 96px;
 }
+/* The mana gauge at the top of the screen, its value over the fill, the Devotion beside it */
+#hud-root.compact-hud .resource-bar {
+    flex-direction: row; justify-content: center; align-items: center; height: 32px; min-height: 32px;
+    margin: 0; padding: 0; flex-shrink: 0;
+}
+#hud-root.compact-hud.is-menu .resource-bar { display: none; }
 #hud-root.compact-hud #mana-gauge {
-    align-self: center; width: 180px; max-width: 70%; height: 18px; min-height: 18px; flex-shrink: 0;
-    margin: 4px 0 4px 0; overflow: hidden; border-radius: 6px; border-width: 1px;
+    width: 180px; max-width: 60%; height: 18px; min-height: 18px; flex-shrink: 1;
+    margin: 0; overflow: hidden; border-radius: 6px; border-width: 1px;
     border-color: rgba(205, 231, 228, 0.45); background-color: rgba(22, 48, 52, 0.35);
 }
 #hud-root.compact-hud #mana-fill { height: 100%; flex-shrink: 0; background-color: rgba(85, 166, 178, 0.7); }
@@ -115,7 +120,7 @@
 #hud-root.compact-hud .detail-scroll .unity-slider--vertical { width: 6px; margin: 0; }
 #hud-root.compact-hud .detail-scroll .unity-base-slider__dragger { min-width: 6px; width: 6px; }
 
-/* The ascension level and the Devotion beside the room, each opening its details in the popover */
+/* The ascension level beside the room and the Devotion beside the mana, each opening its details in the popover */
 #hud-root.compact-hud .hud-chip {
     margin-left: 8px; padding: 2px 10px; min-height: 28px; flex-shrink: 0;
     font-size: 13px; -unity-font-style: bold; white-space: nowrap; -unity-text-align: middle-center;

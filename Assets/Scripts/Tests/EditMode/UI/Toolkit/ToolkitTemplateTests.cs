@@ -37,6 +37,27 @@ namespace UI.Toolkit
             Assert.IsTrue(root.Q("upgrade-title").hierarchy.parent.ClassListContains("dialog-content"));
         }
 
+        // From the top: the header, the mana with the Devotion beside it, the encounter buttons, the field, then the
+        // party and the spells at the bottom
+        [Test]
+        public void Validate_GameLayout_ManaAndDevotionUnderTheHeaderAboveTheEncounterButtons()
+        {
+            VisualElement root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+            VisualElement hud = root.Q("hud-root");
+            VisualElement resources = root.Q("resource-bar");
+
+            Assert.IsNotNull(resources);
+            Assert.IsTrue(resources.Contains(root.Q("mana-gauge")));
+            Assert.IsTrue(resources.Contains(root.Q("devotion-value")));
+            Assert.IsFalse(root.Q("command-dock").Contains(root.Q("mana-gauge")));
+            Assert.IsFalse(root.Q("top-bar").Contains(root.Q("devotion-value")));
+            string[] order = { "top-bar", "resource-bar", "field-toolbar", "main-content", "party-panel", "command-dock" };
+            for (int i = 1; i < order.Length; i++)
+            {
+                Assert.Less(hud.IndexOf(root.Q(order[i - 1])), hud.IndexOf(root.Q(order[i])), order[i - 1] + " before " + order[i]);
+            }
+        }
+
         // The start screen: the title and one line of copy, nothing that repeats it, over a backdrop it lets
         // through; Start above Sandbox in the same actions; its sheet on the HUD root so it wins over the stage's
         static readonly string MenuSheet = "Assets/Resources/UI/Toolkit/GameUI.Menu.uss";

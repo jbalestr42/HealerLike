@@ -1,7 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:Label name="wave-label" class="heading" />
     <ui:Label name="ascension-label" class="hud-chip is-hidden" />
-    <ui:Label name="devotion-value" class="hud-chip devotion-value is-hidden" />
     <ui:Label name="currency-label" class="currency" />
     <ui:VisualElement class="toolbar-space" picking-mode="Ignore" />
     <ui:Button name="map-button" text="Map" tooltip="Expedition map" class="button hud-icon is-hidden" />

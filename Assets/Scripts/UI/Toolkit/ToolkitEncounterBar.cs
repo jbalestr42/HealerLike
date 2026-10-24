@@ -49,6 +49,7 @@ public class ToolkitEncounterBar
         _view.Show("sandbox-button", isSandbox && !isStart && !_context.hasInteraction);
         _view.SetButton("sandbox-button", "Sandbox", isAvailable);
         _view.Show("spell-section", !isStart);
+        _view.Show("resource-bar", !isStart);
         _view.Show("wave-button", !isStart && (isPreparing || isSandbox) && !_context.hasInteraction);
         _view.Show("party-panel", !isStart);
         // The run starts with the scene (GameManager.Start) and a new one is reached from the end panel's "Return to

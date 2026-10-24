@@ -123,20 +123,17 @@
     padding-bottom: 6px;
 }
 #hud-root.compact-hud .command-dock {
-    height: 116px;
-    min-height: 116px;
-    max-height: 116px;
+    height: 84px;
+    min-height: 84px;
+    max-height: 84px;
     margin-top: 6px;
     padding: 0 3px;
     background-color: transparent;
     border-radius: 10px;
 }
 #hud-root.compact-hud #spell-section {
-    height: 116px;
+    height: 84px;
 }
 #hud-root.compact-hud #spell-list {
     height: 82px;
-}
-#hud-root.compact-hud #mana-gauge {
-    margin: 7px 0 7px;
 }

@@ -75,9 +75,14 @@
     margin-top: 12px;
 }
 
+/* In game the toolbar sits under the header, on the menu its actions stay at the thumb */
 #hud-root.game-ui.is-menu .field-toolbar
 {
     display: flex;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
     height: auto;
     min-height: 0;
     align-items: stretch;

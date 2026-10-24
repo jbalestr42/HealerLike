@@ -1,9 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <ui:VisualElement name="spell-section" class="spell-section" picking-mode="Ignore">
-        <ui:VisualElement name="mana-gauge" class="mana-gauge" picking-mode="Ignore">
-            <ui:VisualElement name="mana-fill" class="mana-fill" picking-mode="Ignore" />
-            <ui:Label name="mana-value" class="mana-value" picking-mode="Ignore" />
-        </ui:VisualElement>
         <ui:ScrollView name="spell-list" mode="Horizontal" class="spell-list compact-row" vertical-scroller-visibility="Hidden" horizontal-scroller-visibility="Hidden" />
     </ui:VisualElement>
 </ui:UXML>
