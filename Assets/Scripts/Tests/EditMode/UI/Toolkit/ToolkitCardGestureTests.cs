@@ -322,6 +322,51 @@ namespace UI.Toolkit
 
             Assert.That(_inspects, Is.EqualTo(2));
         }
+        void Hover<T>(T evt) where T : EventBase
+        {
+            using (evt)
+            {
+                evt.target = _button; _button.SendEvent(evt);
+            }
+        }
+        static Event MouseMove(Vector2 point)
+        {
+            return new Event { type = EventType.MouseMove, mousePosition = point };
+        }
+        // A mouse has no hold: hovering a spell or a party unit opens its popover, leaving it closes it
+        [UnityTest]
+        public IEnumerator MouseHoverOpensThePopoverAndLeaveClosesIt()
+        {
+            foreach (bool spell in new[] { true, false })
+            {
+                Bind(spell); yield return null; yield return null;
+                using (ToolkitPopover popover = new ToolkitPopover(_view))
+                {
+                    int inspections = _inspects;
+                    Vector2 point = _button.worldBound.center;
+                    Hover(PointerEnterEvent.GetPooled(MouseMove(point)));
+                    Assert.That(popover.isOpen, Is.True);
+                    Assert.That(_inspects, Is.EqualTo(inspections + 1));
+                    Assert.That(_view.inspectAnchor, Is.EqualTo(_button.worldBound));
+                    Hover(PointerLeaveEvent.GetPooled(MouseMove(point + Vector2.down * 200)));
+                    Assert.That(popover.isOpen, Is.False);
+                    Assert.That(_casts, Is.Zero);
+                }
+            }
+        }
+        // A touch enters on its press, which the hold already owns
+        [UnityTest]
+        public IEnumerator TouchEnterLeavesThePopoverToTheHold()
+        {
+            Bind(true); yield return null; yield return null;
+            using (ToolkitPopover popover = new ToolkitPopover(_view))
+            {
+                Touch touch = new Touch { fingerId = 0, position = _button.worldBound.center, phase = TouchPhase.Began };
+                Hover(PointerEnterEvent.GetPooled(touch));
+                Assert.That(popover.isOpen, Is.False);
+                Assert.That(_inspects, Is.Zero);
+            }
+        }
         sealed class Targeting : AInteraction
         {
             public int cancels;

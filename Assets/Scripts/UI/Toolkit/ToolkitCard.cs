@@ -213,9 +213,18 @@ public class ToolkitCard : System.IDisposable
         _view.OnInspectRequested.Invoke(_model);
     }
 
+    // A compact card (spell, party unit) opens its popover on a mouse hover; a touch holds it instead (ToolkitCardGesture)
     void OnPointerEnter(PointerEnterEvent evt)
     {
-        if (!_compact && !_view.isTouchLayout)
+        if (_compact)
+        {
+            if (_model != null && !ToolkitInfoTrigger.IsTouch(evt.pointerType))
+            {
+                _view.inspectAnchor = _button.worldBound;
+                _view.OnInspectRequested.Invoke(_model);
+            }
+        }
+        else if (!_view.isTouchLayout)
         {
             _view.OnInspect.Invoke(_model);
         }
@@ -231,7 +240,14 @@ public class ToolkitCard : System.IDisposable
 
     void OnPointerLeave(PointerLeaveEvent evt)
     {
-        if (!_compact && !_view.isTouchLayout)
+        if (_compact)
+        {
+            if (!ToolkitInfoTrigger.IsTouch(evt.pointerType))
+            {
+                _view.ClosePopover();
+            }
+        }
+        else if (!_view.isTouchLayout)
         {
             _view.OnInspectEnded.Invoke();
         }

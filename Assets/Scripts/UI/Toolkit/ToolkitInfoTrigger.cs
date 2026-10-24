@@ -64,7 +64,7 @@ public sealed class ToolkitInfoTrigger : IDisposable
     }
 
     // A touch opens on its press, a mouse on its hover
-    static bool IsTouch(string pointerType)
+    public static bool IsTouch(string pointerType)
     {
         return pointerType == PointerType.touch || pointerType == PointerType.pen;
     }
