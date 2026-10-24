@@ -64,10 +64,30 @@ public sealed class ToolkitPopover : IDisposable
         _panel.style.width = width;
         _panel.style.maxHeight = height;
         float actual = float.IsNaN(_panel.resolvedStyle.height) ? height : Mathf.Min(height, _panel.resolvedStyle.height);
-        float x = _anchor.width > 0 ? _anchor.center.x - width * 0.5f : left;
-        float y = _anchor.width > 0 ? _anchor.yMin - actual - 12 : bottom - actual;
-        _panel.style.left = Mathf.Clamp(x, left, Mathf.Max(left, right - width)) - bounds.xMin;
-        _panel.style.top = Mathf.Clamp(y, top, Mathf.Max(top, bottom - actual)) - bounds.yMin;
+        Vector2 position = GetPosition(_anchor, new Vector2(width, actual), Rect.MinMaxRect(left, top, right, bottom));
+        _panel.style.left = position.x - bounds.xMin;
+        _panel.style.top = position.y - bounds.yMin;
+    }
+
+    // Above its anchor, or below it when there is no room above (e.g. the item bar under the header): a popover
+    // covering its anchor takes the pointer from it, closing on the leave and reopening on the enter, in a loop.
+    // Without an anchor, at the bottom left of the area
+    public static Vector2 GetPosition(Rect anchor, Vector2 size, Rect area)
+    {
+        const float gap = 12;
+        float x = anchor.width > 0 ? anchor.center.x - size.x * 0.5f : area.xMin;
+        float y = area.yMax - size.y;
+        if (anchor.width > 0)
+        {
+            y = anchor.yMin - size.y - gap;
+            if (y < area.yMin && anchor.yMax + gap + size.y <= area.yMax)
+            {
+                y = anchor.yMax + gap;
+            }
+        }
+
+        return new Vector2(Mathf.Clamp(x, area.xMin, Mathf.Max(area.xMin, area.xMax - size.x)),
+            Mathf.Clamp(y, area.yMin, Mathf.Max(area.yMin, area.yMax - size.y)));
     }
     static bool IsShown(VisualElement element)
     {

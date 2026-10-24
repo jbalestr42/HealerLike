@@ -68,6 +68,65 @@ namespace UI.Toolkit
             }
         }
 
+        [Test]
+        public void OpensAboveItsAnchorWhenThereIsRoom()
+        {
+            Rect area = Rect.MinMaxRect(0, 0, 400, 800);
+            Rect anchor = new Rect(180, 500, 40, 40);
+            Vector2 position = ToolkitPopover.GetPosition(anchor, new Vector2(200, 100), area);
+            Assert.That(position.y + 100, Is.LessThanOrEqualTo(anchor.yMin));
+            Assert.That(position.x, Is.EqualTo(100));
+        }
+
+        [Test]
+        public void OpensBelowAnAnchorWithNoRoomAboveInsteadOfCoveringIt()
+        {
+            Rect area = Rect.MinMaxRect(0, 60, 400, 800);
+            Rect anchor = new Rect(10, 60, 36, 36);
+            Vector2 position = ToolkitPopover.GetPosition(anchor, new Vector2(200, 100), area);
+            Assert.That(position.y, Is.GreaterThanOrEqualTo(anchor.yMax));
+        }
+
+        [Test]
+        public void StaysInsideTheAreaWhenThereIsNoRoomAboveOrBelow()
+        {
+            Rect area = Rect.MinMaxRect(0, 0, 400, 150);
+            Rect anchor = new Rect(380, 50, 40, 40);
+            Vector2 position = ToolkitPopover.GetPosition(anchor, new Vector2(200, 100), area);
+            Assert.That(position.x, Is.EqualTo(200));
+            Assert.That(position.y, Is.InRange(0f, 50f));
+        }
+
+        [UnityTest]
+        public IEnumerator HoveredItemOfTheItemBarIsNotCoveredByItsPopover()
+        {
+            using (ToolkitTestPanel panel = new ToolkitTestPanel())
+            {
+                TemplateContainer root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+                root.style.flexShrink = 0;
+                panel.root.Add(root); ToolkitTheme.Apply(root, null);
+                ToolkitGameView view = new ToolkitGameView(root);
+                VisualElement chip = new VisualElement();
+                chip.style.width = 36; chip.style.height = 36;
+                root.Q(ToolkitItemBar.BarName).Add(chip);
+                using (ToolkitPopover popover = new ToolkitPopover(view))
+                {
+                    foreach (Vector2 size in new[] { new Vector2(390, 844), new Vector2(1280, 720) })
+                    {
+                        root.style.width = size.x; root.style.height = size.y;
+                        ToolkitResponsiveLayout.Apply(view, size.x, size.y);
+                        yield return null; yield return null;
+                        view.inspectAnchor = chip.worldBound;
+                        popover.Open(new ToolkitCardModel { title = "Item", description = "Item description" });
+                        yield return null; yield return null;
+                        Assert.That(root.Q("detail-panel").worldBound.Overlaps(chip.worldBound), Is.False, size.ToString());
+                        popover.Close();
+                    }
+                }
+                view.Release();
+            }
+        }
+
         [UnityTest]
         public IEnumerator WorldAndRowAnchorsKeepHeaderAndRowsClearWithoutChangingViewport()
         {
