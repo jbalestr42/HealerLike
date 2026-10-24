@@ -220,6 +220,12 @@
     margin-top: var(--ui-space-sm);
 }
 
+/* Keeps its place with no button to show, so the field under it does not move */
+.field-toolbar.is-empty
+{
+    visibility: hidden;
+}
+
 .toolbar-space
 {
     flex-grow: 1;

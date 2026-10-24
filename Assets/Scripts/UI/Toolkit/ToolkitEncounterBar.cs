@@ -18,6 +18,7 @@ public class ToolkitEncounterBar
     {
         AddClass(_view.root.Q("hud-root"), "is-menu");
         AddClass(_view.root.Q(className: "speed-controls"), "is-hidden");
+        _view.root.Q("field-toolbar")?.RemoveFromClassList(EmptyToolbarClass);
         _view.Show("menu-panel", true);
         _view.Show("spell-section", false);
         _view.Show("inventory-button", false);
@@ -42,8 +43,9 @@ public class ToolkitEncounterBar
     {
         bool isAvailable = !_context.isPaused && !hasOverlay;
         bool isSandbox = _context.sandbox != null;
-        // The sandbox battle is stopped from the toolbar too
-        _view.Show("field-toolbar", isStart || isPreparing || isSandbox || _context.hasInteraction);
+        // The toolbar keeps its height through the whole encounter, even with no button to show: a spell's Cancel
+        // showing up in battle must not resize the free area the camera frames the board in
+        _view.Show("field-toolbar", true);
         _view.Show("start-button", isStart);
         // On the menu it opens the sandbox, in the sandbox its tools
         _view.Show("sandbox-button", isSandbox && !isStart && !_context.hasInteraction);
@@ -77,6 +79,30 @@ public class ToolkitEncounterBar
         }
 
         _view.SetButton("inventory-button", null, !isStart && isPreparing && !hasOverlay);
+        // After the buttons of the other HUD parts (Cancel, the editor tools) were shown or hidden
+        VisualElement toolbar = _view.root.Q("field-toolbar");
+        toolbar?.EnableInClassList(EmptyToolbarClass, !HasVisibleAction(_view.root.Q("encounter-actions")));
+    }
+
+    public const string EmptyToolbarClass = "is-empty";
+
+    // Whether one of the toolbar's buttons is shown
+    public static bool HasVisibleAction(VisualElement actions)
+    {
+        if (actions == null)
+        {
+            return false;
+        }
+
+        foreach (VisualElement child in actions.Children())
+        {
+            if (!child.ClassListContains("is-hidden"))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static string GetSandboxBattleText(bool isBattleRunning)

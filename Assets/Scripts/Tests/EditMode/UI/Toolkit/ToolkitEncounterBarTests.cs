@@ -71,6 +71,74 @@ namespace UI.Toolkit
             Assert.IsFalse(_view.root.Q("detail-panel").ClassListContains("is-hidden"));
         }
 
+        // In battle the toolbar has nothing to show, but keeps its place: the field under it must not move
+        [Test]
+        public void Refresh_InBattleWithNoAction_KeepsTheToolbarsPlaceButHidesIt()
+        {
+            ToolkitEncounterBar bar = new ToolkitEncounterBar();
+            bar.Init(new ToolkitGameContext(), _view);
+
+            bar.Refresh(false, false, false);
+
+            VisualElement toolbar = _view.root.Q("field-toolbar");
+            Assert.IsFalse(toolbar.ClassListContains("is-hidden"));
+            Assert.IsTrue(toolbar.ClassListContains(ToolkitEncounterBar.EmptyToolbarClass));
+        }
+
+        // A spell being aimed shows Cancel: the toolbar becomes visible without changing its layout
+        [Test]
+        public void Refresh_InBattleWithCancelShown_ShowsTheToolbarInTheSamePlace()
+        {
+            ToolkitEncounterBar bar = new ToolkitEncounterBar();
+            bar.Init(new ToolkitGameContext(), _view);
+            _view.Show("cancel-button", true);
+
+            bar.Refresh(false, false, false);
+
+            VisualElement toolbar = _view.root.Q("field-toolbar");
+            Assert.IsFalse(toolbar.ClassListContains("is-hidden"));
+            Assert.IsFalse(toolbar.ClassListContains(ToolkitEncounterBar.EmptyToolbarClass));
+        }
+
+        [Test]
+        public void Refresh_Preparing_ShowsTheStartBattleButton()
+        {
+            ToolkitEncounterBar bar = new ToolkitEncounterBar();
+            bar.Init(new ToolkitGameContext(), _view);
+
+            bar.Refresh(false, true, false);
+
+            Assert.IsFalse(_view.root.Q("field-toolbar").ClassListContains(ToolkitEncounterBar.EmptyToolbarClass));
+            Assert.IsFalse(_view.root.Q("wave-button").ClassListContains("is-hidden"));
+        }
+
+        [Test]
+        public void RefreshMenu_AfterAnEmptyBattleToolbar_ShowsItsButtons()
+        {
+            ToolkitEncounterBar bar = new ToolkitEncounterBar();
+            bar.Init(new ToolkitGameContext(), _view);
+            bar.Refresh(false, false, false);
+
+            bar.RefreshMenu();
+
+            Assert.IsFalse(_view.root.Q("field-toolbar").ClassListContains(ToolkitEncounterBar.EmptyToolbarClass));
+        }
+
+        [Test]
+        public void HasVisibleAction_NoActionsOrAllHidden_IsFalse()
+        {
+            VisualElement actions = new VisualElement();
+            VisualElement hidden = new Button();
+            hidden.AddToClassList("is-hidden");
+            actions.Add(hidden);
+
+            Assert.IsFalse(ToolkitEncounterBar.HasVisibleAction(null));
+            Assert.IsFalse(ToolkitEncounterBar.HasVisibleAction(actions));
+
+            actions.Add(new Button());
+            Assert.IsTrue(ToolkitEncounterBar.HasVisibleAction(actions));
+        }
+
         [Test]
         public void Template_ManaGauge_HoldsItsFillAndTheValueBeforeTheDevotion()
         {
