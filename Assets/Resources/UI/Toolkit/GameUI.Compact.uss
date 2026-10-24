@@ -116,9 +116,11 @@
 #hud-root.compact-hud .detail-attributes > .unity-foldout__toggle { min-height: 46px; font-size: 12px; }
 #hud-root.compact-hud .detail-attributes .unity-toggle__text { color: var(--ui-ink); }
 #hud-root.compact-hud .detail-attributes .unity-toggle__checkmark { -unity-background-image-tint-color: var(--ui-ink); }
-#hud-root.compact-hud .detail-scroll #unity-vertical-scroller { min-width: 6px; width: 6px; margin-left: 3px; }
-#hud-root.compact-hud .detail-scroll .unity-slider--vertical { width: 6px; margin: 0; }
-#hud-root.compact-hud .detail-scroll .unity-base-slider__dragger { min-width: 6px; width: 6px; }
+/* A thin bar beside the text, starting under the close button that sits over the panel's top right corner */
+#hud-root.compact-hud .detail-scroll .unity-scroller--vertical {
+    min-width: 6px; width: 6px; max-width: 6px; margin: 34px 0 0 4px;
+}
+#hud-root.compact-hud .detail-scroll .unity-base-slider__dragger { min-width: 6px; width: 6px; left: 0; margin: 0; }
 
 /* The ascension level beside the room and the Devotion beside the mana, each opening its details in the popover */
 #hud-root.compact-hud .hud-chip {

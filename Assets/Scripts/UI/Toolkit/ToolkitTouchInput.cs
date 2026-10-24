@@ -286,6 +286,12 @@ public class ToolkitTouchInput : MonoBehaviour
 
     public virtual bool IsOverInterface(Vector2 screenPoint)
     {
+        return IsPointOverInterface(screenPoint, _hits);
+    }
+
+    // Shared with the camera input, which must not zoom under a panel the wheel scrolls
+    public static bool IsPointOverInterface(Vector2 screenPoint, List<RaycastResult> hits)
+    {
         if (EventSystem.current == null)
         {
             return false;
@@ -293,9 +299,9 @@ public class ToolkitTouchInput : MonoBehaviour
 
         PointerEventData pointer = new PointerEventData(EventSystem.current);
         pointer.position = screenPoint;
-        _hits.Clear();
-        EventSystem.current.RaycastAll(pointer, _hits);
-        foreach (RaycastResult hit in _hits)
+        hits.Clear();
+        EventSystem.current.RaycastAll(pointer, hits);
+        foreach (RaycastResult hit in hits)
         {
             if (hit.module is GraphicRaycaster)
             {

@@ -84,6 +84,24 @@
     display: none;
 }
 
+/* Without its arrows the slider fills the scroller: the default theme keeps an arrow-sized margin at both ends and
+   its own arrow-wide thickness, which overflows a thin scroller past the panel's border */
+.unity-scroller--vertical > .unity-scroller__slider
+{
+    margin: 0;
+    flex-grow: 1;
+    width: auto;
+    min-width: 0;
+}
+
+.unity-scroller--horizontal > .unity-scroller__slider
+{
+    margin: 0;
+    flex-grow: 1;
+    height: auto;
+    min-height: 0;
+}
+
 .action-button,
 .action-button:disabled
 {

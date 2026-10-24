@@ -196,6 +196,51 @@ namespace UI.Toolkit
             }
         }
 
+        // The default theme gives the slider an arrow-sized margin and thickness: hidden arrows left the bar short of
+        // both ends and wider than its column, drawn over the panel's border
+        [UnityTest]
+        public IEnumerator ScrollbarStaysInsideThePanelUnderTheCloseButton()
+        {
+            using (ToolkitTestPanel panel = new ToolkitTestPanel())
+            {
+                TemplateContainer root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+                root.style.flexShrink = 0;
+                panel.root.Add(root); ToolkitTheme.Apply(root, null);
+                ToolkitGameView view = new ToolkitGameView(root);
+                using (ToolkitPopover popover = new ToolkitPopover(view))
+                {
+                    foreach (Vector2 size in new[] { new Vector2(390, 844), new Vector2(1280, 720) })
+                    {
+                        root.style.width = size.x; root.style.height = size.y;
+                        ToolkitResponsiveLayout.Apply(view, size.x, size.y);
+                        yield return null; yield return null;
+                        view.inspectAnchor = new Rect(size.x * 0.5f, size.y * 0.5f, 2, 2);
+                        ToolkitCardModel details = new ToolkitCardModel { title = "Creature",
+                            description = string.Join("\n", System.Linq.Enumerable.Repeat("A long line of details", 30)) };
+                        // The detail panel fills the popover in game; the test has none
+                        view.ShowDetail(details);
+                        popover.Open(details);
+                        yield return null; yield return null;
+                        Rect card = root.Q("detail-panel").worldBound;
+                        Scroller scroller = root.Q<ScrollView>("detail-scroll").verticalScroller;
+                        Rect bar = scroller.worldBound;
+                        Rect slider = scroller.slider.worldBound;
+                        Assert.That(scroller.resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex), "Overflowing text scrolls at " + size);
+                        Assert.That(slider.xMin, Is.GreaterThanOrEqualTo(bar.xMin - 0.5f), size.ToString());
+                        Assert.That(slider.xMax, Is.LessThanOrEqualTo(bar.xMax + 0.5f), size.ToString());
+                        Assert.That(slider.yMin, Is.EqualTo(bar.yMin).Within(0.5f), "Top end at " + size);
+                        Assert.That(slider.yMax, Is.EqualTo(bar.yMax).Within(0.5f), "Bottom end at " + size);
+                        Assert.That(bar.xMax, Is.LessThanOrEqualTo(card.xMax - root.Q("detail-panel").resolvedStyle.borderRightWidth),
+                            "Inside the border at " + size);
+                        Assert.That(bar.yMin, Is.GreaterThanOrEqualTo(root.Q("detail-close-button").worldBound.yMax - 1f),
+                            "Under the close button at " + size);
+                        popover.Close();
+                    }
+                }
+                view.Release();
+            }
+        }
+
         static void SendGeometry(VisualElement element, Rect oldRect, Rect newRect)
         {
             using (GeometryChangedEvent evt = GeometryChangedEvent.GetPooled(oldRect, newRect))
