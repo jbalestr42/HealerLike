@@ -35,7 +35,11 @@ public sealed class ToolkitPopover : IDisposable
         _view.Show("detail-actions", model.source is Entity);
         Place();
     }
-    void Geometry(GeometryChangedEvent evt) { if (isOpen)
+    // Only a new size (content, wrapping) needs a new place: Place moving the panel raises this event too, and
+    // reacting to that move loops the layout
+    void Geometry(GeometryChangedEvent evt)
+    {
+        if (isOpen && !Approximately(evt.oldRect.size, evt.newRect.size))
         {
             Place();
         }
@@ -61,12 +65,26 @@ public sealed class ToolkitPopover : IDisposable
         }
         float width = Mathf.Min(280, right - left);
         float height = Mathf.Min(240, Mathf.Max(100, bottom - top));
-        _panel.style.width = width;
-        _panel.style.maxHeight = height;
+        SetLength(_panel.style.width, width, value => _panel.style.width = value);
+        SetLength(_panel.style.maxHeight, height, value => _panel.style.maxHeight = value);
         float actual = float.IsNaN(_panel.resolvedStyle.height) ? height : Mathf.Min(height, _panel.resolvedStyle.height);
         Vector2 position = GetPosition(_anchor, new Vector2(width, actual), Rect.MinMaxRect(left, top, right, bottom));
-        _panel.style.left = position.x - bounds.xMin;
-        _panel.style.top = position.y - bounds.yMin;
+        SetLength(_panel.style.left, position.x - bounds.xMin, value => _panel.style.left = value);
+        SetLength(_panel.style.top, position.y - bounds.yMin, value => _panel.style.top = value);
+    }
+
+    // Rewriting a value the layout rounded to the pixel grid dirties it again: only a real change is written
+    static void SetLength(StyleLength current, float value, Action<float> set)
+    {
+        if (current.keyword != StyleKeyword.Undefined || Mathf.Abs(current.value.value - value) > 0.5f)
+        {
+            set(value);
+        }
+    }
+
+    static bool Approximately(Vector2 a, Vector2 b)
+    {
+        return Mathf.Abs(a.x - b.x) <= 0.5f && Mathf.Abs(a.y - b.y) <= 0.5f;
     }
 
     // Above its anchor, or below it when there is no room above (e.g. the item bar under the header): a popover

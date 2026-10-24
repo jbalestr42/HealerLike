@@ -77,9 +77,15 @@ public class ToolkitGameUI : MonoBehaviour
             return;
         }
 
-        Vector2 panel = RuntimePanelUtils.ScreenToPanel(_view.root.panel,
-            new Vector2(screenPoint.x, Screen.height - screenPoint.y));
-        _view.inspectAnchor = new Rect(panel.x - 1, panel.y - 28, 2, 2);
+        // Without a panel (not displayed yet), the popover takes its default place
+        _view.inspectAnchor = default;
+        if (_view.root.panel != null)
+        {
+            Vector2 panel = RuntimePanelUtils.ScreenToPanel(_view.root.panel,
+                new Vector2(screenPoint.x, Screen.height - screenPoint.y));
+            _view.inspectAnchor = new Rect(panel.x - 1, panel.y - 28, 2, 2);
+        }
+
         _view.OnInspectRequested.Invoke(new ToolkitCardModel { source = entity, iconSource = entity,
             title = entity.data.title, description = entity.data.description });
     }

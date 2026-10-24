@@ -162,5 +162,47 @@ namespace UI.Toolkit
                 view.Release();
             }
         }
+
+        // Placing the panel moves it, and on a scaled screen the layout rounds that move to the pixel grid: a move
+        // placing it again never settles ("Layout update failed to stabilize"). Only a new size places it again.
+        [UnityTest]
+        public IEnumerator OnlyANewSizePlacesThePanelAgain()
+        {
+            using (ToolkitTestPanel panel = new ToolkitTestPanel())
+            {
+                TemplateContainer root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+                root.style.flexShrink = 0;
+                root.style.width = 390; root.style.height = 693;
+                panel.root.Add(root); ToolkitTheme.Apply(root, null);
+                ToolkitGameView view = new ToolkitGameView(root);
+                ToolkitResponsiveLayout.Apply(view, 390, 693);
+                VisualElement detail = root.Q("detail-panel");
+                using (ToolkitPopover popover = new ToolkitPopover(view))
+                {
+                    yield return null; yield return null;
+                    view.inspectAnchor = new Rect(200, 300, 2, 2);
+                    popover.Open(new ToolkitCardModel { title = "Creature", description = "Readable details" });
+                    yield return null; yield return null;
+                    float placed = detail.style.top.value.value;
+                    detail.style.top = placed + 0.3f;
+                    SendGeometry(detail, new Rect(10, 100, 280, 200), new Rect(10, 100.3f, 280, 200));
+                    Assert.That(detail.style.top.value.value, Is.EqualTo(placed + 0.3f), "A move is left alone");
+                    detail.style.top = placed + 40;
+                    SendGeometry(detail, new Rect(10, 100, 280, 200), new Rect(10, 100, 280, 150));
+                    Assert.That(detail.style.top.value.value, Is.EqualTo(placed).Within(0.5f), "A new size places it");
+                    popover.Close();
+                }
+                view.Release();
+            }
+        }
+
+        static void SendGeometry(VisualElement element, Rect oldRect, Rect newRect)
+        {
+            using (GeometryChangedEvent evt = GeometryChangedEvent.GetPooled(oldRect, newRect))
+            {
+                evt.target = element;
+                element.SendEvent(evt);
+            }
+        }
     }
 }

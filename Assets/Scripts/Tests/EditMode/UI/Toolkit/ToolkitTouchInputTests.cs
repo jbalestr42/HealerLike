@@ -82,6 +82,68 @@ namespace UI.Toolkit
         }
 
         [Test]
+        public void Tap_OnCreature_OpensItsDetails()
+        {
+            EntityData data = ScriptableObject.CreateInstance<EntityData>();
+            data.title = "Tapped creature";
+            Entity entity = null;
+            TestHelpers.WithLoggingDisabled(() => entity = _fixture.target.AddComponent<Entity>());
+            entity.data = data;
+            try
+            {
+                WithPopover((input, popover, view) =>
+                {
+                    Assert.That(input.Tap(Vector2.right), Is.False, "No selectable on the creature");
+                    Assert.That(popover.isOpen, Is.True);
+                    ToolkitCardModel shown = null;
+                    view.OnInspect.AddListener(model => shown = model);
+                    popover.Close();
+                    input.ProcessTouch(2, TouchPhase.Began, Vector2.right);
+                    input.ProcessTouch(2, TouchPhase.Ended, Vector2.right);
+                    Assert.That(popover.isOpen, Is.True, "A world tap opens the creature's details");
+                    Assert.That(shown.source, Is.SameAs(entity));
+                    Assert.That(shown.title, Is.EqualTo("Tapped creature"));
+                });
+            }
+            finally
+            {
+                Object.DestroyImmediate(data);
+            }
+        }
+
+        [Test]
+        public void Tap_OnGround_KeepsDetailsClosed()
+        {
+            WithPopover((input, popover, view) =>
+            {
+                input.ProcessTouch(2, TouchPhase.Began, Vector2.right);
+                input.ProcessTouch(2, TouchPhase.Ended, Vector2.right);
+                Assert.That(popover.isOpen, Is.False);
+            });
+        }
+
+        void WithPopover(System.Action<FixtureTouchInput, ToolkitPopover, ToolkitGameView> action)
+        {
+            _fixture.WithInput((input, manager, interaction) =>
+            {
+                // No interaction in progress: a tap selects instead of activating it
+                manager.SetInteraction(null);
+                TemplateContainer root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+                ToolkitGameView view = new ToolkitGameView(root);
+                ToolkitGameUI ui = manager.gameObject.AddComponent<ToolkitGameUI>();
+                TestHelpers.SetPrivateField(ui, "_view", view);
+                input.Init(manager);
+                using (ToolkitPopover popover = new ToolkitPopover(view))
+                {
+                    action(input, popover, view);
+                }
+
+                view.Release();
+                TestHelpers.SetPrivateField(ui, "_view", null);
+            });
+        }
+
+        [Test]
         public void NativeCancellationRunsBeforeTheEventSystemReleaseTranslation()
         {
             var order = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(ToolkitTouchInput),

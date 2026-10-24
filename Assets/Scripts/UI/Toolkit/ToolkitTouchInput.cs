@@ -341,6 +341,13 @@ public class ToolkitTouchInput : MonoBehaviour
         ISelectable selectable = hit.collider.GetComponentInParent<ISelectable>();
         _interaction.CancelSelection();
         _interaction.Select(selectable);
+        // Selecting a creature opens its details, as a hold does
+        Entity entity = hit.collider.GetComponentInParent<Entity>();
+        if (entity != null)
+        {
+            _ui?.InspectEntity(entity, screenPoint);
+        }
+
         return selectable != null;
     }
 
