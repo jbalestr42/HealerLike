@@ -34,6 +34,7 @@ public class ToolkitMobileLayout : IDisposable
     public void Refresh()
     {
         bool blocked = _context.isMenu || _context.isPaused || _context.isInventoryOpen || _context.isSheetOpen
+            || _context.isSandboxOpen
             || (_context.screens != null && !_context.IsCurrentView(GameScreen.Game));
         if (blocked) { _view.CancelGestures(); }
         // A modal over the game closes the popover for as long as it is open. The menu closes it once, as it opens:

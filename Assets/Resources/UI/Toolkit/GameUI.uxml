@@ -13,6 +13,7 @@
     <ui:Template name="PauseScreen" src="Screens/PauseScreen.uxml" />
     <ui:Template name="GameOverScreen" src="Screens/GameOverScreen.uxml" />
     <ui:Template name="ClassSelectScreen" src="Screens/ClassSelectScreen.uxml" />
+    <ui:Template name="SandboxScreen" src="Screens/SandboxScreen.uxml" />
     <ui:VisualElement name="hud-root" class="game-ui compact-hud" picking-mode="Ignore">
         <!-- On the HUD root, not in the theme: it must win over the stage's document-level HUD sheet -->
         <ui:Style src="GameUI.Menu.uss" />
@@ -35,5 +36,6 @@
         <ui:Instance template="PauseScreen" name="pause-panel" class="modal-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="GameOverScreen" name="gameover-panel" class="modal-layer is-hidden" picking-mode="Position" />
         <ui:Instance template="ClassSelectScreen" name="class-panel" class="modal-layer is-hidden" picking-mode="Position" />
+        <ui:Instance template="SandboxScreen" name="sandbox-panel" class="modal-layer is-hidden" picking-mode="Position" />
     </ui:VisualElement>
 </ui:UXML>

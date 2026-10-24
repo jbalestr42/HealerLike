@@ -94,7 +94,7 @@ namespace HealerLike.Render.Stage
                 yield return deployment.Deploy(0, Vector3.left * 2f);
                 yield return deployment.Deploy(1, Vector3.left * 3f + Vector3.back);
                 _output.manifest.checks.Add("Deployment uses multi-frame StandaloneInputModule and "
-                    + "StageTouchInput.Update; Android OS input is not covered by this capture");
+                    + "ToolkitTouchInput.Update; Android OS input is not covered by this capture");
                 _session.actions.Submit("inventory-button");
                 yield return Wait(0.3f);
                 _output.Check(StageInterfaceOutput.IsVisible(_session.actions.root.Q("inventory-panel")),

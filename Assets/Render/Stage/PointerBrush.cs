@@ -14,7 +14,7 @@ namespace HealerLike.Render.Stage
 
         Ground _ground;
         Camera _camera;
-        StageTouchInput _touch;
+        ToolkitTouchInput _touch;
         float _groundY;
         float _cellSize = 1f;
         Vector3 _previous;
@@ -112,7 +112,7 @@ namespace HealerLike.Render.Stage
         {
             if (_touch == null)
             {
-                _touch = FindAnyObjectByType<StageTouchInput>();
+                _touch = FindAnyObjectByType<ToolkitTouchInput>();
             }
 
             if (_touch != null && _touch.IsOverInterface(screen))

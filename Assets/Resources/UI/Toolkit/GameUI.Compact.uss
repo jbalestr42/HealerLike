@@ -19,8 +19,9 @@
     min-height: 0; margin: 0; flex-direction: column; flex-grow: 1;
 }
 #hud-root.compact-hud .world-space { min-width: 0; min-height: 0; flex-grow: 1; }
+/* The encounter buttons centered over the field */
 #hud-root.compact-hud .field-toolbar {
-    height: 44px; min-height: 44px; margin: 0; flex-shrink: 0; align-items: flex-end;
+    height: 44px; min-height: 44px; margin: 0; flex-shrink: 0; align-items: center;
     flex-direction: column;
 }
 #hud-root.compact-hud .command-section {
@@ -28,9 +29,9 @@
 }
 #hud-root.compact-hud .encounter-actions { flex-direction: row; }
 #hud-root.compact-hud .encounter-actions .button {
-    flex-grow: 0; min-height: 44px; padding: 4px 12px; font-size: 13px;
-    background-color: rgba(16, 63, 56, 0.85); color: rgb(248, 247, 223);
-    border-color: rgba(245, 242, 216, 0.65); border-width: 1px; border-radius: 16px;
+    flex-grow: 0; min-height: 44px; padding: 4px 20px; font-size: 13px; -unity-font-style: normal;
+    background-color: rgba(24, 65, 55, 0.48); color: rgb(248, 247, 223);
+    border-color: rgba(238, 239, 217, 0.65); border-width: 1px; border-radius: 16px;
 }
 #hud-root.compact-hud .party-panel {
     position: relative; left: auto; top: auto; bottom: auto; right: auto;
@@ -38,15 +39,22 @@
     flex-shrink: 0; display: flex; background-color: transparent; border-width: 0;
 }
 #hud-root.compact-hud .command-dock {
-    min-height: 96px; height: 96px; max-height: 96px; padding: 0; margin: 0;
+    min-height: 120px; height: 120px; max-height: 120px; padding: 0; margin: 0;
     flex-direction: column; flex-shrink: 0; background-color: transparent; border-width: 0;
 }
+/* The mana gauge above the spells, its value over the fill */
 #hud-root.compact-hud .spell-section {
-    flex-direction: row; align-items: flex-start; min-width: 0; height: 96px;
+    flex-direction: column; align-items: stretch; min-width: 0; height: 120px;
 }
+#hud-root.compact-hud #mana-gauge {
+    align-self: center; width: 180px; max-width: 70%; height: 18px; min-height: 18px; flex-shrink: 0;
+    margin: 4px 0 4px 0; overflow: hidden; border-radius: 6px; border-width: 1px;
+    border-color: rgba(205, 231, 228, 0.45); background-color: rgba(22, 48, 52, 0.35);
+}
+#hud-root.compact-hud #mana-fill { height: 100%; flex-shrink: 0; background-color: rgba(85, 166, 178, 0.7); }
 #hud-root.compact-hud #mana-value {
-    width: 44px; min-width: 44px; flex-shrink: 0; padding: 12px 0 0 2px;
-    font-size: 24px; -unity-font-style: bold; color: rgb(248, 247, 223);
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%; min-width: 0; padding: 0; margin: 0;
+    font-size: 12px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(248, 247, 223);
     -unity-text-outline-width: 0; text-shadow: 0 1px 1px rgba(15, 42, 37, 0.9); -unity-text-outline-color: rgb(15, 42, 37);
 }
 #hud-root.compact-hud .detail-panel {
@@ -85,7 +93,7 @@
 
 #hud-root.compact-hud.is-menu .field-toolbar { display: flex; }
 
-#hud-root.compact-hud #spell-list { flex-shrink: 1; flex-grow: 1; width: 0; }
+#hud-root.compact-hud #spell-list { width: 100%; height: 94px; flex-grow: 0; flex-shrink: 0; }
 
 #hud-root.compact-hud .hud-icon-surface {
     width: 28px; height: 28px; border-radius: 14px;
@@ -133,3 +141,9 @@
 #hud-root.compact-hud .item-bar .kit-chip__label {
     font-size: 13px; -unity-font-style: bold; color: rgb(248, 247, 223); margin: 0 4px;
 }
+
+/* The sandbox tools: a wrapping row of buttons per kind of tool */
+#hud-root.compact-hud .sandbox-buttons { flex-direction: row; flex-wrap: wrap; margin-bottom: 8px; }
+#hud-root.compact-hud .sandbox-buttons > .button { flex-grow: 0; min-height: 36px; margin: 0 6px 6px 0; padding: 4px 12px; font-size: 13px; }
+#hud-root.compact-hud.is-mobile .sandbox-buttons > .button { min-height: 44px; }
+#hud-root.compact-hud .sandbox-heading { margin-top: 8px; margin-bottom: 4px; }

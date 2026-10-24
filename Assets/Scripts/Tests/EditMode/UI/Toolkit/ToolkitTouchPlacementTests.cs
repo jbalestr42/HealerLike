@@ -1,16 +1,16 @@
 using NUnit.Framework;
 using UnityEngine;
-using static HealerLike.Render.Stage.StageTouchFixture;
+using static UI.Toolkit.ToolkitTouchFixture;
 
-namespace HealerLike.Render.Stage
+namespace UI.Toolkit
 {
-    public class StageTouchPlacementTests
+    public class ToolkitTouchPlacementTests
     {
-        StageTouchFixture _fixture;
+        ToolkitTouchFixture _fixture;
         [SetUp]
         public void SetUp()
         {
-            _fixture = new StageTouchFixture();
+            _fixture = new ToolkitTouchFixture();
             _fixture.Init();
         }
 

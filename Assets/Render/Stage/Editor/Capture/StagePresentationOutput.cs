@@ -17,7 +17,7 @@ namespace HealerLike.Render.Stage
             public string unityVersion = Application.unityVersion;
             public string source
                 = "RenderStage actual Game view; production LateUpdate; held samples through StandaloneInputModule "
-                + "and StageTouchInput.Update";
+                + "and ToolkitTouchInput.Update";
             public string blindSpot
                 = "Editor Metal capture with synthetic OS touch samples; no physical Android input, appearance or "
                 + "device performance evidence. Hover uses explicit Unity callbacks, not OS mouse movement.";

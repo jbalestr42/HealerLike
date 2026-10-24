@@ -32,7 +32,7 @@ namespace HealerLike.Render.Stage
                 subject + " selection proof begins after placement with idle gameplay selection");
             _output.manifest.interventions.Add(subject + " hover uses explicit OnMouseEnter/OnMouseExit messages "
                 + "on the real SelectableEntity after Start; OS mouse hover is not covered. Selection and "
-                + "deselection use held legacy touch samples, live physics hits and StageTouchInput.Update. "
+                + "deselection use held legacy touch samples, live physics hits and ToolkitTouchInput.Update. "
                 + "After production growth completes, simulation time is temporarily frozen to isolate selection "
                 + "from changing cooldown glow/health; real frames and touch processing continue.");
             float previousTimeScale = Time.timeScale;

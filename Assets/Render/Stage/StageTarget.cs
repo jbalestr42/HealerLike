@@ -10,7 +10,7 @@ namespace HealerLike.Render.Stage
     {
         public static readonly string MainPath = "Assets/Scenes/Main.unity";
         public static readonly string SandboxPath = "Assets/Scenes/Sandbox.unity";
-        public static readonly string MenuPath = "Assets/Scenes/Toolkit/MenuToolkit.unity";
+        public static readonly string MenuPath = "Assets/Scenes/MenuScene.unity";
 
         // What a boot with nothing selected opens
         public static readonly string BootPath = MenuPath;

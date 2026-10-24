@@ -103,7 +103,8 @@ namespace UI.Toolkit
             AssertColour(surface, new Color(12f/255, 47f/255, 44f/255, 0.12f));
             Assert.That(surface.resolvedStyle.width, Is.EqualTo(28).Within(0.01));
             Assert.That(surface.pickingMode, Is.EqualTo(PickingMode.Ignore));
-            AssertColour(_root.Q<Button>("wave-button"), new Color(16f/255, 63f/255, 56f/255, 0.85f));
+            // The light glass of RenderStage's encounter buttons
+            AssertColour(_root.Q<Button>("wave-button"), new Color(24f/255, 65f/255, 55f/255, 0.48f));
             AssertColour(card, Color.clear);
             VisualElement input = _root.Q<DropdownField>("detail-targeting")
                 .Q(className: "unity-base-popup-field__input");

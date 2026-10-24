@@ -5,19 +5,18 @@ using System.IO;
 using HealerLike.Render.Creatures;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 namespace HealerLike.Render.Stage
 {
-    // The game's sandbox under the render stage, played through its own uGUI: entity buttons then a board tap place
-    // allies, a wave button brings enemies, Start battle, Pause and Speed are pressed as a player would. Stills of
-    // the Game view (with the uGUI overlay) and of the camera alone go to the capture folder, and the time scale
-    // each press leaves is logged. It records what happened and does not judge the look.
+    // The game's sandbox under the render stage, played through its Toolkit HUD: the sandbox tools' unit buttons then
+    // a board tap place allies, a wave button brings enemies, Start battle, Pause and the speeds are pressed as a
+    // player would. Stills of the Game view (with the HUD) and of the camera alone go to the capture folder, and the
+    // time scale each press leaves is logged. It records what happened and does not judge the look.
     // The boot run boots the sandbox (StagePlay.BootTarget selects it before RenderStage starts); the menu run boots Main, goes to the Toolkit menu
-    // and presses its Sandbox entry. The back run boots the sandbox, pauses it, and leaves through the stage's Menu
-    // button to the Toolkit menu, then presses Start there.
+    // and presses its Sandbox entry. The back run boots the sandbox, pauses it, and leaves through the pause panel's
+    // Return to menu, then presses Start there.
     public class SandboxCaptureRun : AStageRun
     {
         public static readonly string BootMode = "sandbox";
@@ -137,7 +136,7 @@ namespace HealerLike.Render.Stage
             }
 
             float deadline = Time.realtimeSinceStartup + 30f;
-            while (Buttons().Count == 0)
+            while (!IsSandboxPanelBuilt())
             {
                 if (Time.realtimeSinceStartup > deadline)
                 {
@@ -151,15 +150,11 @@ namespace HealerLike.Render.Stage
             yield return Wait(2f);
             string prefix = _viaMenu ? "sandbox-menu-" : "sandbox-";
             LogButtons();
+            Actions().Submit("sandbox-button");
+            yield return Wait(0.5f);
             yield return CaptureScreen(prefix + "01-panel");
 
             yield return PlaceUnits();
-            if (!Press("Load a wave"))
-            {
-                yield break;
-            }
-
-            yield return Wait(0.5f);
             PressFirstWave();
             yield return Wait(2f);
             LogViews();
@@ -177,8 +172,8 @@ namespace HealerLike.Render.Stage
             yield return TimeControls(prefix);
         }
 
-        // The stage's Menu button beside the sandbox panel, a Pause press, then Menu: the Toolkit menu must come up at
-        // normal time with the sandbox exit gone, and its Start must still open the class screen
+        // The Toolkit HUD's pause, then its Return to menu: the Toolkit menu must come up at normal time, and its Start
+        // must still open the class screen
         IEnumerator BackToMenu()
         {
             if (ActiveGamePath() != StageTarget.SandboxPath)
@@ -188,38 +183,27 @@ namespace HealerLike.Render.Stage
             }
 
             float deadline = Time.realtimeSinceStartup + 30f;
-            StageSandboxExit exit = null;
-            while (Buttons().Count == 0 || exit == null || exit.button == null || exit.button.panel == null)
+            while (!IsSandboxPanelBuilt())
             {
                 if (Time.realtimeSinceStartup > deadline)
                 {
-                    _problems.Add("The sandbox never showed both its panel and the stage's Menu button.");
+                    _problems.Add("The sandbox never showed its Toolkit HUD with its tools.");
                     yield break;
                 }
 
-                exit = Object.FindAnyObjectByType<StageSandboxExit>();
                 yield return null;
             }
 
             yield return Wait(2f);
-            Rect bound = exit.button.worldBound;
-            Debug.Log("[SandboxCaptureRun] Menu button " + string.Format(CultureInfo.InvariantCulture,
-                "'{0}' panel rect x {1:F0} y {2:F0} w {3:F0} h {4:F0}, safe area {5}, screen {6}x{7}",
-                exit.button.text, bound.x, bound.y, bound.width, bound.height, Screen.safeArea, Screen.width,
-                Screen.height));
             LogTimeScale("sandbox shown");
-            yield return CaptureScreen("sandbox-back-01-menu-button");
+            yield return CaptureScreen("sandbox-back-01-hud");
 
-            if (!Press("Pause"))
-            {
-                yield break;
-            }
-
+            Actions().Submit("pause-button");
             yield return Wait(1f);
             LogTimeScale("after Pause");
             yield return CaptureScreen("sandbox-back-02-paused");
 
-            new StageInterfaceActions().Submit(exit.button);
+            Actions().Submit("menu-button");
             LogTimeScale("after Menu");
             ToolkitGameUI menu = null;
             deadline = Time.realtimeSinceStartup + 30f;
@@ -227,7 +211,7 @@ namespace HealerLike.Render.Stage
             {
                 if (Time.realtimeSinceStartup > deadline)
                 {
-                    _problems.Add("The Menu button never reached the Toolkit menu.");
+                    _problems.Add("Return to menu never reached the Toolkit menu.");
                     yield break;
                 }
 
@@ -237,14 +221,7 @@ namespace HealerLike.Render.Stage
 
             yield return Wait(2f);
             LogTimeScale("menu shown");
-            bool exitGone = Object.FindAnyObjectByType<StageSandboxExit>() == null;
-            Debug.Log($"[SandboxCaptureRun] Menu reached {menu.gameObject.scene.path}, sandbox exit gone {exitGone}, "
-                + $"target {StageTarget.scenePath}");
-            if (!exitGone)
-            {
-                _problems.Add("The sandbox Menu button outlived the sandbox.");
-            }
-
+            Debug.Log($"[SandboxCaptureRun] Menu reached {menu.gameObject.scene.path}, target {StageTarget.scenePath}");
             if (!Mathf.Approximately(Time.timeScale, 1f))
             {
                 _problems.Add("The menu came up at timeScale " + Time.timeScale);
@@ -311,107 +288,101 @@ namespace HealerLike.Render.Stage
             Debug.Log($"[SandboxCaptureRun] Placed {title}: allies {before} -> {after}");
         }
 
-        // The first wave of the list, the wave buttons share their panel with its Cancel button
+        // The first wave of the sandbox tools
         void PressFirstWave()
         {
-            SandboxButton first = null;
-            foreach (KeyValuePair<string, SandboxButton> pair in Buttons())
-            {
-                if (pair.Key != "Cancel" && IsWaveButton(pair.Value)
-                    && (first == null || pair.Value.transform.GetSiblingIndex() < first.transform.GetSiblingIndex()))
-                {
-                    first = pair.Value;
-                }
-            }
-
+            Button first = Actions().root.Q(ToolkitSandboxPanel.WavesName).Q<Button>();
             if (first == null)
             {
-                _problems.Add("No wave button was shown after Load a wave.");
+                _problems.Add("The sandbox tools list no wave.");
                 return;
             }
 
-            Press(Label(first));
+            Press(first.text);
         }
 
-        static bool IsWaveButton(SandboxButton button)
-        {
-            foreach (SandboxButton cancel in Object.FindObjectsByType<SandboxButton>())
-            {
-                if (Label(cancel) == "Cancel" && cancel.transform.parent == button.transform.parent)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
+        // Pause, then the slow speed of the pause panel and back to normal, the time scale each press leaves logged
         IEnumerator TimeControls(string prefix)
         {
+            StageInterfaceActions actions = Actions();
             float started = Time.timeScale;
-            Press("Pause");
+            actions.Submit("pause-button");
             float paused = Time.timeScale;
             float gameBefore = Time.time;
             yield return Wait(1f);
             float gameWhilePaused = Time.time - gameBefore;
             yield return CaptureScreen(prefix + "04-paused");
-            Press("Resume");
-            float resumed = Time.timeScale;
-            Press("Speed x1");
+            actions.Submit("speed-slow-button");
+            actions.Submit("resume-button");
             float slow = Time.timeScale;
             float realStart = Time.realtimeSinceStartup;
             gameBefore = Time.time;
             yield return Wait(2f);
             float ratio = (Time.time - gameBefore) / (Time.realtimeSinceStartup - realStart);
             yield return CaptureScreen(prefix + "05-slow");
-            Press("Speed x0.5");
-            float slower = Time.timeScale;
-            Press("Speed x0.25");
+            actions.Submit("pause-button");
+            actions.Submit("speed-normal-button");
+            actions.Submit("resume-button");
             float back = Time.timeScale;
             Debug.Log("[SandboxCaptureRun] timeScale " + string.Format(CultureInfo.InvariantCulture,
-                "start {0} pause {1} (game time while paused {2:F3}s over 1s real) resume {3} speed {4} "
-                + "(game/real {5:F2}) speed {6} speed {7}",
-                started, paused, gameWhilePaused, resumed, slow, ratio, slower, back));
+                "start {0} pause {1} (game time while paused {2:F3}s over 1s real) slow {3} (game/real {4:F2}) back {5}",
+                started, paused, gameWhilePaused, slow, ratio, back));
         }
 
-        Dictionary<string, SandboxButton> Buttons()
+        static StageInterfaceActions Actions()
         {
-            Dictionary<string, SandboxButton> buttons = new Dictionary<string, SandboxButton>();
-            foreach (SandboxButton button in Object.FindObjectsByType<SandboxButton>())
+            return new StageInterfaceActions { ui = Object.FindAnyObjectByType<ToolkitGameUI>() };
+        }
+
+        // Its tools are listed once the sandbox has set its character up
+        static bool IsSandboxPanelBuilt()
+        {
+            if (Object.FindAnyObjectByType<ToolkitGameUI>() == null)
             {
-                string label = Label(button);
-                if (label != null && !buttons.ContainsKey(label))
-                {
-                    buttons[label] = button;
-                }
+                return false;
             }
 
-            return buttons;
+            VisualElement units = Actions().root.Q(ToolkitSandboxPanel.UnitsName);
+            return units != null && units.childCount > 0;
         }
 
-        static string Label(SandboxButton button)
+        // The Toolkit buttons by label: the toolbar's and the sandbox tools'
+        static Dictionary<string, Button> Buttons()
         {
-            TMPro.TMP_Text text = button.GetComponentInChildren<TMPro.TMP_Text>(true);
-            return text != null ? text.text : null;
+            Dictionary<string, Button> buttons = new Dictionary<string, Button>();
+            Actions().root.Query<Button>().ForEach(button =>
+            {
+                if (!string.IsNullOrEmpty(button.text) && !buttons.ContainsKey(button.text))
+                {
+                    buttons[button.text] = button;
+                }
+            });
+            return buttons;
         }
 
         void LogButtons()
         {
             List<string> labels = new List<string>(Buttons().Keys);
-            Debug.Log("[SandboxCaptureRun] Sandbox buttons: " + string.Join(", ", labels));
+            Debug.Log("[SandboxCaptureRun] Toolkit buttons: " + string.Join(", ", labels));
         }
 
-        // A pointer click on the button's own object, which runs its uGUI click handler and honours interactable
+        // A submit on the Toolkit button, as a tap would; a sandbox tool is reached by opening the tools first
         bool Press(string label)
         {
-            if (!Buttons().TryGetValue(label, out SandboxButton button) || !button.gameObject.activeInHierarchy)
+            if (!Buttons().TryGetValue(label, out Button button))
             {
-                _problems.Add("No visible sandbox button labelled " + label);
+                _problems.Add("No Toolkit button labelled " + label);
                 return false;
             }
 
-            PointerEventData pointer = new PointerEventData(EventSystem.current) { button = PointerEventData.InputButton.Left };
-            ExecuteEvents.Execute(button.gameObject, pointer, ExecuteEvents.pointerClickHandler);
+            StageInterfaceActions actions = Actions();
+            VisualElement tools = actions.root.Q(ToolkitSandboxPanel.PanelName);
+            if (tools != null && tools.Contains(button) && !StageInterfaceOutput.IsVisible(tools))
+            {
+                actions.Submit("sandbox-button");
+            }
+
+            actions.Submit(button);
             Debug.Log($"[SandboxCaptureRun] Pressed {label}, timeScale {Time.timeScale.ToString(CultureInfo.InvariantCulture)}");
             return true;
         }

@@ -20,7 +20,7 @@ namespace HealerLike.Render.Stage
             PanelSettings settings = ScriptableObject.CreateInstance<PanelSettings>();
             EventSystem system = host.AddComponent<EventSystem>();
             host.AddComponent<StandaloneInputModule>();
-            StageTouchInput input = host.AddComponent<StageTouchInput>();
+            ToolkitTouchInput input = host.AddComponent<ToolkitTouchInput>();
             UIDocument document = host.AddComponent<UIDocument>();
             document.panelSettings = settings;
             VisualElement root = document.rootVisualElement;

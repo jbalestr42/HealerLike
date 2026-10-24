@@ -35,6 +35,16 @@ public class ToolkitLegacyCanvases
             }
         }
 
+        // The sandbox tools have their own screen Canvas beside the views; the Toolkit sandbox panel replaces them
+        foreach (SandboxPanel panel in Object.FindObjectsByType<SandboxPanel>())
+        {
+            Canvas canvas = panel.GetComponentInParent<Canvas>();
+            if (canvas != null && canvas.renderMode != RenderMode.WorldSpace)
+            {
+                HideCanvas(canvas);
+            }
+        }
+
         if (!context.isMenu)
         {
             return;

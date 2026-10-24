@@ -70,5 +70,33 @@ namespace UI.Toolkit
 
             Assert.IsFalse(_view.root.Q("detail-panel").ClassListContains("is-hidden"));
         }
+
+        [Test]
+        public void Template_ManaGauge_HoldsItsFillAndTheValueAboveTheSpells()
+        {
+            VisualElement gauge = _view.root.Q("mana-gauge");
+
+            Assert.IsNotNull(gauge);
+            Assert.AreSame(gauge, _view.root.Q("mana-fill").parent);
+            Assert.AreSame(gauge, _view.root.Q<Label>("mana-value").parent);
+            Assert.AreSame(gauge.parent, _view.root.Q("spell-list").parent);
+            Assert.Less(gauge.parent.IndexOf(gauge), gauge.parent.IndexOf(_view.root.Q("spell-list")));
+        }
+
+        [TestCase(50f, 100f, 0.5f)]
+        [TestCase(100f, 100f, 1f)]
+        [TestCase(0f, 100f, 0f)]
+        public void ManaFraction_IsTheShareOfTheMaximum(float value, float max, float expected)
+        {
+            Assert.AreEqual(expected, ToolkitEncounterBar.ManaFraction(value, max), 0.0001f);
+        }
+
+        [Test]
+        public void ManaFraction_AboveTheMaximumOrWithoutOne_StaysInTheGauge()
+        {
+            Assert.AreEqual(1f, ToolkitEncounterBar.ManaFraction(150f, 100f), 0.0001f);
+            Assert.AreEqual(0f, ToolkitEncounterBar.ManaFraction(-5f, 100f), 0.0001f);
+            Assert.AreEqual(0f, ToolkitEncounterBar.ManaFraction(20f, 0f), 0.0001f);
+        }
     }
 }

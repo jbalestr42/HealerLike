@@ -78,7 +78,7 @@ namespace HealerLike.Render.Stage
             public string revision = StagePlay.ReadRevision();
             public bool isPassed;
             public string input
-                = "Multi-frame synthetic Touch samples through StandaloneInputModule and StageTouchInput; no "
+                = "Multi-frame synthetic Touch samples through StandaloneInputModule and ToolkitTouchInput; no "
                 + "Android OS input";
             public List<string> interventions = new List<string>();
             public List<string> unobserved = new List<string>();

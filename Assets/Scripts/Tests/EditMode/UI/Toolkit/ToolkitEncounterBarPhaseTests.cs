@@ -131,5 +131,12 @@ namespace UI.Toolkit
         {
             Assert.AreEqual("Choose your route", ToolkitEncounterBar.RoomText(null));
         }
+
+        [Test]
+        public void GetSandboxBattleText_StartsOrStopsTheBattle()
+        {
+            Assert.AreEqual("Start battle", ToolkitEncounterBar.GetSandboxBattleText(false));
+            Assert.AreEqual("Stop battle", ToolkitEncounterBar.GetSandboxBattleText(true));
+        }
     }
 }

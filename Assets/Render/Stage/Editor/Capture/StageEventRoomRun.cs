@@ -21,7 +21,7 @@ namespace HealerLike.Render.Stage
             public string revision = StagePlay.ReadRevision();
             public bool isPassed;
             public string input = "Multi-frame synthetic Touch samples through StandaloneInputModule and "
-                + "StageTouchInput; no Android OS input";
+                + "ToolkitTouchInput; no Android OS input";
             public List<string> interventions = new List<string>();
             public List<string> enabledHudButtons = new List<string>();
             public List<string> choiceHits = new List<string>();

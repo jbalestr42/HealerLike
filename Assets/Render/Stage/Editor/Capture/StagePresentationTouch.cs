@@ -7,7 +7,7 @@ namespace HealerLike.Render.Stage
     // A held finger, using the existing capture input consumed by the real EventSystem and touch Update.
     public class StagePresentationTouch : IDisposable
     {
-        readonly StageTouchInput _touch;
+        readonly ToolkitTouchInput _touch;
         readonly StageCaptureInput _input;
         readonly Touch[] _previousTouches;
         readonly Touch[] _previousSamples;

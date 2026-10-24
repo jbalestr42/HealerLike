@@ -27,7 +27,7 @@ namespace HealerLike.Render.Stage
         [Test]
         public void ScenePath_NoTarget_BootsTheToolkitMenu()
         {
-            Assert.That(_launcher.scenePath, Is.EqualTo("Assets/Scenes/Toolkit/MenuToolkit.unity"));
+            Assert.That(_launcher.scenePath, Is.EqualTo("Assets/Scenes/MenuScene.unity"));
         }
 
         // The launcher RenderStage boots is the one on the RenderManager prefab: it must not pin Main

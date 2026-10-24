@@ -17,9 +17,6 @@ namespace HealerLike.Render.Stage
                 return;
             }
 
-            VisualElement hud = root.Q("hud-root");
-            hud?.EnableInClassList("render-has-spells", root.Q("spell-list")?.Q<Button>(className: "data-card") != null);
-            hud?.EnableInClassList("render-has-creatures", root.Q("party-list")?.Q<Button>(className: "data-card") != null);
             root.Q("party-list")?.Query<Button>(className: "data-card").ForEach(FormatCreature);
             root.Q("spell-list")?.Query<Button>(className: "data-card").ForEach(FormatSpell);
         }

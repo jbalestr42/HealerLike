@@ -1,21 +1,21 @@
 using NUnit.Framework;
 using UnityEngine;
 
-namespace HealerLike.Render.Stage
+namespace UI.Toolkit
 {
-    public class StageWorldPressTests
+    public class ToolkitWorldPressTests
     {
-        StageTouchFixture _fixture;
-        StageTouchFixture.FixtureDraggable _draggable;
+        ToolkitTouchFixture _fixture;
+        ToolkitTouchFixture.FixtureDraggable _draggable;
         float _now;
-        StageWorldPress _press;
+        ToolkitWorldPress _press;
         [SetUp]
         public void Setup()
         {
-            _fixture = new StageTouchFixture(); _fixture.Init();
+            _fixture = new ToolkitTouchFixture(); _fixture.Init();
             TestHelpers.WithLoggingDisabled(() => _fixture.target.AddComponent<Entity>());
-            _draggable = _fixture.target.AddComponent<StageTouchFixture.FixtureDraggable>();
-            _now = 0; _press = new StageWorldPress(() => _now);
+            _draggable = _fixture.target.AddComponent<ToolkitTouchFixture.FixtureDraggable>();
+            _now = 0; _press = new ToolkitWorldPress(() => _now);
         }
         [TearDown]
         public void Teardown() { _press.Cancel(); _fixture.Dispose(); }

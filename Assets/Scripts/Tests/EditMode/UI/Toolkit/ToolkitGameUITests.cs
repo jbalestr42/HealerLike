@@ -131,6 +131,9 @@ namespace UI.Toolkit
             Assert.IsNotNull(menu);
             VisualElement root = menu.GetComponent<UIDocument>().rootVisualElement;
             Assert.IsFalse(root.Q("menu-panel").ClassListContains("is-hidden"));
+            // The menu shares the field toolbar, the editor tools of a run stay off it
+            Assert.IsTrue(root.Q(ToolkitEditorTools.KillWaveName).ClassListContains("is-hidden"));
+            Assert.IsTrue(root.Q(ToolkitEditorTools.ItemsName).ClassListContains("is-hidden"));
             root.Q<Button>("start-button").Focus();
             yield return null;
             Submit(root.Q<Button>("start-button"));

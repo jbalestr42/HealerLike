@@ -12,12 +12,12 @@ namespace HealerLike.Render.Stage
         public ToolkitGameUI ui;
         public int scrollActions { get; private set; }
         public VisualElement root { get { return ui.GetComponent<UIDocument>().rootVisualElement; } }
-        public StageTouchInput touch { get { return ui.GetComponent<StageTouchInput>(); } }
+        public ToolkitTouchInput touch { get { return ui.GetComponent<ToolkitTouchInput>(); } }
         public StageCaptureInput captureInput { get { return _input; } }
         StageCaptureInput _input;
         StandaloneInputModule _module;
         BaseInput _previousInput;
-        StageTouchInput _capturedTouch;
+        ToolkitTouchInput _capturedTouch;
         Touch[] _previousTouches;
         public bool legacyModuleReadTouches
         {
@@ -206,7 +206,7 @@ namespace HealerLike.Render.Stage
 
         public IEnumerator TouchGesture(Vector2 point)
         {
-            StageTouchInput input = touch;
+            ToolkitTouchInput input = touch;
             try
             {
                 yield return TouchFrame(input, TouchPhase.Began, point);
@@ -238,7 +238,7 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        IEnumerator TouchFrame(StageTouchInput input, TouchPhase phase, Vector2 point)
+        IEnumerator TouchFrame(ToolkitTouchInput input, TouchPhase phase, Vector2 point)
         {
             Touch sample = new Touch { fingerId = 0, phase = phase, position = point, tapCount = 1 };
             _input.samples = new[] { sample };
@@ -246,7 +246,7 @@ namespace HealerLike.Render.Stage
             {
                 input.captureTouches = _input.samples;
             }
-            // StageTouchInput and StandaloneInputModule both process the sample before our next LateUpdate.
+            // ToolkitTouchInput and StandaloneInputModule both process the sample before our next LateUpdate.
             yield return null;
         }
 

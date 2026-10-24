@@ -106,6 +106,7 @@ public sealed class ToolkitSheetPanel : IDisposable
 
         _context.isSheetOpen = true;
         _context.isInventoryOpen = false;
+        _context.isSandboxOpen = false;
         _body.scrollOffset = Vector2.zero;
         Changed();
     }

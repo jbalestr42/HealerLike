@@ -76,7 +76,7 @@ namespace HealerLike.Render.Stage
                     yield return _session.Capture(image, "Owned roster drag through actual Toolkit pointer events");
                 }
 
-                StageRosterDrag roster = _session.actions.touch.roster;
+                ToolkitRosterDrag roster = _session.actions.touch.roster;
                 bool legal = release == TouchPhase.Ended && roster.valid && !_session.actions.touch.IsOverInterface(destination);
                 Vector3 intended = roster.target;
                 int before = _session.manager.entityManager.GetEntities(Entity.EntityType.Player).Count;

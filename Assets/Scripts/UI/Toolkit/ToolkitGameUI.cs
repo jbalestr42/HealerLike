@@ -29,6 +29,7 @@ public class ToolkitGameUI : MonoBehaviour
     bool _started;
     ToolkitGameContext _context = new ToolkitGameContext();
     ToolkitLegacyCanvases _legacyCanvases = new ToolkitLegacyCanvases();
+    ToolkitWorldFraming _worldFraming = new ToolkitWorldFraming();
     ToolkitTimeControls _timeControls = new ToolkitTimeControls();
     ToolkitEncounterBar _encounterBar = new ToolkitEncounterBar();
     ToolkitPartyPanel _partyPanel = new ToolkitPartyPanel();
@@ -39,6 +40,7 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitDetailPanel _detailPanel = new ToolkitDetailPanel();
     ToolkitInventoryPanel _inventoryPanel = new ToolkitInventoryPanel();
     ToolkitSheetPanel _sheetPanel = new ToolkitSheetPanel();
+    ToolkitSandboxPanel _sandboxPanel = new ToolkitSandboxPanel();
     ToolkitHudStatus _hudStatus = new ToolkitHudStatus();
     ToolkitItemBar _itemBar = new ToolkitItemBar();
 #if UNITY_EDITOR
@@ -61,7 +63,7 @@ public class ToolkitGameUI : MonoBehaviour
         }
     }
     public bool acceptsWorldInput => _view != null && !_context.isPaused && !_context.isInventoryOpen
-        && !_context.isSheetOpen && _context.IsCurrentView(GameScreen.Game)
+        && !_context.isSheetOpen && !_context.isSandboxOpen && _context.IsCurrentView(GameScreen.Game)
 #if UNITY_EDITOR
         && !_editorTools.isOpen
 #endif
@@ -162,7 +164,27 @@ public class ToolkitGameUI : MonoBehaviour
     {
         _started = true;
         RegisterStatuses();
+        AttachTouchInput();
         Init();
+    }
+
+    // A scene with a board gets the touch input: taps without hover, hold to inspect, and the party cards dragged
+    // onto the board, the only way the Toolkit places a unit
+    void AttachTouchInput()
+    {
+        InteractionManager interaction = FindAnyObjectByType<InteractionManager>();
+        if (interaction == null)
+        {
+            return;
+        }
+
+        ToolkitTouchInput touch = GetComponent<ToolkitTouchInput>();
+        if (touch == null)
+        {
+            touch = gameObject.AddComponent<ToolkitTouchInput>();
+        }
+
+        touch.Init(interaction, FindAnyObjectByType<Board>());
     }
 
     // The menu scene has no DataManager, so its texts ({status:X}) need the statuses of the game data from here
@@ -238,6 +260,7 @@ public class ToolkitGameUI : MonoBehaviour
         _rewardPanel.Init(this, _context, _view);
         _eventPanel.Init(this, _context, _view);
         _mapPanel.Init(_context, _view);
+        _sandboxPanel.Init(_context, _view, Refresh);
         _hudStatus.Init(_context, _view);
         _itemBar.Init(_context, _view);
 #if UNITY_EDITOR
@@ -270,6 +293,7 @@ public class ToolkitGameUI : MonoBehaviour
     {
         ReleaseView();
         _legacyCanvases.Restore();
+        _worldFraming.Restore();
         if (_document != null && _document.rootVisualElement != null)
         {
             _document.rootVisualElement.Clear();
@@ -285,6 +309,7 @@ public class ToolkitGameUI : MonoBehaviour
 
         _actions.Update();
         _mobileLayout.Update(safeAreaProvider);
+        _worldFraming.Update(normalizedWorldViewport);
         if (Time.unscaledTime >= _nextRefresh)
         {
             _nextRefresh = Time.unscaledTime + 0.1f;
@@ -310,8 +335,13 @@ public class ToolkitGameUI : MonoBehaviour
             _view.SetText("gameover-title", GetResultTitle(_context.ascension.isVictory));
         }
         _sheetPanel.Refresh();
+        _sandboxPanel.Refresh();
         _eventPanel.Refresh();
         _itemBar.Refresh(!_context.isMenu);
+#if UNITY_EDITOR
+        // Before the menu returns: it hides them there
+        _editorTools.Refresh();
+#endif
         if (_context.isMenu)
         {
             _encounterBar.RefreshMenu(_mobileLayout.isPopoverOpen);
@@ -335,9 +365,6 @@ public class ToolkitGameUI : MonoBehaviour
 
         _encounterBar.RefreshMana();
         _hudStatus.Refresh();
-#if UNITY_EDITOR
-        _editorTools.Refresh();
-#endif
         _partyPanel.Refresh(isPreparing && !isStart && !hasOverlay);
         _spellBar.Refresh(!isStart && !hasOverlay && !_context.isPaused);
         _rewardPanel.Refresh();
@@ -366,6 +393,7 @@ public class ToolkitGameUI : MonoBehaviour
         _mobileLayout.Dispose();
         _inventoryPanel.Dispose();
         _sheetPanel.Dispose();
+        _sandboxPanel.Dispose();
         _hudStatus.Dispose();
         _itemBar.Dispose();
 #if UNITY_EDITOR

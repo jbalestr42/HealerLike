@@ -59,6 +59,28 @@ namespace UI.Toolkit
         }
 
         [Test]
+        public void Hide_SandboxPanelOutsideTheViews_DisablesItsScreenCanvasUntilRestore()
+        {
+            GameObject sandboxGo = new GameObject("SandboxCanvas");
+            try
+            {
+                Canvas sandboxCanvas = sandboxGo.AddComponent<Canvas>();
+                sandboxCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                GameObject panelGo = new GameObject("SandboxPanel");
+                panelGo.transform.SetParent(sandboxGo.transform);
+                panelGo.AddComponent<SandboxPanel>();
+                _legacyCanvases.Hide(_context, _ui);
+                Assert.IsFalse(sandboxCanvas.enabled);
+                _legacyCanvases.Restore();
+                Assert.IsTrue(sandboxCanvas.enabled);
+            }
+            finally
+            {
+                Object.DestroyImmediate(sandboxGo);
+            }
+        }
+
+        [Test]
         public void SilenceMenus_LegacyMenuController_IsDisabledAndStaysOffAfterRestore()
         {
             MainMenu menu = _go.AddComponent<MainMenu>();

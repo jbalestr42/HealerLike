@@ -12,7 +12,7 @@ namespace HealerLike.Render.Stage
         StageInterfaceActions _actions;
         StandaloneInputModule _module;
         BaseInput _previous;
-        StageTouchInput _touch;
+        ToolkitTouchInput _touch;
         Touch[] _touches;
 
         [SetUp]
@@ -29,7 +29,7 @@ namespace HealerLike.Render.Stage
             host.SetActive(false);
             SceneManager.MoveGameObjectToScene(host, _scene);
             ToolkitGameUI ui = host.AddComponent<ToolkitGameUI>();
-            _touch = host.AddComponent<StageTouchInput>();
+            _touch = host.AddComponent<ToolkitTouchInput>();
             _touches = new[] { new Touch { fingerId = 8, phase = TouchPhase.Stationary } };
             _touch.captureTouches = _touches;
             _actions = new StageInterfaceActions { ui = ui };

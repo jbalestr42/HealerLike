@@ -17,9 +17,8 @@ namespace HealerLike.Render.Stage
         public static readonly string MenuPath = StageTarget.MenuPath;
         public static readonly string SandboxPath = StageTarget.SandboxPath;
         public static readonly string SandboxScene = "Sandbox";
-        public static readonly string SandboxInputName = "Render Sandbox Input";
         public static readonly string GameplayScene = "Main";
-        public static readonly string MenuScene = "MenuToolkit";
+        public static readonly string MenuScene = "MenuScene";
         RenderManager _manager;
         BattleFocus _focus;
         ToolkitGameUI _ui;
@@ -38,7 +37,6 @@ namespace HealerLike.Render.Stage
         Scene _uiScene;
         UIDocument _document;
         StyleSheet _spellSpacing;
-        readonly StageManaGauge _manaGauge = new StageManaGauge();
         readonly StageIconLabels _iconLabels = new StageIconLabels();
         public ToolkitGameUI ui
         {
@@ -75,20 +73,17 @@ namespace HealerLike.Render.Stage
         // The scene attached as the given path; a test attaches an unsaved scene as one of the stage's scenes
         public void Attach(Scene scene, string path)
         {
-            if (HostsSandboxExit(path))
-            {
-                AttachSandbox(scene);
-                return;
-            }
-
-            if (path != GameplayPath && path != MenuPath)
+            // The sandbox is attached like the gameplay scene, its pause panel leads back to the menu
+            bool isSandbox = path == SandboxPath;
+            if (path != GameplayPath && path != MenuPath && !isSandbox)
             {
                 return;
             }
 
             ReleasePortraits();
             _uiScene = scene;
-            _interaction = path == GameplayPath ? StageSceneObjects.Find<InteractionManager>(scene) : null;
+            bool isBoard = path == GameplayPath || isSandbox;
+            _interaction = isBoard ? StageSceneObjects.Find<InteractionManager>(scene) : null;
 #if UNITY_ANDROID && !UNITY_EDITOR
             StageLegacyInput.Configure(scene);
 #endif
@@ -109,74 +104,15 @@ namespace HealerLike.Render.Stage
             {
                 _spellSpacing = Resources.Load<StyleSheet>("RenderSpellSpacing");
             }
-            if (path == GameplayPath)
+            if (isBoard)
             {
+                // The touch input and the party card drag come with the Toolkit HUD itself
                 CreatePortraits();
-                StageTouchInput touch = _ui.GetComponent<StageTouchInput>();
-                if (touch == null)
-                {
-                    touch = _ui.gameObject.AddComponent<StageTouchInput>();
-                }
-
-                touch.Init(StageSceneObjects.Find<InteractionManager>(scene), StageSceneObjects.Find<Board>(scene));
                 _ui.SetBattleFocus(false, _focus.Toggle);
             }
 
             _focus.ShowLegacyControl(false);
             _camera = null;
-        }
-
-        // Only the sandbox gets the stage's Menu button and back handling: Main and the menu have the Toolkit HUD's own
-        public static bool HostsSandboxExit(string path)
-        {
-            return path == SandboxPath;
-        }
-
-        // The sandbox keeps its own uGUI: no Toolkit HUD, which would hide its canvases. It still needs the
-        // preview's input backend on Android and touch delivery for placing entities, as Main gets them, and a way
-        // back to the menu, through the same loader as the run's "Return to menu".
-        void AttachSandbox(Scene scene)
-        {
-            ReleasePortraits();
-            _uiScene = scene;
-            _ui = null;
-            _document = null;
-#if UNITY_ANDROID && !UNITY_EDITOR
-            StageLegacyInput.Configure(scene);
-#endif
-            AttachSandboxInput(scene);
-            StageSandboxExit.Attach(scene, LoadScene, MenuScene);
-            _focus.ShowLegacyControl(false);
-            _camera = null;
-        }
-
-        // One touch host per sandbox scene, fed with its InteractionManager; no roster drag without the Toolkit HUD
-        public static StageTouchInput AttachSandboxInput(Scene scene)
-        {
-            InteractionManager interaction = StageSceneObjects.Find<InteractionManager>(scene);
-            if (interaction == null)
-            {
-                return null;
-            }
-
-            StageTouchInput touch = null;
-            foreach (GameObject root in scene.GetRootGameObjects())
-            {
-                if (root.name == SandboxInputName)
-                {
-                    touch = root.GetComponent<StageTouchInput>();
-                }
-            }
-
-            if (touch == null)
-            {
-                GameObject host = new GameObject(SandboxInputName);
-                SceneManager.MoveGameObjectToScene(host, scene);
-                touch = host.AddComponent<StageTouchInput>();
-            }
-
-            touch.Init(interaction);
-            return touch;
         }
 
         public void RefreshCreatureIcons()
@@ -268,8 +204,6 @@ namespace HealerLike.Render.Stage
                 root.styleSheets.Add(_spellSpacing);
             }
 
-            Character character = _manager != null && _manager.player != null ? _manager.player.character : null;
-            _manaGauge.Update(root, character != null ? character.mana : null);
             _iconLabels.Update(root);
 
             if (_ui == null || _manager.entityManager == null || _manager.gameCamera == null)

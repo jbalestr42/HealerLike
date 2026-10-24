@@ -60,7 +60,7 @@ namespace HealerLike.Render.Stage
             public float mana;
             public bool placementActive, previewVisible;
         }
-        public void ObserveGameplay(string scenario, RenderManager manager, StageTouchInput input)
+        public void ObserveGameplay(string scenario, RenderManager manager, ToolkitTouchInput input)
         {
             manifest.observations.Add(new Observation { scenario = scenario, frame = Time.frameCount,
                 entities = manager.entityManager.GetEntities(Entity.EntityType.Player).Count,

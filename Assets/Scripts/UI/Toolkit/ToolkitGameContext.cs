@@ -6,12 +6,15 @@ public class ToolkitGameContext
     public EntityManager entities;
     public InteractionManager interaction;
     public AscensionGameType ascension;
+    // The sandbox played, null in a run
+    public SandboxGameType sandbox;
     // The game data played, null without a DataManager (e.g. the menu)
     public GameData data;
     public bool isMenu = false;
     public bool isPaused = false;
     public bool isInventoryOpen = false;
     public bool isSheetOpen = false;
+    public bool isSandboxOpen = false;
     public bool isInspecting = false;
     public Entity selectedEntity;
     public AItem selectedItem;
@@ -38,6 +41,7 @@ public class ToolkitGameContext
         entities = UnityEngine.Object.FindAnyObjectByType<EntityManager>();
         interaction = UnityEngine.Object.FindAnyObjectByType<InteractionManager>();
         ascension = UnityEngine.Object.FindAnyObjectByType<AscensionGameType>();
+        sandbox = UnityEngine.Object.FindAnyObjectByType<SandboxGameType>();
         DataManager dataManager = UnityEngine.Object.FindAnyObjectByType<DataManager>();
         data = dataManager != null ? dataManager.data : null;
         isMenu = game == null;
@@ -54,8 +58,14 @@ public class ToolkitGameContext
         return currentScreen == screen;
     }
 
+    // The units are placed and given items: before a fight of the run, while the sandbox battle is stopped
     public bool IsPreparing()
     {
+        if (sandbox != null)
+        {
+            return !sandbox.isBattleRunning;
+        }
+
         return ascension == null || ascension.isPreparing;
     }
 }

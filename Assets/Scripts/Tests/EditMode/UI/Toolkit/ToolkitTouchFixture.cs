@@ -3,10 +3,17 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace HealerLike.Render.Stage
+namespace UI.Toolkit
 {
-    public class StageTouchFixture : System.IDisposable
+    public class ToolkitTouchFixture : System.IDisposable
     {
+        // The placement's preview model, which the interaction keeps to itself: the tests destroy it
+        public static GameObject PreviewOf(EntityGridInteraction placement)
+        {
+            FieldInfo field = typeof(EntityGridInteraction).GetField("_entity", BindingFlags.Instance | BindingFlags.NonPublic);
+            return field.GetValue(placement) as GameObject;
+        }
+
         readonly List<Object> _owned = new List<Object>();
         public GameObject target { get; private set; }
 
@@ -54,7 +61,7 @@ namespace HealerLike.Render.Stage
             data.model = new GameObject("Legacy placement model");
             _owned.Add(data.model);
             PlacementInteraction placement = new PlacementInteraction(data);
-            EntityPlacementReadout.TryRead(placement, out _, out GameObject model, out _);
+            GameObject model = PreviewOf(placement);
             _owned.Add(model);
             InteractionManager manager = host.AddComponent<InteractionManager>();
             FixtureTouchInput input = host.AddComponent<FixtureTouchInput>();
@@ -64,7 +71,7 @@ namespace HealerLike.Render.Stage
             action(input, placement);
         }
 
-        public static void UpdateTouch(StageTouchInput input, TouchPhase phase, Vector2 position)
+        public static void UpdateTouch(ToolkitTouchInput input, TouchPhase phase, Vector2 position)
         {
             input.captureTouches = new[]
             {
@@ -78,9 +85,9 @@ namespace HealerLike.Render.Stage
             UpdateInput(input);
         }
 
-        public static void UpdateInput(StageTouchInput input)
+        public static void UpdateInput(ToolkitTouchInput input)
         {
-            MethodInfo update = typeof(StageTouchInput).GetMethod("Update",
+            MethodInfo update = typeof(ToolkitTouchInput).GetMethod("Update",
                 BindingFlags.NonPublic | BindingFlags.Instance);
             update.Invoke(input, null);
         }
@@ -146,7 +153,7 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        public class FixtureTouchInput : StageTouchInput
+        public class FixtureTouchInput : ToolkitTouchInput
         {
             public RaycastHit hit;
             public override bool IsOverInterface(Vector2 point)

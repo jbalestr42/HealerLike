@@ -41,11 +41,15 @@ public class ToolkitEncounterBar
     public void Refresh(bool isStart, bool isPreparing, bool hasOverlay)
     {
         bool isAvailable = !_context.isPaused && !hasOverlay;
-        _view.Show("field-toolbar", isStart || isPreparing || _context.hasInteraction);
+        bool isSandbox = _context.sandbox != null;
+        // The sandbox battle is stopped from the toolbar too
+        _view.Show("field-toolbar", isStart || isPreparing || isSandbox || _context.hasInteraction);
         _view.Show("start-button", isStart);
-        _view.Show("sandbox-button", false);
+        // On the menu it opens the sandbox, in the sandbox its tools
+        _view.Show("sandbox-button", isSandbox && !isStart && !_context.hasInteraction);
+        _view.SetButton("sandbox-button", "Sandbox", isAvailable);
         _view.Show("spell-section", !isStart);
-        _view.Show("wave-button", !isStart && isPreparing && !_context.hasInteraction);
+        _view.Show("wave-button", !isStart && (isPreparing || isSandbox) && !_context.hasInteraction);
         _view.Show("party-panel", !isStart);
         // The run starts with the scene (GameManager.Start) and a new one is reached from the end panel's "Return to
         // menu", so inside the gameplay scene this button is never one to press
@@ -57,6 +61,10 @@ public class ToolkitEncounterBar
         if (isStart)
         {
             _view.SetButton("wave-button", "Start expedition", false);
+        }
+        else if (isSandbox)
+        {
+            _view.SetButton("wave-button", GetSandboxBattleText(_context.sandbox.isBattleRunning), isAvailable);
         }
         else
         {
@@ -70,14 +78,30 @@ public class ToolkitEncounterBar
         _view.SetButton("inventory-button", null, !isStart && isPreparing && !hasOverlay);
     }
 
+    public static string GetSandboxBattleText(bool isBattleRunning)
+    {
+        return isBattleRunning ? "Stop battle" : "Start battle";
+    }
+
     public void RefreshMana()
     {
         Character character = _context.player.character;
-        _view.Show("mana-value", character != null && character.mana != null);
+        _view.Show("mana-gauge", character != null && character.mana != null);
         if (character != null && character.mana != null)
         {
             _view.SetText("mana-value", character.mana.Value.ToString("0"));
+            VisualElement fill = _view.root.Q("mana-fill");
+            if (fill != null)
+            {
+                fill.style.width = Length.Percent(ManaFraction(character.mana.Value, character.mana.Max) * 100f);
+            }
         }
+    }
+
+    // The filled part of the mana gauge, empty when the healer has no mana to fill
+    public static float ManaFraction(float value, float max)
+    {
+        return max > 0f ? Mathf.Clamp01(value / max) : 0f;
     }
 
     static void AddClass(VisualElement element, string className)
@@ -93,6 +117,11 @@ public class ToolkitEncounterBar
 
     string GetRoomText()
     {
+        if (_context.sandbox != null)
+        {
+            return "Sandbox";
+        }
+
         if (_context.ascension == null)
         {
             return "Expedition";

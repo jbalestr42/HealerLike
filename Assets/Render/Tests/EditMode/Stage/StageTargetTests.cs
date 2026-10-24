@@ -21,7 +21,7 @@ namespace HealerLike.Render.Stage
         public void Default_NothingSelected_BootsTheToolkitMenu()
         {
             Assert.That(StageTarget.isSelected, Is.False);
-            Assert.That(StageTarget.scenePath, Is.EqualTo("Assets/Scenes/Toolkit/MenuToolkit.unity"));
+            Assert.That(StageTarget.scenePath, Is.EqualTo("Assets/Scenes/MenuScene.unity"));
         }
 
         [Test]

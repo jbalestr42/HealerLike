@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="dialog dialog--wide surface">
+        <ui:VisualElement class="dialog-header">
+            <ui:VisualElement>
+                <ui:Label text="TEST WITHOUT LIMITS" class="eyebrow" />
+                <ui:Label text="Sandbox" class="dialog-title" />
+            </ui:VisualElement>
+            <ui:Button name="sandbox-close-button" text="Close" class="button button--quiet" />
+        </ui:VisualElement>
+        <ui:ScrollView name="sandbox-body" class="dialog-body" horizontal-scroller-visibility="Hidden">
+            <ui:Label text="Pick a unit, an item or a status, then tap the board to use it." class="muted dialog-description" />
+            <ui:VisualElement name="sandbox-controls" class="sandbox-buttons" />
+            <ui:Label text="Waves" class="eyebrow sandbox-heading" />
+            <ui:VisualElement name="sandbox-waves" class="sandbox-buttons" />
+            <ui:Label text="Units" class="eyebrow sandbox-heading" />
+            <ui:VisualElement name="sandbox-units" class="sandbox-buttons" />
+            <ui:Label text="Healer items" class="eyebrow sandbox-heading" />
+            <ui:VisualElement name="sandbox-healer-items" class="sandbox-buttons" />
+            <ui:Label text="Unit items" class="eyebrow sandbox-heading" />
+            <ui:VisualElement name="sandbox-unit-items" class="sandbox-buttons" />
+            <ui:Label text="Statuses" class="eyebrow sandbox-heading" />
+            <ui:VisualElement name="sandbox-statuses" class="sandbox-buttons" />
+        </ui:ScrollView>
+    </ui:VisualElement>
+</ui:UXML>

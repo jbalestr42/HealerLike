@@ -1,18 +1,18 @@
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static HealerLike.Render.Stage.StageTouchFixture;
+using static UI.Toolkit.ToolkitTouchFixture;
 
-namespace HealerLike.Render.Stage
+namespace UI.Toolkit
 {
-    public class StageTouchInputTests
+    public class ToolkitTouchInputTests
     {
-        StageTouchFixture _fixture;
+        ToolkitTouchFixture _fixture;
 
         [SetUp]
         public void SetUp()
         {
-            _fixture = new StageTouchFixture();
+            _fixture = new ToolkitTouchFixture();
             _fixture.Init();
         }
 
@@ -32,21 +32,21 @@ namespace HealerLike.Render.Stage
                 var legacy = host.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
                 Touch[] samples = new[] { new Touch { fingerId = 2, phase = TouchPhase.Began } };
                 int pointer = UnityEngine.UIElements.PointerId.touchPointerIdBase + 2;
-                Assert.That(StageTouchInput.CanBeginPointer(legacy, pointer, samples), Is.True);
+                Assert.That(ToolkitTouchInput.CanBeginPointer(legacy, pointer, samples), Is.True);
                 samples[0] = new Touch { fingerId = 2, phase = TouchPhase.Ended };
-                Assert.That(StageTouchInput.CanBeginPointer(legacy, pointer, samples), Is.False);
-                Assert.That(StageTouchInput.CanBeginPointer(legacy, pointer, System.Array.Empty<Touch>()), Is.False);
-                Assert.That(StageTouchInput.CanBeginPointer(legacy, UnityEngine.UIElements.PointerId.mousePointerId, samples), Is.False);
-                Assert.That(StageTouchInput.CanBeginPointer(legacy, UnityEngine.UIElements.PointerId.mousePointerId,
+                Assert.That(ToolkitTouchInput.CanBeginPointer(legacy, pointer, samples), Is.False);
+                Assert.That(ToolkitTouchInput.CanBeginPointer(legacy, pointer, System.Array.Empty<Touch>()), Is.False);
+                Assert.That(ToolkitTouchInput.CanBeginPointer(legacy, UnityEngine.UIElements.PointerId.mousePointerId, samples), Is.False);
+                Assert.That(ToolkitTouchInput.CanBeginPointer(legacy, UnityEngine.UIElements.PointerId.mousePointerId,
                     System.Array.Empty<Touch>()), Is.True);
                 var modern = host.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
                 foreach (int id in new[] { pointer, UnityEngine.UIElements.PointerId.penPointerIdBase,
                     UnityEngine.UIElements.PointerId.mousePointerId })
                 {
-                    Assert.That(StageTouchInput.CanBeginPointer(modern, id, samples), Is.True);
+                    Assert.That(ToolkitTouchInput.CanBeginPointer(modern, id, samples), Is.True);
                 }
 
-                Assert.That(StageTouchInput.CanBeginPointer(null, pointer, samples), Is.True);
+                Assert.That(ToolkitTouchInput.CanBeginPointer(null, pointer, samples), Is.True);
             }
             finally { Object.DestroyImmediate(host); }
         }
@@ -84,7 +84,7 @@ namespace HealerLike.Render.Stage
         [Test]
         public void NativeCancellationRunsBeforeTheEventSystemReleaseTranslation()
         {
-            var order = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(StageTouchInput),
+            var order = (DefaultExecutionOrder)System.Attribute.GetCustomAttribute(typeof(ToolkitTouchInput),
                 typeof(DefaultExecutionOrder));
             string[] scripts = UnityEditor.AssetDatabase.FindAssets("EventSystem t:MonoScript", new[] { "Packages/com.unity.ugui" });
             bool checkedSystem = false;
@@ -106,7 +106,7 @@ namespace HealerLike.Render.Stage
         public void FirstTap_EntersPreviewsAndActivatesWithoutPreviousHover()
         {
             TapInteraction interaction = new TapInteraction();
-            Assert.That(StageTouchInput.Activate(interaction, _fixture.hit), Is.True);
+            Assert.That(ToolkitTouchInput.Activate(interaction, _fixture.hit), Is.True);
             CollectionAssert.AreEqual(new[] { "enter", "preview", "click" }, interaction.calls);
         }
 
@@ -115,7 +115,7 @@ namespace HealerLike.Render.Stage
         {
             TapInteraction interaction = new TapInteraction();
             interaction.isValid = false;
-            Assert.That(StageTouchInput.Activate(interaction, _fixture.hit), Is.False);
+            Assert.That(ToolkitTouchInput.Activate(interaction, _fixture.hit), Is.False);
             Assert.That(interaction.calls, Is.Empty);
         }
 
@@ -123,7 +123,7 @@ namespace HealerLike.Render.Stage
         public void EmptyHit_DoesNotActivate()
         {
             TapInteraction interaction = new TapInteraction();
-            Assert.That(StageTouchInput.Activate(interaction, default), Is.False);
+            Assert.That(ToolkitTouchInput.Activate(interaction, default), Is.False);
             Assert.That(interaction.calls, Is.Empty);
         }
 

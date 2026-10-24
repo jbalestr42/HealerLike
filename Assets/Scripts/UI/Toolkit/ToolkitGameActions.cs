@@ -81,6 +81,12 @@ public class ToolkitGameActions : IDisposable
             return;
         }
 
+        if (_context.sandbox != null)
+        {
+            ToggleSandboxBattle();
+            return;
+        }
+
         if (_context.isPaused || _context.ascension == null || !_context.IsCurrentView(GameScreen.Game))
         {
             return;
@@ -91,7 +97,7 @@ public class ToolkitGameActions : IDisposable
         _context.ascension.StartBattle();
     }
 
-    // The sandbox is a menu choice only, a running expedition never leaves through it
+    // On the menu it opens the sandbox, in the sandbox its tools; a running expedition never leaves through it
     void OnSandboxClicked()
     {
         if (_context.isMenu)
@@ -99,6 +105,33 @@ public class ToolkitGameActions : IDisposable
             _classSelect.Close();
             LoadScene(_host.sandboxScene);
         }
+        else if (_context.sandbox != null)
+        {
+            _context.isSandboxOpen = !_context.isSandboxOpen;
+            _context.isInventoryOpen = false;
+            _context.isSheetOpen = false;
+            _host.Refresh();
+        }
+    }
+
+    // Started or stopped at will, the interaction under way (e.g. a unit to place) cancelled
+    void ToggleSandboxBattle()
+    {
+        if (_context.isPaused || !_context.IsCurrentView(GameScreen.Game))
+        {
+            return;
+        }
+
+        if (_context.sandbox.isBattleRunning)
+        {
+            _context.sandbox.StopBattle();
+        }
+        else
+        {
+            _context.sandbox.StartBattle();
+        }
+
+        _host.Refresh();
     }
 
     // The pick is already in CharacterSelection; the expedition starts through the same route as before
@@ -141,6 +174,12 @@ public class ToolkitGameActions : IDisposable
             return;
         }
 
+        if (_context.isSandboxOpen)
+        {
+            _context.isSandboxOpen = false;
+            return;
+        }
+
         if (_context.isSheetOpen)
         {
             _context.isSheetOpen = false;
@@ -167,6 +206,7 @@ public class ToolkitGameActions : IDisposable
     void OnInventoryClicked()
     {
         _context.isInventoryOpen = !_context.isInventoryOpen;
+        _context.isSandboxOpen = false;
         _host.Refresh();
     }
 

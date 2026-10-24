@@ -8,9 +8,12 @@ public class SandboxGameType : AGameType
 {
     [SerializeField] SandboxData _data;
     [SerializeField] SandboxPanel _panel;
+    public SandboxData data => _data;
 
     EntityManager _entities;
     bool _isInitialized = false;
+    // The character is set up on the first frame, then the panels can list its skills and the data
+    public bool isInitialized => _isInitialized;
 
     bool _isBattleRunning = false;
     public bool isBattleRunning { get { return _isBattleRunning; } }

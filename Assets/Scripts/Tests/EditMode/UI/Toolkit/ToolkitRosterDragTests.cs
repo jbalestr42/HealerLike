@@ -1,11 +1,11 @@
 using NUnit.Framework;
 using UnityEngine;
 
-namespace HealerLike.Render.Stage
+namespace UI.Toolkit
 {
-    public class StageRosterDragTests
+    public class ToolkitRosterDragTests
     {
-        StageTouchFixture _fixture;
+        ToolkitTouchFixture _fixture;
         GameObject _host, _model;
         EntityData _data;
         Board _board;
@@ -13,7 +13,7 @@ namespace HealerLike.Render.Stage
         [SetUp]
         public void Setup()
         {
-            _fixture = new StageTouchFixture(); _fixture.Init();
+            _fixture = new ToolkitTouchFixture(); _fixture.Init();
             _host = new GameObject("Roster placement test");
             _model = new GameObject("Preview source");
             _data = ScriptableObject.CreateInstance<EntityData>(); _data.model = _model;
@@ -43,7 +43,7 @@ namespace HealerLike.Render.Stage
             _fixture.WithInput((input, manager, original) =>
             {
                 Placement placement = new Placement(_data);
-                using (StageRosterDrag drag = new StageRosterDrag(manager, _board,
+                using (ToolkitRosterDrag drag = new ToolkitRosterDrag(manager, _board,
                     (Vector2 p, out RaycastHit h, int mask) => { h = _fixture.hit; return true; },
                     p => false, () => {}, (data, spawned) => placement))
                 {
@@ -65,7 +65,7 @@ namespace HealerLike.Render.Stage
             _fixture.WithInput((input, manager, original) =>
             {
                 Placement placement = new Placement(_data);
-                using (StageRosterDrag drag = new StageRosterDrag(manager, _board,
+                using (ToolkitRosterDrag drag = new ToolkitRosterDrag(manager, _board,
                     (Vector2 p, out RaycastHit h, int mask) => { h = _fixture.hit; return overUi || cancel; },
                     p => overUi, () => {}, (data, spawned) => placement))
                 {
@@ -87,7 +87,7 @@ namespace HealerLike.Render.Stage
             public int clicks;
             GameObject _preview;
             public Placement(EntityData data) : base(data)
-            { EntityPlacementReadout.TryRead(this, out _, out _preview, out _); }
+            { _preview = ToolkitTouchFixture.PreviewOf(this); }
             public override void Cancel() { Object.DestroyImmediate(_preview); }
             public override void End() { Object.DestroyImmediate(_preview); }
             public override void OnMouseOver(RaycastHit hit) { }

@@ -21,7 +21,7 @@ namespace HealerLike.Render.Stage
         public static readonly string[] Scenes =
         {
             StageSceneAuthoring.ScenePath,
-            "Assets/Scenes/Toolkit/MenuToolkit.unity",
+            StageTarget.MenuPath,
             "Assets/Scenes/Main.unity",
             // The game's sandbox, reached from the Toolkit menu's Sandbox entry through StageTarget
             "Assets/Scenes/Sandbox.unity"
