@@ -51,6 +51,51 @@ public static class ToolkitEntityInfo
         return EntityInfoFormatter.FormatShield(entity.shield) ?? "";
     }
 
+    public static string GetStatusLine(Entity entity)
+    {
+        return GetStatusLine(entity, StatusKeywords.statuses);
+    }
+
+    // "Statuses: {status:Blessed} · {status:Vulnerable} ×2": the statuses the creature is in, as keywords so the panel
+    // explains what each one does. Empty when it is in none
+    public static string GetStatusLine(Entity entity, IReadOnlyList<StatusData> statuses)
+    {
+        List<string> keywords = new List<string>();
+        if (statuses != null)
+        {
+            foreach (StatusData status in statuses)
+            {
+                if (status == null || !entity.HasStatus(status))
+                {
+                    continue;
+                }
+
+                int stacks = GetStacks(entity, status);
+                keywords.Add($"{{status:{status.title}}}" + (stacks > 1 ? $" ×{stacks}" : ""));
+            }
+        }
+
+        return keywords.Count > 0 ? "Statuses: " + string.Join(" · ", keywords) : "";
+    }
+
+    // The stacks of the buff of the status, whatever their givers
+    static int GetStacks(Entity entity, StatusData status)
+    {
+        int stacks = 0;
+        if (entity.buffManager != null && status.buffHandlerFactory != null)
+        {
+            foreach (BuffManager.BuffHandlerData handler in entity.buffManager.GetActiveHandlers())
+            {
+                if (handler.buffHandlerFactory == status.buffHandlerFactory)
+                {
+                    stacks += handler.currentStacks;
+                }
+            }
+        }
+
+        return stacks;
+    }
+
     // What the creature did in the fights, nothing before its first one
     public static ToolkitInfoSection GetCombat(Entity entity)
     {

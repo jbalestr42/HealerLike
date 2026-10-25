@@ -234,5 +234,103 @@ namespace UI.Toolkit
             StringAssert.Contains("30 damage", section.lines[0]);
             Assert.That(section.count, Is.EqualTo(1));
         }
+
+        StatusData CreateStatus(string title, int maxStacks)
+        {
+            GameplayTag tag = ScriptableObject.CreateInstance<GameplayTag>();
+            tag.name = title;
+            AddTagBuffFactory addTag = ScriptableObject.CreateInstance<AddTagBuffFactory>();
+            addTag.data = new AddTagBuffData { tag = tag };
+            BuffHandlerFactory handler = ScriptableObject.CreateInstance<BuffHandlerFactory>();
+            handler.data = new BuffHandlerData
+            {
+                durationType = DurationType.Duration,
+                duration = 4f,
+                maxStacks = maxStacks,
+                buffFactoryList = new List<ABuffFactory> { addTag },
+                tags = new List<GameplayTag> { tag },
+            };
+            StatusData status = ScriptableObject.CreateInstance<StatusData>();
+            status.title = title;
+            status.tag = tag;
+            status.buffHandlerFactory = handler;
+            _objects.AddRange(new Object[] { tag, addTag, handler, status });
+            return status;
+        }
+
+        BuffManager EnableBuffs()
+        {
+            BuffManager buffManager = _entity.GetComponent<BuffManager>();
+            buffManager.isEnabled = true;
+            TestHelpers.SetPrivateField(_entity, "_buffManager", buffManager);
+            return buffManager;
+        }
+
+        [Test]
+        public void GetStatusLine_InNoStatus_IsEmpty()
+        {
+            StatusData blessed = CreateStatus("Blessed", 1);
+
+            Assert.That(ToolkitEntityInfo.GetStatusLine(_entity, new[] { blessed }), Is.Empty);
+        }
+
+        [Test]
+        public void GetStatusLine_InStatuses_CitesEachAsAKeyword()
+        {
+            StatusData blessed = CreateStatus("Blessed", 1);
+            StatusData chilled = CreateStatus("Chilled", 1);
+            StatusData fortified = CreateStatus("Fortified", 1);
+            _entity.AddTag(blessed.tag);
+            _entity.AddTag(fortified.tag);
+
+            string line = ToolkitEntityInfo.GetStatusLine(_entity, new[] { blessed, chilled, fortified });
+
+            Assert.That(line, Is.EqualTo("Statuses: {status:Blessed} · {status:Fortified}"));
+        }
+
+        [Test]
+        public void GetStatusLine_SeveralStacks_ShowsTheirCount()
+        {
+            StatusData vulnerable = CreateStatus("Vulnerable", 3);
+            BuffManager buffManager = EnableBuffs();
+            GameObject source = new GameObject("Hexer");
+            _objects.Add(source);
+            _entity.ApplyStatus(vulnerable, source);
+            buffManager.ForceUpdate();
+            _entity.ApplyStatus(vulnerable, source);
+            buffManager.ForceUpdate();
+
+            string line = ToolkitEntityInfo.GetStatusLine(_entity, new[] { vulnerable });
+
+            Assert.That(line, Is.EqualTo("Statuses: {status:Vulnerable} ×2"));
+        }
+
+        [Test]
+        public void GetStatusLine_OneStack_ShowsNoCount()
+        {
+            StatusData vulnerable = CreateStatus("Vulnerable", 3);
+            BuffManager buffManager = EnableBuffs();
+            GameObject source = new GameObject("Hexer");
+            _objects.Add(source);
+            _entity.ApplyStatus(vulnerable, source);
+            buffManager.ForceUpdate();
+
+            Assert.That(ToolkitEntityInfo.GetStatusLine(_entity, new[] { vulnerable }), Is.EqualTo("Statuses: {status:Vulnerable}"));
+        }
+
+        [Test]
+        public void GetStatusLine_ThroughTheStatusText_ExplainsWhatEachStatusDoes()
+        {
+            StatusData blessed = CreateStatus("Blessed", 1);
+            blessed.description = "+2 armor";
+            blessed.isPositive = true;
+            _entity.AddTag(blessed.tag);
+            StatusData[] statuses = { blessed };
+
+            string text = ToolkitStatusText.WithExplanation(ToolkitEntityInfo.GetStatusLine(_entity, statuses), statuses);
+
+            StringAssert.Contains(StatusKeywords.FormatStatus("Blessed", statuses), text);
+            StringAssert.EndsWith("Blessed</color></b>\n+2 armor", text);
+        }
     }
 }

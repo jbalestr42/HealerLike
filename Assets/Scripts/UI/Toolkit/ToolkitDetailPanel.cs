@@ -195,6 +195,12 @@ public class ToolkitDetailPanel : IDisposable
             lines.Add(shield);
         }
 
+        string statuses = ToolkitEntityInfo.GetStatusLine(entity);
+        if (statuses.Length > 0)
+        {
+            lines.Add(statuses);
+        }
+
         List<string> combat = new List<string>();
         foreach (AttributeType type in new[] { AttributeType.Damage, AttributeType.AttackRate,
             AttributeType.Range, AttributeType.FlatArmor })
