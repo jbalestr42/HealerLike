@@ -26,6 +26,7 @@ namespace HealerLike.Render.Stage
         readonly bool _oldAutorotatePortraitUpsideDown;
         readonly bool _oldAutorotateLandscapeRight;
         readonly bool _oldAutorotateLandscapeLeft;
+        readonly bool _oldVulkanPreTransform;
         readonly bool _oldBuildAppBundle;
         readonly bool _oldExportAndroidProject;
         readonly bool _oldSplitApplicationBinary;
@@ -80,6 +81,7 @@ namespace HealerLike.Render.Stage
             _oldAutorotatePortraitUpsideDown = PlayerSettings.allowedAutorotateToPortraitUpsideDown;
             _oldAutorotateLandscapeRight = PlayerSettings.allowedAutorotateToLandscapeRight;
             _oldAutorotateLandscapeLeft = PlayerSettings.allowedAutorotateToLandscapeLeft;
+            _oldVulkanPreTransform = PlayerSettings.vulkanEnablePreTransform;
             _oldBuildAppBundle = EditorUserBuildSettings.buildAppBundle;
             _oldExportAndroidProject = EditorUserBuildSettings.exportAsGoogleAndroidProject;
             _oldSplitApplicationBinary = PlayerSettings.Android.splitApplicationBinary;
@@ -112,6 +114,9 @@ namespace HealerLike.Render.Stage
             PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
             PlayerSettings.allowedAutorotateToLandscapeRight = true;
             PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+            // Pre-transform renders in the panel's native portrait and rotates at present: after a turn to landscape
+            // the phone only showed a 1080x1080 corner of the 2400x1080 screen, the rest black
+            PlayerSettings.vulkanEnablePreTransform = false;
             EditorUserBuildSettings.buildAppBundle = false;
             EditorUserBuildSettings.exportAsGoogleAndroidProject = false;
             PlayerSettings.Android.splitApplicationBinary = false;
@@ -145,6 +150,7 @@ namespace HealerLike.Render.Stage
                 PlayerSettings.allowedAutorotateToPortraitUpsideDown = _oldAutorotatePortraitUpsideDown;
                 PlayerSettings.allowedAutorotateToLandscapeRight = _oldAutorotateLandscapeRight;
                 PlayerSettings.allowedAutorotateToLandscapeLeft = _oldAutorotateLandscapeLeft;
+                PlayerSettings.vulkanEnablePreTransform = _oldVulkanPreTransform;
                 EditorUserBuildSettings.buildAppBundle = _oldBuildAppBundle;
                 EditorUserBuildSettings.exportAsGoogleAndroidProject = _oldExportAndroidProject;
                 PlayerSettings.Android.splitApplicationBinary = _oldSplitApplicationBinary;
