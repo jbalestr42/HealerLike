@@ -27,8 +27,7 @@ public class ToolkitMobileLayout : IDisposable
     public static PanelSettings CreatePanelSettings(PanelSettings source) => ToolkitTheme.CreatePanelSettings(source, null);
     public void Update(Func<Rect> safeAreaProvider = null)
     {
-        Vector2 size = _safeArea.Update(safeAreaProvider);
-        Resize(size.x, size.y);
+        ToolkitResponsiveLayout.Apply(_view, _safeArea.Update(safeAreaProvider));
     }
     public void Resize(float width, float height) { ToolkitResponsiveLayout.Apply(_view, width, height); }
     public void Refresh()

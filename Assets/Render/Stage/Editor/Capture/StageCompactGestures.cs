@@ -50,7 +50,7 @@ namespace HealerLike.Render.Stage
         public Vector2 DropPoint(Vector3 world)
         {
             Vector2 projected = _session.manager.gameCamera.WorldToScreenPoint(world);
-            return projected - Vector2.up * (56 * ToolkitScreenLayout.GetScale(Screen.width, Screen.height, false));
+            return projected - Vector2.up * (56 * ToolkitLayout.GetScale(Screen.width, Screen.height, false));
         }
         // The finger goes down on start, moves up past the tap slop so the press resolves to a roster drag, then
         // travels to destination and rests there. It stays down: the caller owns the release.

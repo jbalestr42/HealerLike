@@ -30,8 +30,7 @@ public sealed class ToolkitRosterDrag : IToolkitRosterDrag, IDisposable
             return false;
         }
         // Lift the intended cell, not just its artwork, so preview and release validate the same ray.
-        Vector2 lifted = point + Vector2.up * (56f * ToolkitScreenLayout.GetScale(Screen.width, Screen.height,
-            Application.isMobilePlatform));
+        Vector2 lifted = point + Vector2.up * (56f * ToolkitLayout.current.scale);
         if (!_project(lifted, out hit, _owned.GetLayerMask()) || !_owned.IsValidTarget(hit.collider.gameObject))
         {
             return false;

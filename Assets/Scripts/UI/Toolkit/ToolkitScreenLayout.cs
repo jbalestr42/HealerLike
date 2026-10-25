@@ -1,37 +1,8 @@
 using UnityEngine;
 
-// Pixel-to-panel conversion stays independent of device DPI, which is often unavailable.
+// The free area the HUD leaves to the world, as a camera viewport
 public class ToolkitScreenLayout
 {
-    public static float GetScale(int width, int height, bool isMobile)
-    {
-        if (width <= 0 || height <= 0)
-        {
-            return 1f;
-        }
-
-        if (height > width)
-        {
-            return width / 390f;
-        }
-
-        if (isMobile || height < 600)
-        {
-            return height / 390f;
-        }
-
-        return Mathf.Max(0.75f, Mathf.Min(width / 1440f, height / 900f));
-    }
-
-    public static Rect GetSafePanelRect(int width, int height, Rect safeArea, float scale)
-    {
-        float left = Mathf.Clamp(safeArea.xMin, 0f, width);
-        float right = Mathf.Clamp(safeArea.xMax, left, width);
-        float bottom = Mathf.Clamp(safeArea.yMin, 0f, height);
-        float top = Mathf.Clamp(safeArea.yMax, bottom, height);
-        return new Rect(left / scale, (height - top) / scale, (right - left) / scale, (top - bottom) / scale);
-    }
-
     public static Rect GetViewport(Rect worldRect, Rect panelRect)
     {
         if (

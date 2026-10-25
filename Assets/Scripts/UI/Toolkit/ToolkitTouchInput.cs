@@ -234,7 +234,7 @@ public class ToolkitTouchInput : MonoBehaviour
 
     Vector2 PanelPoint(Vector2 point)
     {
-        float scale = ToolkitScreenLayout.GetScale(Screen.width, Screen.height, Application.isMobilePlatform);
+        float scale = ToolkitLayout.current.scale;
         return new Vector2(point.x, -point.y) / scale;
     }
 

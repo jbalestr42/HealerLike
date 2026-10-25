@@ -164,7 +164,7 @@ namespace UI.Toolkit
             Assert.AreEqual(hud.style.paddingTop.value.value, inventory.style.top.value.value);
             Assert.AreEqual(hud.style.paddingBottom.value.value, inventory.style.bottom.value.value);
             _layout.Update();
-            Rect safe = ToolkitScreenLayout.GetSafePanelRect(Screen.width, Screen.height, Screen.safeArea, scale);
+            Rect safe = ToolkitLayout.GetSafePanelRect(Screen.width, Screen.height, Screen.safeArea, scale);
             Assert.AreEqual(safe.yMin + 8f, inventory.style.top.value.value, 0.01f);
         }
 

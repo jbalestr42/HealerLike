@@ -9,7 +9,7 @@ public class ToolkitSafeArea : IDisposable
     readonly UIDocument _document;
     Vector2Int _screen;
     Rect _safeArea;
-    Vector2 _size;
+    ToolkitLayoutState _state;
     float _padding;
 
     public ToolkitSafeArea(VisualElement root, UIDocument document)
@@ -37,7 +37,7 @@ public class ToolkitSafeArea : IDisposable
         _hud.UnregisterCallback<CustomStyleResolvedEvent>(OnStyleResolved);
     }
 
-    public Vector2 Update(Func<Rect> safeAreaProvider = null)
+    public ToolkitLayoutState Update(Func<Rect> safeAreaProvider = null)
     {
         Vector2Int screen = new Vector2Int(Screen.width, Screen.height);
         Rect safeArea = Screen.safeArea;
@@ -54,16 +54,16 @@ public class ToolkitSafeArea : IDisposable
 
         if (_screen == screen && _safeArea == safeArea)
         {
-            return _size;
+            return _state;
         }
 
         _screen = screen;
         _safeArea = safeArea;
-        float scale = ToolkitScreenLayout.GetScale(screen.x, screen.y, Application.isMobilePlatform);
-        _document.panelSettings.scale = scale;
-        Rect safe = ToolkitScreenLayout.GetSafePanelRect(screen.x, screen.y, _safeArea, scale);
-        float right = screen.x / scale - safe.xMax;
-        float bottom = screen.y / scale - safe.yMax;
+        _state = ToolkitLayout.Resolve(screen, safeArea, Application.isMobilePlatform);
+        _document.panelSettings.scale = _state.scale;
+        Rect safe = _state.safeRect;
+        float right = _state.panelSize.x - safe.xMax;
+        float bottom = _state.panelSize.y - safe.yMax;
         _hud.style.paddingLeft = safe.xMin + _padding;
         _hud.style.paddingTop = safe.yMin + _padding;
         _hud.style.paddingRight = right + _padding;
@@ -76,7 +76,6 @@ public class ToolkitSafeArea : IDisposable
             modal.style.bottom = bottom + _padding;
         }
 
-        _size = new Vector2(screen.x / scale, screen.y / scale);
-        return _size;
+        return _state;
     }
 }

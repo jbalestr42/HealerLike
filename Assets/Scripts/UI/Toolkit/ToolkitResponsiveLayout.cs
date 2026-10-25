@@ -1,19 +1,21 @@
+using UnityEngine;
 using UnityEngine.UIElements;
 
 public static class ToolkitResponsiveLayout
 {
+    // A panel already at its size, as the editor preview and the tests lay it out
     public static bool Apply(ToolkitGameView view, float width, float height)
     {
+        return Apply(view, ToolkitLayout.FromPanel(new Vector2(width, height)));
+    }
+
+    public static bool Apply(ToolkitGameView view, ToolkitLayoutState state)
+    {
         VisualElement hud = view.root.Q("hud-root");
-        ICustomStyle style = hud.customStyle;
-        float mobileWidth = ToolkitStyleValues.ReadPositive(style, "--ui-mobile-width-breakpoint", 760f);
-        float mobileHeight = ToolkitStyleValues.ReadPositive(style, "--ui-mobile-height-breakpoint", 500f);
-        float compactWidth = ToolkitStyleValues.ReadPositive(style, "--ui-compact-breakpoint", 1100f);
-        bool mobile = width < mobileWidth || height < mobileHeight;
-        hud.EnableInClassList("is-compact", width < compactWidth);
-        hud.EnableInClassList("is-mobile", mobile);
-        hud.EnableInClassList("is-landscape", width > height);
-        view.isTouchLayout = mobile;
-        return mobile;
+        hud.EnableInClassList("is-compact", state.isCompact);
+        hud.EnableInClassList("is-mobile", state.isPhone);
+        hud.EnableInClassList("is-landscape", state.isLandscape);
+        view.isTouchLayout = state.isPhone;
+        return state.isPhone;
     }
 }

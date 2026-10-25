@@ -123,9 +123,6 @@
     --map-path-width: 1.5;
     --map-glyph-line-width: 1.7;
     --ui-safe-padding: 8;
-    --ui-mobile-width-breakpoint: 760;
-    --ui-mobile-height-breakpoint: 500;
-    --ui-compact-breakpoint: 1100;
     --ui-room-preview-width: 104px;
     --ui-room-preview-height: 68px;
     --ui-card-min-height: 76px;

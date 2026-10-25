@@ -464,7 +464,7 @@ namespace HealerLike.Render.Stage
                 Vector2 start = StageInterfaceActions.ScreenPoint(card);
                 Vector2 destination = (Vector2)_manager.gameCamera.WorldToScreenPoint(
                     StageCells.Nearest(_manager, offsets[i]))
-                    - Vector2.up * (56 * ToolkitScreenLayout.GetScale(Screen.width, Screen.height, false));
+                    - Vector2.up * (56 * ToolkitLayout.GetScale(Screen.width, Screen.height, false));
                 using (StagePresentationTouch touch = new StagePresentationTouch(actions))
                 {
                     yield return touch.Frame(TouchPhase.Began, start);

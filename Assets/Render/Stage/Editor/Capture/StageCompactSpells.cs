@@ -135,7 +135,7 @@ namespace HealerLike.Render.Stage
             {
                 yield return touch.Frame(TouchPhase.Began, board);
                 Vector2 release = _s.manager.gameCamera.WorldToScreenPoint(entity.GetComponent<Collider>().bounds.center);
-                _s.output.Check(Vector2.Distance(board, release) <= 18 * ToolkitScreenLayout.GetScale(Screen.width, Screen.height, false)
+                _s.output.Check(Vector2.Distance(board, release) <= 18 * ToolkitLayout.GetScale(Screen.width, Screen.height, false)
                     && Physics.Raycast(_s.manager.gameCamera.ScreenPointToRay(release), out RaycastHit released,
                         Mathf.Infinity, targeting.GetLayerMask()) && targeting.IsValidTarget(released.collider.gameObject),
                     "Moving combat creature remains a legal target at the tracked short release");
