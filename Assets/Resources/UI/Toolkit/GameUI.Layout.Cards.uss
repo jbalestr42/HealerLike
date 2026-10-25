@@ -83,7 +83,7 @@
     margin-bottom: var(--ui-space-lg);
 }
 
-.is-compact .collection-list .data-card
+.layout--compact .collection-list .data-card
 {
     width: var(--ui-item-compact-width);
 }
@@ -125,7 +125,7 @@
     margin: 0;
 }
 
-.is-compact .collection-list .card-shell
+.layout--compact .collection-list .card-shell
 {
     width: var(--ui-item-compact-width);
 }

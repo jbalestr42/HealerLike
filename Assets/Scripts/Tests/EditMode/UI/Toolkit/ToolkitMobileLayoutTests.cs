@@ -43,10 +43,10 @@ namespace UI.Toolkit
         {
             VisualElement speed = _root.Q("speed-controls");
             _layout.Resize(390f, 844f);
-            Assert.IsTrue(_root.Q("hud-root").ClassListContains("is-mobile"));
+            Assert.IsTrue(_root.Q("hud-root").ClassListContains(ToolkitResponsiveLayout.PhoneClass));
             Assert.AreEqual("pause-settings", speed.parent.name);
             _layout.Resize(1440f, 900f);
-            Assert.IsFalse(_root.Q("hud-root").ClassListContains("is-mobile"));
+            Assert.IsFalse(_root.Q("hud-root").ClassListContains(ToolkitResponsiveLayout.PhoneClass));
             Assert.AreEqual("pause-settings", speed.parent.name);
             Assert.AreSame(speed, _root.Q("speed-controls"));
         }

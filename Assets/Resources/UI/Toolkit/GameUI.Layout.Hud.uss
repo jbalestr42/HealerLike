@@ -167,27 +167,27 @@
     display: none;
 }
 
-.game-ui.is-compact
+.game-ui.layout--compact
 {
     padding: var(--ui-space-md);
 }
 
-.is-compact .brand-block
+.layout--compact .brand-block
 {
     width: var(--ui-brand-compact-width);
 }
 
-.is-compact .party-panel
+.layout--compact .party-panel
 {
     width: var(--ui-party-compact-width);
 }
 
-.is-compact .detail-panel
+.layout--compact .detail-panel
 {
     width: var(--ui-sidebar-compact-width);
 }
 
-.is-compact .top-bar
+.layout--compact .top-bar
 {
     padding: var(--ui-space-md) var(--ui-space-lg);
 }

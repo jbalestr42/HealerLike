@@ -1,42 +1,42 @@
-.is-mobile .brand-block
+.layout--phone .brand-block
 {
     display: none;
 }
 
-.is-mobile .mobile-only
+.layout--phone .mobile-only
 {
     display: flex;
 }
 
-.is-mobile .top-bar
+.layout--phone .top-bar
 {
     min-height: var(--ui-header-mobile-height);
     padding: var(--ui-space-sm) var(--ui-space-md);
 }
 
-.is-mobile .run-status
+.layout--phone .run-status
 {
     flex-shrink: 1;
     min-width: 0;
 }
 
-.is-mobile .heading
+.layout--phone .heading
 {
     font-size: var(--ui-text-mobile-heading);
 }
 
-.is-mobile .run-status .muted
+.layout--phone .run-status .muted
 {
     font-size: var(--ui-text-eyebrow);
 }
 
-.is-mobile .currency
+.layout--phone .currency
 {
     font-size: var(--ui-text-small);
     margin-right: var(--ui-mobile-currency-gap);
 }
 
-.is-mobile .button
+.layout--phone .button
 {
     min-width: var(--ui-touch-target);
     min-height: var(--ui-touch-target);
@@ -44,44 +44,44 @@
     font-size: var(--ui-text-control);
 }
 
-.is-mobile .header-actions .button
+.layout--phone .header-actions .button
 {
     margin-left: var(--ui-space-xs);
     padding-left: var(--ui-space-md);
     padding-right: var(--ui-space-md);
 }
 
-.is-mobile .field-toolbar
+.layout--phone .field-toolbar
 {
     height: var(--ui-touch-target);
     margin-top: var(--ui-space-sm);
 }
 
-.is-mobile .field-toolbar > .button
+.layout--phone .field-toolbar > .button
 {
     margin-left: 0;
     margin-right: var(--ui-space-sm);
 }
 
-.is-mobile .field-toolbar > #focus-button
+.layout--phone .field-toolbar > #focus-button
 {
     margin-right: 0;
 }
 
-.is-mobile .main-content
+.layout--phone .main-content
 {
     min-height: 0;
     margin-top: var(--ui-space-sm);
     margin-bottom: var(--ui-space-sm);
 }
 
-.is-mobile .world-space
+.layout--phone .world-space
 {
     min-width: 0;
 }
 
-.is-mobile .party-panel,
-.is-mobile .detail-panel
+.layout--phone .party-panel,
+.layout--phone .detail-panel
 {
     position: absolute;
     left: 0;
@@ -94,52 +94,52 @@
     display: none;
 }
 
-.is-mobile.party-open .party-panel,
-.is-mobile.detail-open .detail-panel
+.layout--phone.party-open .party-panel,
+.layout--phone.detail-open .detail-panel
 {
     display: flex;
 }
 
-.is-mobile .detail-panel
+.layout--phone .detail-panel
 {
     align-self: stretch;
 }
 
-.is-mobile .drawer-header
+.layout--phone .drawer-header
 {
     flex-shrink: 0;
     margin-bottom: var(--ui-space-md);
 }
 
-.is-mobile .drawer-header .section-heading
+.layout--phone .drawer-header .section-heading
 {
     margin-bottom: 0;
 }
 
-.is-mobile .section-description
+.layout--phone .section-description
 {
     margin-bottom: var(--ui-space-md);
 }
 
-.is-mobile .detail-icon
+.layout--phone .detail-icon
 {
     width: var(--ui-detail-mobile-icon-size);
     height: var(--ui-detail-mobile-icon-size);
     margin-top: 0;
 }
 
-.is-mobile .detail-icon.creature-portrait
+.layout--phone .detail-icon.creature-portrait
 {
     width: var(--ui-detail-mobile-portrait-size);
     height: var(--ui-detail-mobile-portrait-size);
 }
 
-.is-mobile .detail-description
+.layout--phone .detail-description
 {
     font-size: var(--ui-text-body);
 }
 
-.is-mobile .command-dock
+.layout--phone .command-dock
 {
     min-height: 0;
     max-height: none;
@@ -147,47 +147,47 @@
     padding: var(--ui-space-md);
 }
 
-.is-mobile .section-toolbar
+.layout--phone .section-toolbar
 {
     margin-bottom: var(--ui-space-xs);
     height: var(--ui-meter-height);
 }
 
-.is-mobile .mana-bar
+.layout--phone .mana-bar
 {
     width: var(--ui-mana-mobile-width);
 }
 
-.is-mobile .command-section
+.layout--phone .command-section
 {
     width: auto;
     margin-left: 0;
     margin-top: var(--ui-space-xs);
 }
 
-.is-mobile .status-label
+.layout--phone .status-label
 {
     font-size: var(--ui-text-caption);
     margin-bottom: var(--ui-space-xs);
 }
 
-.is-mobile .encounter-actions
+.layout--phone .encounter-actions
 {
     flex-shrink: 0;
 }
 
-.is-mobile .speed-controls
+.layout--phone .speed-controls
 {
     margin-top: 0;
     margin-bottom: var(--ui-space-lg);
 }
 
-.is-mobile .speed-controls .button
+.layout--phone .speed-controls .button
 {
     min-width: var(--ui-speed-touch-width);
 }
 
-.is-mobile .marker-toggle
+.layout--phone .marker-toggle
 {
     min-height: var(--ui-touch-target);
     align-items: center;
@@ -195,25 +195,25 @@
     font-size: var(--ui-text-control);
 }
 
-.is-mobile .marker-toggle .unity-toggle__input
+.layout--phone .marker-toggle .unity-toggle__input
 {
     min-width: var(--ui-touch-target);
     min-height: var(--ui-touch-target);
 }
 
-.is-mobile.is-menu .command-dock
+.layout--phone.is-menu .command-dock
 {
     min-height: 0;
     align-items: stretch;
 }
 
-.is-mobile.is-menu .command-section
+.layout--phone.is-menu .command-section
 {
     width: auto;
     margin-left: 0;
 }
 
-.is-mobile.is-menu .field-toolbar
+.layout--phone.is-menu .field-toolbar
 {
     display: none;
 }

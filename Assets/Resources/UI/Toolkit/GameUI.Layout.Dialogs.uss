@@ -141,7 +141,7 @@
     flex-wrap: wrap;
 }
 
-.is-compact .menu-panel
+.layout--compact .menu-panel
 {
     margin-top: var(--ui-space-xxl);
     padding: var(--ui-space-xxl);

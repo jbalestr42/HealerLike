@@ -131,7 +131,7 @@
 }
 #hud-root.compact-hud .devotion-value { color: rgba(248, 247, 223, 0.55); }
 #hud-root.compact-hud .devotion-value.is-lit { color: rgb(255, 214, 102); }
-#hud-root.compact-hud.is-mobile .hud-chip { margin-left: 4px; padding: 2px 6px; font-size: 12px; }
+#hud-root.compact-hud.layout--phone .hud-chip { margin-left: 4px; padding: 2px 6px; font-size: 12px; }
 
 /* The healer's items over the top left of the field, each opening its details in the popover */
 #hud-root.compact-hud .item-bar {
@@ -152,5 +152,5 @@
 /* The sandbox tools: a wrapping row of buttons per kind of tool */
 #hud-root.compact-hud .sandbox-buttons { flex-direction: row; flex-wrap: wrap; margin-bottom: 8px; }
 #hud-root.compact-hud .sandbox-buttons > .button { flex-grow: 0; min-height: 36px; margin: 0 6px 6px 0; padding: 4px 12px; font-size: 13px; }
-#hud-root.compact-hud.is-mobile .sandbox-buttons > .button { min-height: 44px; }
+#hud-root.compact-hud.layout--phone .sandbox-buttons > .button { min-height: 44px; }
 #hud-root.compact-hud .sandbox-heading { margin-top: 8px; margin-bottom: 4px; }

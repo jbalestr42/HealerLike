@@ -154,34 +154,34 @@
     border-color: var(--ui-accent);
 }
 
-#hud-root.game-ui.is-menu.is-landscape .menu-panel
+#hud-root.game-ui.is-menu.layout--landscape .menu-panel
 {
     padding-top: 20px;
 }
 
-#hud-root.game-ui.is-menu.is-landscape .menu-title
+#hud-root.game-ui.is-menu.layout--landscape .menu-title
 {
     font-size: 40px;
 }
 
-#hud-root.game-ui.is-menu.is-landscape .field-toolbar
+#hud-root.game-ui.is-menu.layout--landscape .field-toolbar
 {
     padding: 0 24px 20px 24px;
     align-items: center;
 }
 
-#hud-root.game-ui.is-menu.is-landscape .encounter-actions
+#hud-root.game-ui.is-menu.layout--landscape .encounter-actions
 {
     flex-direction: row;
     align-items: center;
 }
 
-#hud-root.game-ui.is-menu.is-landscape .encounter-actions > #start-button
+#hud-root.game-ui.is-menu.layout--landscape .encounter-actions > #start-button
 {
     min-width: 280px;
 }
 
-#hud-root.game-ui.is-menu.is-landscape .encounter-actions > #sandbox-button
+#hud-root.game-ui.is-menu.layout--landscape .encounter-actions > #sandbox-button
 {
     margin: 0 0 0 16px;
 }

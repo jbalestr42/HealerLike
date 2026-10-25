@@ -1,26 +1,26 @@
-.is-mobile .party-list,
-.is-mobile .detail-scroll
+.layout--phone .party-list,
+.layout--phone .detail-scroll
 {
     min-height: 0;
     flex-grow: 1;
     flex-shrink: 1;
 }
 
-.is-mobile .spell-list
+.layout--phone .spell-list
 {
     height: var(--ui-spell-mobile-list-height);
     flex-grow: 0;
     flex-shrink: 0;
 }
 
-.is-mobile .spell-list .card-shell
+.layout--phone .spell-list .card-shell
 {
     width: var(--ui-spell-mobile-width);
     height: var(--ui-spell-mobile-height);
     margin-right: var(--ui-space-sm);
 }
 
-.is-mobile .spell-list .data-card
+.layout--phone .spell-list .data-card
 {
     width: 100%;
     height: var(--ui-spell-mobile-height);
@@ -28,14 +28,14 @@
     padding: var(--ui-spell-mobile-padding);
 }
 
-.is-mobile .spell-list .data-card__icon
+.layout--phone .spell-list .data-card__icon
 {
     width: var(--ui-spell-mobile-icon-size);
     height: var(--ui-spell-mobile-icon-size);
     margin-bottom: var(--ui-small-control-padding);
 }
 
-.is-mobile .spell-list .data-card__title
+.layout--phone .spell-list .data-card__title
 {
     font-size: var(--ui-text-small);
     height: var(--ui-spell-mobile-title-height);
@@ -43,7 +43,7 @@
     overflow: hidden;
 }
 
-.is-mobile .spell-list .data-card__status
+.layout--phone .spell-list .data-card__status
 {
     font-size: var(--ui-text-caption);
     height: var(--ui-small-control-height);
@@ -52,7 +52,7 @@
     white-space: normal;
 }
 
-.is-mobile .card-info
+.layout--phone .card-info
 {
     display: flex;
     position: absolute;
@@ -67,20 +67,20 @@
     border-bottom-right-radius: 0;
 }
 
-.is-mobile .party-list .data-card
+.layout--phone .party-list .data-card
 {
     padding-right: var(--ui-card-info-inset);
     min-height: var(--ui-party-mobile-card-height);
 }
 
-.is-mobile .party-list .data-card.creature-card
+.layout--phone .party-list .data-card.creature-card
 {
     min-height: var(--ui-party-mobile-portrait-height);
     padding: var(--ui-space-lg) var(--ui-card-info-inset) var(--ui-space-lg) var(--ui-card-portrait-inset);
     align-items: stretch;
 }
 
-.is-mobile .party-list .creature-card .data-card__icon
+.layout--phone .party-list .creature-card .data-card__icon
 {
     position: absolute;
     left: var(--ui-portrait-inset);
@@ -90,26 +90,26 @@
     margin-bottom: 0;
 }
 
-.is-mobile .collection-list .card-shell
+.layout--phone .collection-list .card-shell
 {
     width: 100%;
     margin-right: 0;
     margin-bottom: var(--ui-space-md);
 }
 
-.is-mobile .collection-list .data-card
+.layout--phone .collection-list .data-card
 {
     width: 100%;
     min-height: var(--ui-item-mobile-height);
     margin: 0;
 }
 
-.is-mobile .collection-list .data-card__description
+.layout--phone .collection-list .data-card__description
 {
     font-size: var(--ui-text-control);
 }
 
-.is-mobile .card-info.is-hidden
+.layout--phone .card-info.is-hidden
 {
     display: none;
 }

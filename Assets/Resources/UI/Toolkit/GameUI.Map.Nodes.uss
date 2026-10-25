@@ -155,58 +155,58 @@
     opacity: 0.65;
 }
 
-.is-mobile .map-dialog
+.layout--phone .map-dialog
 {
     width: 100%;
     padding: var(--ui-space-lg);
 }
 
-.is-mobile .map-header .dialog-title
+.layout--phone .map-header .dialog-title
 {
     font-size: var(--ui-text-brand);
     margin-top: var(--ui-space-xs);
 }
 
-.is-mobile .map-description
+.layout--phone .map-description
 {
     font-size: var(--ui-text-small);
     margin-bottom: var(--ui-compact-gap);
 }
 
-.is-mobile .map-footer
+.layout--phone .map-footer
 {
     padding-top: var(--ui-space-md);
 }
 
-.is-mobile .map-key
+.layout--phone .map-key
 {
     margin-right: var(--ui-map-mobile-key-gap);
     font-size: var(--ui-text-micro);
 }
 
-.is-mobile.is-landscape .map-dialog
+.layout--phone.layout--landscape .map-dialog
 {
     padding: var(--ui-space-md) var(--ui-space-lg);
 }
 
-.is-mobile.is-landscape .map-header .dialog-title
+.layout--phone.layout--landscape .map-header .dialog-title
 {
     font-size: var(--ui-text-landscape-title);
     margin: 0;
 }
 
-.is-mobile.is-landscape .map-header .eyebrow
+.layout--phone.layout--landscape .map-header .eyebrow
 {
     display: none;
 }
 
-.is-mobile.is-landscape .map-description
+.layout--phone.layout--landscape .map-description
 {
     font-size: var(--ui-text-caption);
     margin-bottom: var(--ui-mobile-currency-gap);
 }
 
-.is-mobile.is-landscape .map-footer
+.layout--phone.layout--landscape .map-footer
 {
     padding-top: var(--ui-space-xs);
 }
