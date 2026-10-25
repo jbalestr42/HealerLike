@@ -38,6 +38,7 @@ public static class ToolkitLayoutContract
             && ToolkitTemplates.Require(root, "gameover-panel", out VisualElement _)
             && ToolkitTemplates.Require(root, "gameover-title", out Label _)
             && ToolkitTemplates.Require(root, "hud-root", out VisualElement _)
+            && ToolkitTemplates.Require(root, "safe-frame", out VisualElement _)
             && ToolkitTemplates.Require(root, "inventory-actions", out VisualElement _)
             && ToolkitTemplates.Require(root, "inventory-body", out ScrollView _)
             && ToolkitTemplates.Require(root, "inventory-button", out Button _)

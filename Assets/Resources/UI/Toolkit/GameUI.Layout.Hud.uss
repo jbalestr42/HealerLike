@@ -1,7 +1,16 @@
 .game-ui
 {
     flex-grow: 1;
-    padding: var(--ui-space-xl);
+}
+
+/* The safe area inside the full-screen root: ToolkitSafeArea sets its insets at runtime */
+.safe-frame
+{
+    position: absolute;
+    left: var(--ui-space-xl);
+    top: var(--ui-space-xl);
+    right: var(--ui-space-xl);
+    bottom: var(--ui-space-xl);
 }
 
 .top-bar
@@ -167,9 +176,12 @@
     display: none;
 }
 
-.game-ui.layout--compact
+.layout--compact .safe-frame
 {
-    padding: var(--ui-space-md);
+    left: var(--ui-space-md);
+    top: var(--ui-space-md);
+    right: var(--ui-space-md);
+    bottom: var(--ui-space-md);
 }
 
 .layout--compact .brand-block

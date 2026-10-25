@@ -4,8 +4,8 @@ using UnityEngine.UIElements;
 
 public class ToolkitSafeArea : IDisposable
 {
-    readonly VisualElement _root;
     readonly VisualElement _hud;
+    readonly VisualElement _frame;
     readonly UIDocument _document;
     Vector2Int _screen;
     Rect _safeArea;
@@ -14,8 +14,8 @@ public class ToolkitSafeArea : IDisposable
 
     public ToolkitSafeArea(VisualElement root, UIDocument document)
     {
-        _root = root;
         _hud = root.Q("hud-root");
+        _frame = root.Q("safe-frame");
         _document = document;
         _hud.RegisterCallback<CustomStyleResolvedEvent>(OnStyleResolved);
         ReadStyle();
@@ -61,20 +61,12 @@ public class ToolkitSafeArea : IDisposable
         _safeArea = safeArea;
         _state = ToolkitLayout.Resolve(screen, safeArea, Application.isMobilePlatform);
         _document.panelSettings.scale = _state.scale;
+        // One frame holds the HUD and every modal, so a modal added after this still gets the insets
         Rect safe = _state.safeRect;
-        float right = _state.panelSize.x - safe.xMax;
-        float bottom = _state.panelSize.y - safe.yMax;
-        _hud.style.paddingLeft = safe.xMin + _padding;
-        _hud.style.paddingTop = safe.yMin + _padding;
-        _hud.style.paddingRight = right + _padding;
-        _hud.style.paddingBottom = bottom + _padding;
-        foreach (VisualElement modal in _root.Query(className: "modal-layer").ToList())
-        {
-            modal.style.left = safe.xMin + _padding;
-            modal.style.top = safe.yMin + _padding;
-            modal.style.right = right + _padding;
-            modal.style.bottom = bottom + _padding;
-        }
+        _frame.style.left = safe.xMin + _padding;
+        _frame.style.top = safe.yMin + _padding;
+        _frame.style.right = _state.panelSize.x - safe.xMax + _padding;
+        _frame.style.bottom = _state.panelSize.y - safe.yMax + _padding;
 
         return _state;
     }

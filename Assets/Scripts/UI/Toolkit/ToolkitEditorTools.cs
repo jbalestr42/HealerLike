@@ -32,8 +32,8 @@ public sealed class ToolkitEditorTools : IDisposable
         _context = context;
         _view = view;
         VisualElement actions = view.root.Q("encounter-actions");
-        VisualElement hud = view.root.Q("hud-root");
-        if (actions == null || hud == null)
+        VisualElement frame = view.root.Q("safe-frame");
+        if (actions == null || frame == null)
         {
             return;
         }
@@ -45,7 +45,7 @@ public sealed class ToolkitEditorTools : IDisposable
             actions.Q(name).AddToClassList("button");
         }
 
-        hud.Add(Track(BuildPanel()));
+        frame.Add(Track(BuildPanel()));
         view.AddClickListener(KillWaveName, KillWave);
         view.AddClickListener(ItemsName, Toggle);
         view.AddClickListener(CloseName, Close);

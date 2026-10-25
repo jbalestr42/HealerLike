@@ -86,6 +86,13 @@ namespace UI.Toolkit
             Assert.IsNotNull(_view.root.Q(ToolkitEditorTools.PanelName));
         }
 
+        // Added after the safe area was laid out: inside the safe frame it gets the same insets as the other modals
+        [Test]
+        public void Init_PutsTheCatalogInTheSafeFrame()
+        {
+            Assert.AreSame(_view.root.Q("safe-frame"), _view.root.Q(ToolkitEditorTools.PanelName).hierarchy.parent);
+        }
+
         [Test]
         public void Refresh_OnTheBoardOfARun_ShowsTheButtonsAndTheToolbar()
         {

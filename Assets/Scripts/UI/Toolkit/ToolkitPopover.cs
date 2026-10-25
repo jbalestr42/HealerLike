@@ -7,12 +7,12 @@ public sealed class ToolkitPopover : IDisposable
 {
     readonly ToolkitGameView _view;
     readonly VisualElement _panel;
-    readonly VisualElement _hud;
+    readonly VisualElement _frame;
     public bool isOpen { get; private set; }
     Rect _anchor;
     public ToolkitPopover(ToolkitGameView view)
     {
-        _view = view; _panel = view.root.Q("detail-panel"); _hud = view.root.Q("hud-root");
+        _view = view; _panel = view.root.Q("detail-panel"); _frame = view.root.Q("safe-frame");
         view.OnInspectRequested.AddListener(Open);
         view.OnClosePopover += Close;
         view.OnLayoutChanged += OnLayoutChanged;
@@ -47,10 +47,10 @@ public sealed class ToolkitPopover : IDisposable
     }
     void Place()
     {
-        Rect bounds = _hud.worldBound;
-        float left = bounds.xMin + _hud.resolvedStyle.paddingLeft;
-        float right = bounds.xMax - _hud.resolvedStyle.paddingRight;
-        float top = bounds.yMin + _hud.resolvedStyle.paddingTop;
+        Rect bounds = _frame.worldBound;
+        float left = bounds.xMin;
+        float right = bounds.xMax;
+        float top = bounds.yMin;
         VisualElement topBar = _view.root.Q("top-bar");
         if (IsShown(topBar))
         {
@@ -58,7 +58,7 @@ public sealed class ToolkitPopover : IDisposable
         }
 
         // The menu hides the party panel, whose bound would read as zero and push the popover off the screen
-        float bottom = bounds.yMax - _hud.resolvedStyle.paddingBottom;
+        float bottom = bounds.yMax;
         VisualElement partyPanel = _view.root.Q("party-panel");
         if (IsShown(partyPanel))
         {

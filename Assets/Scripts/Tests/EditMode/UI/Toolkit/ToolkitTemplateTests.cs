@@ -43,7 +43,7 @@ namespace UI.Toolkit
         public void Validate_GameLayout_ManaAndDevotionUnderTheHeaderAboveTheEncounterButtons()
         {
             VisualElement root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
-            VisualElement hud = root.Q("hud-root");
+            VisualElement frame = root.Q("safe-frame");
             VisualElement resources = root.Q("resource-bar");
 
             Assert.IsNotNull(resources);
@@ -54,7 +54,7 @@ namespace UI.Toolkit
             string[] order = { "top-bar", "resource-bar", "field-toolbar", "main-content", "party-panel", "command-dock" };
             for (int i = 1; i < order.Length; i++)
             {
-                Assert.Less(hud.IndexOf(root.Q(order[i - 1])), hud.IndexOf(root.Q(order[i])), order[i - 1] + " before " + order[i]);
+                Assert.Less(frame.IndexOf(root.Q(order[i - 1])), frame.IndexOf(root.Q(order[i])), order[i - 1] + " before " + order[i]);
             }
         }
 

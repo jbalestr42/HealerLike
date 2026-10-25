@@ -41,8 +41,8 @@ namespace UI.Toolkit
                     Assert.That(card.yMax, Is.LessThanOrEqualTo(root.worldBound.yMax));
                     Assert.That(card.xMin, Is.GreaterThanOrEqualTo(root.worldBound.xMin));
                     Assert.That(card.xMax, Is.LessThanOrEqualTo(root.worldBound.xMax));
-                    VisualElement hud = root.Q("hud-root");
-                    Assert.AreSame(root.Q("detail-panel"), hud.Children().Last(), "Drawn over the class screen, not under it.");
+                    VisualElement frame = root.Q("safe-frame");
+                    Assert.AreSame(root.Q("detail-panel"), frame.Children().Last(), "Drawn over the class screen, not under it.");
                     popover.Close();
                 }
 

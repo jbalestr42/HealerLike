@@ -30,6 +30,7 @@ public class ToolkitGameView
     static readonly string[] structuralElements =
     {
         "hud-root",
+        "safe-frame",
         "main-content",
         "world-space",
         "game-ui",
