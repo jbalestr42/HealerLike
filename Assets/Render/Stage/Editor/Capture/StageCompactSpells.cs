@@ -124,6 +124,14 @@ namespace HealerLike.Render.Stage
                 "Combat targeting contextual control changes the reserved viewport");
             yield return _s.Capture("15b-combat-targeting");
             targeting = _s.interaction.GetInteraction();
+            // The spell chosen is not a finger position: it outlives a rotation both ways
+            yield return _s.Resize(1920, 1080);
+            _s.output.Check(targeting != null && ReferenceEquals(targeting, _s.interaction.GetInteraction()),
+                "Spell targeting survives a rotation to landscape");
+            yield return _s.Capture("15d-rotated-targeting");
+            yield return _s.Resize(1080, 1920);
+            _s.output.Check(ReferenceEquals(targeting, _s.interaction.GetInteraction()),
+                "Spell targeting survives the rotation back to portrait");
             entity = _s.manager.entityManager.GetEntities(Entity.EntityType.Player)[0].GetComponent<Entity>();
             board = _s.manager.gameCamera.WorldToScreenPoint(entity.GetComponent<Collider>().bounds.center);
             _s.output.Check(targeting != null && !_s.actions.touch.IsOverInterface(board)

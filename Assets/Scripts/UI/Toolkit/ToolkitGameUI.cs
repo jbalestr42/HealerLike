@@ -281,9 +281,16 @@ public class ToolkitGameUI : MonoBehaviour
         Refresh();
     }
 
-    // The layout-dependent texts follow at once, not at the next periodic refresh
+    // The layout-dependent texts follow at once, not at the next periodic refresh. A press on the board is dropped
+    // like the interface gestures (the view cancels those); a spell's targeting or a placement choice stays
     void OnLayoutChanged(ToolkitLayoutState state)
     {
+        ToolkitTouchInput touch = GetComponent<ToolkitTouchInput>();
+        if (touch != null)
+        {
+            touch.Interrupt();
+        }
+
         Refresh();
     }
 

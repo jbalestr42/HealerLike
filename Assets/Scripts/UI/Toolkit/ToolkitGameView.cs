@@ -325,6 +325,12 @@ public class ToolkitGameView
             return false;
         }
 
+        // A rotation or a resize under a finger: the gesture was measured in the previous layout, it is dropped
+        if (_hasLayout)
+        {
+            CancelGestures();
+        }
+
         _hasLayout = true;
         _layout = state;
         OnLayoutChanged?.Invoke(state);

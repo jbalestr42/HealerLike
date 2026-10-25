@@ -254,6 +254,27 @@ namespace UI.Toolkit
             });
         }
 
+        // A rotation under a held finger interrupts the press: its release is dropped, the spell's targeting stays
+        [Test]
+        public void Interrupt_DuringHeldWorldTouch_DropsTheReleaseAndKeepsTheTargeting()
+        {
+            _fixture.WithInput((input, manager, interaction) =>
+            {
+                UpdateTouch(input, TouchPhase.Began, Vector2.right);
+                UpdateTouch(input, TouchPhase.Stationary, Vector2.right);
+                input.Interrupt();
+                UpdateTouch(input, TouchPhase.Stationary, Vector2.right);
+                UpdateTouch(input, TouchPhase.Ended, Vector2.right);
+                Assert.That(interaction.calls, Is.Empty);
+                Assert.That(manager.GetInteraction(), Is.SameAs(interaction));
+                input.captureTouches = System.Array.Empty<Touch>();
+                UpdateInput(input);
+                UpdateTouch(input, TouchPhase.Began, Vector2.right);
+                UpdateTouch(input, TouchPhase.Ended, Vector2.right);
+                CollectionAssert.AreEqual(new[] { "enter", "preview", "click" }, interaction.calls);
+            });
+        }
+
         [Test]
         public void Init_DuringHeldTouch_RestoresThePreviousMouseOwner()
         {

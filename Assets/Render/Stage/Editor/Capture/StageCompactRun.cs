@@ -61,6 +61,7 @@ namespace HealerLike.Render.Stage
                 Observe("roster-hold");
                 _output.Check(Count == initial, "Creature hold produces zero entities");
                 yield return review.OutsideDismiss("02b-outside-dismissal");
+                yield return RotatePopover(root, initial);
                 Vector3 cell = StageCells.Nearest(_manager, Vector3.left * 2);
                 Vector2 drop = _gestures.DropPoint(cell);
                 yield return _gestures.Drag(Available, new Vector2(4, Screen.height - 4), "03-invalid-placement");
@@ -132,6 +133,21 @@ namespace HealerLike.Render.Stage
                 passed = true;
             }
             finally { _session?.Dispose(); _output.Write(passed); StagePlay.Finish(this, passed); }
+        }
+
+        // Portrait -> landscape -> portrait with details open: the popover was placed in portrait, it closes
+        IEnumerator RotatePopover(VisualElement root, int initial)
+        {
+            yield return _gestures.Hold(Available, "02c-details-before-rotation", true);
+            yield return _session.Resize(1920, 1080);
+            _output.Check(!StageInterfaceOutput.IsVisible(root.Q("detail-panel")),
+                "Rotating to landscape closes the popover placed in portrait");
+            yield return _session.Capture("02d-rotated-landscape");
+            yield return _session.Resize(1080, 1920);
+            yield return _session.Capture("02e-rotated-back-portrait");
+            _output.Check(!StageInterfaceOutput.IsVisible(root.Q("detail-panel"))
+                && Count == initial && _session.interaction.GetInteraction() == null,
+                "Rotating back and forth creates no creature and starts no placement");
         }
 
         // His CharacterInfoPanel text in our sheet dialog, opened from the header and closed by its own button

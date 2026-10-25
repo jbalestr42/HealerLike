@@ -12,7 +12,7 @@ namespace HealerLike.Render.Stage
         public StageCompactInterruptions(StageCaptureSession session) { _s = session; }
         public IEnumerator Run(Button card, Vector2 destination)
         {
-            foreach (string interruption in new[] { "pointer-loss", "pause", "synthetic-focus-loss", "ui-teardown" })
+            foreach (string interruption in new[] { "pointer-loss", "pause", "synthetic-focus-loss", "ui-teardown", "rotation" })
             {
                 card = _s.actions.Cards("party-list")[0];
                 yield return _s.actions.BringIntoView(card);
@@ -40,6 +40,12 @@ namespace HealerLike.Render.Stage
                         _s.actions.touch.SendMessage("OnApplicationFocus", false);
                         _s.actions.ui.SendMessage("OnApplicationFocus", false);
                     }
+                    else if (interruption == "rotation")
+                    {
+                        // The phone turns under the held finger: same pixels, the other way round
+                        yield return _s.Resize(1920, 1080);
+                        yield return _s.Capture("04e-rotated-mid-drag");
+                    }
                     else
                     {
                         _s.actions.ui.enabled = false;
@@ -59,6 +65,11 @@ namespace HealerLike.Render.Stage
                     if (interruption == "ui-teardown")
                     {
                         _s.actions.ui.enabled = true;
+                    }
+
+                    if (interruption == "rotation")
+                    {
+                        yield return _s.Resize(1080, 1920);
                     }
 
                     yield return Wait(0.25f);

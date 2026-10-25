@@ -136,6 +136,29 @@ namespace UI.Toolkit
             Assert.AreEqual(ToolkitLayoutMode.Landscape, _view.layout.mode);
         }
 
+        // A drag measured in portrait cannot go on in landscape
+        [Test]
+        public void SetLayout_Rotated_CancelsTheGesturesUnderWay()
+        {
+            int cancels = 0;
+            _view.SetLayout(ToolkitLayout.FromPanel(new Vector2(390f, 844f)));
+            _view.OnGesturesCancelled += delegate { cancels++; };
+            _view.SetLayout(ToolkitLayout.FromPanel(new Vector2(844f, 390f)));
+            Assert.AreEqual(1, cancels);
+        }
+
+        // Neither the first layout nor the same one again interrupts anything
+        [Test]
+        public void SetLayout_FirstOrSameState_KeepsTheGestures()
+        {
+            int cancels = 0;
+            _view.OnGesturesCancelled += delegate { cancels++; };
+            ToolkitLayoutState phone = ToolkitLayout.FromPanel(new Vector2(390f, 844f));
+            _view.SetLayout(phone);
+            _view.SetLayout(phone);
+            Assert.AreEqual(0, cancels);
+        }
+
         // Before any pointer, the form factor stands for it: a phone is touched, a desktop has a mouse
         [Test]
         public void IsTouchInput_NoPointerYet_FollowsTheFormFactor()
