@@ -25,7 +25,7 @@ public static class ToolkitResponsiveLayout
     public static bool Apply(ToolkitGameView view, ToolkitLayoutState state)
     {
         ApplyClasses(view.root.Q("hud-root"), state);
-        view.isTouchLayout = state.isPhone;
+        view.SetLayout(state);
         return state.isPhone;
     }
 

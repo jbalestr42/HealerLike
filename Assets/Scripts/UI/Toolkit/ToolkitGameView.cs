@@ -11,7 +11,12 @@ public class ToolkitGameView
     public UnityEvent OnInspectEnded = new UnityEvent();
     public UnityEvent<ToolkitCardModel> OnInspectRequested = new UnityEvent<ToolkitCardModel>();
     public UnityEvent<ToolkitCardModel> OnCardActivated = new UnityEvent<ToolkitCardModel>();
-    public bool isTouchLayout { get; set; }
+    ToolkitLayoutState _layout;
+    bool _hasLayout;
+    public ToolkitLayoutState layout => _layout;
+    public bool isTouchLayout => _layout.isPhone;
+    // Raised once per real change of the layout, after the root classes match it
+    public event Action<ToolkitLayoutState> OnLayoutChanged;
     public IToolkitRosterDrag rosterDrag;
     public Rect inspectAnchor;
     public Func<Vector2, Vector2> screenPointProvider;
@@ -281,8 +286,23 @@ public class ToolkitGameView
     }
 
     // Destroys the icons this view generated
+    // Applied every frame: only a state that differs from the last one is announced
+    public bool SetLayout(ToolkitLayoutState state)
+    {
+        if (_hasLayout && _layout.Equals(state))
+        {
+            return false;
+        }
+
+        _hasLayout = true;
+        _layout = state;
+        OnLayoutChanged?.Invoke(state);
+        return true;
+    }
+
     public void Release()
     {
+        OnLayoutChanged = null;
         CancelGestures();
         _root.UnregisterCallback<PointerDownEvent>(GatePointer, TrickleDown.TrickleDown);
         if (_iconProvider != null)

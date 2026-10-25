@@ -249,5 +249,39 @@ namespace UI.Toolkit
                 element.SendEvent(evt);
             }
         }
+
+        [Test]
+        public void LayoutChanged_OpenPopover_Closes()
+        {
+            TemplateContainer root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+            ToolkitGameView view = new ToolkitGameView(root);
+            using (ToolkitPopover popover = new ToolkitPopover(view))
+            {
+                view.SetLayout(ToolkitLayout.FromPanel(new Vector2(390f, 844f)));
+                popover.Open(new ToolkitCardModel { title = "Spell", description = "Spell description" });
+                Assert.IsTrue(popover.isOpen);
+                view.SetLayout(ToolkitLayout.FromPanel(new Vector2(844f, 390f)));
+                Assert.IsFalse(popover.isOpen);
+            }
+
+            view.Release();
+        }
+
+        [Test]
+        public void LayoutUnchanged_OpenPopover_StaysOpen()
+        {
+            TemplateContainer root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+            ToolkitGameView view = new ToolkitGameView(root);
+            using (ToolkitPopover popover = new ToolkitPopover(view))
+            {
+                ToolkitLayoutState phone = ToolkitLayout.FromPanel(new Vector2(390f, 844f));
+                view.SetLayout(phone);
+                popover.Open(new ToolkitCardModel { title = "Spell", description = "Spell description" });
+                view.SetLayout(phone);
+                Assert.IsTrue(popover.isOpen);
+            }
+
+            view.Release();
+        }
     }
 }

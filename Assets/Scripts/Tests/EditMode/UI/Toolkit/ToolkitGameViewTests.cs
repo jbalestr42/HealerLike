@@ -111,5 +111,38 @@ namespace UI.Toolkit
             Assert.IsNotNull(cardTree.Q<Button>("data-card"));
             Assert.IsNotNull(cardTree.Q("card-icon"));
         }
+
+        [Test]
+        public void SetLayout_SameStateTwice_AnnouncesOnce()
+        {
+            int changes = 0;
+            _view.OnLayoutChanged += delegate { changes++; };
+            ToolkitLayoutState phone = ToolkitLayout.FromPanel(new Vector2(390f, 844f));
+            Assert.IsTrue(_view.SetLayout(phone));
+            Assert.IsFalse(_view.SetLayout(phone));
+            Assert.AreEqual(1, changes);
+            Assert.IsTrue(_view.isTouchLayout);
+        }
+
+        [Test]
+        public void SetLayout_Rotated_AnnouncesTheNewState()
+        {
+            ToolkitLayoutState received = default;
+            _view.SetLayout(ToolkitLayout.FromPanel(new Vector2(390f, 844f)));
+            _view.OnLayoutChanged += delegate(ToolkitLayoutState state) { received = state; };
+            _view.SetLayout(ToolkitLayout.FromPanel(new Vector2(844f, 390f)));
+            Assert.AreEqual(ToolkitLayoutMode.Landscape, received.mode);
+            Assert.AreEqual(ToolkitLayoutMode.Landscape, _view.layout.mode);
+        }
+
+        // The first layout is announced even when it equals the default state
+        [Test]
+        public void SetLayout_FirstState_IsAnnounced()
+        {
+            int changes = 0;
+            _view.OnLayoutChanged += delegate { changes++; };
+            _view.SetLayout(default(ToolkitLayoutState));
+            Assert.AreEqual(1, changes);
+        }
     }
 }

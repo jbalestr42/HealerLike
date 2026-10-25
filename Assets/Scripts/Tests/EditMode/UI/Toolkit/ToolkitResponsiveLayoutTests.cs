@@ -73,5 +73,21 @@ namespace UI.Toolkit
             AssertClasses(element, ToolkitResponsiveLayout.DesktopClass, ToolkitResponsiveLayout.LandscapeClass,
                 ToolkitResponsiveLayout.MouseClass);
         }
+
+        [Test]
+        public void Apply_SameSizeEveryFrame_AnnouncesOnlyTheChange()
+        {
+            VisualElement root = new VisualElement();
+            root.Add(new VisualElement { name = "hud-root" });
+            ToolkitGameView view = new ToolkitGameView(root);
+            int changes = 0;
+            view.OnLayoutChanged += delegate { changes++; };
+            ToolkitResponsiveLayout.Apply(view, 390f, 844f);
+            ToolkitResponsiveLayout.Apply(view, 390f, 844f);
+            ToolkitResponsiveLayout.Apply(view, 1440f, 900f);
+            Assert.AreEqual(2, changes);
+            Assert.IsTrue(root.Q("hud-root").ClassListContains(ToolkitResponsiveLayout.DesktopClass));
+            view.Release();
+        }
     }
 }

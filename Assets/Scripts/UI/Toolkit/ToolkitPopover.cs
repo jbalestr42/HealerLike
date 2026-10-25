@@ -15,6 +15,7 @@ public sealed class ToolkitPopover : IDisposable
         _view = view; _panel = view.root.Q("detail-panel"); _hud = view.root.Q("hud-root");
         view.OnInspectRequested.AddListener(Open);
         view.OnClosePopover += Close;
+        view.OnLayoutChanged += OnLayoutChanged;
         view.AddClickListener("detail-close-button", Close);
         view.root.RegisterCallback<PointerDownEvent>(Outside, TrickleDown.TrickleDown);
         _panel.RegisterCallback<GeometryChangedEvent>(Geometry);
@@ -127,6 +128,11 @@ public sealed class ToolkitPopover : IDisposable
 
         Close();
     }
+    // Its anchor was measured in the previous layout
+    void OnLayoutChanged(ToolkitLayoutState state)
+    {
+        Close();
+    }
     public void Close()
     {
         if (!isOpen)
@@ -143,6 +149,7 @@ public sealed class ToolkitPopover : IDisposable
         Close();
         _view.OnInspectRequested.RemoveListener(Open);
         _view.OnClosePopover -= Close;
+        _view.OnLayoutChanged -= OnLayoutChanged;
         _view.RemoveClickListener("detail-close-button", Close);
         _view.root.UnregisterCallback<PointerDownEvent>(Outside, TrickleDown.TrickleDown);
         _panel.UnregisterCallback<GeometryChangedEvent>(Geometry);

@@ -277,6 +277,13 @@ public class ToolkitGameUI : MonoBehaviour
             _legacyCanvases.Hide(_context, FindAnyObjectByType<UIManager>());
         }
 
+        _view.OnLayoutChanged += OnLayoutChanged;
+        Refresh();
+    }
+
+    // The layout-dependent texts follow at once, not at the next periodic refresh
+    void OnLayoutChanged(ToolkitLayoutState state)
+    {
         Refresh();
     }
 
@@ -409,6 +416,7 @@ public class ToolkitGameUI : MonoBehaviour
         _mapPanel.Dispose();
         if (_view != null)
         {
+            _view.OnLayoutChanged -= OnLayoutChanged;
             _view.Release();
             _view = null;
         }
