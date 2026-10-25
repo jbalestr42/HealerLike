@@ -214,7 +214,7 @@ namespace HealerLike.Render.Stage
             Camera camera = _manager.gameCamera;
             float aspect = (float)camera.pixelWidth / Mathf.Max(1, camera.pixelHeight);
             bool isAiming = _interaction != null && _interaction.GetInteraction() != null;
-            Rect viewport = FramedViewport(_viewport, _ui.normalizedWorldViewport, isAiming, _camera == camera);
+            Rect viewport = FramedViewport(_viewport, _ui.normalizedBoardViewport, isAiming, _camera == camera);
             if (viewport.width > 0.1f && viewport.height > 0.1f && (_camera != camera || _viewport != viewport
                 || !Mathf.Approximately(_aspect, aspect)))
             {

@@ -14,6 +14,9 @@ public class ToolkitMobileLayout : IDisposable
     public Rect normalizedWorldViewport => _view == null || _view.root.panel == null
         ? new Rect(0.04f, 0.24f, 0.92f, 0.64f)
         : ToolkitScreenLayout.GetViewport(_view.root.Q("world-space").worldBound, _view.root.worldBound);
+    public Rect normalizedBoardViewport => _view == null
+        ? normalizedWorldViewport
+        : ToolkitScreenLayout.GetBoardViewport(normalizedWorldViewport, _view.layout.mode);
 
     public void Init(ToolkitGameView view, ToolkitGameContext context, UIDocument document)
     {

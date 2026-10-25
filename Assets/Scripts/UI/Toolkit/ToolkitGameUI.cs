@@ -123,6 +123,12 @@ public class ToolkitGameUI : MonoBehaviour
         get { return _mobileLayout.normalizedWorldViewport; }
     }
 
+    // Where the camera frames the board: the free area, but the full screen height on a phone in landscape
+    public Rect normalizedBoardViewport
+    {
+        get { return _mobileLayout.normalizedBoardViewport; }
+    }
+
     public void SetBattleFocus(bool focused, System.Action toggle)
     {
         _mobileLayout.SetBattleFocus(focused, toggle);
@@ -329,7 +335,7 @@ public class ToolkitGameUI : MonoBehaviour
 
         _actions.Update();
         _mobileLayout.Update(safeAreaProvider);
-        _worldFraming.Update(normalizedWorldViewport);
+        _worldFraming.Update(normalizedBoardViewport);
         if (Time.unscaledTime >= _nextRefresh)
         {
             _nextRefresh = Time.unscaledTime + 0.1f;

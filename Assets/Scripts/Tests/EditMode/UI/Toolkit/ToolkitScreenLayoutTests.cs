@@ -26,5 +26,37 @@ namespace UI.Toolkit
             Assert.Greater(viewport.height, 0.5f);
             Assert.Greater(viewport.yMin, 0f);
         }
+
+        [Test]
+        public void GetBoardViewport_PhoneLandscape_ReachesTowardTheScreenEdgesAndKeepsTheFreeWidth()
+        {
+            Rect free = Rect.MinMaxRect(0.05f, 0.4f, 0.95f, 0.8f);
+            ToolkitLayoutSettings settings = new ToolkitLayoutSettings { landscapeBoardOverlap = 0.5f };
+            Rect board = ToolkitScreenLayout.GetBoardViewport(free, ToolkitLayoutMode.Landscape, settings);
+            Assert.AreEqual(0.2f, board.yMin, 0.0001f);
+            Assert.AreEqual(0.9f, board.yMax, 0.0001f);
+            Assert.AreEqual(free.xMin, board.xMin, 0.0001f);
+            Assert.AreEqual(free.xMax, board.xMax, 0.0001f);
+        }
+
+        [TestCase(0f, 0.4f, 0.8f)]
+        [TestCase(1f, 0f, 1f)]
+        public void GetBoardViewport_OverlapBounds_GoFromTheFreeAreaToTheFullHeight(float overlap, float yMin,
+            float yMax)
+        {
+            Rect free = Rect.MinMaxRect(0.05f, 0.4f, 0.95f, 0.8f);
+            ToolkitLayoutSettings settings = new ToolkitLayoutSettings { landscapeBoardOverlap = overlap };
+            Rect board = ToolkitScreenLayout.GetBoardViewport(free, ToolkitLayoutMode.Landscape, settings);
+            Assert.AreEqual(yMin, board.yMin, 0.0001f);
+            Assert.AreEqual(yMax, board.yMax, 0.0001f);
+        }
+
+        [TestCase(ToolkitLayoutMode.Desktop)]
+        [TestCase(ToolkitLayoutMode.Portrait)]
+        public void GetBoardViewport_OtherLayouts_KeepTheFreeArea(ToolkitLayoutMode mode)
+        {
+            Rect free = Rect.MinMaxRect(0.05f, 0.35f, 0.95f, 0.8f);
+            Assert.AreEqual(free, ToolkitScreenLayout.GetBoardViewport(free, mode));
+        }
     }
 }

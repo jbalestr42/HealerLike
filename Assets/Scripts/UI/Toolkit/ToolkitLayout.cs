@@ -30,6 +30,8 @@ public class ToolkitLayoutSettings
     public Vector2 tabletReference = new Vector2(1180f, 860f);
     // A tablet shaped portrait screen keeps at least this panel height, rather than a squat phone column
     public float tabletPortraitHeight = 960f;
+    // How far a phone in landscape frames the board past the HUD bars, from the free area (0) to the screen edges (1)
+    public float landscapeBoardOverlap = 0.75f;
 }
 
 // What the UI is laid out for: decided from the screen alone, so every consumer sees the same answer

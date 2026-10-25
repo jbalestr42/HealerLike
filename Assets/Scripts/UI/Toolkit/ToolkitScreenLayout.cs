@@ -23,4 +23,24 @@ public class ToolkitScreenLayout
         float top = Mathf.Clamp01(1f - (worldRect.yMin - panelRect.yMin) / panelRect.height);
         return Rect.MinMaxRect(left, bottom, right, top);
     }
+
+    // The area the camera frames the board in. A phone in landscape leaves too short a strip between the HUD bars for
+    // the board to read: it reaches most of the way to the screen's top and bottom, its edge rows going under the
+    // bars, and keeps the free width
+    public static Rect GetBoardViewport(Rect worldViewport, ToolkitLayoutMode mode)
+    {
+        return GetBoardViewport(worldViewport, mode, ToolkitLayoutSettings.Default);
+    }
+
+    public static Rect GetBoardViewport(Rect worldViewport, ToolkitLayoutMode mode, ToolkitLayoutSettings settings)
+    {
+        if (mode != ToolkitLayoutMode.Landscape)
+        {
+            return worldViewport;
+        }
+
+        float overlap = Mathf.Clamp01(settings.landscapeBoardOverlap);
+        return Rect.MinMaxRect(worldViewport.xMin, Mathf.Lerp(worldViewport.yMin, 0f, overlap),
+            worldViewport.xMax, Mathf.Lerp(worldViewport.yMax, 1f, overlap));
+    }
 }

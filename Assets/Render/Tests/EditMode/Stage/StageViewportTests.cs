@@ -30,6 +30,22 @@ namespace HealerLike.Render.Stage
             Assert.That(narrow.position.magnitude, Is.GreaterThan(wide.position.magnitude));
         }
 
+        [Test]
+        public void Fit_PhoneLandscapeBoardViewport_BringsCameraCloser()
+        {
+            // An 844x390 phone: the top bar and the spell dock leave the board a short strip
+            Bounds bounds = new Bounds(new Vector3(0f, 1.5f, 0f), new Vector3(17.4f, 3f, 11.4f));
+            Quaternion rotation = Quaternion.Euler(StageCalibration.LandscapePitch, 0f, 0f);
+            float aspect = 844f / 390f;
+            Rect free = Rect.MinMaxRect(0.02f, 0.4f, 0.98f, 0.82f);
+            Pose framed = StageViewport.Fit(bounds, rotation, 40f, aspect, free);
+            Pose board = StageViewport.Fit(bounds, rotation, 40f, aspect,
+                ToolkitScreenLayout.GetBoardViewport(free, ToolkitLayoutMode.Landscape));
+
+            Assert.That(Vector3.Distance(board.position, bounds.center),
+                Is.LessThan(Vector3.Distance(framed.position, bounds.center)));
+        }
+
         [TestCase("Main", "Assets/Scenes/Main.unity")]
         [TestCase("MainToolkit", "Assets/Scenes/Main.unity")]
         [TestCase("MenuScene", "Assets/Scenes/MenuScene.unity")]
