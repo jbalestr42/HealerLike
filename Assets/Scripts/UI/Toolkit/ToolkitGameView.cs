@@ -14,11 +14,11 @@ public class ToolkitGameView
     ToolkitLayoutState _layout;
     bool _hasLayout;
     public ToolkitLayoutState layout => _layout;
-    // The pointer last used on the interface, unknown until one is: the form factor stands for it until then
+    // The pointer last used on the interface, unknown until one is: the device stands for it until then
     bool? _touchInput;
     public bool isPhoneLayout => _layout.isPhone;
     // A touch (or pen) has no hover: what a mouse shows on hover, a touch opens on press
-    public bool isTouchInput => _touchInput ?? _layout.isPhone;
+    public bool isTouchInput => _touchInput ?? _layout.isTouchDevice;
     // Raised once per real change of the layout, after the root classes match it
     public event Action<ToolkitLayoutState> OnLayoutChanged;
     public IToolkitRosterDrag rosterDrag;

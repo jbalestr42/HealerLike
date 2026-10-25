@@ -97,6 +97,69 @@ namespace UI.Toolkit
             Assert.AreEqual(900f, state.panelSize.y, 0.01f);
         }
 
+        // iPad, 16:10 Android tablet, small 1280x800 tablet: the desktop layout, not a phone landscape blown up
+        [TestCase(2160, 1620)]
+        [TestCase(2560, 1600)]
+        [TestCase(1280, 800)]
+        public void Resolve_TabletLandscape_IsDesktopWithTouchSizedPanel(int width, int height)
+        {
+            ToolkitLayoutState state = Resolve(width, height, true);
+            Assert.AreEqual(ToolkitLayoutMode.Desktop, state.mode);
+            Assert.IsTrue(state.isTouchDevice);
+            // Scaled to the tablet reference (larger touch targets than the PC one): it fits one side, covers the other
+            Assert.GreaterOrEqual(state.panelSize.x, 1180f - 0.01f);
+            Assert.GreaterOrEqual(state.panelSize.y, 860f - 0.01f);
+            Assert.That(Mathf.Abs(state.panelSize.x - 1180f) < 0.01f || Mathf.Abs(state.panelSize.y - 860f) < 0.01f);
+            Assert.IsFalse(state.isCompact);
+        }
+
+        // A tablet in portrait keeps a column at least as tall as the reference instead of 390 x 520
+        [TestCase(1620, 2160, true)]
+        [TestCase(1600, 2560, true)]
+        // A near square PC window too
+        [TestCase(800, 1000, false)]
+        public void Resolve_TabletPortrait_IsPortraitWithTallPanel(int width, int height, bool isMobilePlatform)
+        {
+            ToolkitLayoutState state = Resolve(width, height, isMobilePlatform);
+            Assert.AreEqual(ToolkitLayoutMode.Portrait, state.mode);
+            Assert.GreaterOrEqual(state.panelSize.y, 960f - 0.01f);
+            Assert.GreaterOrEqual(state.panelSize.x, 390f - 0.01f);
+        }
+
+        // Phones (19.5:9 to 16:9) are never tablets, a 4:3 or 16:10 screen is
+        [TestCase(1170, 2532, false)]
+        [TestCase(1080, 2400, false)]
+        [TestCase(1080, 1920, false)]
+        [TestCase(1536, 2048, true)]
+        [TestCase(2560, 1600, true)]
+        [TestCase(0, 0, false)]
+        public void IsTablet_ByAspectRatio(int width, int height, bool expected)
+        {
+            Assert.AreEqual(expected, ToolkitLayout.IsTablet(width, height));
+        }
+
+        // A 4:3 or 16:10 PC monitor is as square as a tablet but keeps the PC desktop scale and its mouse
+        [TestCase(1024, 768)]
+        [TestCase(1440, 900)]
+        [TestCase(2560, 1600)]
+        public void Resolve_SquarePcScreen_KeepsTheDesktopScale(int width, int height)
+        {
+            ToolkitLayoutState state = Resolve(width, height, false);
+            Assert.AreEqual(ToolkitLayoutMode.Desktop, state.mode);
+            Assert.IsFalse(state.isTouchDevice);
+            Assert.AreEqual(ToolkitLayout.GetScale(width, height, false), state.scale);
+            Assert.That(Mathf.Approximately(state.panelSize.x, 1440f) || Mathf.Approximately(state.panelSize.y, 900f)
+                || Mathf.Approximately(state.scale, 0.75f));
+        }
+
+        [Test]
+        public void Resolve_Phone_IsATouchDevice()
+        {
+            Assert.IsTrue(Resolve(1170, 2532, true).isTouchDevice);
+            Assert.IsTrue(Resolve(2532, 1170, true).isTouchDevice);
+            Assert.IsFalse(Resolve(1920, 1080, false).isTouchDevice);
+        }
+
         [Test]
         public void Resolve_SmallPcWindow_IsCompactDesktop()
         {

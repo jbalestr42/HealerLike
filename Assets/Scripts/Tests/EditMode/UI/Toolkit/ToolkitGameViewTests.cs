@@ -146,6 +146,19 @@ namespace UI.Toolkit
             Assert.IsFalse(_view.isTouchInput);
         }
 
+        // A tablet in landscape gets the desktop layout, but it is touched until a mouse says otherwise
+        [Test]
+        public void IsTouchInput_NoPointerYetOnTabletDesktopLayout_IsTouch()
+        {
+            ToolkitLayoutState tablet = ToolkitLayout.Resolve(new Vector2Int(2160, 1620),
+                new Rect(0f, 0f, 2160f, 1620f), true);
+            _view.SetLayout(tablet);
+            Assert.IsFalse(_view.isPhoneLayout);
+            Assert.IsTrue(_view.isTouchInput);
+            _view.RecordPointer(PointerType.mouse);
+            Assert.IsFalse(_view.isTouchInput);
+        }
+
         // A narrow PC window takes the portrait layout but keeps its mouse hover
         [Test]
         public void RecordPointer_MouseOnPhoneLayout_StaysMouseAcrossLayoutChanges()

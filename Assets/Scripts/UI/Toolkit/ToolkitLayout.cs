@@ -24,6 +24,12 @@ public class ToolkitLayoutSettings
     public float landscapeMaxHeight = 500f;
     // A panel narrower than this tightens its spacing
     public float compactWidth = 1100f;
+    // A screen whose short side is at least this fraction of its long side is a tablet (phones stay under 0.57)
+    public float tabletMinAspect = 0.6f;
+    // The panel size a mobile tablet in landscape is scaled to: the desktop layout, with larger touch targets
+    public Vector2 tabletReference = new Vector2(1180f, 860f);
+    // A tablet shaped portrait screen keeps at least this panel height, rather than a squat phone column
+    public float tabletPortraitHeight = 960f;
 }
 
 // What the UI is laid out for: decided from the screen alone, so every consumer sees the same answer
@@ -36,16 +42,20 @@ public readonly struct ToolkitLayoutState : IEquatable<ToolkitLayoutState>
     // The safe area in panel units, from the top left
     public readonly Rect safeRect;
     public readonly bool isCompact;
+    // A mobile device or a phone layout: the input until a pointer says otherwise
+    public readonly bool isTouchDevice;
     public bool isPhone => mode != ToolkitLayoutMode.Desktop;
     public bool isLandscape => panelSize.x > panelSize.y;
 
-    public ToolkitLayoutState(ToolkitLayoutMode mode, float scale, Vector2 panelSize, Rect safeRect, bool isCompact)
+    public ToolkitLayoutState(ToolkitLayoutMode mode, float scale, Vector2 panelSize, Rect safeRect, bool isCompact,
+        bool isTouchDevice)
     {
         this.mode = mode;
         this.scale = scale;
         this.panelSize = panelSize;
         this.safeRect = safeRect;
         this.isCompact = isCompact;
+        this.isTouchDevice = isTouchDevice;
     }
 
     public override bool Equals(object obj)
@@ -55,19 +65,19 @@ public readonly struct ToolkitLayoutState : IEquatable<ToolkitLayoutState>
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(mode, scale, panelSize, safeRect, isCompact);
+        return HashCode.Combine(mode, scale, panelSize, safeRect, isCompact, isTouchDevice);
     }
 
     public override string ToString()
     {
-        return $"{mode} x{scale:0.##} {panelSize} safe {safeRect}{(isCompact ? " compact" : "")}";
+        return $"{mode} x{scale:0.##} {panelSize} safe {safeRect}{(isCompact ? " compact" : "")}{(isTouchDevice ? " touch" : "")}";
     }
 
     #region IEquatable<ToolkitLayoutState>
     public bool Equals(ToolkitLayoutState other)
     {
         return mode == other.mode && scale == other.scale && panelSize == other.panelSize
-            && safeRect == other.safeRect && isCompact == other.isCompact;
+            && safeRect == other.safeRect && isCompact == other.isCompact && isTouchDevice == other.isTouchDevice;
     }
     #endregion
 }
@@ -82,22 +92,26 @@ public static class ToolkitLayout
         float scale = GetScale(screen.x, screen.y, isMobilePlatform, settings);
         Vector2 panel = screen.x > 0 && screen.y > 0 ? new Vector2(screen.x / scale, screen.y / scale) : Vector2.zero;
         Rect safe = GetSafePanelRect(screen.x, screen.y, safeArea, scale);
-        return FromPanel(panel, safe, scale, settings);
+        return FromPanel(panel, safe, scale, isMobilePlatform, settings);
     }
 
     // A panel already at its size, as the editor preview and the tests lay it out
     public static ToolkitLayoutState FromPanel(Vector2 panelSize, ToolkitLayoutSettings settings = null)
     {
-        return FromPanel(panelSize, new Rect(Vector2.zero, panelSize), 1f, settings ?? ToolkitLayoutSettings.Default);
+        return FromPanel(panelSize, new Rect(Vector2.zero, panelSize), 1f, false,
+            settings ?? ToolkitLayoutSettings.Default);
     }
 
     // The layout of the current screen, for code that converts pointer pixels between frames
     public static ToolkitLayoutState current => Resolve(new Vector2Int(Screen.width, Screen.height), Screen.safeArea,
         Application.isMobilePlatform);
 
-    static ToolkitLayoutState FromPanel(Vector2 panel, Rect safe, float scale, ToolkitLayoutSettings settings)
+    static ToolkitLayoutState FromPanel(Vector2 panel, Rect safe, float scale, bool isMobilePlatform,
+        ToolkitLayoutSettings settings)
     {
-        return new ToolkitLayoutState(GetMode(panel, settings), scale, panel, safe, panel.x < settings.compactWidth);
+        ToolkitLayoutMode mode = GetMode(panel, settings);
+        return new ToolkitLayoutState(mode, scale, panel, safe, panel.x < settings.compactWidth,
+            isMobilePlatform || mode != ToolkitLayoutMode.Desktop);
     }
 
     public static ToolkitLayoutMode GetMode(Vector2 panelSize, ToolkitLayoutSettings settings = null)
@@ -120,9 +134,19 @@ public static class ToolkitLayout
             return 1f;
         }
 
+        bool isTablet = IsTablet(width, height, settings);
         if (height > width)
         {
-            return width / settings.phoneSide;
+            // A tablet (or a near square window) would otherwise get a phone column far shorter than a phone's
+            return isTablet
+                ? Mathf.Min(width / settings.phoneSide, height / settings.tabletPortraitHeight)
+                : width / settings.phoneSide;
+        }
+
+        // Only a mobile tablet: a PC screen is often as square, and keeps the desktop scale below
+        if (isMobilePlatform && isTablet)
+        {
+            return Mathf.Min(width / settings.tabletReference.x, height / settings.tabletReference.y);
         }
 
         if (isMobilePlatform || height < settings.desktopMinPixelHeight)
@@ -132,6 +156,17 @@ public static class ToolkitLayout
 
         return Mathf.Max(settings.desktopMinScale,
             Mathf.Min(width / settings.desktopReference.x, height / settings.desktopReference.y));
+    }
+
+    public static bool IsTablet(int width, int height, ToolkitLayoutSettings settings = null)
+    {
+        settings = settings ?? ToolkitLayoutSettings.Default;
+        if (width <= 0 || height <= 0)
+        {
+            return false;
+        }
+
+        return Mathf.Min(width, height) >= settings.tabletMinAspect * Mathf.Max(width, height);
     }
 
     public static Rect GetSafePanelRect(int width, int height, Rect safeArea, float scale)
