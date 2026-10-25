@@ -62,7 +62,7 @@ public sealed class ToolkitHudStatus : IDisposable
         _view.Show(AscensionName, level > 0);
         if (level > 0)
         {
-            _view.SetText(AscensionName, GetAscensionText(level, _view.isTouchLayout));
+            _view.SetText(AscensionName, GetAscensionText(level, _view.isPhoneLayout));
         }
     }
 

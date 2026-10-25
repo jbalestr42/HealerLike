@@ -213,7 +213,8 @@ public class ToolkitCard : System.IDisposable
         _view.OnInspectRequested.Invoke(_model);
     }
 
-    // A compact card (spell, party unit) opens its popover on a mouse hover; a touch holds it instead (ToolkitCardGesture)
+    // A compact card (spell, party unit) opens its popover on a mouse hover; a touch holds it instead (ToolkitCardGesture).
+    // A full card shows its details in the desktop detail panel, on a mouse hover or a keyboard focus
     void OnPointerEnter(PointerEnterEvent evt)
     {
         if (_compact)
@@ -224,7 +225,7 @@ public class ToolkitCard : System.IDisposable
                 _view.OnInspectRequested.Invoke(_model);
             }
         }
-        else if (!_view.isTouchLayout)
+        else if (!_view.isPhoneLayout && !ToolkitInfoTrigger.IsTouch(evt.pointerType))
         {
             _view.OnInspect.Invoke(_model);
         }
@@ -232,7 +233,7 @@ public class ToolkitCard : System.IDisposable
 
     void OnFocusIn(FocusInEvent evt)
     {
-        if (!_compact && !_view.isTouchLayout)
+        if (!_compact && !_view.isPhoneLayout && !_view.isTouchInput)
         {
             _view.OnInspect.Invoke(_model);
         }
@@ -247,7 +248,7 @@ public class ToolkitCard : System.IDisposable
                 _view.ClosePopover();
             }
         }
-        else if (!_view.isTouchLayout)
+        else if (!_view.isPhoneLayout && !ToolkitInfoTrigger.IsTouch(evt.pointerType))
         {
             _view.OnInspectEnded.Invoke();
         }
@@ -255,7 +256,7 @@ public class ToolkitCard : System.IDisposable
 
     void OnFocusOut(FocusOutEvent evt)
     {
-        if (!_compact && !_view.isTouchLayout)
+        if (!_compact && !_view.isPhoneLayout && !_view.isTouchInput)
         {
             _view.OnInspectEnded.Invoke();
         }

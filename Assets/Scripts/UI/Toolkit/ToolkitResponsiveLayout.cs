@@ -12,7 +12,7 @@ public static class ToolkitResponsiveLayout
     public const string LandscapeClass = "layout--landscape";
     // A narrow panel tightens its spacing
     public const string CompactClass = "layout--compact";
-    // The pointer the UI is laid out for: exactly one of these
+    // The pointer last used (ToolkitGameView.isTouchInput): exactly one of these
     public const string MouseClass = "input--mouse";
     public const string TouchClass = "input--touch";
 
@@ -24,20 +24,19 @@ public static class ToolkitResponsiveLayout
 
     public static bool Apply(ToolkitGameView view, ToolkitLayoutState state)
     {
-        ApplyClasses(view.root.Q("hud-root"), state);
         view.SetLayout(state);
+        ApplyClasses(view.root.Q("hud-root"), state, view.isTouchInput);
         return state.isPhone;
     }
 
-    public static void ApplyClasses(VisualElement element, ToolkitLayoutState state)
+    public static void ApplyClasses(VisualElement element, ToolkitLayoutState state, bool isTouchInput)
     {
         element.EnableInClassList(DesktopClass, !state.isPhone);
         element.EnableInClassList(PhoneClass, state.isPhone);
         element.EnableInClassList(PortraitClass, !state.isLandscape);
         element.EnableInClassList(LandscapeClass, state.isLandscape);
         element.EnableInClassList(CompactClass, state.isCompact);
-        // Until the input follows the last pointer used, a phone layout is a touch one
-        element.EnableInClassList(MouseClass, !state.isPhone);
-        element.EnableInClassList(TouchClass, state.isPhone);
+        element.EnableInClassList(MouseClass, !isTouchInput);
+        element.EnableInClassList(TouchClass, isTouchInput);
     }
 }

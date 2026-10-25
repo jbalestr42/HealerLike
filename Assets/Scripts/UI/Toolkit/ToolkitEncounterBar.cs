@@ -217,7 +217,7 @@ public class ToolkitEncounterBar
             _context.hasInteraction,
             isStart,
             isPreparing,
-            _view.isTouchLayout,
+            _view.isPhoneLayout,
             Time.timeScale
         );
     }
@@ -228,7 +228,7 @@ public class ToolkitEncounterBar
         bool hasInteraction,
         bool isStart,
         bool isPreparing,
-        bool isTouchLayout,
+        bool isPhoneLayout,
         float timeScale
     )
     {
@@ -255,7 +255,7 @@ public class ToolkitEncounterBar
 
         if (isPreparing)
         {
-            return isTouchLayout
+            return isPhoneLayout
                 ? "Open Party to deploy your allies."
                 : "Deploy your party, distribute equipment, then start the battle.";
         }

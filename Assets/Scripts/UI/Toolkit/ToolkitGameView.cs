@@ -14,7 +14,11 @@ public class ToolkitGameView
     ToolkitLayoutState _layout;
     bool _hasLayout;
     public ToolkitLayoutState layout => _layout;
-    public bool isTouchLayout => _layout.isPhone;
+    // The pointer last used on the interface, unknown until one is: the form factor stands for it until then
+    bool? _touchInput;
+    public bool isPhoneLayout => _layout.isPhone;
+    // A touch (or pen) has no hover: what a mouse shows on hover, a touch opens on press
+    public bool isTouchInput => _touchInput ?? _layout.isPhone;
     // Raised once per real change of the layout, after the root classes match it
     public event Action<ToolkitLayoutState> OnLayoutChanged;
     public IToolkitRosterDrag rosterDrag;
@@ -59,6 +63,7 @@ public class ToolkitGameView
     {
         _root = root;
         _root.RegisterCallback<PointerDownEvent>(GatePointer, TrickleDown.TrickleDown);
+        _root.RegisterCallback<PointerMoveEvent>(OnPointerMove, TrickleDown.TrickleDown);
         _root.pickingMode = PickingMode.Ignore;
         _root.AddToClassList("toolkit-theme");
         ToolkitTemplates.PreparePicking(_root);
@@ -75,10 +80,35 @@ public class ToolkitGameView
     }
 
     void GatePointer(PointerDownEvent evt)
-    { if (!(canBeginPointer?.Invoke(evt.pointerId) ?? true))
+    {
+        if (!CanBeginPointer(evt.pointerId))
         {
             evt.StopImmediatePropagation();
+            return;
         }
+
+        RecordPointer(evt.pointerType);
+    }
+
+    // A touch counts on its press, a mouse as soon as it moves. The legacy mouse copy of a touch is refused by the
+    // same gate as its press, so it never passes for a mouse
+    void OnPointerMove(PointerMoveEvent evt)
+    {
+        if (!ToolkitInfoTrigger.IsTouch(evt.pointerType) && evt.deltaPosition != Vector3.zero
+            && CanBeginPointer(evt.pointerId))
+        {
+            RecordPointer(evt.pointerType);
+        }
+    }
+
+    bool CanBeginPointer(int pointerId)
+    {
+        return canBeginPointer?.Invoke(pointerId) ?? true;
+    }
+
+    public void RecordPointer(string pointerType)
+    {
+        _touchInput = ToolkitInfoTrigger.IsTouch(pointerType);
     }
 
     public void SetIconProvider(IToolkitIconProvider provider)
@@ -306,6 +336,7 @@ public class ToolkitGameView
         OnLayoutChanged = null;
         CancelGestures();
         _root.UnregisterCallback<PointerDownEvent>(GatePointer, TrickleDown.TrickleDown);
+        _root.UnregisterCallback<PointerMoveEvent>(OnPointerMove, TrickleDown.TrickleDown);
         if (_iconProvider != null)
         {
             _iconProvider.Changed -= RefreshIcons;

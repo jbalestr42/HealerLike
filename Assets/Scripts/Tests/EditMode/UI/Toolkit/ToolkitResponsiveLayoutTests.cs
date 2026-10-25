@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UIElements;
+using PointerType = UnityEngine.UIElements.PointerType;
 
 namespace UI.Toolkit
 {
@@ -17,10 +18,11 @@ namespace UI.Toolkit
             ToolkitResponsiveLayout.TouchClass,
         };
 
-        static VisualElement Apply(float width, float height)
+        static VisualElement Apply(float width, float height, bool isTouchInput)
         {
             VisualElement element = new VisualElement();
-            ToolkitResponsiveLayout.ApplyClasses(element, ToolkitLayout.FromPanel(new Vector2(width, height)));
+            ToolkitResponsiveLayout.ApplyClasses(element, ToolkitLayout.FromPanel(new Vector2(width, height)),
+                isTouchInput);
             return element;
         }
 
@@ -36,14 +38,14 @@ namespace UI.Toolkit
         [Test]
         public void ApplyClasses_WideDesktop_DesktopLandscapeMouse()
         {
-            AssertClasses(Apply(1440f, 900f), ToolkitResponsiveLayout.DesktopClass,
+            AssertClasses(Apply(1440f, 900f, false), ToolkitResponsiveLayout.DesktopClass,
                 ToolkitResponsiveLayout.LandscapeClass, ToolkitResponsiveLayout.MouseClass);
         }
 
         [Test]
         public void ApplyClasses_NarrowDesktop_AlsoCompact()
         {
-            AssertClasses(Apply(1000f, 700f), ToolkitResponsiveLayout.DesktopClass,
+            AssertClasses(Apply(1000f, 700f, false), ToolkitResponsiveLayout.DesktopClass,
                 ToolkitResponsiveLayout.LandscapeClass, ToolkitResponsiveLayout.CompactClass,
                 ToolkitResponsiveLayout.MouseClass);
         }
@@ -51,7 +53,7 @@ namespace UI.Toolkit
         [Test]
         public void ApplyClasses_PhonePortrait_PhonePortraitTouch()
         {
-            AssertClasses(Apply(390f, 844f), ToolkitResponsiveLayout.PhoneClass,
+            AssertClasses(Apply(390f, 844f, true), ToolkitResponsiveLayout.PhoneClass,
                 ToolkitResponsiveLayout.PortraitClass, ToolkitResponsiveLayout.CompactClass,
                 ToolkitResponsiveLayout.TouchClass);
         }
@@ -59,7 +61,7 @@ namespace UI.Toolkit
         [Test]
         public void ApplyClasses_PhoneLandscape_PhoneLandscapeTouch()
         {
-            AssertClasses(Apply(844f, 390f), ToolkitResponsiveLayout.PhoneClass,
+            AssertClasses(Apply(844f, 390f, true), ToolkitResponsiveLayout.PhoneClass,
                 ToolkitResponsiveLayout.LandscapeClass, ToolkitResponsiveLayout.CompactClass,
                 ToolkitResponsiveLayout.TouchClass);
         }
@@ -68,10 +70,35 @@ namespace UI.Toolkit
         public void ApplyClasses_Rotated_DropsThePreviousLayoutClasses()
         {
             VisualElement element = new VisualElement();
-            ToolkitResponsiveLayout.ApplyClasses(element, ToolkitLayout.FromPanel(new Vector2(390f, 844f)));
-            ToolkitResponsiveLayout.ApplyClasses(element, ToolkitLayout.FromPanel(new Vector2(1440f, 900f)));
+            ToolkitResponsiveLayout.ApplyClasses(element, ToolkitLayout.FromPanel(new Vector2(390f, 844f)), true);
+            ToolkitResponsiveLayout.ApplyClasses(element, ToolkitLayout.FromPanel(new Vector2(1440f, 900f)), false);
             AssertClasses(element, ToolkitResponsiveLayout.DesktopClass, ToolkitResponsiveLayout.LandscapeClass,
                 ToolkitResponsiveLayout.MouseClass);
+        }
+
+        // A narrow PC window: the portrait layout, with the mouse it is used with
+        [Test]
+        public void ApplyClasses_PhonePortraitWithMouse_PhonePortraitMouse()
+        {
+            AssertClasses(Apply(390f, 844f, false), ToolkitResponsiveLayout.PhoneClass,
+                ToolkitResponsiveLayout.PortraitClass, ToolkitResponsiveLayout.CompactClass,
+                ToolkitResponsiveLayout.MouseClass);
+        }
+
+        // The input classes follow the view's last pointer, not the form factor
+        [Test]
+        public void Apply_MouseUsedOnPhoneLayout_InputMouse()
+        {
+            VisualElement root = new VisualElement();
+            root.Add(new VisualElement { name = "hud-root" });
+            ToolkitGameView view = new ToolkitGameView(root);
+            ToolkitResponsiveLayout.Apply(view, 390f, 844f);
+            Assert.IsTrue(root.Q("hud-root").ClassListContains(ToolkitResponsiveLayout.TouchClass));
+            view.RecordPointer(PointerType.mouse);
+            ToolkitResponsiveLayout.Apply(view, 390f, 844f);
+            Assert.IsTrue(root.Q("hud-root").ClassListContains(ToolkitResponsiveLayout.MouseClass));
+            Assert.IsFalse(root.Q("hud-root").ClassListContains(ToolkitResponsiveLayout.TouchClass));
+            view.Release();
         }
 
         [Test]

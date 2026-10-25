@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UIElements;
+using PointerType = UnityEngine.UIElements.PointerType;
 
 namespace UI.Toolkit
 {
@@ -121,7 +122,7 @@ namespace UI.Toolkit
             Assert.IsTrue(_view.SetLayout(phone));
             Assert.IsFalse(_view.SetLayout(phone));
             Assert.AreEqual(1, changes);
-            Assert.IsTrue(_view.isTouchLayout);
+            Assert.IsTrue(_view.isPhoneLayout);
         }
 
         [Test]
@@ -133,6 +134,97 @@ namespace UI.Toolkit
             _view.SetLayout(ToolkitLayout.FromPanel(new Vector2(844f, 390f)));
             Assert.AreEqual(ToolkitLayoutMode.Landscape, received.mode);
             Assert.AreEqual(ToolkitLayoutMode.Landscape, _view.layout.mode);
+        }
+
+        // Before any pointer, the form factor stands for it: a phone is touched, a desktop has a mouse
+        [Test]
+        public void IsTouchInput_NoPointerYet_FollowsTheFormFactor()
+        {
+            _view.SetLayout(ToolkitLayout.FromPanel(new Vector2(390f, 844f)));
+            Assert.IsTrue(_view.isTouchInput);
+            _view.SetLayout(ToolkitLayout.FromPanel(new Vector2(1440f, 900f)));
+            Assert.IsFalse(_view.isTouchInput);
+        }
+
+        // A narrow PC window takes the portrait layout but keeps its mouse hover
+        [Test]
+        public void RecordPointer_MouseOnPhoneLayout_StaysMouseAcrossLayoutChanges()
+        {
+            _view.SetLayout(ToolkitLayout.FromPanel(new Vector2(390f, 844f)));
+            _view.RecordPointer(PointerType.mouse);
+            Assert.IsFalse(_view.isTouchInput);
+            _view.SetLayout(ToolkitLayout.FromPanel(new Vector2(844f, 390f)));
+            Assert.IsFalse(_view.isTouchInput);
+            Assert.IsTrue(_view.isPhoneLayout);
+        }
+
+        [Test]
+        public void RecordPointer_TouchOrPenOnDesktopLayout_IsTouch()
+        {
+            _view.SetLayout(ToolkitLayout.FromPanel(new Vector2(1440f, 900f)));
+            _view.RecordPointer(PointerType.touch);
+            Assert.IsTrue(_view.isTouchInput);
+            _view.RecordPointer(PointerType.mouse);
+            _view.RecordPointer(PointerType.pen);
+            Assert.IsTrue(_view.isTouchInput);
+        }
+
+        static void Send(VisualElement target, EventBase evt)
+        {
+            using (evt)
+            {
+                evt.target = target;
+                target.SendEvent(evt);
+            }
+        }
+
+        static Touch Press(Vector2 point)
+        {
+            return new Touch { fingerId = 0, position = point, phase = TouchPhase.Began };
+        }
+
+        static Event MouseMove(Vector2 point, Vector2 delta)
+        {
+            return new Event { type = EventType.MouseMove, mousePosition = point, delta = delta };
+        }
+
+        // The view reads the pointer type of every press and mouse move on the interface
+        [Test]
+        public void PointerEvents_TouchPressThenMouseMove_FollowTheLastPointer()
+        {
+            using (ToolkitTestPanel panel = new ToolkitTestPanel())
+            {
+                VisualElement target = new VisualElement();
+                panel.root.Add(target);
+                ToolkitGameView view = new ToolkitGameView(panel.root);
+                view.SetLayout(ToolkitLayout.FromPanel(new Vector2(1440f, 900f)));
+                Send(target, PointerDownEvent.GetPooled(Press(Vector2.one)));
+                Assert.IsTrue(view.isTouchInput);
+                Send(target, PointerMoveEvent.GetPooled(MouseMove(Vector2.one, Vector2.zero)));
+                Assert.IsTrue(view.isTouchInput, "a mouse event that did not move is no mouse use");
+                Send(target, PointerMoveEvent.GetPooled(MouseMove(Vector2.one * 4f, Vector2.one * 3f)));
+                Assert.IsFalse(view.isTouchInput);
+                view.Release();
+            }
+        }
+
+        // The legacy mouse copy of a touch is refused by the pointer gate: it must not pass for a mouse
+        [Test]
+        public void PointerEvents_RefusedByTheGate_AreNotRecorded()
+        {
+            using (ToolkitTestPanel panel = new ToolkitTestPanel())
+            {
+                VisualElement target = new VisualElement();
+                panel.root.Add(target);
+                ToolkitGameView view = new ToolkitGameView(panel.root);
+                view.SetLayout(ToolkitLayout.FromPanel(new Vector2(390f, 844f)));
+                view.canBeginPointer = pointer => pointer != PointerId.mousePointerId;
+                Send(target, PointerMoveEvent.GetPooled(MouseMove(Vector2.one * 4f, Vector2.one * 3f)));
+                Send(target, PointerDownEvent.GetPooled(
+                    new Event { type = EventType.MouseDown, mousePosition = Vector2.one }));
+                Assert.IsTrue(view.isTouchInput);
+                view.Release();
+            }
         }
 
         // The first layout is announced even when it equals the default state
