@@ -127,16 +127,16 @@ namespace UI.Toolkit
         }
 
         [Test]
-        public void OnInspect_ExpandedSection_CollapsesIt()
+        public void OnInspect_CollapsedSection_ExpandsIt()
         {
             _entity.items.Add(new StubItem("Zeal"));
             _details.RefreshEntity();
             Foldout items = _root.Q<Foldout>("detail-items");
-            items.value = true;
+            items.value = false;
 
             _details.OnInspect(new ToolkitCardModel { source = _entity });
 
-            Assert.That(items.value, Is.False);
+            Assert.That(items.value, Is.True, "A unit's details open expanded");
         }
     }
 }

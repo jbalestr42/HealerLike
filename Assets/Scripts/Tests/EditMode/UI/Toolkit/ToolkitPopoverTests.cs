@@ -50,9 +50,15 @@ namespace UI.Toolkit
                         Assert.That(root.Q<Label>("detail-full-stats").text,
                             Does.Contain("Max HP: <b>100</b>").And.Contain("Critical Resist: <b>0</b>"));
                         Foldout expanded = root.Q<Foldout>("detail-attributes");
-                        Assert.That(expanded.value, Is.False);
-                        expanded.value = true; details.Refresh();
-                        Assert.That(expanded.value, Is.True, "Live refresh preserves the expanded state");
+                        Assert.That(expanded.value, Is.True, "A unit's details open expanded");
+                        foreach (string section in new[] { "detail-combat", "detail-aiming", "detail-skills",
+                            "detail-items", "detail-effects" })
+                        {
+                            Assert.That(root.Q<Foldout>(section).value, Is.True, section + " opens expanded");
+                        }
+
+                        expanded.value = false; details.Refresh();
+                        Assert.That(expanded.value, Is.False, "Live refresh preserves the collapsed state");
                         popover.Close();
                         Assert.That(context.isInspecting, Is.False);
                         popover.Open(new ToolkitCardModel { title = "Spell", description = "Spell description" });
@@ -66,6 +72,34 @@ namespace UI.Toolkit
                     Object.DestroyImmediate(owner); Object.DestroyImmediate(other); Object.DestroyImmediate(data);
                 }
             }
+        }
+
+        [Test]
+        public void UnitDetailsIgnoreTheTapPosition()
+        {
+            GameObject owner = new GameObject("Tapped unit"); owner.SetActive(false);
+            try
+            {
+                Entity entity = null;
+                TestHelpers.WithLoggingDisabled(() => entity = owner.AddComponent<Entity>());
+                Rect tap = new Rect(300, 420, 2, 2);
+                Assert.That(ToolkitPopover.GetAnchor(new ToolkitCardModel { source = entity }, tap),
+                    Is.EqualTo(default(Rect)));
+                Assert.That(ToolkitPopover.GetAnchor(new ToolkitCardModel { source = entity }, new Rect(10, 60, 2, 2)),
+                    Is.EqualTo(ToolkitPopover.GetAnchor(new ToolkitCardModel { source = entity }, tap)),
+                    "Two taps at different places open at the same place");
+            }
+            finally
+            {
+                Object.DestroyImmediate(owner);
+            }
+        }
+
+        [Test]
+        public void CardsWithoutAUnitKeepTheirAnchor()
+        {
+            Rect anchor = new Rect(180, 500, 40, 40);
+            Assert.That(ToolkitPopover.GetAnchor(new ToolkitCardModel { title = "Spell" }, anchor), Is.EqualTo(anchor));
         }
 
         [Test]

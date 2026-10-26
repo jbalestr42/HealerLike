@@ -141,15 +141,16 @@ public class ToolkitDetailPanel : IDisposable
     {
         _context.isInspecting = true;
         _inspectedEntity = model.source as Entity;
+        // Every category opens expanded: a phone reader would otherwise tap each one open
         Foldout attributes = _view.root.Q<Foldout>("detail-attributes");
         if (attributes != null)
         {
-            attributes.value = false;
+            attributes.value = true;
         }
 
         foreach (Section section in _sections)
         {
-            section.foldout.value = false;
+            section.foldout.value = true;
         }
 
         if (model.source is Entity entity)

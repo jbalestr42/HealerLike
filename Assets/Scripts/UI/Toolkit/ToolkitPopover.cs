@@ -27,7 +27,7 @@ public sealed class ToolkitPopover : IDisposable
             return;
         }
 
-        _anchor = _view.inspectAnchor;
+        _anchor = GetAnchor(model, _view.inspectAnchor);
         isOpen = true;
         _view.OnInspect.Invoke(model);
         _view.Show("detail-panel", true);
@@ -86,6 +86,13 @@ public sealed class ToolkitPopover : IDisposable
     static bool Approximately(Vector2 a, Vector2 b)
     {
         return Mathf.Abs(a.x - b.x) <= 0.5f && Mathf.Abs(a.y - b.y) <= 0.5f;
+    }
+
+    // A unit's details are long and read at length: they open at the same place wherever the unit was tapped, rather
+    // than over the board next to it. Cards, spells and items keep their short popover by their anchor
+    public static Rect GetAnchor(ToolkitCardModel model, Rect anchor)
+    {
+        return model.source is Entity ? default : anchor;
     }
 
     // Above its anchor, or below it when there is no room above (e.g. the item bar under the header): a popover
