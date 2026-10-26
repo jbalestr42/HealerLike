@@ -130,10 +130,6 @@ public sealed class ToolkitCardGesture : IDisposable
             }
         }
         _dragging = false;
-        if (_holding && _pressed.source is CharacterSkillSlot)
-        {
-            _view.ClosePopover();
-        }
         // The captured source must still represent this entry after periodic HUD refreshes.
         if (owner == ToolkitPress.Owner.Tap && _button.worldBound.Contains(_point)
             && _card.model?.key == _pressed.key)
@@ -229,11 +225,6 @@ public sealed class ToolkitCardGesture : IDisposable
         if (_dragging)
         {
             _view.rosterDrag?.Cancel();
-        }
-
-        if (_holding && _pressed?.source is CharacterSkillSlot)
-        {
-            _view.ClosePopover();
         }
 
         _dragging = false;

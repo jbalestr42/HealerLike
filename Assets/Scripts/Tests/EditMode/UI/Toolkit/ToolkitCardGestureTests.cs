@@ -155,6 +155,19 @@ namespace UI.Toolkit
                 Assert.That(_casts, Is.Zero);
             }
         }
+        // Like a held unit, a held spell keeps its description open once the finger is lifted
+        [UnityTest]
+        public IEnumerator HeldSpellKeepsItsDescriptionOpenAfterRelease()
+        {
+            Bind(true); yield return null; yield return null;
+            using (ToolkitPopover popover = new ToolkitPopover(_view))
+            {
+                Vector2 point = _button.worldBound.center;
+                Down(point); yield return Hold(); Up(point);
+                Assert.That(popover.isOpen, Is.True);
+                Assert.That(_casts, Is.Zero);
+            }
+        }
         [UnityTest]
         public IEnumerator ControllerCancelInspectsUnavailableSpellAndSubmitKeepsActivationMeaning()
         {
