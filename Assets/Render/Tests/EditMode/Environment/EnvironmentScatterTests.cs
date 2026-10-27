@@ -245,10 +245,17 @@ public class EnvironmentScatterTests
         Assert.IsNotNull(cap);
         Assert.AreEqual(2, cap.childCount);
 
+        // Sampled over half a cycle at least: two single instants can land on the same angle of the nod,
+        // and Quaternion.Angle reads any turn under ~0.16° as 0
         Quaternion before = cap.localRotation;
-        sway.Animate(peak + 1);
+        float widest = 0f;
+        for (int step = 1; step <= 12; step++)
+        {
+            sway.Animate(peak + 1 + step * 0.25);
+            widest = Mathf.Max(widest, Quaternion.Angle(before, cap.localRotation));
+        }
 
-        Assert.That(Quaternion.Angle(before, cap.localRotation), Is.GreaterThan(0.001f));
+        Assert.That(widest, Is.GreaterThan(0.5f));
     }
 }
 
