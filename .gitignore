@@ -65,3 +65,8 @@ crashlytics-build.properties
 
 # Android Gradle/CMake temp output of the Android builds
 /.utmp/
+
+# ai.relay editor tools, installed locally by the relay
+/Assets/Editor/AiRelay/
+/Assets/Editor/AiRelay.meta
+/Assets/Editor.meta
