@@ -1,4 +1,3 @@
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -16,7 +15,7 @@ public static class ToolkitUiValidation
 
     public static bool CheckAssets()
     {
-        return CheckLayouts() && CheckDemoScenes() && CheckIcons();
+        return CheckLayouts() && CheckIcons();
     }
 
     static bool CheckLayouts()
@@ -35,20 +34,6 @@ public static class ToolkitUiValidation
             if (tree == null || tree.CloneTree().childCount == 0)
             {
                 Debug.LogError($"[ToolkitUiValidation] Empty UI layout: {path}");
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    static bool CheckDemoScenes()
-    {
-        foreach (string path in new string[] { ToolkitSceneNavigation.MenuPath, ToolkitSceneNavigation.GameplayPath })
-        {
-            if (!File.Exists(path))
-            {
-                Debug.LogError($"[ToolkitUiValidation] Missing demo scene: {path}");
                 return false;
             }
         }

@@ -122,9 +122,9 @@ namespace UI.Toolkit
         }
 
         [UnityTest]
-        public IEnumerator StartButton_MenuScene_LoadsToolkitGameplay()
+        public IEnumerator StartButton_MenuScene_LoadsTheGameplayScene()
         {
-            EditorSceneManager.OpenScene(ToolkitSceneNavigation.MenuPath);
+            EditorSceneManager.OpenScene("Assets/Scenes/MenuScene.unity");
             yield return new EnterPlayMode();
             yield return WaitFrames(5);
             ToolkitGameUI menu = Object.FindAnyObjectByType<ToolkitGameUI>();
@@ -139,7 +139,7 @@ namespace UI.Toolkit
             Submit(root.Q<Button>("start-button"));
             yield return WaitFrames(3);
             // Start opens the class choice first, the menu stays loaded until a class is picked
-            Assert.AreEqual(ToolkitSceneNavigation.MenuScene, SceneManager.GetActiveScene().name);
+            Assert.AreEqual("MenuScene", SceneManager.GetActiveScene().name);
             Assert.IsFalse(root.Q(ToolkitClassSelect.PanelName).ClassListContains("is-hidden"));
             Button druid = root.Q(ToolkitClassSelect.ListName).Query<Button>("data-card").Where(
                 card => ((ToolkitCardModel)card.userData).title == "Druid").First();
@@ -150,7 +150,7 @@ namespace UI.Toolkit
             Submit(druid);
             yield return WaitFrames(10);
             Assert.AreSame(picked, CharacterSelection.selected);
-            Assert.AreEqual(ToolkitSceneNavigation.GameplayScene, SceneManager.GetActiveScene().name);
+            Assert.AreEqual("Main", SceneManager.GetActiveScene().name);
             Assert.IsNotNull(Object.FindAnyObjectByType<ToolkitGameUI>());
             yield return new ExitPlayMode();
         }
@@ -158,7 +158,7 @@ namespace UI.Toolkit
         [UnityTest]
         public IEnumerator GameplayScene_StartsTheRunAndInitializesPartyAndSpells()
         {
-            EditorSceneManager.OpenScene(ToolkitSceneNavigation.GameplayPath);
+            EditorSceneManager.OpenScene("Assets/Scenes/Main.unity");
             yield return new EnterPlayMode();
             yield return WaitFrames(5);
             ToolkitGameUI gameUI = Object.FindAnyObjectByType<ToolkitGameUI>();
@@ -189,7 +189,7 @@ namespace UI.Toolkit
         [UnityTest]
         public IEnumerator OnDisable_GameplayScene_RestoresLegacyCanvasUntilEnabled()
         {
-            EditorSceneManager.OpenScene(ToolkitSceneNavigation.GameplayPath);
+            EditorSceneManager.OpenScene("Assets/Scenes/Main.unity");
             yield return new EnterPlayMode();
             yield return WaitFrames(5);
             ToolkitGameUI gameUI = Object.FindAnyObjectByType<ToolkitGameUI>();

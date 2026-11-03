@@ -53,7 +53,7 @@ namespace HealerLike.Render.Stage
         {
             Assert.That(StageTarget.scenePath, Is.EqualTo(StageInterface.MenuPath));
 
-            Assert.That(StageInterface.Route("MenuToolkit"), Is.EqualTo(StageInterface.MenuPath));
+            Assert.That(StageInterface.Route("MenuScene"), Is.EqualTo(StageInterface.MenuPath));
             Assert.That(StageTarget.isSelected, Is.False);
 
             Assert.That(StageInterface.Route("Main"), Is.EqualTo(StageTarget.MainPath));
@@ -86,16 +86,6 @@ namespace HealerLike.Render.Stage
             }
         }
 
-        [Test]
-        public void Route_ToolkitStartName_AlsoTargetsMain()
-        {
-            StageInterface.Route("Sandbox");
-
-            Assert.That(StageInterface.Route("MainToolkit"), Is.EqualTo(StageTarget.MainPath));
-            Assert.That(StageTarget.scenePath, Is.EqualTo(StageTarget.MainPath));
-        }
-
-        [TestCase("MenuToolkit")]
         [TestCase("MenuScene")]
         public void Route_Menu_LeavesTheGameplayChoiceAlone(string menu)
         {

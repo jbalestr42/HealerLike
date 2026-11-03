@@ -9,7 +9,7 @@ public class ToolkitGameUI : MonoBehaviour
     [SerializeField] string _menuScene = "MenuScene";
 
     // The game's sandbox, offered beside Start on the menu
-    [SerializeField] string _sandboxScene = ToolkitSceneNavigation.SandboxScene;
+    [SerializeField] string _sandboxScene = "Sandbox";
 
     // The classes the menu offers at Start: the game data Main's DataManager plays (Managers.prefab), so a pick
     // is honoured. Left empty, Start goes straight to the gameplay scene with a random class.

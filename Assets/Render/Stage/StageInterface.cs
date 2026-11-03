@@ -246,12 +246,12 @@ namespace HealerLike.Render.Stage
 
         public static string ScenePath(string scene)
         {
-            if (scene == "Main" || scene == "MainToolkit")
+            if (scene == "Main")
             {
                 return GameplayPath;
             }
 
-            if (scene == "MenuScene" || scene == "MenuToolkit")
+            if (scene == "MenuScene")
             {
                 return MenuPath;
             }

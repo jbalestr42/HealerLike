@@ -11,7 +11,7 @@ namespace UI.Toolkit
     public class ToolkitClassSelectTests
     {
         static readonly string ManagersPrefab = "Assets/Prefabs/Managers.prefab";
-        static readonly string MenuScene = "Assets/Scenes/Toolkit/MenuToolkit.unity";
+        static readonly string MenuScene = "Assets/Scenes/MenuScene.unity";
         static readonly string DruidPath = "Assets/Data/Characters/DruidCharacter/DruidCharacter.asset";
 
         readonly List<Object> _created = new List<Object>();
@@ -308,7 +308,7 @@ namespace UI.Toolkit
             Assert.IsNotNull(manager, ManagersPrefab);
             Assert.IsNotNull(manager.data, "Managers.prefab has no game data.");
             GameData menuData = MenuGameData();
-            Assert.IsNotNull(menuData, "MenuToolkit's ToolkitGameUI has no game data for the class choice.");
+            Assert.IsNotNull(menuData, "MenuScene's ToolkitGameUI has no game data for the class choice.");
 
             List<CharacterData> offered = ToolkitClassSelect.Offered(menuData);
 
@@ -327,7 +327,7 @@ namespace UI.Toolkit
             string scene = File.ReadAllText(MenuScene);
             Match block = Regex.Match(scene, "m_Script: \\{fileID: 11500000, guid: " + script
                 + ", type: 3\\}(?:(?!--- !u!).)*", RegexOptions.Singleline);
-            Assert.IsTrue(block.Success, "MenuToolkit has no ToolkitGameUI.");
+            Assert.IsTrue(block.Success, "MenuScene has no ToolkitGameUI.");
             Match data = Regex.Match(block.Value, "_gameData: \\{fileID: 11400000, guid: ([0-9a-f]{32}), type: 2\\}");
             if (!data.Success)
             {

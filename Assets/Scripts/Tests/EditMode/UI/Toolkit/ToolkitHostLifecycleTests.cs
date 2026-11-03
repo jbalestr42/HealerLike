@@ -21,7 +21,7 @@ namespace UI.Toolkit
         public IEnumerator SetUp()
         {
             _scenes = EditorSceneManager.GetSceneManagerSetup();
-            EditorSceneManager.OpenScene(ToolkitSceneNavigation.MenuPath);
+            EditorSceneManager.OpenScene("Assets/Scenes/MenuScene.unity");
             yield return new EnterPlayMode();
             yield return WaitFrames(5);
             Object.FindAnyObjectByType<ToolkitGameUI>().enabled = false;

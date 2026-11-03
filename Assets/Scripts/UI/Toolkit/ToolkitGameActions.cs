@@ -1,6 +1,11 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.SceneManagement;
+#endif
 
 public class ToolkitGameActions : IDisposable
 {
@@ -149,7 +154,7 @@ public class ToolkitGameActions : IDisposable
     {
         _timeControls.ResetSpeed();
         bool loaded =
-            _host.sceneLoader != null ? _host.sceneLoader.Invoke(scene) : ToolkitSceneNavigation.TryLoad(scene);
+            _host.sceneLoader != null ? _host.sceneLoader.Invoke(scene) : TryLoad(scene);
         if (!loaded)
         {
             _view.SetText("status-label", $"Scene '{scene}' is not included in this player build.");
@@ -220,4 +225,40 @@ public class ToolkitGameActions : IDisposable
     {
         LoadScene(_host.menuScene);
     }
+
+    public static bool TryLoad(string scene)
+    {
+#if UNITY_EDITOR
+        // The editor also opens a scene left out of the build list (the sandbox), by its path
+        string path = GetEditorPath(scene);
+        if (path != null && !Application.CanStreamedLevelBeLoaded(scene))
+        {
+            EditorSceneManager.LoadSceneInPlayMode(path, new LoadSceneParameters(LoadSceneMode.Single));
+            return true;
+        }
+#endif
+        if (!Application.CanStreamedLevelBeLoaded(scene))
+        {
+            return false;
+        }
+
+        SceneManager.LoadScene(scene);
+        return true;
+    }
+
+#if UNITY_EDITOR
+    public static string GetEditorPath(string scene)
+    {
+        foreach (string guid in AssetDatabase.FindAssets($"t:Scene {scene}", new[] { "Assets/Scenes" }))
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            if (System.IO.Path.GetFileNameWithoutExtension(path) == scene)
+            {
+                return path;
+            }
+        }
+
+        return null;
+    }
+#endif
 }

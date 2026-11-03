@@ -47,9 +47,7 @@ namespace HealerLike.Render.Stage
         }
 
         [TestCase("Main", "Assets/Scenes/Main.unity")]
-        [TestCase("MainToolkit", "Assets/Scenes/Main.unity")]
         [TestCase("MenuScene", "Assets/Scenes/MenuScene.unity")]
-        [TestCase("MenuToolkit", "Assets/Scenes/MenuScene.unity")]
         [TestCase("Unrelated", null)]
         public void Navigation_KeepsRenderGameplayAndToolkitMenu(string scene, string expected)
         {

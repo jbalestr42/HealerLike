@@ -77,7 +77,7 @@ namespace UI.Toolkit
             _created.Clear();
         }
 
-        // Three classes on the host, as MenuToolkit gets Main's game data
+        // Three classes on the host, as MenuScene gets Main's game data
         void GiveClasses()
         {
             _data = ScriptableObject.CreateInstance<GameData>();
@@ -181,13 +181,13 @@ namespace UI.Toolkit
         public void ClassCard_Picked_LoadsTheHostsGameplayScene()
         {
             GiveClasses();
-            _host.gameplayScene = "MainToolkit";
+            _host.gameplayScene = "Main";
             ToolkitTestPanel.Submit(_view.root.Q<Button>("start-button"));
 
             ToolkitTestPanel.Submit(ClassCard("Warlock"));
 
             Assert.AreSame(_data.characters[2], CharacterSelection.selected);
-            CollectionAssert.AreEqual(new[] { "MainToolkit" }, _loads);
+            CollectionAssert.AreEqual(new[] { "Main" }, _loads);
         }
 
         [Test]
@@ -301,6 +301,21 @@ namespace UI.Toolkit
             PressEscape();
 
             Assert.IsFalse(_context.isInventoryOpen);
+        }
+
+        [Test]
+        public void TryLoad_UnknownScene_ReturnsFalse()
+        {
+            Assert.IsFalse(ToolkitGameActions.TryLoad("NoSuchScene"));
+        }
+
+        // The sandbox is left out of the build list: the editor finds it by name to open it by path
+        [Test]
+        public void GetEditorPath_FindsTheGamesScenesByName()
+        {
+            Assert.AreEqual("Assets/Scenes/Sandbox.unity", ToolkitGameActions.GetEditorPath("Sandbox"));
+            Assert.AreEqual("Assets/Scenes/Main.unity", ToolkitGameActions.GetEditorPath("Main"));
+            Assert.IsNull(ToolkitGameActions.GetEditorPath("NoSuchScene"));
         }
     }
 }
