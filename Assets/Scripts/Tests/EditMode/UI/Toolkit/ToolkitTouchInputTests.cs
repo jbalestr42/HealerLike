@@ -52,6 +52,24 @@ namespace UI.Toolkit
         }
 
         [Test]
+        public void RosterCardDragFollowsTheFingerScreenPoint()
+        {
+            _fixture.WithInput((input, manager, interaction) =>
+            {
+                TemplateContainer root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
+                ToolkitGameView view = new ToolkitGameView(root);
+                ToolkitGameUI ui = manager.gameObject.AddComponent<ToolkitGameUI>();
+                TestHelpers.SetPrivateField(ui, "_view", view);
+                input.Init(manager);
+                Vector2 finger = new Vector2(210f, 480f);
+                input.ProcessTouch(3, TouchPhase.Began, new Vector2(30f, 40f));
+                input.ProcessTouch(3, TouchPhase.Moved, finger);
+                Assert.That(view.screenPointProvider, Is.Not.Null);
+                // The panel point is ignored: the placement uses the finger's own screen point.
+                Assert.That(view.screenPointProvider(new Vector2(5f, 5f)), Is.EqualTo(finger));
+            });
+        }
+        [Test]
         public void OnlyWorldOriginPressDismissesPopoverAndUiOriginCannotLeakToBoard()
         {
             _fixture.WithInput((input, manager, interaction) =>

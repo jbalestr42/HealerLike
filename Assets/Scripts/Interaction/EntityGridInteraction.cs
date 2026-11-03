@@ -16,6 +16,8 @@ public class EntityGridInteraction : AInteraction
         _isRepeatable = isRepeatable;
         _onEntitySpawned = onEntitySpawned;
         _entity = GameObject.Instantiate(_data.model);
+        // Hidden until it hovers a cell, rather than shown where the model spawns
+        _entity.SetActive(false);
     }
 
     public override int GetLayerMask()
@@ -54,6 +56,7 @@ public class EntityGridInteraction : AInteraction
         {
             EntityManager.instance.TryGetPlacementPosition(hit.point, _entityType, out Vector3 placement);
             _entity.transform.position = placement;
+            _entity.SetActive(true);
         }
     }
 

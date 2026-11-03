@@ -56,6 +56,24 @@ public class ToolkitGameUI : MonoBehaviour
             _view.canBeginPointer = gate;
         }
     }
+    System.Func<Vector2, Vector2> _screenPointProvider;
+    public void SetScreenPointProvider(System.Func<Vector2, Vector2> provider)
+    { _screenPointProvider = provider; if (_view != null)
+        {
+            _view.screenPointProvider = provider;
+        }
+    }
+    public bool IsOverRoster(Vector2 screenPoint)
+    {
+        if (_view == null || _view.root.panel == null)
+        {
+            return false;
+        }
+
+        return _view.IsOverRoster(RuntimePanelUtils.ScreenToPanel(_view.root.panel,
+            new Vector2(screenPoint.x, Screen.height - screenPoint.y)));
+    }
+
     public void SetRosterDrag(IToolkitRosterDrag drag)
     { _rosterDrag = drag; if (_view != null)
         {
@@ -256,6 +274,7 @@ public class ToolkitGameUI : MonoBehaviour
         _view = new ToolkitGameView(root, _iconProvider);
         _view.rosterDrag = _rosterDrag;
         _view.canBeginPointer = _canBeginPointer;
+        _view.screenPointProvider = _screenPointProvider;
         ToolkitHudGlyph.Attach(root);
         _context.Init();
         _view.OnInspect.AddListener(_detailPanel.OnInspect);

@@ -184,6 +184,20 @@ public class ToolkitGameView
         }
     }
 
+    // Whether a panel point is over a shown roster card, where a dragged card goes back to cancel its placement. The
+    // roster row spans the screen width, past its cards, over board cells a phone in landscape frames under it
+    public bool IsOverRoster(Vector2 panelPoint)
+    {
+        VisualElement roster = _root.Q("party-panel");
+        if (roster == null || roster.panel == null || roster.ClassListContains("is-hidden")
+            || roster.resolvedStyle.display == DisplayStyle.None)
+        {
+            return false;
+        }
+
+        return roster.Query(className: "card-shell").Where(card => card.worldBound.Contains(panelPoint)).First() != null;
+    }
+
     public void Show(string name, bool show)
     {
         if (_released)

@@ -29,9 +29,8 @@ public sealed class ToolkitRosterDrag : IToolkitRosterDrag, IDisposable
         {
             return false;
         }
-        // Lift the intended cell, not just its artwork, so preview and release validate the same ray.
-        Vector2 lifted = point + Vector2.up * (56f * ToolkitLayout.current.scale);
-        if (!_project(lifted, out hit, _owned.GetLayerMask()) || !_owned.IsValidTarget(hit.collider.gameObject))
+        // Target the cell under the finger, as when moving a unit already on the board.
+        if (!_project(point, out hit, _owned.GetLayerMask()) || !_owned.IsValidTarget(hit.collider.gameObject))
         {
             return false;
         }

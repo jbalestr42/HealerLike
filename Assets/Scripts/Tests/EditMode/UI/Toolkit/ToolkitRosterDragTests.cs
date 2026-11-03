@@ -57,6 +57,24 @@ namespace UI.Toolkit
                 }
             });
         }
+        [Test]
+        public void PreviewAndReleaseTargetTheCellUnderTheFinger()
+        {
+            _fixture.WithInput((input, manager, original) =>
+            {
+                Placement placement = new Placement(_data);
+                Vector2 finger = new Vector2(120f, 340f);
+                using (ToolkitRosterDrag drag = new ToolkitRosterDrag(manager, _board,
+                    (Vector2 p, out RaycastHit h, int mask) => { h = _fixture.hit; return p == finger; },
+                    p => false, () => {}, (data, spawned) => placement))
+                {
+                    drag.Begin(_data, finger, null);
+                    Assert.That(drag.valid, Is.True);
+                    Assert.That(drag.End(finger), Is.True);
+                    Assert.That(placement.clicks, Is.EqualTo(1));
+                }
+            });
+        }
         [TestCase(true, false)]
         [TestCase(false, true)]
         [TestCase(false, false)]

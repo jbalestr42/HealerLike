@@ -1,5 +1,7 @@
+using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 using PointerType = UnityEngine.UIElements.PointerType;
 
@@ -271,6 +273,49 @@ namespace UI.Toolkit
             _view.OnLayoutChanged += delegate { changes++; };
             _view.SetLayout(default(ToolkitLayoutState));
             Assert.AreEqual(1, changes);
+        }
+
+        // A dragged roster card cancels only back on the roster: a HUD bar over the board's edge rows still drops it
+        [UnityTest]
+        public IEnumerator IsOverRoster_OnlyOnAShownRosterCard()
+        {
+            ToolkitTestPanel panel = new ToolkitTestPanel();
+            try
+            {
+                VisualElement root = new VisualElement();
+                root.style.width = 400f;
+                root.style.height = 400f;
+                root.style.flexShrink = 0f;
+                VisualElement bar = new VisualElement { name = "command-dock" };
+                bar.style.height = 100f;
+                VisualElement roster = new VisualElement { name = "party-panel" };
+                roster.style.height = 100f;
+                roster.style.flexDirection = FlexDirection.Row;
+                VisualElement card = new VisualElement();
+                card.AddToClassList("card-shell");
+                card.style.width = 100f;
+                roster.Add(card);
+                root.Add(bar);
+                root.Add(roster);
+                panel.root.Add(root);
+                ToolkitGameView view = new ToolkitGameView(root);
+                yield return null;
+                yield return null;
+
+                Vector2 onRoster = card.worldBound.center;
+                Assert.IsTrue(view.IsOverRoster(onRoster));
+                Assert.IsFalse(view.IsOverRoster(new Vector2(card.worldBound.xMax + 150f, onRoster.y)),
+                    "The roster row past its cards lies over board cells.");
+                Assert.IsFalse(view.IsOverRoster(bar.worldBound.center), "Another HUD bar is not the roster.");
+
+                view.Show("party-panel", false);
+                Assert.IsFalse(view.IsOverRoster(onRoster), "A hidden roster cannot take the card back.");
+                view.Release();
+            }
+            finally
+            {
+                panel.Dispose();
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ public class ToolkitTouchInput : MonoBehaviour
     bool _suspended;
     int _finger = -1;
     Vector2 _start;
+    Vector2 _screen;
     bool _blocked;
     readonly ToolkitWorldPress _worldPress = new ToolkitWorldPress();
     ToolkitRosterDrag _roster;
@@ -34,9 +35,12 @@ public class ToolkitTouchInput : MonoBehaviour
         _interaction = interaction;
         _ui = GetComponent<ToolkitGameUI>();
         _roster = interaction != null && board != null
-            ? new ToolkitRosterDrag(interaction, board, Raycast, IsOverInterface, ClaimRoster) : null;
+            ? new ToolkitRosterDrag(interaction, board, Raycast, IsOverRoster, ClaimRoster) : null;
         _ui?.SetRosterDrag(_roster);
         _ui?.SetPointerGate(CanBeginPointer);
+        // A roster card drags in the panel, but its placement follows the finger's own screen point,
+        // as when moving a placed unit, rather than a panel-to-screen conversion.
+        _ui?.SetScreenPointProvider(panelPoint => _screen);
     }
 
     bool CanBeginPointer(int pointer)
@@ -153,6 +157,11 @@ public class ToolkitTouchInput : MonoBehaviour
 
     public void ProcessTouch(int finger, TouchPhase phase, Vector2 position)
     {
+        if (finger == _finger || (phase == TouchPhase.Began && _finger < 0))
+        {
+            _screen = position;
+        }
+
         if (_interaction == null || (!_interaction.enabled && !_suspended))
         {
             return;
@@ -282,6 +291,13 @@ public class ToolkitTouchInput : MonoBehaviour
         }
 
         _suspended = false;
+    }
+
+    // A roster card released back on the roster cancels its placement. Anywhere else the board is drawn, even
+    // under a HUD bar where a phone in landscape frames its edge rows, the unit goes on the board.
+    public virtual bool IsOverRoster(Vector2 screenPoint)
+    {
+        return _ui != null && _ui.IsOverRoster(screenPoint);
     }
 
     public virtual bool IsOverInterface(Vector2 screenPoint)
