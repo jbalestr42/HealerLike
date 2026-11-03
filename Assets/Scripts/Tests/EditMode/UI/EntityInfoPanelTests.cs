@@ -51,24 +51,6 @@ public class EntityInfoPanelTests
         _objects.Clear();
     }
 
-    [Test]
-    public void GetPassiveLines_ListsTheItemsTheEntityIsBornWith()
-    {
-        _entity.items.Add(new StubItem("Zeal", "+50% damage while above 70% health"));
-        _entity.inventoryHandler.AddItem(new StubItem("Iron Plating", "+3 flat armor"), -1);
-
-        CollectionAssert.AreEqual(new[] { "<b>Zeal</b> — +50% damage while above 70% health" }, EntityInfoPanel.GetPassiveLines(_entity));
-    }
-
-    [Test]
-    public void GetEquippedItemLines_ListsTheItemsPutInItsInventory()
-    {
-        _entity.items.Add(new StubItem("Zeal", "+50% damage while above 70% health"));
-        _entity.inventoryHandler.AddItem(new StubItem("Iron Plating", "+3 flat armor"), -1);
-
-        CollectionAssert.AreEqual(new[] { "<b>Iron Plating</b> — +3 flat armor" }, EntityInfoPanel.GetEquippedItemLines(_entity));
-    }
-
     EntityInfoPanel BuildPanel(bool canChangeTargeting, RectTransform inventory = null)
     {
         GameObject go = new GameObject("Entity Info", typeof(RectTransform));
@@ -146,12 +128,6 @@ public class EntityInfoPanelTests
         }
     }
 
-    [Test]
-    public void WithoutItem_BothListsAreEmpty()
-    {
-        Assert.IsEmpty(EntityInfoPanel.GetPassiveLines(_entity));
-        Assert.IsEmpty(EntityInfoPanel.GetEquippedItemLines(_entity));
-    }
 }
 
 }

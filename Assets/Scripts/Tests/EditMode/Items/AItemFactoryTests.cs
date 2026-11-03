@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace UI
+namespace Items
 {
 
-// The sandbox lists the player items apart from the entity items
-public class SandboxPanelTests
+// Player items are equipped on the healer, the other ones are given to a unit
+public class AItemFactoryTests
 {
     readonly List<Object> _objects = new List<Object>();
 
@@ -38,19 +38,19 @@ public class SandboxPanelTests
     [Test]
     public void IsPlayerItem_WithThePlayerTag_IsTrue()
     {
-        Assert.IsTrue(SandboxPanel.IsPlayerItem(CreateItem("Player")));
+        Assert.IsTrue(CreateItem("Player").isPlayerItem);
     }
 
     [Test]
     public void IsPlayerItem_AnEntityItem_IsFalse()
     {
-        Assert.IsFalse(SandboxPanel.IsPlayerItem(CreateItem("Entity")));
+        Assert.IsFalse(CreateItem("Entity").isPlayerItem);
     }
 
     [Test]
     public void IsPlayerItem_WithoutTag_IsFalse()
     {
-        Assert.IsFalse(SandboxPanel.IsPlayerItem(CreateItem()));
+        Assert.IsFalse(CreateItem().isPlayerItem);
     }
 }
 

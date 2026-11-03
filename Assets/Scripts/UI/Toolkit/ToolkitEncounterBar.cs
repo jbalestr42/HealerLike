@@ -161,7 +161,7 @@ public class ToolkitEncounterBar
     {
         return run == null || run.currentNode == null
             ? "Choose your route"
-            : $"Room {run.currentFloor + 1} · {MapView.GetNodeLabel(run.currentNode.type)}";
+            : $"Room {run.currentFloor + 1} · {MapNode.GetLabel(run.currentNode.type)}";
     }
 
     GameScreen GetCurrentPhaseView()

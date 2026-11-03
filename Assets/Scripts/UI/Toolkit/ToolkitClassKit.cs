@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // What a class card shows beyond its text: the real stats of a built preview of the class, and one icon entry per
-// skill and per unit with its popover text. Built from Julien's CharacterSelectPanel.CreatePreview and
-// CharacterCardText, so the numbers are the ones his select screen shows.
+// skill and per unit with its popover text. Built from Character.CreatePreview and
+// CharacterCardText, so the numbers are the ones of a run.
 public class ToolkitClassKit
 {
     readonly List<ToolkitKitEntry> _skills = new List<ToolkitKitEntry>();
@@ -33,7 +33,7 @@ public class ToolkitClassKit
             return kit;
         }
 
-        Character preview = CanPreview(character) ? CharacterSelectPanel.CreatePreview(character, null) : null;
+        Character preview = CanPreview(character) ? Character.CreatePreview(character) : null;
         if (preview != null)
         {
             kit._stats = Rich(CharacterCardText.GetStats(preview));
@@ -45,7 +45,7 @@ public class ToolkitClassKit
         return kit;
     }
 
-    // His CreatePreview reads the attribute table and every starting item without a null check
+    // CreatePreview reads the attribute table and every starting item without a null check
     static bool CanPreview(CharacterData character)
     {
         bool hasEmptyItem = false;

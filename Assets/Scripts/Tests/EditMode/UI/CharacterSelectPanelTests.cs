@@ -93,7 +93,9 @@ public class CharacterSelectPanelTests
 
     Character CreatePreview(CharacterData character)
     {
-        return CharacterSelectPanel.CreatePreview(character, _canvas.transform);
+        Character preview = Character.CreatePreview(character);
+        preview.transform.SetParent(_canvas.transform, false);
+        return preview;
     }
 
     float GetCardHeight(CharacterSelectPanel panel, int index)

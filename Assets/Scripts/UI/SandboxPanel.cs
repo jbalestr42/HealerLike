@@ -55,7 +55,7 @@ public class SandboxPanel : MonoBehaviour
 
         foreach (AItemFactory itemFactory in data.items)
         {
-            Transform container = IsPlayerItem(itemFactory) ? _playerItemContainer : _itemContainer;
+            Transform container = itemFactory.isPlayerItem ? _playerItemContainer : _itemContainer;
             CreateButton(container, itemFactory.title, () => _gameType.GiveItem(itemFactory));
         }
 
@@ -68,12 +68,6 @@ public class SandboxPanel : MonoBehaviour
         }
 
         Refresh();
-    }
-
-    // Player items are equipped on the character, the other ones are given to a unit
-    public static bool IsPlayerItem(AItemFactory itemFactory)
-    {
-        return itemFactory.HasTag(TagNames.Player);
     }
 
     SandboxButton CreateButton(Transform container, string label, UnityEngine.Events.UnityAction onClick)

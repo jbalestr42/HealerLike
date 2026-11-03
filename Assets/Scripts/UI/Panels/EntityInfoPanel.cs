@@ -286,8 +286,8 @@ public class EntityInfoPanel : APanel
         EntityInfoFormatter.AppendSection(builder, "Targeting", GetTargetingLines());
         EntityInfoFormatter.AppendSection(builder, "Stats", EntityInfoFormatter.GetAttributeLines(_entity.attributeManager, owner));
         EntityInfoFormatter.AppendSection(builder, "Skills", GetSkillLines());
-        EntityInfoFormatter.AppendSection(builder, "Passives", GetPassiveLines(_entity));
-        EntityInfoFormatter.AppendSection(builder, "Items", GetEquippedItemLines(_entity));
+        EntityInfoFormatter.AppendSection(builder, "Passives", EntitySheetText.GetPassiveLines(_entity));
+        EntityInfoFormatter.AppendSection(builder, "Items", EntitySheetText.GetEquippedItemLines(_entity));
         EntityInfoFormatter.AppendSection(builder, "Active effects", EntityInfoFormatter.GetBuffLines(_entity.buffManager, owner));
         EntityInfoFormatter.AppendSection(builder, "On hit", GetOnHitLines());
         return builder.ToString().TrimEnd();
@@ -359,28 +359,6 @@ public class EntityInfoPanel : APanel
                 line += $" <color={EntityInfoFormatter.MutedColor}>(item)</color>";
             }
             lines.Add(line);
-        }
-        return lines;
-    }
-
-    // The items the entity is born with
-    public static List<string> GetPassiveLines(Entity entity)
-    {
-        List<string> lines = new List<string>();
-        foreach (AItem item in entity.items)
-        {
-            lines.Add(EntityInfoFormatter.FormatItemDetails(item));
-        }
-        return lines;
-    }
-
-    // The items the player put in the inventory of the entity
-    public static List<string> GetEquippedItemLines(Entity entity)
-    {
-        List<string> lines = new List<string>();
-        foreach (InventoryItemData itemData in entity.inventoryHandler.items)
-        {
-            lines.Add(EntityInfoFormatter.FormatItemDetails(itemData.item));
         }
         return lines;
     }

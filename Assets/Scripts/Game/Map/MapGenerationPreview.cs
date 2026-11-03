@@ -190,7 +190,7 @@ public class MapGenerationPreview : MonoBehaviour
         foreach (MapNodeType type in RoomTypes)
         {
             counts.TryGetValue(type, out int count);
-            stats.AppendLine($"{MapView.GetNodeLabel(type)}: {count} ({GetShare(count, roomCount):0}%)");
+            stats.AppendLine($"{MapNode.GetLabel(type)}: {count} ({GetShare(count, roomCount):0}%)");
         }
         return stats.ToString().TrimEnd();
     }
@@ -361,7 +361,7 @@ public class MapGenerationPreview : MonoBehaviour
             GUILayout.BeginHorizontal(i == _selectedRoomType ? _selectedRowStyle : _rowStyle);
             DrawSwatch(row.type, 14f);
             GUILayout.Space(8f);
-            GUILayout.Label(MapView.GetNodeLabel(row.type), _cellStyle, GUILayout.Width(100f));
+            GUILayout.Label(MapNode.GetLabel(row.type), _cellStyle, GUILayout.Width(100f));
             GUILayout.Label(row.weight.ToString("0.00"), _cellValueStyle, GUILayout.Width(70f));
             GUILayout.Label($"{row.share * 100f:0}%", _cellValueStyle, GUILayout.Width(70f));
             GUILayout.Label($"{row.count} ({row.mapShare * 100f:0}%)", _cellValueStyle, GUILayout.Width(100f));
@@ -486,7 +486,7 @@ public class MapGenerationPreview : MonoBehaviour
         GUILayout.BeginHorizontal();
         DrawSwatch(roomType.type, 14f);
         GUILayout.Space(6f);
-        GUILayout.Label(MapView.GetNodeLabel(roomType.type).ToUpperInvariant(), _sectionStyle);
+        GUILayout.Label(MapNode.GetLabel(roomType.type).ToUpperInvariant(), _sectionStyle);
         GUILayout.EndHorizontal();
 
         // Changed after the loop, the list being drawn

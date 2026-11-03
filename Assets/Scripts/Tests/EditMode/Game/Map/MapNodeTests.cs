@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 
 namespace Game.Map
@@ -30,6 +31,15 @@ public class MapNodeTests
 
         Assert.AreEqual(1, node.next.Count);
         Assert.AreEqual(1, next.previous.Count);
+    }
+
+    [Test]
+    public void GetLabel_EveryTypeHasALabel()
+    {
+        foreach (MapNodeType type in Enum.GetValues(typeof(MapNodeType)))
+        {
+            Assert.IsNotEmpty(MapNode.GetLabel(type));
+        }
     }
 }
 

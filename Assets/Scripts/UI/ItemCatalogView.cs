@@ -65,7 +65,7 @@ public class ItemCatalogView : MonoBehaviour
             {
                 continue;
             }
-            if (SandboxPanel.IsPlayerItem(itemFactory))
+            if (itemFactory.isPlayerItem)
             {
                 playerItemFactories.Add(itemFactory);
             }

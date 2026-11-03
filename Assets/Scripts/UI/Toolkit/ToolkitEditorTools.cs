@@ -125,7 +125,7 @@ public sealed class ToolkitEditorTools : IDisposable
             {
                 if (itemFactory != null)
                 {
-                    (SandboxPanel.IsPlayerItem(itemFactory) ? healerItems : unitItems).Add(itemFactory);
+                    (itemFactory.isPlayerItem ? healerItems : unitItems).Add(itemFactory);
                 }
             }
 

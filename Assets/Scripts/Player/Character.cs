@@ -101,6 +101,21 @@ public class Character : MonoBehaviour, IBuffable
         }
     }
 
+    // The character built with its stats only (attributes, mana, starting items), so a class card shows its real stats
+    // and skill values. Not in a run: the caller destroys it.
+    public static Character CreatePreview(CharacterData data)
+    {
+        GameObject go = new GameObject(data.title + " Preview");
+        go.AddComponent<AttributeManager>();
+        go.AddComponent<BuffManager>();
+        Character character = go.AddComponent<Character>();
+        character.data = data;
+        character.InitAttributes();
+        character.InitItems();
+        character.ApplyBuffs();
+        return character;
+    }
+
     // Applies the buffs added (e.g. by the starting items) to the attributes right away, instead of over
     // the next frames
     public void ApplyBuffs()

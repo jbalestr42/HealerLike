@@ -10,7 +10,7 @@ public class ToolkitInfoSection
 }
 
 // What the detail panel shows about a creature beyond its summary. Every string comes from the
-// sandbox formatters (EntityInfoFormatter, EntityInfoPanel) so their edits reach this panel.
+// sandbox formatters (EntityInfoFormatter, EntitySheetText) so their edits reach this panel.
 // Only the lines their panel builds in private methods are assembled again here, from the same
 // public formatter pieces: GetHealthLine, GetTargeting, GetSkills and GetEffects (on hit part).
 // Delete those the day the sandbox panel makes its own versions public.
@@ -195,8 +195,8 @@ public static class ToolkitEntityInfo
     public static ToolkitInfoSection GetItems(Entity entity)
     {
         ToolkitInfoSection section = new ToolkitInfoSection();
-        AddGroup(section, "Born with", EntityInfoPanel.GetPassiveLines(entity));
-        AddGroup(section, "Equipped", EntityInfoPanel.GetEquippedItemLines(entity));
+        AddGroup(section, "Born with", EntitySheetText.GetPassiveLines(entity));
+        AddGroup(section, "Equipped", EntitySheetText.GetEquippedItemLines(entity));
         return section;
     }
 

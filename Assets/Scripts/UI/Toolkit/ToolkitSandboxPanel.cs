@@ -140,7 +140,7 @@ public sealed class ToolkitSandboxPanel : IDisposable
             }
 
             // A healer item is equipped right away, a unit item is given to the units tapped next
-            bool isHealerItem = SandboxPanel.IsPlayerItem(item);
+            bool isHealerItem = item.isPlayerItem;
             AddButton(isHealerItem ? healerItems : unitItems, item.title, () => sandbox.GiveItem(item), !isHealerItem);
         }
 

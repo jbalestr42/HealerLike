@@ -81,7 +81,7 @@ public class CharacterSelectPanel : MonoBehaviour
         {
             if (character != null)
             {
-                panel.CreateCard(cards.transform, character, CreatePreview(character, root.transform), () => onChosen(character, panel.GetAscensionLevel(character)));
+                panel.CreateCard(cards.transform, character, CreatePreviewIn(character, root.transform), () => onChosen(character, panel.GetAscensionLevel(character)));
             }
         }
         FitCardsHeight(cards.GetComponent<RectTransform>());
@@ -121,19 +121,11 @@ public class CharacterSelectPanel : MonoBehaviour
         return _ascension.ClampLevel(_getUnlockedLevel(character));
     }
 
-    // The character built with its stats only (attributes, mana, starting items), so the card shows its real
-    // stats and skill values. Hidden, outside the layout, and destroyed with the screen.
-    public static Character CreatePreview(CharacterData data, Transform parent)
+    // Hidden, outside the layout, and destroyed with the screen
+    static Character CreatePreviewIn(CharacterData data, Transform parent)
     {
-        GameObject go = new GameObject(data.title + " Preview");
-        go.transform.SetParent(parent, false);
-        go.AddComponent<AttributeManager>();
-        go.AddComponent<BuffManager>();
-        Character character = go.AddComponent<Character>();
-        character.data = data;
-        character.InitAttributes();
-        character.InitItems();
-        character.ApplyBuffs();
+        Character character = Character.CreatePreview(data);
+        character.transform.SetParent(parent, false);
         return character;
     }
 

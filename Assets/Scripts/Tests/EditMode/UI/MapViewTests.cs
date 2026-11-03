@@ -147,15 +147,6 @@ public class MapViewTests
     }
 
     [Test]
-    public void GetNodeLabel_EveryTypeHasALabel()
-    {
-        foreach (MapNodeType type in Enum.GetValues(typeof(MapNodeType)))
-        {
-            Assert.IsNotEmpty(MapView.GetNodeLabel(type));
-        }
-    }
-
-    [Test]
     public void GetNodeSize_EnoughRoom_KeepsTheMaxSize()
     {
         RunMap map = MapGenerator.GenerateLayout(10, 3, 4, new System.Random(0));

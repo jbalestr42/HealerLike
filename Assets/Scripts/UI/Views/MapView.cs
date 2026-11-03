@@ -177,27 +177,6 @@ public class MapView : AView
         }
     }
 
-    public static string GetNodeLabel(MapNodeType type)
-    {
-        switch (type)
-        {
-            case MapNodeType.Combat:
-                return "Combat";
-            case MapNodeType.Elite:
-                return "Elite";
-            case MapNodeType.Treasure:
-                return "Treasure";
-            case MapNodeType.Rest:
-                return "Rest";
-            case MapNodeType.Boss:
-                return "Boss";
-            case MapNodeType.Event:
-                return "Event";
-            default:
-                return type.ToString();
-        }
-    }
-
     // Hides the elements of the previous drawing, to be used again
     void Clear()
     {
@@ -357,7 +336,7 @@ public class MapView : AView
         }
 
         TMP_Text text = button.GetComponentInChildren<TMP_Text>();
-        text.text = GetNodeLabel(node.type);
+        text.text = MapNode.GetLabel(node.type);
         text.fontSize = _fontSize;
         text.fontStyle = style.isBold ? FontStyles.Bold : FontStyles.Normal;
         text.color = style.text;

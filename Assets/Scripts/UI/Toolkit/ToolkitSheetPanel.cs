@@ -2,9 +2,8 @@ using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// The healer's sheet: what Julien's CharacterInfoPanel shows (mana, stats with their modifiers, items and active
-// effects), which the Toolkit hides along with his canvas. His own text is used as it is, only its markup is
-// normalised for the label. Opened from the header, closed by its button or Escape, refreshed with the host.
+// The healer's sheet: mana, stats with their modifiers, items and active effects, from EntitySheetText. Its text is
+// used as it is, only its markup is normalised for the label. Opened from the header, closed by its button or Escape, refreshed with the host.
 public sealed class ToolkitSheetPanel : IDisposable
 {
     const string OpenButtonName = "sheet-button";
@@ -162,7 +161,7 @@ public sealed class ToolkitSheetPanel : IDisposable
 
         try
         {
-            string body = CharacterInfoPanel.BuildBody(character);
+            string body = EntitySheetText.BuildCharacterBody(character);
             _failure = null;
             return body;
         }
@@ -171,7 +170,7 @@ public sealed class ToolkitSheetPanel : IDisposable
             if (_failure != exception.Message)
             {
                 _failure = exception.Message;
-                Debug.LogError("[ToolkitSheetPanel] CharacterInfoPanel.BuildBody failed: " + exception);
+                Debug.LogError("[ToolkitSheetPanel] EntitySheetText.BuildCharacterBody failed: " + exception);
             }
 
             return Muted("Sheet unavailable");

@@ -170,6 +170,28 @@ public class CharacterTests
 
         Assert.AreEqual(0f, _character.devotion.Value);
     }
+
+    [Test]
+    public void CreatePreview_HasTheStatsAndManaOfTheData()
+    {
+        CharacterData data = CreateTracked<CharacterData>();
+        data.title = "Cleric";
+        data.items = new List<AItemFactory>();
+        data.attributes = new Dictionary<AttributeType, float> { { AttributeType.ManaMax, 100f }, { AttributeType.HealPower, 20f } };
+
+        Character preview = null;
+        TestHelpers.WithLoggingDisabled(() => preview = Character.CreatePreview(data));
+        try
+        {
+            Assert.AreSame(data, preview.data);
+            Assert.AreEqual(100f, preview.mana.Max);
+            Assert.AreEqual(20f, preview.attributeManager.Get(AttributeType.HealPower).Value);
+        }
+        finally
+        {
+            Object.DestroyImmediate(preview.gameObject);
+        }
+    }
 }
 
 }

@@ -30,9 +30,9 @@ public class ToolkitMapNode : IDisposable
         button.userData = node;
         button.AddToClassList("room-" + node.type.ToString().ToLowerInvariant());
         button.tooltip =
-            $"{MapView.GetNodeLabel(node.type)} · Room {node.floor + 1}\n"
+            $"{MapNode.GetLabel(node.type)} · Room {node.floor + 1}\n"
             + ToolkitRunMapPresentation.Description(node.type);
-        label.text = MapView.GetNodeLabel(node.type);
+        label.text = MapNode.GetLabel(node.type);
         _glyph = new ToolkitMapGlyph(glyph, node.type);
         button.clicked += Activate;
     }

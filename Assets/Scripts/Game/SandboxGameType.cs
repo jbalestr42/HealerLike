@@ -7,7 +7,6 @@ using UnityEngine.EventSystems;
 public class SandboxGameType : AGameType
 {
     [SerializeField] SandboxData _data;
-    [SerializeField] SandboxPanel _panel;
     public SandboxData data => _data;
 
     EntityManager _entities;
@@ -60,7 +59,6 @@ public class SandboxGameType : AGameType
 
         PlayerBehaviour.instance.character.hasUnrestrictedSkills = true;
         PlayerBehaviour.instance.Init(_data.CreateCharacterData(playedCharacter));
-        _panel.Init(this, _data, PlayerBehaviour.instance.character);
         if (playedCharacter != null)
         {
             PlaceStartingUnits(playedCharacter);

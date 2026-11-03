@@ -9,6 +9,8 @@ public abstract class AItemFactory : ScriptableObject, ITaggable
     public abstract AItem GetItem();
     public abstract string title { get; }
     public abstract List<GameplayTag> tags { get; }
+    // Equipped on the healer, not on a unit
+    public bool isPlayerItem => HasTag(TagNames.Player);
 
     #region ITaggable
 

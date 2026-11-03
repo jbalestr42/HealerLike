@@ -266,7 +266,7 @@ namespace UI.Toolkit
             // A null starting item makes his item line throw
             _character.items.Add(null);
             _context.isSheetOpen = true;
-            LogAssert.Expect(LogType.Error, new Regex(@"\[ToolkitSheetPanel\] CharacterInfoPanel\.BuildBody failed"));
+            LogAssert.Expect(LogType.Error, new Regex(@"\[ToolkitSheetPanel\] EntitySheetText\.BuildCharacterBody failed"));
 
             _sheet.Refresh();
             _sheet.Refresh();

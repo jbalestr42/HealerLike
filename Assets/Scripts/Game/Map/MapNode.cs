@@ -52,6 +52,27 @@ public class MapNode
         return _next.Contains(nextNode);
     }
 
+    public static string GetLabel(MapNodeType type)
+    {
+        switch (type)
+        {
+            case MapNodeType.Combat:
+                return "Combat";
+            case MapNodeType.Elite:
+                return "Elite";
+            case MapNodeType.Treasure:
+                return "Treasure";
+            case MapNodeType.Rest:
+                return "Rest";
+            case MapNodeType.Boss:
+                return "Boss";
+            case MapNodeType.Event:
+                return "Event";
+            default:
+                return type.ToString();
+        }
+    }
+
     public override string ToString()
     {
         return $"{_type} ({_floor}, {_column})";
