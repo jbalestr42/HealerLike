@@ -30,16 +30,28 @@ namespace HealerLike.Render.Stage
         [MenuItem("Tools/Render/Build Render Preview")]
         public static void BuildPlayer()
         {
+            BuildStandalone(BuildTarget.StandaloneOSX, "/tmp/HealerLikeRender.app");
+        }
+
+        [MenuItem("Tools/Render/Build Render Preview (Windows)")]
+        public static void BuildWindowsPlayer()
+        {
+            BuildStandalone(BuildTarget.StandaloneWindows64,
+                Path.Combine("Builds", "Windows", "HealerLike-Render", "HealerLike.exe"));
+        }
+
+        static void BuildStandalone(BuildTarget target, string defaultOutput)
+        {
             string output = System.Environment.GetEnvironmentVariable("RENDER_PLAYER_OUTPUT");
             if (string.IsNullOrEmpty(output))
             {
-                output = "/tmp/HealerLikeRender.app";
+                output = defaultOutput;
             }
 
             BuildPlayerOptions options = new BuildPlayerOptions();
             options.scenes = Scenes;
             options.locationPathName = output;
-            options.target = BuildTarget.StandaloneOSX;
+            options.target = target;
             options.options = BuildOptions.Development;
             BuildReport report = BuildPipeline.BuildPlayer(options);
             Debug.Log(
