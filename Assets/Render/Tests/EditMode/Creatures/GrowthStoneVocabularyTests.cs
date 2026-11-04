@@ -9,6 +9,7 @@ using Object = UnityEngine.Object;
 namespace HealerLike.Render.Creatures
 {
 
+[Category("Slow")]
 public class GrowthStoneVocabularyTests : GrowthStoneFixture
 {
     [Test]

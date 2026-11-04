@@ -7,6 +7,7 @@ using UnityEngine.TestTools;
 namespace HealerLike.Render.Stones
 {
 
+[Category("Slow")]
 public class StoneMeshTests
 {
     Random.State _randomState;

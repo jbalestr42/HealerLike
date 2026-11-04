@@ -9,6 +9,7 @@ using HealerLike.Render.Grammar;
 
 namespace HealerLike.Render.Studio.Editor
 {
+    [Category("Slow")]
     public class CreatureRosterTests
     {
         CreatureRoster _roster;

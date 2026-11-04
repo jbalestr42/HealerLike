@@ -66,6 +66,13 @@ Run tests via Unity's Test Runner window (Window > General > Test Runner > EditM
 Claude to do it via the `mcp__unity-mcp__` bridge - `Unity.exe -batchmode -runTests` only works
 when no Editor instance already has the project open.
 
+**Which tests to run:** while working, run only the tests of the area being changed (`-testFilter` on its
+namespace, e.g. `UI.Toolkit`, `Attributes`), through the open Editor when there is one (no startup cost).
+Run the full EditMode suite once at the end of a stage, before asking to commit. Fixtures that take many
+seconds (shader draws, procedural meshes, Android player settings that force recompiles) carry
+`[Category("Slow")]`: exclude them from working runs with `-testCategory "!Slow"`, and run them in the
+full suite or when working on what they cover. Tag any new fixture that takes more than a few seconds.
+
 ## Oisif Inspector (editor kit)
 
 The inspectors and data tools are our own, in `Assets/Oisif/Inspector`: attributes in

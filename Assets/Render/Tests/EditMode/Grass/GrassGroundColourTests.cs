@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace HealerLike.Render.Grass
 {
+    [Category("Slow")]
     public class GrassGroundColourTests : AGrassDrawFixture
     {
         [Test]

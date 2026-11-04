@@ -7,6 +7,7 @@ using UnityEngine.Rendering;
 
 namespace HealerLike.Render.Grass
 {
+    [Category("Slow")]
     public class GrassShadowTests : AGrassDrawFixture
     {
         [Test]

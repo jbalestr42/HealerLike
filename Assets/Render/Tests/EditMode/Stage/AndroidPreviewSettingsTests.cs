@@ -9,6 +9,7 @@ using UnityEngine.Rendering;
 namespace HealerLike.Render.Stage
 {
 
+[Category("Slow")]
 public class AndroidPreviewSettingsTests
 {
     [Test]

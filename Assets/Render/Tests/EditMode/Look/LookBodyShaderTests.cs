@@ -6,6 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Look
 {
+    [Category("Slow")]
     public class LookBodyShaderTests
     {
         LookTestScene _scene;

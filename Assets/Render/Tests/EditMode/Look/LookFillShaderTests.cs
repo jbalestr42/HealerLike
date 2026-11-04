@@ -7,6 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace HealerLike.Render.Look
 {
+    [Category("Slow")]
     public class LookFillShaderTests
     {
         static readonly string lookShaderPath = "Assets/Render/Shaders/Look.shader";
