@@ -15,8 +15,6 @@ public class ToolkitGameUI : MonoBehaviour
     // is honoured. Left empty, Start goes straight to the gameplay scene with a random class.
     [SerializeField] GameData _gameData;
 
-    [SerializeField] bool _hideLegacyCanvases = true;
-
     [SerializeField] VisualTreeAsset _layout;
 
     [SerializeField] ThemeStyleSheet _theme;
@@ -28,7 +26,6 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitGameActions _actions;
     bool _started;
     ToolkitGameContext _context = new ToolkitGameContext();
-    ToolkitLegacyCanvases _legacyCanvases = new ToolkitLegacyCanvases();
     ToolkitWorldFraming _worldFraming = new ToolkitWorldFraming();
     ToolkitTimeControls _timeControls = new ToolkitTimeControls();
     ToolkitEncounterBar _encounterBar = new ToolkitEncounterBar();
@@ -181,15 +178,6 @@ public class ToolkitGameUI : MonoBehaviour
         set { _sandboxScene = value; }
     }
 
-    // Every Awake of a loaded scene runs before any Start, so the legacy menu never opens its screen
-    void Awake()
-    {
-        if (_hideLegacyCanvases)
-        {
-            ToolkitLegacyCanvases.SilenceMenus();
-        }
-    }
-
     void Start()
     {
         _started = true;
@@ -297,11 +285,6 @@ public class ToolkitGameUI : MonoBehaviour
 #if UNITY_EDITOR
         _editorTools.Init(_context, _view);
 #endif
-        if (_hideLegacyCanvases)
-        {
-            _legacyCanvases.Hide(_context, FindAnyObjectByType<UIManager>());
-        }
-
         _view.OnLayoutChanged += OnLayoutChanged;
         Refresh();
     }
@@ -337,7 +320,6 @@ public class ToolkitGameUI : MonoBehaviour
     void OnDisable()
     {
         ReleaseView();
-        _legacyCanvases.Restore();
         _worldFraming.Restore();
         if (_document != null && _document.rootVisualElement != null)
         {

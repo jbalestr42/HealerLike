@@ -23,13 +23,6 @@ public class BossRoomTests
         Assert.IsFalse(AscensionGameType.IsRunWon(roomType));
     }
 
-    [Test]
-    public void EndScreen_TellsAVictoryFromAGameOver()
-    {
-        Assert.AreEqual("Victory!", GameOverView.GetResultTitle(true));
-        Assert.AreEqual("Game Over", GameOverView.GetResultTitle(false));
-    }
-
     // Whatever the number of floors of the map: the boss room is on the floor right after the last one
     [TestCase(10)]
     [TestCase(15)]

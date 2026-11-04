@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Game
 {
 
-// Only the pieces independent from the singletons (GameManager, UIManager, ...) the run loop relies on
+// Only the pieces independent from the singletons (GameManager, ...) the run loop relies on
 public class AscensionGameTypeTests
 {
     GameObject _entityGo;

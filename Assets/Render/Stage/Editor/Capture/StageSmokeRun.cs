@@ -82,22 +82,26 @@ namespace HealerLike.Render.Stage
                 + $"zones {_maxZones}");
         }
 
-        // The upgrade view offers buttons, the first one is picked through its own call
+        // The run offers reward choices, an item is picked first (as the legacy item button was), the first choice otherwise
         void PickUpgrade()
         {
-            SelectItemUpgradeButton item = UnityEngine.Object.FindAnyObjectByType<SelectItemUpgradeButton>();
-            if (item != null)
+            AscensionGameType run = UnityEngine.Object.FindAnyObjectByType<AscensionGameType>();
+            if (run == null || run.rewardChoices.Count == 0)
             {
-                item.SelectUpgrade();
                 return;
             }
 
-            SelectPlayerItemUpgradeButton playerItem =
-                UnityEngine.Object.FindAnyObjectByType<SelectPlayerItemUpgradeButton>();
-            if (playerItem != null)
+            RewardChoice picked = run.rewardChoices[0];
+            foreach (RewardChoice choice in run.rewardChoices)
             {
-                playerItem.SelectUpgrade();
+                if (choice.item != null)
+                {
+                    picked = choice;
+                    break;
+                }
             }
+
+            run.SelectReward(picked);
         }
 
         static bool IsKnown(string message, string stackTrace)

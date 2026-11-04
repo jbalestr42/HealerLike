@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using TMPro;
 using UnityEngine;
 
 namespace UI
@@ -58,28 +57,7 @@ public class UnitRewardTests
         zealot.attributes[AttributeType.AttackRate] = 2f;
 
         StringAssert.Contains("- Attack Speed: 0.5/s", CharacterCardText.GetUnitDetails(zealot));
-    }
-
-    [Test]
-    public void EntityButton_ShowsTheUnitAsANewUnitWithItsDetails()
-    {
-        GameObject go = new GameObject("Unit Reward");
-        _objects.Add(go);
-        SelectEntityUpgradeButton button = go.AddComponent<SelectEntityUpgradeButton>();
-        TMP_Text title = new GameObject("Title").AddComponent<TextMeshPro>();
-        TMP_Text description = new GameObject("Description").AddComponent<TextMeshPro>();
-        _objects.Add(title.gameObject);
-        _objects.Add(description.gameObject);
-        TestHelpers.SetPrivateField(button, "_title", title);
-        TestHelpers.SetPrivateField(button, "_description", description);
-        EntityData zealot = CreateZealot();
-
-        button.Init(zealot);
-
-        Assert.AreSame(zealot, button.entity);
-        Assert.AreEqual("New unit: Zealot", title.text);
-        Assert.AreEqual(CharacterCardText.GetUnitDetails(zealot), description.text);
-    }
+}
 }
 
 }

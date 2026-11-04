@@ -26,7 +26,7 @@ public class TextConvertorTests
 
             // Adding Character triggers Unity's editor-only Reset() message, which NREs on
             // _buffManager since we deliberately skip the heavy Character.Init() for this test
-            // double (it needs UIManager etc.) - only attributeManager is exercised here.
+            // double (it needs GameManager etc.) - only attributeManager is exercised here.
             character = go.AddComponent<Character>();
             character.attributeManager = attributeManager;
         });

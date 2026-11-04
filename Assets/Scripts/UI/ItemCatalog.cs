@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-// Editor tool (see ItemCatalogView): every item of the game in an inventory, to try them in game. An item taken out
+// Editor tool (see ToolkitEditorTools): every item of the game in an inventory, to try them in game. An item taken out
 // (e.g. dragged onto a unit) is replaced by a new one in its slot: the catalog never runs out
 public class ItemCatalog
 {

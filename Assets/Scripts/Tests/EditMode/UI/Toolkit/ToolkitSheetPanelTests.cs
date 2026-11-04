@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 namespace UI.Toolkit
 {
 
-    // The healer sheet: Julien's CharacterInfoPanel text, in a Toolkit panel the header opens
+    // The healer sheet: the EntitySheetText character text, in a Toolkit panel the header opens
     public class ToolkitSheetPanelTests
     {
         class StubItem : AItem

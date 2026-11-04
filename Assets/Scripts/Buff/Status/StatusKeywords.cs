@@ -4,7 +4,7 @@ using UnityEngine;
 
 // {status:Vulnerable} in a description: the title of the status, bold and colored (gold for a buff, purple for a debuff),
 // wrapped in an invisible link naming it, so the box next to the text can explain every status it cites (see
-// StatusKeywordBox). The statuses are found by their title among the ones of the game data
+// ToolkitStatusText). The statuses are found by their title among the ones of the game data
 public static class StatusKeywords
 {
     public const string PositiveColor = "#FFD25A";

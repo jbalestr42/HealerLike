@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 
-// Turns the TextMesh Pro rich text of the legacy panels (EntityInfoFormatter, CharacterInfoPanel, EventView, the
+// Turns the TextMesh Pro rich text of the game texts (EntityInfoFormatter, EntitySheetText, the event texts, the
 // skill descriptions in the data assets) into markup a UI Toolkit label renders. UI Toolkit's tag set is a superset
 // of what those panels emit, so most tags pass through byte for byte; the work is the cases where the two differ or
 // where the input is not well formed:

@@ -11,7 +11,7 @@ using UnityEditor.SceneManagement;
 namespace UI.Toolkit
 {
 
-    // Play mode runs of the two Toolkit demo scenes
+    // Play mode runs of the game scenes with the Toolkit UI
     public class ToolkitGameUITests
     {
         // The demo data can have more spells than shortcut bindings, depending on the random character.
@@ -81,19 +81,6 @@ namespace UI.Toolkit
             {
                 button.SendEvent(submit);
             }
-        }
-
-        static Canvas FindScreenCanvas()
-        {
-            foreach (Canvas canvas in Object.FindAnyObjectByType<UIManager>().GetComponentsInChildren<Canvas>())
-            {
-                if (canvas.renderMode != RenderMode.WorldSpace)
-                {
-                    return canvas;
-                }
-            }
-
-            return null;
         }
 
         // Raycasts the EventSystem at a panel position, as the unchanged InteractionManager does
@@ -187,26 +174,28 @@ namespace UI.Toolkit
         }
 
         [UnityTest]
-        public IEnumerator OnDisable_GameplayScene_RestoresLegacyCanvasUntilEnabled()
+        public IEnumerator OnDisable_GameplayScene_ClearsTheViewUntilEnabled()
         {
             EditorSceneManager.OpenScene("Assets/Scenes/Main.unity");
             yield return new EnterPlayMode();
             yield return WaitFrames(5);
             ToolkitGameUI gameUI = Object.FindAnyObjectByType<ToolkitGameUI>();
             yield return EnterFirstRoom();
-            Canvas legacyCanvas = FindScreenCanvas();
-            Assert.IsNotNull(legacyCanvas);
-            Assert.IsFalse(legacyCanvas.enabled);
             gameUI.enabled = false;
             yield return null;
-            Assert.IsTrue(legacyCanvas.enabled, "Detaching the Toolkit must restore the legacy rendering.");
             Assert.AreEqual(0, gameUI.GetComponent<UIDocument>().rootVisualElement.childCount);
             gameUI.enabled = true;
             yield return new WaitForSecondsRealtime(0.15f);
             VisualElement root = gameUI.GetComponent<UIDocument>().rootVisualElement;
-            Assert.IsFalse(legacyCanvas.enabled);
             Assert.Greater(root.Q("spell-list").Query<Button>().ToList().Count, 0);
             yield return new ExitPlayMode();
+        }
+
+        [Test]
+        public void GetResultTitle_TellsAVictoryFromADefeat()
+        {
+            Assert.AreEqual("Victory!", ToolkitGameUI.GetResultTitle(true));
+            Assert.AreEqual("Your party has fallen", ToolkitGameUI.GetResultTitle(false));
         }
     }
 }

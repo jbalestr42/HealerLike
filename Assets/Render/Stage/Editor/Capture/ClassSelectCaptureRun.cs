@@ -106,7 +106,7 @@ namespace HealerLike.Render.Stage
             found(host);
         }
 
-        // What the stage looks like around the menu: one manager, the legacy menu silenced, the scenes loaded
+        // What the stage looks like around the menu: one manager, the scenes loaded
         void LogStage(string moment)
         {
             List<string> scenes = new List<string>();
@@ -115,15 +115,9 @@ namespace HealerLike.Render.Stage
                 scenes.Add(UnityEngine.SceneManagement.SceneManager.GetSceneAt(i).path);
             }
 
-            List<string> legacy = new List<string>();
-            foreach (MainMenu menu in Object.FindObjectsByType<MainMenu>(FindObjectsInactive.Include))
-            {
-                legacy.Add(menu.name + (menu.enabled ? " enabled" : " disabled"));
-            }
-
             int managers = Object.FindObjectsByType<RenderManager>(FindObjectsInactive.Include).Length;
             Debug.Log($"[ClassSelectCaptureRun] {moment}: RenderManagers {managers}, scenes [{string.Join(", ", scenes)}], "
-                + $"legacy MainMenu [{string.Join(", ", legacy)}], game {ActiveGamePath()}, "
+                + $"game {ActiveGamePath()}, "
                 + $"stage target {StageTarget.scenePath} selected {StageTarget.isSelected}");
             if (managers != 1)
             {
@@ -237,14 +231,6 @@ namespace HealerLike.Render.Stage
                 if (menu.sceneLoader == null)
                 {
                     _problems.Add("The booted menu has no stage scene loader.");
-                }
-
-                foreach (MainMenu legacy in Object.FindObjectsByType<MainMenu>())
-                {
-                    if (legacy.enabled)
-                    {
-                        _problems.Add("The legacy MainMenu is still enabled on " + legacy.name + ".");
-                    }
                 }
 
                 LogMenuLayout(menu);

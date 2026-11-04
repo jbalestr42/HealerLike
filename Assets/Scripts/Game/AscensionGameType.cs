@@ -481,7 +481,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
         character.ApplyBuffs();
     }
 
-    // In the inventory of the unit, without slot: shown in its first free slots (see SlotInventory.RefreshInventory)
+    // In the inventory of the unit, without slot: shown in its first free slots
     public static void GiveItems(Entity entity, List<AItemFactory> items)
     {
         foreach (AItemFactory item in items)
