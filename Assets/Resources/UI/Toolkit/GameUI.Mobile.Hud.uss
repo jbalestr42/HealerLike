@@ -182,6 +182,11 @@
     margin-bottom: var(--ui-space-lg);
 }
 
+.layout--phone #portrait-button
+{
+    margin-top: 0;
+}
+
 .layout--phone .speed-controls .button
 {
     min-width: var(--ui-speed-touch-width);

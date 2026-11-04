@@ -11,6 +11,7 @@
                 <ui:Button name="speed-normal-button" text="1×" class="button" />
                 <ui:Button name="speed-fast-button" text="2×" class="button" />
             </ui:VisualElement>
+            <ui:Button name="portrait-button" text="Phone view" class="button is-hidden" />
         </ui:VisualElement>
         <ui:Button name="resume-button" text="Resume encounter" class="button button--primary" />
         <ui:Button name="menu-button" text="Return to menu" class="button button--quiet menu-button" />

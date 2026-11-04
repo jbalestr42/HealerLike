@@ -65,6 +65,11 @@
     flex-grow: 1;
 }
 
+#portrait-button
+{
+    margin-top: var(--ui-space-md);
+}
+
 .marker-toggle
 {
     margin-top: var(--ui-space-md);

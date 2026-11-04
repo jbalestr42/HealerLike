@@ -44,6 +44,7 @@ public class ToolkitGameUI : MonoBehaviour
     ToolkitEditorTools _editorTools = new ToolkitEditorTools();
 #endif
     ToolkitMobileLayout _mobileLayout = new ToolkitMobileLayout();
+    ToolkitPortraitWindow _portraitWindow = new ToolkitPortraitWindow();
     IToolkitIconProvider _iconProvider;
     IToolkitRosterDrag _rosterDrag;
     System.Func<int, bool> _canBeginPointer;
@@ -269,6 +270,7 @@ public class ToolkitGameUI : MonoBehaviour
         _view.OnInspectEnded.AddListener(_detailPanel.OnInspectEnded);
         _mobileLayout.Init(_view, _context, _document);
         _timeControls.Init(this, _context, _view);
+        _portraitWindow.Init(_view, ToolkitPortraitWindow.IsAvailable(Application.platform));
         _actions = new ToolkitGameActions(this, _context, _view, _timeControls, _mobileLayout, _mapPanel);
         _encounterBar.Init(_context, _view);
         _detailPanel.Init(_context, _view);
@@ -418,6 +420,7 @@ public class ToolkitGameUI : MonoBehaviour
 
         _timeControls.Dispose();
         _mobileLayout.Dispose();
+        _portraitWindow.Dispose();
         _inventoryPanel.Dispose();
         _sheetPanel.Dispose();
         _sandboxPanel.Dispose();
