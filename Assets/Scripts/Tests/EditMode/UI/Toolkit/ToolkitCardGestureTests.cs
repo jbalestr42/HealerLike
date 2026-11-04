@@ -89,14 +89,15 @@ namespace UI.Toolkit
             Assert.That(_casts, Is.Zero); Assert.That(_inspects, Is.EqualTo(1));
         }
         [UnityTest]
-        public IEnumerator ScrollCannotBecomeDeploymentAndHoldCannotBecomeDrag()
+        public IEnumerator SidewaysMoveOutsideAScrollRowDeploysAndHoldCannotBecomeDrag()
         {
             Bind(false); yield return null; yield return null;
             Vector2 point = _button.worldBound.center;
-            Down(point); Move(point + Vector2.left * 30); Move(point + Vector2.down * 100); Up(point);
-            Assert.That(_drag.begins, Is.Zero); Assert.That(_casts, Is.Zero);
+            // No scrolling row around the card: a sideways pull deploys like an upward one
+            Down(point); Move(point + Vector2.right * 30); Up(point + Vector2.right * 100);
+            Assert.That(_drag.begins, Is.EqualTo(1)); Assert.That(_casts, Is.Zero);
             Down(point); yield return Hold(); Move(point); Move(point + Vector2.down * 100); Up(point);
-            Assert.That(_drag.begins, Is.Zero); Assert.That(_inspects, Is.EqualTo(1));
+            Assert.That(_drag.begins, Is.EqualTo(1)); Assert.That(_inspects, Is.EqualTo(1));
         }
         [UnityTest]
         public IEnumerator OwnedDragEndsOnceAndTeardownCancelsPendingPreview()

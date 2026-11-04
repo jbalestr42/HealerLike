@@ -49,13 +49,13 @@ public sealed class ToolkitCardGesture : IDisposable
         if (!(_view.canBeginPointer?.Invoke(evt.pointerId) ?? true))
         { evt.StopImmediatePropagation(); return; }
         _pressed = _card.model;
-        if (!_press.Begin(evt.pointerId, evt.position, Time.realtimeSinceStartup, _pressed.canDrag))
+        _scroll = _button.GetFirstAncestorOfType<ScrollView>();
+        if (!_press.Begin(evt.pointerId, evt.position, Time.realtimeSinceStartup, _pressed.canDrag, CanScroll(_scroll)))
         {
             return;
         }
 
         _point = _down = evt.position;
-        _scroll = _button.GetFirstAncestorOfType<ScrollView>();
         _scrollStart = _scroll != null ? _scroll.scrollOffset : Vector2.zero;
         _button.CapturePointer(evt.pointerId);
         _timer = _button.schedule.Execute(Tick).Every(16);
@@ -83,6 +83,10 @@ public sealed class ToolkitCardGesture : IDisposable
     void Resolve()
     {
         ToolkitPress.Owner owner = _press.Move(_press.pointer, _point, Time.realtimeSinceStartup);
+        if (owner == ToolkitPress.Owner.Scroll && _scroll != null && !_scroll.worldBound.Contains(_point))
+        {
+            owner = _press.LeaveScroll(_press.pointer);
+        }
         if (owner == ToolkitPress.Owner.Hold && !_holding)
         {
             _holding = true;
@@ -136,6 +140,12 @@ public sealed class ToolkitCardGesture : IDisposable
         { _view.inspectAnchor = _button.worldBound; _activate(); }
         Release(evt.pointerId);
         evt.StopImmediatePropagation();
+    }
+
+    // Whether the row's cards overflow its viewport, so that a sideways move has something to scroll
+    public static bool CanScroll(ScrollView scroll)
+    {
+        return scroll != null && scroll.contentContainer.layout.width > scroll.contentViewport.layout.width + 0.5f;
     }
 
     Vector2 ScreenPoint(Vector2 point)

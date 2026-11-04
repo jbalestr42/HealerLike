@@ -11,8 +11,10 @@ public sealed class ToolkitPress
     Vector2 _start;
     float _began;
     bool _canDrag;
+    bool _canScroll;
 
-    public bool Begin(int id, Vector2 point, float time, bool canDrag)
+    // A sideways move scrolls only a row that can scroll; otherwise it drags like an upward one
+    public bool Begin(int id, Vector2 point, float time, bool canDrag, bool canScroll = true)
     {
         if (pointer >= 0)
         {
@@ -23,6 +25,7 @@ public sealed class ToolkitPress
         _start = point;
         _began = time;
         _canDrag = canDrag;
+        _canScroll = canScroll;
         owner = Owner.Pending;
         return true;
     }
@@ -37,12 +40,26 @@ public sealed class ToolkitPress
         Vector2 delta = point - _start;
         if (delta.magnitude > Slop)
         {
-            owner = Mathf.Abs(delta.x) >= Mathf.Abs(delta.y) ? Owner.Scroll
-                : _canDrag && delta.y < 0f ? Owner.Drag : Owner.Cancelled;
+            bool sideways = Mathf.Abs(delta.x) >= Mathf.Abs(delta.y);
+            // Moving down goes back into the row, never toward the board
+            bool downward = !sideways && delta.y > 0f;
+            owner = sideways && _canScroll ? Owner.Scroll
+                : _canDrag && !downward ? Owner.Drag : Owner.Cancelled;
         }
         else if (time - _began >= HoldSeconds)
         {
             owner = Owner.Hold;
+        }
+
+        return owner;
+    }
+
+    // A scroll that leaves its row becomes a drag, so a card can still be pulled out sideways
+    public Owner LeaveScroll(int id)
+    {
+        if (id == pointer && owner == Owner.Scroll && _canDrag)
+        {
+            owner = Owner.Drag;
         }
 
         return owner;

@@ -25,6 +25,44 @@ namespace UI.Toolkit
         }
 
         [Test]
+        public void SidewaysMoveDragsWhenTheRowCannotScroll()
+        {
+            ToolkitPress press = new ToolkitPress();
+            press.Begin(1, Vector2.zero, 0, true, false);
+            Assert.That(press.Move(1, new Vector2(20, 2), 0.1f), Is.EqualTo(ToolkitPress.Owner.Drag));
+            press.End(1, new Vector2(20, 2), 0.2f);
+            press.Begin(1, Vector2.zero, 1, true, false);
+            Assert.That(press.Move(1, new Vector2(-20, 2), 1.1f), Is.EqualTo(ToolkitPress.Owner.Drag));
+        }
+
+        [Test]
+        public void DownwardMoveNeverDrags()
+        {
+            ToolkitPress press = new ToolkitPress();
+            press.Begin(1, Vector2.zero, 0, true, false);
+            Assert.That(press.Move(1, Vector2.up * 20, 0.1f), Is.EqualTo(ToolkitPress.Owner.Cancelled));
+        }
+
+        [Test]
+        public void ScrollThatLeavesItsRowBecomesDrag()
+        {
+            ToolkitPress press = new ToolkitPress();
+            press.Begin(1, Vector2.zero, 0, true, true);
+            Assert.That(press.Move(1, new Vector2(20, 0), 0.1f), Is.EqualTo(ToolkitPress.Owner.Scroll));
+            Assert.That(press.LeaveScroll(1), Is.EqualTo(ToolkitPress.Owner.Drag));
+            Assert.That(press.End(1, new Vector2(20, -100), 0.2f), Is.EqualTo(ToolkitPress.Owner.Drag));
+        }
+
+        [Test]
+        public void ScrollOfADeployedCardStaysScroll()
+        {
+            ToolkitPress press = new ToolkitPress();
+            press.Begin(1, Vector2.zero, 0, false, true);
+            press.Move(1, new Vector2(20, 0), 0.1f);
+            Assert.That(press.LeaveScroll(1), Is.EqualTo(ToolkitPress.Owner.Scroll));
+        }
+
+        [Test]
         public void FirstResolvedHoldOrDragOwnsTheWholePress()
         {
             ToolkitPress press = new ToolkitPress();
