@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using UnityEngine;
 
 // Moves equipment between inventories and keeps the slot index; an entity equips an item once whatever its slot
 public static class ToolkitInventoryTransfer
@@ -13,20 +11,6 @@ public static class ToolkitInventoryTransfer
         }
 
         return index;
-    }
-
-    public static List<int> EmptySlots(InventoryHandler inventory)
-    {
-        List<int> slots = new List<int>();
-        for (int index = 0; index < Mathf.Max(3, inventory.items.Count + 1); index++)
-        {
-            if (!IsOccupied(inventory, index))
-            {
-                slots.Add(index);
-            }
-        }
-
-        return slots;
     }
 
     public static bool Transfer(AItem item, InventoryHandler source, InventoryHandler destination, int index)

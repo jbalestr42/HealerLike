@@ -25,7 +25,6 @@
     --ui-menu-dock-height: 100px;
     --ui-menu-actions-width: 280px;
     --ui-portrait-compact-size: 64px;
-    --ui-slot-field-width: 220px;
     --ui-dock-min-height: 192px;
     --ui-dock-max-height: 240px;
     --ui-mana-width: 210px;

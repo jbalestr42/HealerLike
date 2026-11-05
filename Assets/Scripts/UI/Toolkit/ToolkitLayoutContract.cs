@@ -47,7 +47,6 @@ public static class ToolkitLayoutContract
             && ToolkitTemplates.Require(root, "inventory-equip-button", out Button _)
             && ToolkitTemplates.Require(root, "inventory-list", out ScrollView _)
             && ToolkitTemplates.Require(root, "inventory-panel", out VisualElement _)
-            && ToolkitTemplates.Require(root, "inventory-slot", out DropdownField _)
             && ToolkitTemplates.Require(root, "inventory-target", out DropdownField _)
             && ToolkitTemplates.Require(root, "main-content", out VisualElement _)
             && ToolkitTemplates.Require(root, "mana-value", out Label _)

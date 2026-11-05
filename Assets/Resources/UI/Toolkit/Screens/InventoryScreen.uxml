@@ -14,7 +14,6 @@
                 <ui:Label name="inventory-detail" text="Select equipment from your collection." class="muted inventory-detail" />
                 <ui:VisualElement class="inventory-action-row">
                     <ui:DropdownField name="inventory-target" label="Equip to" class="inventory-target" />
-                    <ui:DropdownField name="inventory-slot" label="Equipment slot" class="inventory-slot" />
                     <ui:Button name="inventory-equip-button" text="Select equipment" class="button" />
                 </ui:VisualElement>
             </ui:Instance>

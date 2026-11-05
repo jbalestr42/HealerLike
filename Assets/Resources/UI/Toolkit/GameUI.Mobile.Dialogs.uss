@@ -57,8 +57,7 @@
     align-items: stretch;
 }
 
-.layout--phone .inventory-target,
-.layout--phone .inventory-slot
+.layout--phone .inventory-target
 {
     width: auto;
     margin: 0 0 var(--ui-space-md) 0;

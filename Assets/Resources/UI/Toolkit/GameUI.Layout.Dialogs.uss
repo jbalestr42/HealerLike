@@ -53,21 +53,13 @@
     min-width: var(--ui-field-label-width);
 }
 
-.inventory-slot
-{
-    width: var(--ui-slot-field-width);
-    margin-left: var(--ui-space-lg);
-}
-
-.inventory-target,
-.inventory-slot
+.inventory-target
 {
     flex-direction: column;
     align-items: stretch;
 }
 
-.inventory-target > .unity-base-field__label,
-.inventory-slot > .unity-base-field__label
+.inventory-target > .unity-base-field__label
 {
     min-width: 0;
     margin-bottom: var(--ui-space-xs);

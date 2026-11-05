@@ -7,9 +7,7 @@ public class ToolkitInventoryChoices : IDisposable
 {
     readonly ToolkitGameContext _context;
     readonly DropdownField _inventoryTarget;
-    readonly DropdownField _inventorySlot;
     readonly Action _selected;
-    List<int> _availableSlots = new List<int>();
     readonly List<Entity> _inventoryTargets = new List<Entity>();
 
     public ToolkitInventoryChoices(ToolkitGameContext context, VisualElement root, Action selected)
@@ -17,7 +15,6 @@ public class ToolkitInventoryChoices : IDisposable
         _context = context;
         _selected = selected;
         _inventoryTarget = root.Q<DropdownField>("inventory-target");
-        _inventorySlot = root.Q<DropdownField>("inventory-slot");
         _inventoryTarget.RegisterValueChangedCallback(OnTargetChanged);
     }
 
@@ -27,17 +24,6 @@ public class ToolkitInventoryChoices : IDisposable
         {
             RefreshTargets();
         }
-
-        if (_context.selectedEntity != null)
-        {
-            RefreshSlots();
-        }
-    }
-
-    public int GetSlot(int fallback)
-    {
-        int index = _inventorySlot.index;
-        return index >= 0 && index < _availableSlots.Count ? _availableSlots[index] : fallback;
     }
 
     public void Dispose()
@@ -75,21 +61,5 @@ public class ToolkitInventoryChoices : IDisposable
         _inventoryTarget.choices = choices;
         int selected = _inventoryTargets.IndexOf(_context.selectedEntity);
         _inventoryTarget.SetValueWithoutNotify(selected >= 0 ? _inventoryTarget.choices[selected] : "Choose an ally");
-    }
-
-    void RefreshSlots()
-    {
-        List<int> slots = ToolkitInventoryTransfer.EmptySlots(_context.selectedEntity.inventoryHandler);
-        List<string> labels = new List<string>();
-        foreach (int index in slots)
-        {
-            labels.Add($"Slot {index + 1} · {3 - Mathf.Min(index, 2)}× effect");
-        }
-
-        string previous = _inventorySlot.value;
-        _availableSlots = slots;
-        _inventorySlot.choices = labels;
-        _inventorySlot.SetValueWithoutNotify(labels.Contains(previous) ? previous : labels[0]);
-        _inventorySlot.SetEnabled(_context.selectedItemOwner == _context.stash);
     }
 }

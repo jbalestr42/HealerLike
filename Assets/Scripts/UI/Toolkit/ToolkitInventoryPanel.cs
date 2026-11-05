@@ -86,7 +86,8 @@ public class ToolkitInventoryPanel : IDisposable
             AddItems(models, _context.selectedEntity.inventoryHandler, _context.selectedEntity.data.title);
         }
 
-        if (_context.player.character != null)
+        // A unit's view shows its own items, the Healer's stay in theirs
+        if (_context.player.character != null && _context.selectedEntity == null)
         {
             AddInnateItems(models, _context.player.character);
             AddItems(models, _context.player.character.inventoryHandler, "Healer");
@@ -275,13 +276,7 @@ public class ToolkitInventoryPanel : IDisposable
             return;
         }
 
-        int index = ToolkitInventoryTransfer.FirstEmptySlot(destination);
-        if (destination != stash)
-        {
-            index = _choices.GetSlot(index);
-        }
-
-        if (!ToolkitInventoryTransfer.Transfer(item, owner, destination, index))
+        if (!ToolkitInventoryTransfer.Transfer(item, owner, destination, ToolkitInventoryTransfer.FirstEmptySlot(destination)))
         {
             return;
         }

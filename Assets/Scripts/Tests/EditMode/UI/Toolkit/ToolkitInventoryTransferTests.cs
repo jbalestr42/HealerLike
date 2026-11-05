@@ -88,16 +88,6 @@ namespace UI.Toolkit
         }
 
         [Test]
-        public void EmptySlots_FirstAndThirdOccupied_ReturnsSecondOnly()
-        {
-            InventoryHandler inventory = new InventoryHandler();
-            inventory.AddItem(new FakeItem(), 0, false);
-            inventory.AddItem(new FakeItem(), 2, false);
-            List<int> slots = ToolkitInventoryTransfer.EmptySlots(inventory);
-            CollectionAssert.AreEqual(new int[] { 1 }, slots);
-        }
-
-        [Test]
         public void Contains_ItemInInventory_ReturnsTrue()
         {
             InventoryHandler inventory = new InventoryHandler();
