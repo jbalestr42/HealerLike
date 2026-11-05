@@ -4,7 +4,7 @@
 {
     --ui-ink: rgb(229, 235, 228);
     --ui-cursed: rgb(176, 125, 255);
-    --ui-muted: rgb(151, 173, 165);
+    --ui-muted: rgb(216, 201, 163);
     --ui-accent: rgb(189, 218, 156);
     --ui-gold: rgb(233, 202, 135);
     --ui-panel: rgba(16, 29, 30, 0.97);

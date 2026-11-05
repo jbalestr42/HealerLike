@@ -106,13 +106,27 @@ namespace HealerLike.Render.Stage
             }
 
             Vector3[] offsets = { new Vector3(-2f, 0f, -2f), new Vector3(0f, 0f, -3f), new Vector3(2f, 0f, -2f) };
+            Entity placed = null;
             for (int i = 0; i < Mathf.Min(offsets.Length, played.entities.Count); i++)
             {
-                _manager.entityManager.SpawnEntity(played.entities[i], StageCells.Nearest(_manager, offsets[i]),
-                    Entity.EntityType.Player);
+                GameObject spawned = _manager.entityManager.SpawnEntity(played.entities[i],
+                    StageCells.Nearest(_manager, offsets[i]), Entity.EntityType.Player);
+                if (placed == null && spawned != null)
+                {
+                    placed = spawned.GetComponent<Entity>();
+                }
             }
 
             yield return Wait(0.5f);
+            if (placed != null)
+            {
+                hud.InspectEntity(placed, new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
+                yield return OpenSections(actions);
+                yield return Capture(actions, "06b-detail-placed", "detail-panel", "detail-scroll");
+                Close(actions, "detail-close-button");
+                yield return Wait(0.3f);
+            }
+
             actions.Submit("wave-button");
             yield return Wait(2f);
             yield return Capture(actions, "07-battle", "party-list", "spell-list");

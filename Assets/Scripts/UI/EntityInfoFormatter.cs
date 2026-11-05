@@ -9,7 +9,7 @@ using UnityEngine;
 public static class EntityInfoFormatter
 {
     public const string HeaderColor = "#FFD966";
-    public const string MutedColor = "#9AA3B2";
+    public const string MutedColor = "#D8C9A3";
     public const string BonusColor = "#7CD67C";
     public const string MalusColor = "#E86A6A";
 
