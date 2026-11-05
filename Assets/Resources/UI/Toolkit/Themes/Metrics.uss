@@ -129,7 +129,6 @@
     --ui-spell-icon-size: 36px;
     --ui-field-min-width: 80px;
     --ui-field-label-width: 64px;
-    --ui-targeting-mobile-height: 64px;
     --ui-detail-mobile-portrait-size: 112px;
     --ui-speed-touch-width: 56px;
     --ui-party-mobile-portrait-height: 104px;

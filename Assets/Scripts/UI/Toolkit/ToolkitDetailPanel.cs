@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// The inspection panel: the hovered card, or the selected ally with its stats and target priority
+// The inspection panel: the hovered card, or the selected ally with its stats
 public class ToolkitDetailPanel : IDisposable
 {
     ToolkitGameContext _context;
     ToolkitGameView _view;
-    DropdownField _targeting;
     bool _hadSelectedEntity = false;
     GameObject _lastWorldSelection;
     Entity _inspectedEntity;
@@ -29,25 +28,11 @@ public class ToolkitDetailPanel : IDisposable
         _context = context;
         _view = view;
         _actionsHost = view.root.Q("detail-actions");
-        if (!ToolkitTemplates.Require(view.root, "detail-targeting", out _targeting))
-        {
-            return;
-        }
-
-        _targeting.choices = new List<string>(Enum.GetNames(typeof(TargetBehaviourType)));
-        _targeting.SetValueWithoutNotify(_targeting.choices[0]);
-        _targeting.RegisterValueChangedCallback(OnTargetingChanged);
         BuildSections();
     }
 
     public void Dispose()
     {
-        if (_targeting != null)
-        {
-            _targeting.UnregisterValueChangedCallback(OnTargetingChanged);
-        }
-
-        _targeting = null;
         _actionsHost = null;
         _sections.Clear();
         _sectionEntity = null;
@@ -90,7 +75,6 @@ public class ToolkitDetailPanel : IDisposable
             }
 
             _hadSelectedEntity = false;
-            EnableTargeting(false);
         }
         else
         {
@@ -123,18 +107,6 @@ public class ToolkitDetailPanel : IDisposable
         model.description = GetSummary(entity);
         _view.ShowDetail(model);
         RefreshSections(entity);
-        if (_targeting != null && entity.targetProvider != null)
-        {
-            _targeting.SetValueWithoutNotify(entity.targetProvider.targetBehaviourType.ToString());
-        }
-    }
-
-    public void EnableTargeting(bool isEnabled)
-    {
-        if (_targeting != null)
-        {
-            _targeting.SetEnabled(isEnabled);
-        }
     }
 
     public void OnInspect(ToolkitCardModel model)
@@ -313,16 +285,6 @@ public class ToolkitDetailPanel : IDisposable
             case AttributeType.CriticalMultiplier: return "Critical multiplier";
             case AttributeType.CriticalChanceResist: return "Critical resistance";
             default: return type.ToString();
-        }
-    }
-
-    void OnTargetingChanged(ChangeEvent<string> evt)
-    {
-        Entity entity = _context.selectedEntity;
-        TargetBehaviourType target;
-        if (entity != null && entity.targetProvider != null && Enum.TryParse(evt.newValue, out target))
-        {
-            entity.targetProvider.targetBehaviourType = target;
         }
     }
 }

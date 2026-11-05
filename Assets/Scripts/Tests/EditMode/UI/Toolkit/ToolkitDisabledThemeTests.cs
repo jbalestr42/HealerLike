@@ -106,7 +106,7 @@ namespace UI.Toolkit
             // The light glass of RenderStage's encounter buttons
             AssertColour(_root.Q<Button>("wave-button"), new Color(24f/255, 65f/255, 55f/255, 0.48f));
             AssertColour(card, Color.clear);
-            VisualElement input = _root.Q<DropdownField>("detail-targeting")
+            VisualElement input = _root.Q<DropdownField>("inventory-target")
                 .Q(className: "unity-base-popup-field__input");
             AssertColour(input, cardColour);
             Color ink = moon ? Rgb(164, 184, 235) : Rgb(229, 235, 228);

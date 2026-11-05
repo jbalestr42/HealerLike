@@ -23,12 +23,13 @@ namespace UI.Toolkit
             Assert.AreEqual(PickingMode.Position, root.Q("pause-panel").pickingMode);
             Assert.AreEqual(PickingMode.Ignore, root.Q("detail-actions").pickingMode);
             TemplateContainer actions = root.Q<TemplateContainer>("detail-actions");
-            DropdownField targeting = root.Q<DropdownField>("detail-targeting");
-            string ancestry = DescribeHierarchy(targeting) + " | Action content: "
+            Button equip = root.Q<Button>("detail-equip-button");
+            string ancestry = DescribeHierarchy(equip) + " | Action content: "
                 + DescribeHierarchy(actions.contentContainer);
-            Assert.AreSame(actions, targeting.parent, ancestry);
+            Assert.AreSame(actions, equip.parent, ancestry);
             Assert.AreSame(actions.Q("action-section-content"), actions.contentContainer, ancestry);
-            Assert.AreSame(actions.contentContainer, targeting.hierarchy.parent, ancestry);
+            Assert.AreSame(actions.contentContainer, equip.hierarchy.parent, ancestry);
+            Assert.IsNull(root.Q("detail-targeting"), "A unit's target priority is not the player's to change");
             Assert.IsTrue(root.Q("inventory-actions").Contains(root.Q("inventory-equip-button")));
             Assert.IsNull(root.Q("party-close-button"));
             Assert.IsTrue(root.Q("detail-panel").Contains(root.Q("detail-close-button")));
@@ -142,10 +143,10 @@ namespace UI.Toolkit
         public void Validate_MissingRequiredAction_ReportsFailureWithoutRepairingTree()
         {
             VisualElement root = Resources.Load<VisualTreeAsset>("UI/Toolkit/GameUI").CloneTree();
-            root.Q("detail-targeting").RemoveFromHierarchy();
-            LogAssert.Expect(LogType.Error, "[ToolkitTemplates] Required DropdownField 'detail-targeting' is missing.");
+            root.Q("detail-equip-button").RemoveFromHierarchy();
+            LogAssert.Expect(LogType.Error, "[ToolkitTemplates] Required Button 'detail-equip-button' is missing.");
             Assert.IsFalse(ToolkitLayoutContract.Validate(root));
-            Assert.IsNull(root.Q("detail-targeting"));
+            Assert.IsNull(root.Q("detail-equip-button"));
         }
 
         [Test]

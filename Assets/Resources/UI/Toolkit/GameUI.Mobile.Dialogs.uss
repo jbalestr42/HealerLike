@@ -78,11 +78,6 @@
     min-height: var(--ui-touch-target);
 }
 
-.layout--phone .detail-targeting
-{
-    min-height: var(--ui-targeting-mobile-height);
-}
-
 .layout--phone .action-button
 {
     min-height: var(--ui-touch-target);

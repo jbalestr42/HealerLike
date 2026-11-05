@@ -26,7 +26,6 @@ public static class ToolkitLayoutContract
             && ToolkitTemplates.Require(root, "detail-scroll", out ScrollView _)
             && ToolkitTemplates.Require(root, "detail-skills", out Foldout _)
             && ToolkitTemplates.Require(root, "detail-skills-text", out Label _)
-            && ToolkitTemplates.Require(root, "detail-targeting", out DropdownField _)
             && ToolkitTemplates.Require(root, "detail-title", out Label _)
             && ToolkitTemplates.Require(root, "encounter-actions", out VisualElement _)
             && ToolkitTemplates.Require(root, "event-description", out Label _)

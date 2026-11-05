@@ -129,19 +129,6 @@
     margin-top: var(--ui-space-sm);
 }
 
-.detail-targeting
-{
-    flex-direction: column;
-    align-items: stretch;
-    margin-bottom: var(--ui-space-md);
-}
-
-.detail-targeting > .unity-base-field__label
-{
-    min-width: 0;
-    margin-bottom: var(--ui-space-xs);
-}
-
 .button
 {
     min-height: var(--ui-control-height);
