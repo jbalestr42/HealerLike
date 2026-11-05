@@ -354,6 +354,7 @@ public class ToolkitGameUI : MonoBehaviour
         }
 
         _mobileLayout.Refresh();
+        _portraitWindow.Refresh();
         _mapPanel.Refresh();
         _view.Show("pause-panel", _context.isPaused && _context.IsCurrentView(GameScreen.Game));
         _view.Show("inventory-panel", _context.isInventoryOpen && !_context.isPaused);

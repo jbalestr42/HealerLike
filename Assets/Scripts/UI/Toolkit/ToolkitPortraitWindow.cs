@@ -2,7 +2,8 @@ using System;
 using UnityEngine;
 
 // Pause menu button turning the desktop window into a phone-shaped portrait one, to see the mobile layout on PC, and
-// back. The window is the process's, so the size to come back to outlives the scene that switched it.
+// back. The window is the process's, so the size to come back to outlives the scene that switched it; and the player
+// remembers its last window, so a launch can open already in portrait, with no size to come back to.
 public class ToolkitPortraitWindow : IDisposable
 {
     public const string ButtonName = "portrait-button";
@@ -10,6 +11,8 @@ public class ToolkitPortraitWindow : IDisposable
     public const float PhoneAspect = 390f / 844f;
     // Room left on the display for the taskbar and the window title bar
     public const float DisplayHeightShare = 0.9f;
+    // The desktop window a launch already in portrait comes back to, a share of the display at its own aspect
+    public const float DesktopDisplayShare = 0.8f;
 
     public struct WindowState
     {
@@ -32,7 +35,19 @@ public class ToolkitPortraitWindow : IDisposable
     Func<WindowState> _currentWindow;
     Action<WindowState> _applyWindow;
 
-    public static bool isPortrait => s_restore.HasValue;
+    public bool isPortrait
+    {
+        get
+        {
+            if (s_restore.HasValue)
+            {
+                return true;
+            }
+
+            WindowState current = _currentWindow();
+            return current.mode == FullScreenMode.Windowed && current.height > current.width;
+        }
+    }
 
     // Only a desktop player owns its window: the Editor's Game view and a phone ignore Screen.SetResolution
     public static bool IsAvailable(RuntimePlatform platform)
@@ -54,6 +69,14 @@ public class ToolkitPortraitWindow : IDisposable
         }
 
         return new Vector2Int(Mathf.Max(1, width), height);
+    }
+
+    public static Vector2Int GetDesktopSize(Vector2Int displaySize)
+    {
+        return new Vector2Int(
+            Mathf.Max(1, Mathf.RoundToInt(displaySize.x * DesktopDisplayShare)),
+            Mathf.Max(1, Mathf.RoundToInt(displaySize.y * DesktopDisplayShare))
+        );
     }
 
     public static string GetLabel(bool portrait)
@@ -87,6 +110,11 @@ public class ToolkitPortraitWindow : IDisposable
             s_restore = null;
             _applyWindow(restore);
         }
+        else if (isPortrait)
+        {
+            Vector2Int size = GetDesktopSize(_displaySize());
+            _applyWindow(new WindowState(size.x, size.y, FullScreenMode.Windowed));
+        }
         else
         {
             s_restore = _currentWindow();
@@ -94,6 +122,12 @@ public class ToolkitPortraitWindow : IDisposable
             _applyWindow(new WindowState(size.x, size.y, FullScreenMode.Windowed));
         }
 
+        RefreshLabel();
+    }
+
+    // The window's size changes a frame after it is asked for, and a launch can open in portrait: the label follows
+    public void Refresh()
+    {
         RefreshLabel();
     }
 
