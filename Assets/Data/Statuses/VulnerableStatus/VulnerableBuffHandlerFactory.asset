@@ -24,7 +24,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 01ca0b8e9f7f6ba45b914bc28508640d, type: 2}
     - {fileID: 11400000, guid: ce63e9ae54cc86d4f9c41759f2e24729, type: 2}
     buffEffect: {fileID: 0}
-    icon: {fileID: 21300000, guid: 7727d08cc96a0634f870fb482417b37e, type: 3}
+    icon: {fileID: 21300000, guid: 6cf4ec18549b27e4cb25ad7f565e236c, type: 3}
     tags:
     - {fileID: 11400000, guid: 3f06d1be916baab43b849a9c90fc8649, type: 2}
     - {fileID: 11400000, guid: 3e3da7a1624a46a6bb004c4cc819f3a3, type: 2}

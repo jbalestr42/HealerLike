@@ -4,6 +4,7 @@
     "references": [
         "HealerLike.Runtime",
         "HealerLike.Balance",
+        "HealerLike.Editor",
         "Oisif.Inspector",
         "UnityEngine.UI",
         "Unity.TextMeshPro",
