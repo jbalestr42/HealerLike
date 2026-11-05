@@ -140,6 +140,16 @@ public class ToolkitGameView
             return null;
         }
 
+        // A spell's own drawn icon wins over the render of its effect
+        if (DataIconSource.Unwrap(source) is CharacterSkillData)
+        {
+            Texture2D drawn = DataIconService.AuthoredTexture(DataIconService.TryGetAuthoredSprite(source));
+            if (drawn)
+            {
+                return drawn;
+            }
+        }
+
         Entity entity = source as Entity;
         EntityData data = entity != null ? entity.data : source as EntityData;
         Texture2D portrait =

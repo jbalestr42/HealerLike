@@ -34,10 +34,11 @@
     height: 39px;
     -unity-background-scale-mode: scale-to-fit;
 }
+/* The spell's art and its name, centered as one block in the tile */
 #hud-root.compact-hud #spell-list .render-card-art {
     left: 4px;
     right: 4px;
-    top: -4px;
+    top: 4px;
     height: 54px;
 }
 #hud-root.compact-hud #party-list .render-card-art {
@@ -87,6 +88,10 @@
     font-size: 9px;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+#hud-root.compact-hud #spell-list .data-card__title {
+    top: 54px;
+    height: 22px;
 }
 #hud-root.compact-hud #spell-list .spell-cost {
     top: 3px;

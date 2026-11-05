@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RaiseDead
   m_EditorClassIdentifier: HealerLike.Runtime::RaiseDeadCharacterSkillFactory
   data:
-    icon: {fileID: 21300000, guid: 08c09715fa0a5a5459d08c73c0435261, type: 3}
+    icon: {fileID: 21300000, guid: 487556e942434d4a8271b49f5ec46fcf, type: 3}
     name: Raise Dead
     description: 'Raise a Skeleton on the chosen cell for the current battle, with <color="green">+[{attribute:current:HealPower}x{data:healthPerHealPower}]</color> health and <color="red">+[{attribute:current:HealPower}x{data:damagePerHealPower}]</color> damage from your Heal Power. At most {data:maxAlive} alive at once
 

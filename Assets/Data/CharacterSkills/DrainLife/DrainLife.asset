@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DrainLife
   m_EditorClassIdentifier: HealerLike.Runtime::DrainLifeCharacterSkillFactory
   data:
-    icon: {fileID: 21300000, guid: 7494ba15848983f46b96fc61c28d5674, type: 3}
+    icon: {fileID: 21300000, guid: 6deed959c7814677b09132b914f0ab63, type: 3}
     name: Drain Life
     description: 'Deal <color="red">[{attribute:current:HealPower}x{data:multiplier}]</color> <color=#008080ff>([{data:multiplier}x100]% HealPower)</color> damage to an enemy, and heal your most wounded ally for <color="green">[{data:healRatio}x100]%</color> of the damage dealt
 

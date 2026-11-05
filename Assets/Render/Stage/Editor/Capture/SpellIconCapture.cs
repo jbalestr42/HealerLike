@@ -52,14 +52,19 @@ namespace HealerLike.Render.Stage
             {
                 using (SpellIconRenderer renderer = new SpellIconRenderer(_manager.meshes, material))
                 {
+                    int tile = 0;
                     for (int index = 0; index < paths.Count; index++)
                     {
                         string path = paths[index];
                         UnityEngine.Object source = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
                         SpellIconRecipe recipe = Compose(source, vocabulary, _manager.spellLooks, characters);
+                        // Listed and skipped, so one source without a grammar icon does not hide all the others
                         if (recipe == null)
                         {
-                            throw new InvalidOperationException("No grammar icon for " + path);
+                            Debug.LogWarning("[SpellIconRun] No grammar icon for " + path);
+                            manifest.Add(path + "	none");
+                            yield return null;
+                            continue;
                         }
                         Texture2D icon = renderer.Capture(recipe);
                         if (!icon)
@@ -70,7 +75,7 @@ namespace HealerLike.Render.Stage
                         {
                             string file = AssetDatabase.AssetPathToGUID(path) + ".png";
                             File.WriteAllBytes(Path.Combine(folder, file), icon.EncodeToPNG());
-                            Tile(sheet, icon, index, source.name);
+                            Tile(sheet, icon, tile++, source.name);
                             manifest.Add(path + "\t" + file + "\t" + recipe.layers.Count + "\t" + recipe.reach
                                 + "\t" + recipe.origin + "\t" + recipe.trigger);
                             jsonManifest.entries.Add(new ManifestEntry { file = file, assetPath = path,

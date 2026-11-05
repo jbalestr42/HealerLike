@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Judgment
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: e8327ed7ecf84e34e8d5bb8a37d72618, type: 3}
+    icon: {fileID: 21300000, guid: 7436fb1417c64bfe8d00e8210c116f80, type: 3}
     name: Judgment
     description: 'Spend all your Devotion: heal all allies for <color="green">[{attribute:current:HealPower}x{data:multiplier}]</color> <color=#008080ff>([{data:multiplier}x100]% HealPower)</color>, plus <color="green">[{attribute:current:HealPower}x{data:multiplierPerSpent}]</color> <color=#008080ff>([{data:multiplierPerSpent}x100]% HealPower)</color> per Devotion spent
 

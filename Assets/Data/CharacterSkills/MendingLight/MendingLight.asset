@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MendingLight
   m_EditorClassIdentifier: HealerLike.Runtime::MendingLightCharacterSkillFactory
   data:
-    icon: {fileID: 21300000, guid: 5b58351cb891f7b41b9970b7afa5ee68, type: 3}
+    icon: {fileID: 21300000, guid: 3abd1fb3aad7411e87d43653d4ad37ab, type: 3}
     name: Mending Light
     description: 'Heal a single ally for <color="green">[{attribute:current:HealPower}x{data:multiplier}]</color> <color=#008080ff>([{data:multiplier}x100]% HealPower)</color>, then jump right away to the most wounded ally not healed yet, up to <color="green">{data:jumps}</color> times
 

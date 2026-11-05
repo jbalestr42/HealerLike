@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ThickBark
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 2da13ce79e641fd469529b50b281f16e, type: 3}
+    icon: {fileID: 21300000, guid: 7014aceedf024e848ac83e289de0033b, type: 3}
     name: Thick Bark
     description: 'Give a single ally <color=#008080ff>+{data:buffHandlerFactory|0.data.buffFactoryList|0.data.value}</color> hit armor: each one fully blocks a hit
 
