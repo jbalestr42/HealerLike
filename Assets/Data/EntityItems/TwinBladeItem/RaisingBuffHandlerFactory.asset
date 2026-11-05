@@ -23,5 +23,5 @@ MonoBehaviour:
     buffFactoryList:
     - {fileID: 11400000, guid: 7e1c930ec5e266841883727f01cb979b, type: 2}
     buffEffect: {fileID: 0}
-    icon: {fileID: 21300000, guid: eecd1e1d4e5dc3f4a975c18de888982a, type: 3}
+    icon: {fileID: 21300000, guid: d646856d5d9236d45aeeae9dd24717bb, type: 3}
     tags: []

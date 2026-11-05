@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::PhaseSkillStepFactory
   data:
     title: Balance
-    icon: {fileID: 21300000, guid: 7494ba15848983f46b96fc61c28d5674, type: 3}
+    icon: {fileID: 21300000, guid: fff2d5c4c64beea4193df2fc3479994a, type: 3}
     skillStepFactories:
     - {fileID: 11400000, guid: c2e0386ef6a09e54bb895bf48e7bf032, type: 2}
     - {fileID: 11400000, guid: 7d4cba327c4523948befac6b5200b238, type: 2}

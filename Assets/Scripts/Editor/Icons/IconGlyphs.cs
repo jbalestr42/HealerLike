@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 // The pictograms of the painted icons, by name (see IconCatalog), each drawn in the 0-100 box of its pen (the items'
-// ones in IconGlyphs.Items and IconGlyphs.PlayerItems)
+// ones in IconGlyphs.Items and IconGlyphs.PlayerItems, the bosses' effects in IconGlyphs.Effects)
 public static partial class IconGlyphs
 {
     public static readonly Dictionary<string, Action<IconPen>> all = new Dictionary<string, Action<IconPen>>
@@ -137,6 +137,13 @@ public static partial class IconGlyphs
         { "thornCrown", ThornCrown },
         { "bookChevrons", BookChevrons },
         { "quill", Quill },
+
+        { "scales", Scales },
+        { "swordDown", SwordDown },
+        { "bolt", Bolt },
+        { "groundSlam", GroundSlam },
+        { "strikes", Strikes },
+        { "shieldBlock", ShieldBlock },
     };
 
     // Blessed: a halo over a sparkle

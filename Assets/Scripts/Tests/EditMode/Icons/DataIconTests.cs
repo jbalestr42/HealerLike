@@ -53,5 +53,33 @@ namespace Icons
             }
             Assert.AreEqual(icons.Count, icons.Distinct().Count(), "Two items share an icon");
         }
+
+        // An effect shows its item's, spell's or status's icon, or a drawn one of its own (the bosses' phases)
+        [Test]
+        public void EveryDataIcon_IsADrawnOne()
+        {
+            string[] drawn = { "Assets/Icons/Items/", "Assets/Icons/Spells/", "Assets/Icons/Statuses/", "Assets/Icons/Effects/" };
+            foreach (string guid in AssetDatabase.FindAssets("t:ScriptableObject", new[] { "Assets/Data" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                foreach (Object data in AssetDatabase.LoadAllAssetsAtPath(path))
+                {
+                    if (data == null)
+                    {
+                        continue;
+                    }
+                    SerializedProperty property = new SerializedObject(data).GetIterator();
+                    while (property.Next(true))
+                    {
+                        if (property.propertyType == SerializedPropertyType.ObjectReference && property.objectReferenceValue is Sprite sprite
+                            && AssetDatabase.GetAssetPath(sprite).StartsWith("Assets/Icons/"))
+                        {
+                            string icon = AssetDatabase.GetAssetPath(sprite);
+                            Assert.IsTrue(drawn.Any(icon.StartsWith), $"{path} ({property.propertyPath}) shows {icon}");
+                        }
+                    }
+                }
+            }
+        }
     }
 }

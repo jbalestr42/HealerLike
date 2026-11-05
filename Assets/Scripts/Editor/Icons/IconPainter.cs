@@ -49,9 +49,24 @@ public static class IconPainter
         importer.SaveAndReimport();
     }
 
-    // On the data's first "icon" field (a status: on the buff putting it there)
+    // On the data's first field named as the entry's (a status: on the buff putting it there, a prefab: on its components)
     static void SetIcon(IconCatalog.Entry entry)
     {
+        var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(entry.iconAssetPath);
+        if (AssetDatabase.LoadMainAssetAtPath(entry.assetPath) is GameObject prefab)
+        {
+            foreach (Component component in prefab.GetComponentsInChildren<Component>(true))
+            {
+                if (SetField(component, entry.field, sprite))
+                {
+                    PrefabUtility.SavePrefabAsset(prefab);
+                    return;
+                }
+            }
+            Debug.LogError($"No {entry.field} field on {entry.assetPath}");
+            return;
+        }
+
         Object data = AssetDatabase.LoadMainAssetAtPath(entry.assetPath);
         if (data is StatusData status)
         {
@@ -63,18 +78,25 @@ public static class IconPainter
             return;
         }
 
-        var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(entry.iconAssetPath);
+        if (!SetField(data, entry.field, sprite))
+        {
+            Debug.LogError($"No {entry.field} field on {entry.assetPath}");
+        }
+    }
+
+    static bool SetField(Object data, string field, Sprite sprite)
+    {
         var serialized = new SerializedObject(data);
         SerializedProperty property = serialized.GetIterator();
         while (property.Next(true))
         {
-            if (property.name == "icon" && property.propertyType == SerializedPropertyType.ObjectReference)
+            if (property.name == field && property.propertyType == SerializedPropertyType.ObjectReference)
             {
                 property.objectReferenceValue = sprite;
                 serialized.ApplyModifiedPropertiesWithoutUndo();
-                return;
+                return true;
             }
         }
-        Debug.LogError($"No icon field on {entry.assetPath}");
+        return false;
     }
 }

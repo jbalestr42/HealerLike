@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: HealerLike.Runtime::PhaseSkillStepFactory
   data:
     title: Judgment
-    icon: {fileID: 21300000, guid: a56b9ef5a8cc3844bbc272c680bbaed8, type: 3}
+    icon: {fileID: 21300000, guid: 54dba883e044a844fbb3fdcc53a4f331, type: 3}
     skillStepFactories:
     - {fileID: 11400000, guid: 9191c4fb9681b884993449ec35873f6a, type: 2}

@@ -5,7 +5,7 @@ public static class IconCatalog
 {
     public enum Frame
     {
-        // A status: a disc, like the spells
+        // A status or an effect: a disc, like the spells
         Disc,
         // An item: a rounded square in the colour of its role
         Tile,
@@ -58,9 +58,12 @@ public static class IconCatalog
         public string glyph;
         public Frame frame;
         public string color;
+        // The data's sprite field the icon goes in
+        public string field;
 
-        public Entry(string assetPath, string iconPath, string glyph, Frame frame, string color)
+        public Entry(string assetPath, string iconPath, string glyph, Frame frame, string color, string field = "icon")
         {
+            this.field = field;
             this.assetPath = assetPath;
             this.iconPath = iconPath;
             this.glyph = glyph;
@@ -204,6 +207,14 @@ public static class IconCatalog
         EventItem("ThornedCrown", "thornCrown", Role.Defense),
         EventItem("TomeOfHaste", "bookChevrons", Role.Speed),
         EventItem("WellspringManuscript", "quill", Role.Mana),
+
+        Effect("Entities/ArbiterEntity/BalancePhaseSkillStepFactory", "ArbiterBalance", "scales", "#6A5A9C"),
+        Effect("Entities/ArbiterEntity/JudgmentPhaseSkillStepFactory", "ArbiterJudgment", "swordDown", "#B8922E"),
+        Effect("Entities/ArbiterEntity/VerdictPhaseSkillStepFactory", "ArbiterVerdict", "bolt", "#3F7AAE"),
+        Effect("Entities/RavagerEntity/SlamPhaseSkillStepFactory", "RavagerSlam", "groundSlam", "#8C4A2E"),
+        Effect("Entities/RavagerEntity/StrikesPhaseSkillStepFactory", "RavagerStrikes", "strikes", "#9C3A3A"),
+        Effect("Entities/WarDrummerEntity/WarDrumBuffHandlerFactory", "WarDrummer", "drum", "#B04A3A"),
+        new Entry("Assets/Prefabs/EntityHUD.prefab", "Effects/HitArmor", "shieldBlock", Frame.Disc, "#3E6A8C", "_hitArmorIcon"),
     };
 
     static Entry Status(string name, string glyph, string color)
@@ -224,6 +235,12 @@ public static class IconCatalog
     static Entry EventItem(string name, string glyph, Role role)
     {
         return Item($"EventItems/{name}Item/{name}Item", name, glyph, role);
+    }
+
+    // An effect from no item, spell or status: a disc, its asset at a path under Assets/Data (no extension)
+    static Entry Effect(string dataPath, string name, string glyph, string color)
+    {
+        return new Entry($"Assets/Data/{dataPath}.asset", "Effects/" + name, glyph, Frame.Disc, color);
     }
 
     // An item tile, its asset at a path under Assets/Data (no extension)
