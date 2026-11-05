@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GrowingSeedItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 0c99c08fb2785eb4da2a6de83d8a7e03, type: 3}
+    icon: {fileID: 21300000, guid: ef811f4ac55d33f4faad7b557c2198da, type: 3}
     name: Growing Seed
     description: +1 damage and +5 max health for good after each battle survived, up to 8 battles
     tags:

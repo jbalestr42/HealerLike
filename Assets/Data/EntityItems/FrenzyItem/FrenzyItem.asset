@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: FrenzyItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: 39d08c6fe3f2f8e4d9e3eff5f27d4fe7, type: 3}
+    icon: {fileID: 21300000, guid: 1e0a5062819ec984d856121e4b49085d, type: 3}
     name: Frenzy
     description: 'Ascension: attacks 10% faster.'
     tags:

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EchoItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 59f5c53cc87350b4eb8f9250daefe601, type: 3}
+    icon: {fileID: 21300000, guid: 7f9fb58996dd2f14db9390ae2988c410, type: 3}
     name: Echo
     description: Every 4th attack is made twice
     tags:

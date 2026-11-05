@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HexAcolyteItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: 51c302f64de43fe4b8b02506b6ed1918, type: 3}
+    icon: {fileID: 21300000, guid: 8e676d4916fc97547bef07c2e450a701, type: 3}
     name: Hex Legacy
     description: When it dies, the Archon takes 20% less damage for the whole fight
     tags:

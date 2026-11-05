@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: VolleyItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: c11fa297dd331de418654209c490f7e6, type: 3}
+    icon: {fileID: 21300000, guid: 2c34ae1daaf95f548aefbe2d20f5ca3d, type: 3}
     name: Volley
     description: Shoots one more projectile per attack
     tags:

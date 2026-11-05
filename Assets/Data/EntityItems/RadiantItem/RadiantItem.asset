@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RadiantItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: 26de841f6d53c6a4da359d956be2c4f4, type: 3}
+    icon: {fileID: 21300000, guid: 60e4f281467be10449f026808be640e2, type: 3}
     name: Radiance
     description: Each time it is {status:Blessed}, gets 1 {status:Empowered} and 1 {status:Hasted} stack (+1 damage, +25% attack speed)
     tags:

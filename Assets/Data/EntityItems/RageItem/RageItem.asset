@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RageItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 830168f764471444d8a47b35247f811c, type: 3}
+    icon: {fileID: 21300000, guid: 61f41fc3309e72249867fbd15e608dc7, type: 3}
     name: Rage
     description: 'The more wounded, the harder it hits: x2 damage at half health, x3 near death'
     tags:

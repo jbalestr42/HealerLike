@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MultipleShootItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: c11fa297dd331de418654209c490f7e6, type: 3}
+    icon: {fileID: 21300000, guid: 39e9b256344d5ed459fe1a0e5cf995c5, type: 3}
     name: Multiple Shot
     description: Shoots one more projectile per attack
     tags:

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BalanceBounceItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 9392f93915a0c67489f7288cf69dd701, type: 3}
+    icon: {fileID: 21300000, guid: 21541f0978ec5d14ea2fe54a6da6ca8a, type: 3}
     name: Balance Bounce
     description: Projectiles bounce to one more nearby target, dealing 50% damage
     tags:

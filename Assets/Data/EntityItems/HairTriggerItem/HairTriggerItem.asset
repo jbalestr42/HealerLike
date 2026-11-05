@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HairTriggerItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: ae835b14f89ed9747a705fee6d28538c, type: 3}
+    icon: {fileID: 21300000, guid: 047ff1c161f63604eb5e2e91447cc43e, type: 3}
     name: Hair Trigger
     description: -25% attack cooldown
     tags:

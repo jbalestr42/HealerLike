@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: VenomItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: b8428167e3680bd48832aa8c94bcae6d, type: 3}
+    icon: {fileID: 21300000, guid: b5e9fc79f6919fd4599f044368fa35a6, type: 3}
     name: Venom
     description: Each hit gives the target 1 {status:Poisoned} stack
     tags:

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PunchingBagRegenItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 830168f764471444d8a47b35247f811c, type: 3}
+    icon: {fileID: 21300000, guid: 645e723dc5b01bf4d8c5224f89832710, type: 3}
     name: Endless Regen
     description: Heals 10% of max HP every second
     tags:

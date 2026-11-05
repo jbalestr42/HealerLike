@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: FrostItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 9a8ad968e4be589449263151b9b6739e, type: 3}
+    icon: {fileID: 21300000, guid: 6121e99ee6b323848bd8ebf1df2b0a20, type: 3}
     name: Frost
     description: Hits make the target {status:Chilled}
     tags:

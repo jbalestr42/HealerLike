@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SecondWindItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 39d08c6fe3f2f8e4d9e3eff5f27d4fe7, type: 3}
+    icon: {fileID: 21300000, guid: 6d56918560dc96f47ab06c5f673e5487, type: 3}
     name: Second Wind
     description: The first time it falls below 25% health in a fight, becomes {status:Invulnerable}
     tags:

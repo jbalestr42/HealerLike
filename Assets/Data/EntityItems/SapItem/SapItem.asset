@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SapItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 76a755ae054563843974fde2c746264a, type: 3}
+    icon: {fileID: 21300000, guid: 13d7ec48c9ef41f428c3a1c38332b4d4, type: 3}
     name: Sap
     description: Heals 3 HP every 2s
     tags:

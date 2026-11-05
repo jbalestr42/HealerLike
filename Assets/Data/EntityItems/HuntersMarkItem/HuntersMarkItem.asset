@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HuntersMarkItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 5b58351cb891f7b41b9970b7afa5ee68, type: 3}
+    icon: {fileID: 21300000, guid: 694ae4811b4e7524baecb81c38ec3c93, type: 3}
     name: Hunter's Mark
     description: Hits make the target {status:Vulnerable}
     tags:

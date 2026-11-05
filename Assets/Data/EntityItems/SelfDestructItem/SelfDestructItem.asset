@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SelfDestructItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: b91a073834d4ca048ac15d6951f411aa, type: 3}
+    icon: {fileID: 21300000, guid: e2c2a9797a147c04ea460e0422c795ea, type: 3}
     name: Self-Destruct
     description: Explodes on death, dealing 12 damage to every unit of yours
     tags:

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BlightAcolyteItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: d52306de7206bd34ea489197b237f4a8, type: 3}
+    icon: {fileID: 21300000, guid: cca6abc7c4ac19c408a485a0d7a27ff9, type: 3}
     name: Blight Legacy
     description: When it dies, the Archon's hits make their target {status:Blighted}, for the whole fight
     tags:

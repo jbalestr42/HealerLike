@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ZealItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 26de841f6d53c6a4da359d956be2c4f4, type: 3}
+    icon: {fileID: 21300000, guid: b1b4d377c8c42364d8b0fb6b3a5f4b83, type: 3}
     name: Zeal
     description: +50% damage while above 70% health, +30% attack speed while {status:Blessed}
     tags:

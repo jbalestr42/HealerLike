@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ConclaveItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: e8327ed7ecf84e34e8d5bb8a37d72618, type: 3}
+    icon: {fileID: 21300000, guid: 6a4d199b9a3202b4c894e77ece351373, type: 3}
     name: Conclave
     description: Every 2s, alternately gets +20% damage or -30% attack cooldown
     tags:

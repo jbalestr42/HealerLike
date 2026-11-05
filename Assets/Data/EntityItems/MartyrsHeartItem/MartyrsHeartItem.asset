@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MartyrsHeartItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: af5bfcb23171b4f46ab2ad13250a1062, type: 3}
+    icon: {fileID: 21300000, guid: 703dfdfb61de43340a6d6660e8c9a58f, type: 3}
     name: Martyr's Heart
     description: When healed, adjacent allies receive 35% of the heal
     tags:

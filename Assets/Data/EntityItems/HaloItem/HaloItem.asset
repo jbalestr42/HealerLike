@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HaloItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: 312991b311b8ccc49adec5703787cb1b, type: 3}
+    icon: {fileID: 21300000, guid: 69d3eb1eab393ca44b408ce2de5894d4, type: 3}
     name: Halo
     description: The first time it dies in a fight, survives with 1 health, {status:Invulnerable} and {status:Blessed}
     tags:

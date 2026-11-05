@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ArmorBreakerItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: bb5e42897acacad42b733e7575c69ceb, type: 3}
+    icon: {fileID: 21300000, guid: a01565ef8befd6446a78de1f37be587d, type: 3}
     name: Armor Breaker
     description: Each hit makes the target {status:Sundered}
     tags:

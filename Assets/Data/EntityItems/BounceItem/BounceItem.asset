@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BounceItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 9392f93915a0c67489f7288cf69dd701, type: 3}
+    icon: {fileID: 21300000, guid: 180d5946df9e4204789c805be6c99fa5, type: 3}
     name: Bounce
     description: Projectiles bounce to one more nearby target, dealing 50% damage
     tags:

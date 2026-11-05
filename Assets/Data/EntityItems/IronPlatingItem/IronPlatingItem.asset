@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: IronPlatingItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 51c302f64de43fe4b8b02506b6ed1918, type: 3}
+    icon: {fileID: 21300000, guid: e8e3efc999eb97d4595bdb6b8afbb348, type: 3}
     name: Iron Plating
     description: '+2 flat armor: blocks 2 damage from each hit'
     tags:

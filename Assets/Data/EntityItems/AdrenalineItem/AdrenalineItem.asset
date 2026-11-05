@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: AdrenalineItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: feeef5fc46986014c841f7aa2b9a1b9b, type: 3}
+    icon: {fileID: 21300000, guid: 3579e7201c4a6da489b625f7e96ab8c5, type: 3}
     name: Adrenaline
     description: -30% attack cooldown while below 50% health
     tags:

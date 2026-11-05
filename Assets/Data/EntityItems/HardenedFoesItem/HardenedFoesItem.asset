@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HardenedFoesItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: 51c302f64de43fe4b8b02506b6ed1918, type: 3}
+    icon: {fileID: 21300000, guid: 2e7e7484b2a7ab74999e6520b5ed00cd, type: 3}
     name: Hardened Foes
     description: 'Ascension: +10% max health.'
     tags:

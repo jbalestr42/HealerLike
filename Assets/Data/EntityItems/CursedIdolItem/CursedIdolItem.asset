@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: CursedIdolItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: fdefdd160c56340449003232fcc1314b, type: 3}
+    icon: {fileID: 21300000, guid: 576490be7cacbcd48ba101732a9bb643, type: 3}
     name: Cursed Idol
     description: +60% damage, but loses 2% of its max health every second
     tags:

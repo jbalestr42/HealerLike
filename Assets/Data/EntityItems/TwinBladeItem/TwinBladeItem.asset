@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TwinBladeItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: 26de841f6d53c6a4da359d956be2c4f4, type: 3}
+    icon: {fileID: 21300000, guid: d646856d5d9236d45aeeae9dd24717bb, type: 3}
     name: Twin Blade
     description: 'When its twin dies, it raises it for 6s with +50% attack speed: if it is still alive then, its twin comes back with 50% of its health. As many times as it dies'
     tags:

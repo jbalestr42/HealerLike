@@ -32,5 +32,24 @@ namespace Icons
             }
             Assert.AreEqual(icons.Count, icons.Distinct().Count(), "Two statuses share an icon");
         }
+
+        [Test]
+        public void EveryEntityItem_HasItsOwnDrawnIcon()
+        {
+            List<AItemFactory> items = AssetDatabase.FindAssets("t:AItemFactory", new[] { "Assets/Data/EntityItems" })
+                .Select(guid => AssetDatabase.LoadAssetAtPath<AItemFactory>(AssetDatabase.GUIDToAssetPath(guid)))
+                .ToList();
+            Assert.IsNotEmpty(items);
+
+            var icons = new List<Sprite>();
+            foreach (AItemFactory item in items)
+            {
+                var icon = new SerializedObject(item).FindProperty("data.icon").objectReferenceValue as Sprite;
+                Assert.IsNotNull(icon, $"{item.name} has no icon");
+                StringAssert.StartsWith("Assets/Icons/Items/", AssetDatabase.GetAssetPath(icon), $"{item.name}'s icon");
+                icons.Add(icon);
+            }
+            Assert.AreEqual(icons.Count, icons.Distinct().Count(), "Two entity items share an icon");
+        }
     }
 }

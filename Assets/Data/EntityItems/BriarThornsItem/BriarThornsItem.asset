@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BriarThornsItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: ef9b144f4b7d611489541bd5174e37ce, type: 3}
+    icon: {fileID: 21300000, guid: 530e95d6099a9924b801f123f79eebce, type: 3}
     name: Briar Thorns
     description: When healed, the nearest enemy takes 50% of the heal as damage
     tags:

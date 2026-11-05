@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BoneCharmItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 08c09715fa0a5a5459d08c73c0435261, type: 3}
+    icon: {fileID: 21300000, guid: 51f048d19ea596a44b35399e812a4bb2, type: 3}
     name: Bone Charm
     description: Each enemy it kills rises as an allied skeleton until the end of the fight
     tags:

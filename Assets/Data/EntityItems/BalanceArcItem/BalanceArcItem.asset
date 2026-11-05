@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BalanceArcItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 9392f93915a0c67489f7288cf69dd701, type: 3}
+    icon: {fileID: 21300000, guid: d6ad29fab8cbd99428cacf1df32914af, type: 3}
     name: Balance Arc
     description: Lightning chains to 2 more nearby targets, dealing 25% less damage on each jump
     tags:

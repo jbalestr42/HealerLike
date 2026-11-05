@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ArchonItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: 7727d08cc96a0634f870fb482417b37e, type: 3}
+    icon: {fileID: 21300000, guid: fec0ec9298de6654e90b5a2dad14b1dd, type: 3}
     name: Archon
     description: Each Acolyte falling gives +2 damage for the whole fight
     tags:

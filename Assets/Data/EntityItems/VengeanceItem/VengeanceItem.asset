@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: VengeanceItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: 26de841f6d53c6a4da359d956be2c4f4, type: 3}
+    icon: {fileID: 21300000, guid: 6ca2a40006f7ef545857baf360272e14, type: 3}
     name: Vengeance
     description: Each death of an ally gives 4 {status:Hasted} stacks (+100% attack speed)
     tags:

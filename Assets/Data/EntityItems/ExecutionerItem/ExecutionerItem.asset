@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ExecutionerItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: bb129ece4f76ab2468eab02f5b435d28, type: 3}
+    icon: {fileID: 21300000, guid: 1a0e10924498e6b49954990ce5dbdec3, type: 3}
     name: Executioner
     description: Hits instantly kill enemies below 10% health
     tags:

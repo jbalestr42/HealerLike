@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GratitudeItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: e0a49f84af22d4a459d2c9755de6d9a0, type: 3}
+    icon: {fileID: 21300000, guid: eda6dd171d7d25641bab03dc31d15d36, type: 3}
     name: Gratitude
     description: After being healed, the next attack deals +50% damage
     tags:

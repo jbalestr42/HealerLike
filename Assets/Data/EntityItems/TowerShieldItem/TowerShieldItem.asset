@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TowerShieldItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 187ed0ddef46b1d48be502bdc6dc7c0d, type: 3}
+    icon: {fileID: 21300000, guid: 6f92dc7437365e94ebcec81a9fe3f761, type: 3}
     name: Tower Shield
     description: Takes 40% less damage, but +30% attack cooldown
     tags:

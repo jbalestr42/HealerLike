@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PoisonItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: b8428167e3680bd48832aa8c94bcae6d, type: 3}
+    icon: {fileID: 21300000, guid: 32ef954c508a2fe49be6c4e53fed69af, type: 3}
     name: Poison
     description: Its attacks always pick a random enemy, each hit giving it 1 {status:Poisoned} stack
     tags:

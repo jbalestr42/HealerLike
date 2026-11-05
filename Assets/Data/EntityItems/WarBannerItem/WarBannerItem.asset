@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WarBannerItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 39d08c6fe3f2f8e4d9e3eff5f27d4fe7, type: 3}
+    icon: {fileID: 21300000, guid: 749a38645a7f95647b21f16f0f9bba08, type: 3}
     name: War Banner
     description: Allies on the 8 cells around the holder get -15% attack cooldown
     tags:

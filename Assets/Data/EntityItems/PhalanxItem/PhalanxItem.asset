@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PhalanxItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 187ed0ddef46b1d48be502bdc6dc7c0d, type: 3}
+    icon: {fileID: 21300000, guid: 211c6d983da77a144aea46d2b69aa6c9, type: 3}
     name: Phalanx
     description: +1 armor for each adjacent ally
     tags:
