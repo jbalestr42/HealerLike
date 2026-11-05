@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -145,6 +146,38 @@ namespace HealerLike.Render.Stage
 
             yield return Wait(0.8f);
             yield return Capture(actions, "08-reward", "upgrade-panel", "upgrade-list");
+            yield return RewardCounts(actions, hud);
+        }
+
+        // The reward screen redrawn with 2, 4 and 6 choices, cycling the rolled ones, to judge its width
+        IEnumerator RewardCounts(StageInterfaceActions actions, ToolkitGameUI hud)
+        {
+            FieldInfo field = typeof(AscensionGameType).GetField("_rewardChoices",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            AscensionGameType ascension = Object.FindAnyObjectByType<AscensionGameType>();
+            List<RewardChoice> rolled = ascension != null ? field?.GetValue(ascension) as List<RewardChoice> : null;
+            if (rolled == null || rolled.Count == 0)
+            {
+                _problems.Add("No reward choices to redraw.");
+                yield break;
+            }
+
+            List<RewardChoice> original = new List<RewardChoice>(rolled);
+            foreach (int count in new[] { 2, 4, 6 })
+            {
+                rolled.Clear();
+                for (int i = 0; i < count; i++)
+                {
+                    rolled.Add(original[i % original.Count]);
+                }
+
+                hud.Refresh();
+                yield return Wait(0.5f);
+                yield return Capture(actions, $"08-reward-{count}", "upgrade-panel", "upgrade-list");
+            }
+
+            rolled.Clear();
+            rolled.AddRange(original);
         }
 
         static IEnumerator OpenSections(StageInterfaceActions actions)

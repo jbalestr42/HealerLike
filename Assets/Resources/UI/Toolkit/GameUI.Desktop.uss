@@ -15,7 +15,8 @@
 
 /* A wider and taller popover (read by ToolkitPopover), four cards a row in the wide dialogs, a roomier sheet */
 #hud-root.compact-hud.layout--desktop .detail-panel { --popover-width: 400; --popover-height: 560; padding: 14px; }
-#hud-root.compact-hud.layout--desktop .dialog--wide { width: 1240px; }
+#hud-root.compact-hud.layout--desktop .dialog--wide { width: 1240px; min-width: 600px; }
+#hud-root.compact-hud.layout--desktop .collection-list .unity-scroll-view__content-container { justify-content: center; }
 #hud-root.compact-hud.layout--desktop .collection-list .card-shell,
 #hud-root.compact-hud.layout--desktop .collection-list .data-card { width: 280px; }
 #hud-root.compact-hud.layout--desktop .dialog--compact { width: 600px; }

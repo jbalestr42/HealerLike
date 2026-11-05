@@ -287,6 +287,7 @@ public class ToolkitGameUI : MonoBehaviour
 #if UNITY_EDITOR
         _editorTools.Init(_context, _view);
 #endif
+        ToolkitDialogFit.Register(_view.root);
         _view.OnLayoutChanged += OnLayoutChanged;
         Refresh();
     }
