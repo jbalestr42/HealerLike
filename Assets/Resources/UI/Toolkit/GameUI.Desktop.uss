@@ -20,3 +20,24 @@
 #hud-root.compact-hud.layout--desktop .collection-list .data-card { width: 280px; }
 #hud-root.compact-hud.layout--desktop .dialog--compact { width: 600px; }
 #hud-root.compact-hud.layout--desktop .sheet-dialog { min-height: 560px; }
+
+/* The top of the PC field: a larger mana gauge centered on the screen, the Devotion beside it out of the centering,
+   the healer's items moved up to the gauge's row (over the resource bar and the toolbar above the field), and Start
+   battle centered under the gauge, the editor tools set beside it out of the centering */
+#hud-root.compact-hud.layout--desktop .resource-bar { height: 50px; min-height: 50px; }
+#hud-root.compact-hud.layout--desktop #mana-gauge {
+    width: 440px; height: 34px; min-height: 34px; border-radius: 10px;
+    border-color: rgba(205, 231, 228, 0.7); background-color: rgba(18, 40, 44, 0.75);
+}
+#hud-root.compact-hud.layout--desktop #mana-fill { background-color: rgba(85, 166, 178, 0.92); }
+#hud-root.compact-hud.layout--desktop #mana-value { font-size: 18px; }
+#hud-root.compact-hud.layout--desktop .devotion-value {
+    position: absolute; left: 50%; margin-left: 228px;
+}
+#hud-root.compact-hud.layout--desktop .field-toolbar { height: 52px; min-height: 52px; padding-bottom: 6px; }
+#hud-root.compact-hud.layout--desktop .item-bar { top: -100px; }
+#hud-root.compact-hud.layout--desktop .encounter-actions > #kill-wave-button,
+#hud-root.compact-hud.layout--desktop .encounter-actions > #item-catalog-button {
+    position: absolute; left: 100%; width: 120px; margin-left: 8px;
+}
+#hud-root.compact-hud.layout--desktop .encounter-actions > #item-catalog-button { margin-left: 136px; }
