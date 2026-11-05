@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: VerdantItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: f796666080e36b24182db720be6e5e05, type: 3}
+    icon: {fileID: 21300000, guid: d55d26269e2657b4db0ab8135921b2a2, type: 3}
     name: Verdant
     description: During each battle, heals all your units for 5% Heal Power every 2s
     tags:

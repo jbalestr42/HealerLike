@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RosaryItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: c05768ff84d08ea45a257e8dd1ddc2e0, type: 3}
+    icon: {fileID: 21300000, guid: 42dc09167500ecb4b9136e8c8bc0e248, type: 3}
     name: Rosary
     description: Every fifth spell is free
     tags:

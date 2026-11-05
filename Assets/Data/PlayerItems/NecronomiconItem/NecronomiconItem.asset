@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: NecronomiconItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 08c09715fa0a5a5459d08c73c0435261, type: 3}
+    icon: {fileID: 21300000, guid: ae682f38dee70ef4d8039c132d6b6117, type: 3}
     name: Necronomicon
     description: Your summons get +50% max health and damage
     tags:

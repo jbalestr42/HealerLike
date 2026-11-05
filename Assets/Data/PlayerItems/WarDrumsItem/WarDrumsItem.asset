@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WarDrumsItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: eecd1e1d4e5dc3f4a975c18de888982a, type: 3}
+    icon: {fileID: 21300000, guid: 3eed54b3601f6a74fa7c4beb32d334b7, type: 3}
     name: War Drums
     description: During the first 10s of each battle, your units get -30% attack cooldown
     tags:

@@ -33,10 +33,12 @@ namespace Icons
             Assert.AreEqual(icons.Count, icons.Distinct().Count(), "Two statuses share an icon");
         }
 
-        [Test]
-        public void EveryEntityItem_HasItsOwnDrawnIcon()
+        [TestCase("Assets/Data/EntityItems")]
+        [TestCase("Assets/Data/PlayerItems")]
+        [TestCase("Assets/Data/EventItems")]
+        public void EveryItem_HasItsOwnDrawnIcon(string folder)
         {
-            List<AItemFactory> items = AssetDatabase.FindAssets("t:AItemFactory", new[] { "Assets/Data/EntityItems" })
+            List<AItemFactory> items = AssetDatabase.FindAssets("t:AItemFactory", new[] { folder })
                 .Select(guid => AssetDatabase.LoadAssetAtPath<AItemFactory>(AssetDatabase.GUIDToAssetPath(guid)))
                 .ToList();
             Assert.IsNotEmpty(items);
@@ -49,7 +51,7 @@ namespace Icons
                 StringAssert.StartsWith("Assets/Icons/Items/", AssetDatabase.GetAssetPath(icon), $"{item.name}'s icon");
                 icons.Add(icon);
             }
-            Assert.AreEqual(icons.Count, icons.Distinct().Count(), "Two entity items share an icon");
+            Assert.AreEqual(icons.Count, icons.Distinct().Count(), "Two items share an icon");
         }
     }
 }

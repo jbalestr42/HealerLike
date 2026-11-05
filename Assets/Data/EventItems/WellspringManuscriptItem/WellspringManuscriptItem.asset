@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WellspringManuscriptItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 49dfce2cc8c396e4497d13f48986d99c, type: 3}
+    icon: {fileID: 21300000, guid: e0c3f3d08c8eaa04c86808800ebc2bfb, type: 3}
     name: Wellspring Manuscript
     description: +20% max mana
     tags:

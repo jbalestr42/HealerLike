@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: FalteringFaithItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: 7494ba15848983f46b96fc61c28d5674, type: 3}
+    icon: {fileID: 21300000, guid: a03c4c6c76d8b6545b6ec7d209b841c2, type: 3}
     name: Faltering Faith
     description: 'Ascension: -10% heal power.'
     tags:

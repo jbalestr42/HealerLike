@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ManaCrystalItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 49dfce2cc8c396e4497d13f48986d99c, type: 3}
+    icon: {fileID: 21300000, guid: 84a1b881d03da8b439cfc677a9b9195e, type: 3}
     name: Mana Crystal
     description: +20 max mana
     tags:

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 // The pictograms of the painted icons, by name (see IconCatalog), each drawn in the 0-100 box of its pen (the items'
-// ones in IconGlyphs.Items)
+// ones in IconGlyphs.Items and IconGlyphs.PlayerItems)
 public static partial class IconGlyphs
 {
     public static readonly Dictionary<string, Action<IconPen>> all = new Dictionary<string, Action<IconPen>>
@@ -100,6 +100,43 @@ public static partial class IconGlyphs
         { "fangs", Fangs },
         { "warBanner", WarBanner },
         { "fist", Fist },
+
+        { "dove", Dove },
+        { "chalice", Chalice },
+        { "crystalUp", CrystalUp },
+        { "ghost", Ghost },
+        { "crystalEmpty", CrystalEmpty },
+        { "bell", Bell },
+        { "candleOut", CandleOut },
+        { "moonHeart", MoonHeart },
+        { "staff", Staff },
+        { "crystal", Crystal },
+        { "hourglass", Hourglass },
+        { "bookCoin", BookCoin },
+        { "bookSkull", BookSkull },
+        { "fountain", Fountain },
+        { "beads", Beads },
+        { "lantern", Lantern },
+        { "campfire", Campfire },
+        { "rosary", Rosary },
+        { "offering", Offering },
+        { "flower", Flower },
+        { "drum", Drum },
+        { "well", Well },
+        { "runeBrand", RuneBrand },
+        { "bookEye", BookEye },
+        { "bookDrop", BookDrop },
+        { "scythe", Scythe },
+        { "bookCross", BookCross },
+        { "drumstick", Drumstick },
+        { "bookWings", BookWings },
+        { "maskTeeth", MaskTeeth },
+        { "leech", Leech },
+        { "coinSkull", CoinSkull },
+        { "scrollCoin", ScrollCoin },
+        { "thornCrown", ThornCrown },
+        { "bookChevrons", BookChevrons },
+        { "quill", Quill },
     };
 
     // Blessed: a halo over a sparkle

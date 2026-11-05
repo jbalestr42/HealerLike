@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RelicOfLightItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: 5da0883e4d71a6c47adeac1d531b96a1, type: 3}
+    icon: {fileID: 21300000, guid: 251bd0798645a754099d7129d090bb04, type: 3}
     name: Relic of Light
     description: Heals above the max health of your units become a shield on them, up to 20% of their max health, lost at the end of the fight
     tags:

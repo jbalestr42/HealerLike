@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DrainedItem
   m_EditorClassIdentifier: HealerLike.Runtime::ItemFactory
   data:
-    icon: {fileID: 21300000, guid: bb129ece4f76ab2468eab02f5b435d28, type: 3}
+    icon: {fileID: 21300000, guid: 30682d2729f031d4fb63d291228139a3, type: 3}
     name: Drained
     description: 'Ascension: each fight gives back 10% less of your max mana.'
     tags:

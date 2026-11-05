@@ -26,6 +26,12 @@ public static class IconCatalog
         Affliction,
         // On a death: rising, coming back, dying
         Death,
+        // The healer's mana: more of it, cheaper spells
+        Mana,
+        // A malus the player carries (the ascension levels)
+        Curse,
+        // Gold and rewards
+        Fortune,
     }
 
     public static readonly Dictionary<Role, string> roleColors = new Dictionary<Role, string>
@@ -38,6 +44,9 @@ public static class IconCatalog
         { Role.Holy, "#B8922E" },
         { Role.Affliction, "#7A5AA8" },
         { Role.Death, "#4E5566" },
+        { Role.Mana, "#3E58A8" },
+        { Role.Curse, "#7A2E4E" },
+        { Role.Fortune, "#6E7A32" },
     };
 
     public struct Entry
@@ -157,6 +166,44 @@ public static class IconCatalog
         EntityItem("WarBanner", "warBanner", Role.Aura),
         EntityItem("Whetstone", "whetstone", Role.Damage),
         EntityItem("Zeal", "fist", Role.Holy),
+
+        PlayerItem("Blessing", "dove", Role.Holy),
+        PlayerItem("ChaliceOfPlenty", "chalice", Role.Life),
+        PlayerItem("CostlySpells", "crystalUp", Role.Curse),
+        Item("PlayerItems/DamageAllEnemyItem/DamageAllEntityItem", "DamageAllEntity", "ghost", Role.Death),
+        PlayerItem("Drained", "crystalEmpty", Role.Curse),
+        PlayerItem("EmergencyBeacon", "bell", Role.Life),
+        PlayerItem("FalteringFaith", "candleOut", Role.Curse),
+        PlayerItem("HealAllEntitiesOnRoundEnd", "moonHeart", Role.Life),
+        PlayerItem("HealPower", "staff", Role.Life),
+        PlayerItem("ManaCrystal", "crystal", Role.Mana),
+        PlayerItem("ManaOnRoundEnd", "hourglass", Role.Mana),
+        PlayerItem("MerchantsLedger", "bookCoin", Role.Fortune),
+        PlayerItem("Necronomicon", "bookSkull", Role.Death),
+        PlayerItem("OverflowingFont", "fountain", Role.Mana),
+        PlayerItem("PrayerBeads", "beads", Role.Speed),
+        PlayerItem("RelicOfLight", "lantern", Role.Defense),
+        PlayerItem("Restless", "campfire", Role.Curse),
+        PlayerItem("Rosary", "rosary", Role.Mana),
+        PlayerItem("Tithe", "offering", Role.Mana),
+        PlayerItem("Verdant", "flower", Role.Life),
+        PlayerItem("WarDrums", "drum", Role.Speed),
+
+        EventItem("AbyssalWell", "well", Role.Mana),
+        EventItem("BerserkersBrand", "runeBrand", Role.Speed),
+        EventItem("BlackCodex", "bookEye", Role.Life),
+        EventItem("BloodLedger", "bookDrop", Role.Mana),
+        EventItem("BloodthirstBlade", "scythe", Role.Damage),
+        EventItem("CodexOfMending", "bookCross", Role.Life),
+        EventItem("GluttonsCharm", "drumstick", Role.Life),
+        EventItem("HastyGrimoire", "bookWings", Role.Speed),
+        EventItem("HungeringMask", "maskTeeth", Role.Damage),
+        EventItem("LeechFang", "leech", Role.Life),
+        EventItem("ReapersCoin", "coinSkull", Role.Damage),
+        EventItem("ScrollOfThrift", "scrollCoin", Role.Mana),
+        EventItem("ThornedCrown", "thornCrown", Role.Defense),
+        EventItem("TomeOfHaste", "bookChevrons", Role.Speed),
+        EventItem("WellspringManuscript", "quill", Role.Mana),
     };
 
     static Entry Status(string name, string glyph, string color)
@@ -166,7 +213,23 @@ public static class IconCatalog
 
     static Entry EntityItem(string name, string glyph, Role role)
     {
-        return new Entry($"Assets/Data/EntityItems/{name}Item/{name}Item.asset", "Items/" + name, glyph, Frame.Tile, roleColors[role]);
+        return Item($"EntityItems/{name}Item/{name}Item", name, glyph, role);
+    }
+
+    static Entry PlayerItem(string name, string glyph, Role role)
+    {
+        return Item($"PlayerItems/{name}Item/{name}Item", name, glyph, role);
+    }
+
+    static Entry EventItem(string name, string glyph, Role role)
+    {
+        return Item($"EventItems/{name}Item/{name}Item", name, glyph, role);
+    }
+
+    // An item tile, its asset at a path under Assets/Data (no extension)
+    static Entry Item(string dataPath, string name, string glyph, Role role)
+    {
+        return new Entry($"Assets/Data/{dataPath}.asset", "Items/" + name, glyph, Frame.Tile, roleColors[role]);
     }
 
     public static IconCanvas Paint(Entry entry, int size)

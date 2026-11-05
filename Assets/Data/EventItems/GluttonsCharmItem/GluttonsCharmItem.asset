@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GluttonsCharmItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 9b23d1fb6091a9842b79b29df215fd9a, type: 3}
+    icon: {fileID: 21300000, guid: b5eeffeb7b6e14e479d07a8b0a734c02, type: 3}
     name: Glutton's Charm
     description: '+50% healing received
 

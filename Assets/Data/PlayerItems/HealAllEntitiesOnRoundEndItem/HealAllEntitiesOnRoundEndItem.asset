@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HealAllEntitiesOnRoundEndItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: e4c3aa7b966f34f49bcac030376d2ee3, type: 3}
+    icon: {fileID: 21300000, guid: b71125b835218b84f99c6b3ebb1d64b5, type: 3}
     name: Round End Heal
     description: At the end of each fight, heals each of your units for 15% of its max health
     tags:

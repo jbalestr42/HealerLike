@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LeechFangItem
   m_EditorClassIdentifier: 
   data:
-    icon: {fileID: 21300000, guid: 830168f764471444d8a47b35247f811c, type: 3}
+    icon: {fileID: 21300000, guid: 55dbd3df1c6a20043b8304648776f163, type: 3}
     name: Leech Fang
     description: 'Heals itself for 30% of the damage it deals
 
