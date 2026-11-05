@@ -131,6 +131,22 @@ namespace UI.Toolkit
             Assert.That(position.y, Is.InRange(0f, 50f));
         }
 
+        [Test]
+        public void GetSize_RoomyArea_KeepsThePreferredSize()
+        {
+            Vector2 size = ToolkitPopover.GetSize(new Vector2(420, 600), Rect.MinMaxRect(0, 90, 1600, 800));
+            Assert.That(size, Is.EqualTo(new Vector2(420, 600)));
+        }
+
+        [Test]
+        public void GetSize_SmallArea_ShrinksToItButNotUnderAReadableHeight()
+        {
+            Assert.That(ToolkitPopover.GetSize(new Vector2(420, 600), Rect.MinMaxRect(0, 0, 300, 400)),
+                Is.EqualTo(new Vector2(300, 400)));
+            Assert.That(ToolkitPopover.GetSize(new Vector2(420, 600), Rect.MinMaxRect(0, 0, 300, 40)).y,
+                Is.EqualTo(100));
+        }
+
         [UnityTest]
         public IEnumerator HoveredItemOfTheItemBarIsNotCoveredByItsPopover()
         {
@@ -250,7 +266,7 @@ namespace UI.Toolkit
                         yield return null; yield return null;
                         view.inspectAnchor = new Rect(size.x * 0.5f, size.y * 0.5f, 2, 2);
                         ToolkitCardModel details = new ToolkitCardModel { title = "Creature",
-                            description = string.Join("\n", System.Linq.Enumerable.Repeat("A long line of details", 30)) };
+                            description = string.Join("\n", System.Linq.Enumerable.Repeat("A long line of details", 80)) };
                         // The detail panel fills the popover in game; the test has none
                         view.ShowDetail(details);
                         popover.Open(details);

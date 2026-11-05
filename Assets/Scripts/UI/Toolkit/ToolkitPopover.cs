@@ -19,6 +19,7 @@ public sealed class ToolkitPopover : IDisposable
         view.AddClickListener("detail-close-button", Close);
         view.root.RegisterCallback<PointerDownEvent>(Outside, TrickleDown.TrickleDown);
         _panel.RegisterCallback<GeometryChangedEvent>(Geometry);
+        _panel.RegisterCallback<CustomStyleResolvedEvent>(StyleResolved);
     }
     public void Open(ToolkitCardModel model)
     {
@@ -45,6 +46,14 @@ public sealed class ToolkitPopover : IDisposable
             Place();
         }
     }
+    // A layout's stylesheet (e.g. the PC's) gives the popover more room
+    void StyleResolved(CustomStyleResolvedEvent evt)
+    {
+        if (isOpen)
+        {
+            Place();
+        }
+    }
     void Place()
     {
         Rect bounds = _frame.worldBound;
@@ -64,8 +73,11 @@ public sealed class ToolkitPopover : IDisposable
         {
             bottom = partyPanel.worldBound.yMin - 8;
         }
-        float width = Mathf.Min(280, right - left);
-        float height = Mathf.Min(240, Mathf.Max(100, bottom - top));
+        Vector2 preferred = new Vector2(ToolkitStyleValues.ReadPositive(_panel.customStyle, "--popover-width", 280),
+            ToolkitStyleValues.ReadPositive(_panel.customStyle, "--popover-height", 240));
+        Vector2 size = GetSize(preferred, Rect.MinMaxRect(left, top, right, bottom));
+        float width = size.x;
+        float height = size.y;
         SetLength(_panel.style.width, width, value => _panel.style.width = value);
         SetLength(_panel.style.maxHeight, height, value => _panel.style.maxHeight = value);
         float actual = float.IsNaN(_panel.resolvedStyle.height) ? height : Mathf.Min(height, _panel.resolvedStyle.height);
@@ -86,6 +98,12 @@ public sealed class ToolkitPopover : IDisposable
     static bool Approximately(Vector2 a, Vector2 b)
     {
         return Mathf.Abs(a.x - b.x) <= 0.5f && Mathf.Abs(a.y - b.y) <= 0.5f;
+    }
+
+    // The preferred size inside the area, never so short that a title and a line no longer fit
+    public static Vector2 GetSize(Vector2 preferred, Rect area)
+    {
+        return new Vector2(Mathf.Min(preferred.x, area.width), Mathf.Min(preferred.y, Mathf.Max(100, area.height)));
     }
 
     // A unit's details are long and read at length: they open at the same place wherever the unit was tapped, rather
@@ -160,5 +178,6 @@ public sealed class ToolkitPopover : IDisposable
         _view.RemoveClickListener("detail-close-button", Close);
         _view.root.UnregisterCallback<PointerDownEvent>(Outside, TrickleDown.TrickleDown);
         _panel.UnregisterCallback<GeometryChangedEvent>(Geometry);
+        _panel.UnregisterCallback<CustomStyleResolvedEvent>(StyleResolved);
     }
 }

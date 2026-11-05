@@ -124,6 +124,13 @@ namespace HealerLike.Render.Stage
             StagePlay.Enter(ClassSelectCaptureRun.BootMode, 240f);
         }
 
+        // Main's panels at Full HD on PC (map, HUD, details, inventory, sheet, reward), sized and checked for scrolls
+        [MenuItem("Tools/Render/Capture Desktop Panels")]
+        public static void DesktopPanels()
+        {
+            StagePlay.Enter(DesktopPanelsCaptureRun.Mode, 300f);
+        }
+
         [MenuItem("Tools/Render/Smoke Three Rounds")]
         public static void Smoke()
         {

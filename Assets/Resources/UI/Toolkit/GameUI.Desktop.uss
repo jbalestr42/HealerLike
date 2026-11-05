@@ -1,0 +1,22 @@
+/* The PC panels: the text keeps its size, the panels grow so a detail, the inventory or a reward reads without a
+   scroll. Scoped to the desktop layout, a phone keeps its own. */
+
+/* Wrapped lines no longer overlap in the dialogs: the face with its descender sign fixed, as in the detail popover */
+#hud-root.compact-hud.layout--desktop .modal-layer
+{
+    -unity-font-definition: url("../../../Render/Font/Coiny/Coiny-Regular-UI.ttf");
+}
+
+/* The dialogs' cards in rows: Unity's vertical scroll view rule otherwise sets its content back to a column, so the
+   cards wrapped down a column at 2 a row whatever the dialog width */
+#hud-root.compact-hud.layout--desktop .collection-list .unity-scroll-view__content-container {
+    flex-direction: row; flex-wrap: wrap;
+}
+
+/* A wider and taller popover (read by ToolkitPopover), four cards a row in the wide dialogs, a roomier sheet */
+#hud-root.compact-hud.layout--desktop .detail-panel { --popover-width: 400; --popover-height: 560; padding: 14px; }
+#hud-root.compact-hud.layout--desktop .dialog--wide { width: 1240px; }
+#hud-root.compact-hud.layout--desktop .collection-list .card-shell,
+#hud-root.compact-hud.layout--desktop .collection-list .data-card { width: 280px; }
+#hud-root.compact-hud.layout--desktop .dialog--compact { width: 600px; }
+#hud-root.compact-hud.layout--desktop .sheet-dialog { min-height: 560px; }

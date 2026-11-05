@@ -137,3 +137,13 @@
 #hud-root.compact-hud #spell-list {
     height: 82px;
 }
+
+/* On PC, wider tiles so a spell's or a unit's name is no longer cut */
+#hud-root.compact-hud.layout--desktop #party-list .card-shell,
+#hud-root.compact-hud.layout--desktop #spell-list .card-shell {
+    width: 96px;
+}
+#hud-root.compact-hud.layout--desktop #party-list .data-card__icon,
+#hud-root.compact-hud.layout--desktop #spell-list .data-card__icon {
+    width: 90px;
+}

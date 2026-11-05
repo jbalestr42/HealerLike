@@ -7,3 +7,4 @@
 @import url("GameUI.Map.uss");
 @import url("GameUI.Compact.uss");
 @import url("GameUI.Compact.Cards.uss");
+@import url("GameUI.Desktop.uss");

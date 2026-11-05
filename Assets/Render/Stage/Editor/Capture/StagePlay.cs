@@ -222,6 +222,11 @@ namespace HealerLike.Render.Stage
                 return new ClassSelectCaptureRun(true);
             }
 
+            if (mode == DesktopPanelsCaptureRun.Mode)
+            {
+                return new DesktopPanelsCaptureRun();
+            }
+
             if (mode == StageEventRoomRun.Mode)
             {
                 return new StageEventRoomRun();
