@@ -352,7 +352,7 @@ namespace HealerLike.Render.Spells.Editor
         {
             ElementEntry burst = vocabulary.entries[EffectKey.Burst];
             burst.presentation.billboard = true;
-            burst.presentation.scale = 2.2f;
+            burst.presentation.scale = 1.5f;
             burst.presentation.cameraDepth = 1.1f;
             burst.presentation.scalesWithAmount = true;
             burst.presentation.avoidHead = false;
