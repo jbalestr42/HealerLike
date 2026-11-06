@@ -8,7 +8,7 @@ public class MarkManager : Singleton<MarkManager>
 
     void Start()
     {
-        EntityManager.instance.OnEntityKilled.AddListener(OnEntityKilled);
+        CombatEvents.OnEntityKilled.AddListener(OnEntityKilled);
     }
 
     void OnEntityKilled(Entity entity)

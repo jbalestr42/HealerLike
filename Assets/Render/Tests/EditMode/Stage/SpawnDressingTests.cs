@@ -26,6 +26,7 @@ public class SpawnDressingTests
     [TearDown]
     public void TearDown()
     {
+        CombatEvents.Clear();
         _objects.Dispose();
         _scene.Destroy();
     }
@@ -46,7 +47,7 @@ public class SpawnDressingTests
         Entity entity = StageSpawnObjects.CreateEntity(_scene.gameGo.transform, Entity.EntityType.Player, out _, true);
         entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/NormalEntity/NormalEntity.asset");
         ResourceAttribute health = entity.health;
-        _scene.entityManager.OnEntitySpawned.Invoke(entity);
+        CombatEvents.OnEntitySpawned.Invoke(entity);
         CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
         CreatureRig rig = builder.rig;
         Transform root = rig.root;
@@ -87,7 +88,7 @@ public class SpawnDressingTests
             out Renderer modelRenderer);
         entity.data = AssetDatabase.LoadAssetAtPath<EntityData>("Assets/Data/Entities/NormalEntity/NormalEntity.asset");
 
-        _scene.entityManager.OnEntitySpawned.Invoke(entity);
+        CombatEvents.OnEntitySpawned.Invoke(entity);
 
         Assert.IsFalse(modelRenderer.enabled);
         RangePreview preview = entity.model.GetComponentInChildren<RangePreview>();
@@ -103,7 +104,7 @@ public class SpawnDressingTests
         _scene.manager.Init(_scene.entityManager, _scene.player);
         Entity entity = StageSpawnObjects.CreateEntity(_scene.gameGo.transform, side, out _);
         entity.data = RenderTestAssets.LoadEntity("NormalEntity");
-        _scene.entityManager.OnEntitySpawned.Invoke(entity);
+        CombatEvents.OnEntitySpawned.Invoke(entity);
         CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
         CreatureRig rig = builder.rig;
         TrampleZone zone = builder.GetComponent<TrampleZone>();
@@ -139,7 +140,7 @@ public class SpawnDressingTests
         Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/UI/BuffIcon.prefab"),
             bar.transform);
 
-        _scene.entityManager.OnEntitySpawned.Invoke(entity);
+        CombatEvents.OnEntitySpawned.Invoke(entity);
 
         Assert.IsFalse(modelRenderer.enabled);
         Assert.IsTrue(hudGo.GetComponentInChildren<Canvas>(true).enabled);
@@ -157,7 +158,7 @@ public class SpawnDressingTests
         Entity entity = StageSpawnObjects.CreateEntity(_scene.gameGo.transform, Entity.EntityType.Computer,
             out Renderer modelRenderer);
 
-        _scene.entityManager.OnEntitySpawned.Invoke(entity);
+        CombatEvents.OnEntitySpawned.Invoke(entity);
 
         Assert.IsFalse(modelRenderer.enabled);
         Assert.IsNotNull(entity.model.GetComponentInChildren<CreatureBuilder>());
@@ -174,7 +175,7 @@ public class SpawnDressingTests
             out Renderer modelRenderer);
         entity.data = AssetDatabase.LoadAssetAtPath<EntityData>(dataPath);
 
-        _scene.entityManager.OnEntitySpawned.Invoke(entity);
+        CombatEvents.OnEntitySpawned.Invoke(entity);
 
         Assert.IsNotNull(entity.data);
         CreatureBuilder builder = entity.model.GetComponentInChildren<CreatureBuilder>();
@@ -204,7 +205,7 @@ public class SpawnDressingTests
         _scene.manager.Init(_scene.entityManager, _scene.player);
         Projectile projectile = _objects.SpawnProjectile("BulletSpeed");
 
-        _scene.entityManager.OnProjectileSpawned.Invoke(projectile.gameObject);
+        CombatEvents.OnProjectileSpawned.Invoke(projectile.gameObject);
 
         ProjectileVisualObserver observer = projectile.GetComponent<ProjectileVisualObserver>();
         Assert.IsNotNull(observer);
@@ -219,7 +220,7 @@ public class SpawnDressingTests
         _scene.manager.Init(_scene.entityManager, _scene.player);
         Projectile projectile = _objects.SpawnProjectile("ChainLightning");
 
-        _scene.entityManager.OnProjectileSpawned.Invoke(projectile.gameObject);
+        CombatEvents.OnProjectileSpawned.Invoke(projectile.gameObject);
 
         Assert.AreEqual(DeliveryStyle.ChainSync, projectile.GetComponent<ProjectileVisualObserver>().deliveryStyle);
         foreach (LineRenderer line in projectile.GetComponentsInChildren<LineRenderer>(true))
@@ -233,7 +234,7 @@ public class SpawnDressingTests
     {
         Projectile projectile = _objects.SpawnProjectile("BulletSpeed");
 
-        _scene.entityManager.OnProjectileSpawned.Invoke(projectile.gameObject);
+        CombatEvents.OnProjectileSpawned.Invoke(projectile.gameObject);
 
         Assert.IsNull(projectile.GetComponent<ProjectileVisualObserver>());
     }
@@ -245,7 +246,7 @@ public class SpawnDressingTests
         GameObject spawnedGo = new GameObject("Spawned");
         _objects.Track(spawnedGo);
 
-        _scene.entityManager.OnProjectileSpawned.Invoke(spawnedGo);
+        CombatEvents.OnProjectileSpawned.Invoke(spawnedGo);
 
         Assert.IsNull(spawnedGo.GetComponent<AreaPulseOnStart>());
         Assert.IsNull(spawnedGo.GetComponent<LegacyAreaVisualMask>());
@@ -260,7 +261,7 @@ public class SpawnDressingTests
         _scene.manager.Init(_scene.entityManager, _scene.player);
         AreaOfEffect area = _objects.SpawnArea();
 
-        _scene.entityManager.OnProjectileSpawned.Invoke(area.gameObject);
+        CombatEvents.OnProjectileSpawned.Invoke(area.gameObject);
         _objects.ConfigureArea(area, consumerValue);
 
         Assert.AreEqual(0, _scene.manager.spellSink.GetComponentsInChildren<SpellEffect>().Length);

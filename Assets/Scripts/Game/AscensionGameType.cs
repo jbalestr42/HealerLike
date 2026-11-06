@@ -7,9 +7,6 @@ using Oisif.Inspector;
 // fights, rests, loots or plays an event in it, and goes back to the map until the boss
 public class AscensionGameType : AGameType, IEventRoomHost
 {
-    [HideInInspector] public static UnityEvent OnRoundStart = new UnityEvent();
-    [HideInInspector] public static UnityEvent OnBattleStart = new UnityEvent();
-    [HideInInspector] public static UnityEvent OnRoundEnd = new UnityEvent();
     // The next room picked on the map, before it is entered
     [HideInInspector] public static UnityEvent<MapNode> OnRoomSelected = new UnityEvent<MapNode>();
 
@@ -107,19 +104,13 @@ public class AscensionGameType : AGameType, IEventRoomHost
         _entities = EntityManager.instance;
         _game = GameManager.instance;
         _player = PlayerBehaviour.instance;
-        _entities.OnEntityKilled.AddListener(OnEntityKilled);
-        _entities.OnEntitySummoned.AddListener(OnEntitySummoned);
-        _entities.OnEntitySpawned.AddListener(OnEntitySpawned);
+        CombatEvents.OnEntityKilled.AddListener(OnEntityKilled);
+        CombatEvents.OnEntitySpawned.AddListener(OnEntitySpawned);
     }
 
     void OnDestroy()
     {
-        if (_entities != null)
-        {
-            _entities.OnEntityKilled.RemoveListener(OnEntityKilled);
-            _entities.OnEntitySummoned.RemoveListener(OnEntitySummoned);
-            _entities.OnEntitySpawned.RemoveListener(OnEntitySpawned);
-        }
+        CombatEvents.Clear();
         if (_runMapSettings != null && _runMapSettings != _mapSettings)
         {
             Destroy(_runMapSettings);
@@ -129,8 +120,6 @@ public class AscensionGameType : AGameType, IEventRoomHost
     // A dead ally is lost for the run: its items go back to the player, and it can be resurrected later
     void OnEntityKilled(Entity entity)
     {
-        _combatRecorder?.RecordDeath(entity);
-
         if (_run == null || !IsLostForTheRun(entity, DataManager.instance.GetTagWithName(TagNames.Summon)))
         {
             return;
@@ -204,7 +193,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 }
                 EnableAllEntities(false);
                 SetState(State.WaitForRoundToStart);
-                OnRoundStart.Invoke();
+                CombatEvents.OnRoundStart.Invoke();
                 break;
 
             case State.WaitForRoundToStart:
@@ -217,13 +206,13 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 StartCombatLog();
                 // TODO: Show countdown before starting the battle
                 SetState(State.OnGoingBattle);
-                OnBattleStart.Invoke();
+                CombatEvents.OnBattleStart.Invoke();
                 break;
 
             case State.OnGoingBattle:
                 if (_entities.AreAllEntityDead(Entity.EntityType.Computer))
                 {
-                    FinishCombatLog(true);
+                    CombatEvents.OnBattleEnd.Invoke(true);
                     if (IsRunWon(_run.currentNode.type))
                     {
                         WinRun();
@@ -235,7 +224,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 }
                 else if (_entities.AreAllEntityDead(Entity.EntityType.Player))
                 {
-                    FinishCombatLog(false);
+                    CombatEvents.OnBattleEnd.Invoke(false);
                     SetState(State.GameOver);
                 }
                 break;
@@ -246,7 +235,7 @@ public class AscensionGameType : AGameType, IEventRoomHost
                 _entities.RemoveSummons();
                 // Reset all unit to their default state (remove temporary buffs)
                 ResetAllEntities();
-                OnRoundEnd.Invoke();
+                CombatEvents.OnRoundEnd.Invoke();
                 if (GivesUnitReward(_run.currentNode.type))
                 {
                     ShowUnitReward();
@@ -657,24 +646,16 @@ public class AscensionGameType : AGameType, IEventRoomHost
             wave = _currentWave != null ? _currentWave.name : "",
             character = PlayerBehaviour.instance.character.data.title,
         };
+        // A fight left without an end (e.g. the run abandoned) is not logged
+        _combatRecorder?.Stop(false);
         _combatRecorder = new CombatRecorder(stats, () => Time.time, PlayerBehaviour.instance.character.mana);
         _entities.GetEntities(Entity.EntityType.Player).ForEach(x => _combatRecorder.AddUnit(x.GetComponent<Entity>()));
         _entities.GetEntities(Entity.EntityType.Computer).ForEach(x => _combatRecorder.AddUnit(x.GetComponent<Entity>()));
+        _combatRecorder.OnFinished.AddListener(WriteCombatLog);
     }
 
-    void OnEntitySummoned(Entity summon)
+    void WriteCombatLog(CombatStats stats)
     {
-        _combatRecorder?.AddUnit(summon);
-    }
-
-    void FinishCombatLog(bool won)
-    {
-        if (_combatRecorder == null)
-        {
-            return;
-        }
-
-        CombatStats stats = _combatRecorder.Stop(won);
         _combatRecorder = null;
         Debug.Log($"[CombatLog] {stats.ToSummary()}");
         try

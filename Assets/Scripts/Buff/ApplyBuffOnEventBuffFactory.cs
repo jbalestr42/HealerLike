@@ -57,22 +57,17 @@ public class ApplyBuffOnEventBuff : ABuff<ApplyBuffOnEventBuffData>
         _owner = target;
         if (data.triggers.HasFlag(BuffEventTrigger.BattleStart))
         {
-            AscensionGameType.OnBattleStart.AddListener(OnBattleStart);
+            CombatEvents.OnBattleStart.AddListener(OnBattleStart);
         }
         if (data.triggers.HasFlag(BuffEventTrigger.Summoned))
         {
-            EntityManager.instance.OnEntitySummoned.AddListener(ApplyTo);
+            CombatEvents.OnEntitySummoned.AddListener(ApplyTo);
         }
     }
 
     public override void Remove(GameObject source, GameObject target)
     {
-        AscensionGameType.OnBattleStart.RemoveListener(OnBattleStart);
-        // Also called while the scene is torn down, where the entity manager may already be gone
-        EntityManager entityManager = EntityManager.existingInstance;
-        if (entityManager != null)
-        {
-            entityManager.OnEntitySummoned.RemoveListener(ApplyTo);
-        }
+        CombatEvents.OnBattleStart.RemoveListener(OnBattleStart);
+        CombatEvents.OnEntitySummoned.RemoveListener(ApplyTo);
     }
 }

@@ -41,6 +41,7 @@ public class DamageAllEntityOnEntityDieBuffTests
     [TearDown]
     public void TearDown()
     {
+        CombatEvents.Clear();
         SetEntityManagerInstance(null);
         Object.DestroyImmediate(_entityManagerGo);
         // Some tests destroy them already
@@ -107,7 +108,7 @@ public class DamageAllEntityOnEntityDieBuffTests
 
     void Kill(GameObject entity)
     {
-        _entityManager.OnEntityKilled.Invoke(entity.GetComponent<Entity>());
+        CombatEvents.OnEntityKilled.Invoke(entity.GetComponent<Entity>());
     }
 
     [Test]

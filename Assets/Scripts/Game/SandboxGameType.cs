@@ -25,6 +25,11 @@ public class SandboxGameType : AGameType
         _entities = EntityManager.instance;
     }
 
+    void OnDestroy()
+    {
+        CombatEvents.Clear();
+    }
+
     void Update()
     {
         // Wait for the first frame so every manager has been started
@@ -156,18 +161,22 @@ public class SandboxGameType : AGameType
         InteractionManager.instance.CancelInteraction();
         _isBattleRunning = true;
         EnableAllEntities(true);
-        AscensionGameType.OnBattleStart.Invoke();
+        CombatEvents.OnBattleStart.Invoke();
     }
 
     // Back to placement: entities keep their health and permanent effects
     public void StopBattle()
     {
+        if (_isBattleRunning)
+        {
+            CombatEvents.OnBattleEnd.Invoke(_entities.AreAllEntityDead(Entity.EntityType.Computer));
+        }
         _isBattleRunning = false;
         _entities.RemoveSummons();
         EnableAllEntities(false);
         PlayerBehaviour.instance.character.Reset();
         ForEachEntity(entity => entity.Reset());
-        AscensionGameType.OnRoundEnd.Invoke();
+        CombatEvents.OnRoundEnd.Invoke();
     }
 
     public void RestoreAll()

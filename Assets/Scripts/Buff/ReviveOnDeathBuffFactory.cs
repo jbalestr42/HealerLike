@@ -35,7 +35,7 @@ public class ReviveOnDeathBuff : ABuff<ReviveOnDeathBuffData>
     {
         _owner = target.GetComponent<Entity>();
         _owner.AddDeathPrevention(Revive);
-        AscensionGameType.OnBattleStart.AddListener(Rearm);
+        CombatEvents.OnBattleStart.AddListener(Rearm);
     }
 
     public override void Remove(GameObject source, GameObject target)
@@ -44,7 +44,7 @@ public class ReviveOnDeathBuff : ABuff<ReviveOnDeathBuffData>
         {
             _owner.RemoveDeathPrevention(Revive);
         }
-        AscensionGameType.OnBattleStart.RemoveListener(Rearm);
+        CombatEvents.OnBattleStart.RemoveListener(Rearm);
     }
 
     // Each battle can revive it once

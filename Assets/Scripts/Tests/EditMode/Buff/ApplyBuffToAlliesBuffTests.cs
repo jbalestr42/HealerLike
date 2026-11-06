@@ -45,6 +45,7 @@ public class ApplyBuffToAlliesBuffTests
     [TearDown]
     public void TearDown()
     {
+        CombatEvents.Clear();
         SetEntityManagerInstance(null);
         Object.DestroyImmediate(_entityManagerGo);
         foreach (GameObject entity in _entities)
@@ -126,7 +127,7 @@ public class ApplyBuffToAlliesBuffTests
         _buff.Add(_owner, _owner);
         GameObject summon = CreateEntity("Skeleton", Entity.EntityType.Computer, isListed: false);
 
-        _entityManager.OnEntitySpawned.Invoke(summon.GetComponent<Entity>());
+        CombatEvents.OnEntitySpawned.Invoke(summon.GetComponent<Entity>());
 
         Assert.AreEqual(1, ActiveHandlers(summon));
     }
@@ -137,7 +138,7 @@ public class ApplyBuffToAlliesBuffTests
         GameObject ally = CreateEntity("Berserker", Entity.EntityType.Computer);
         _buff.Add(_owner, _owner);
 
-        _entityManager.OnEntitySpawned.Invoke(ally.GetComponent<Entity>());
+        CombatEvents.OnEntitySpawned.Invoke(ally.GetComponent<Entity>());
 
         Assert.AreEqual(1, ActiveHandlers(ally));
         CollectionAssert.AreEqual(new[] { "Add" }, _data.log);
@@ -163,7 +164,7 @@ public class ApplyBuffToAlliesBuffTests
         _buff.Remove(_owner, _owner);
         GameObject summon = CreateEntity("Skeleton", Entity.EntityType.Computer, isListed: false);
 
-        _entityManager.OnEntitySpawned.Invoke(summon.GetComponent<Entity>());
+        CombatEvents.OnEntitySpawned.Invoke(summon.GetComponent<Entity>());
 
         Assert.AreEqual(0, ActiveHandlers(summon));
     }

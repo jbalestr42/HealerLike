@@ -30,7 +30,7 @@ public class ApplyBuffBelowHealthBuff : ABuff<ApplyBuffBelowHealthBuffData>
     {
         _owner = target.GetComponent<Entity>();
         _owner.health.OnValueChanged.AddListener(OnHealthChanged);
-        AscensionGameType.OnBattleStart.AddListener(Rearm);
+        CombatEvents.OnBattleStart.AddListener(Rearm);
     }
 
     public override void Remove(GameObject source, GameObject target)
@@ -39,7 +39,7 @@ public class ApplyBuffBelowHealthBuff : ABuff<ApplyBuffBelowHealthBuffData>
         {
             _owner.health.OnValueChanged.RemoveListener(OnHealthChanged);
         }
-        AscensionGameType.OnBattleStart.RemoveListener(Rearm);
+        CombatEvents.OnBattleStart.RemoveListener(Rearm);
     }
 
     // Each battle can trigger it once

@@ -35,7 +35,7 @@ public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBu
         // Safety net if the owner is gone without Remove() being called: stop listening
         if (_owner == null)
         {
-            EntityManager.instance.OnEntityKilled.RemoveListener(OnEntityDie);
+            CombatEvents.OnEntityKilled.RemoveListener(OnEntityDie);
             return;
         }
 
@@ -60,17 +60,12 @@ public class DamageAllEntityOnEntityDieBuff : ABuff<DamageAllEntityOnEntityDieBu
     public override void Add(GameObject source, GameObject target)
     {
         _owner = target;
-        EntityManager.instance.OnEntityKilled.AddListener(OnEntityDie);
+        CombatEvents.OnEntityKilled.AddListener(OnEntityDie);
     }
 
     public override void Remove(GameObject source, GameObject target)
     {
-        // Also called while the scene is torn down, where the entity manager may already be gone
-        EntityManager entityManager = EntityManager.existingInstance;
-        if (entityManager != null)
-        {
-            entityManager.OnEntityKilled.RemoveListener(OnEntityDie);
-        }
+        CombatEvents.OnEntityKilled.RemoveListener(OnEntityDie);
     }
 
     #region IStackableBuff

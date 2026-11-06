@@ -56,7 +56,7 @@ public class GrowingItem : AItem<GrowingItemData>
         IBuffable buffable = target.GetComponent<IBuffable>();
         AddHandlers(buffable, data.growthBuffHandlerFactory, _growth, target);
         AddHandlers(buffable, data.killGrowthBuffHandlerFactory, _killGrowth, target);
-        AscensionGameType.OnRoundEnd.AddListener(Grow);
+        CombatEvents.OnRoundEnd.AddListener(Grow);
 
         _holderEntity = target.GetComponent<Entity>();
         if (_holderEntity != null && data.killGrowthBuffHandlerFactory != null)
@@ -67,7 +67,7 @@ public class GrowingItem : AItem<GrowingItemData>
 
     public override void Unequip(GameObject target)
     {
-        AscensionGameType.OnRoundEnd.RemoveListener(Grow);
+        CombatEvents.OnRoundEnd.RemoveListener(Grow);
         if (_holderEntity != null)
         {
             _holderEntity.OnKill.RemoveListener(OnKill);
@@ -86,7 +86,7 @@ public class GrowingItem : AItem<GrowingItemData>
         // The holder died with the item on it: nothing left to grow
         if (_holder == null)
         {
-            AscensionGameType.OnRoundEnd.RemoveListener(Grow);
+            CombatEvents.OnRoundEnd.RemoveListener(Grow);
             return;
         }
 

@@ -20,8 +20,8 @@ namespace HealerLike.Render.Stage
         public void Init()
         {
             AscensionGameType.OnRoomSelected.AddListener(OnRoomSelected);
-            AscensionGameType.OnRoundStart.AddListener(OnRoundStart);
-            AscensionGameType.OnBattleStart.AddListener(OnBattleStart);
+            CombatEvents.OnRoundStart.AddListener(OnRoundStart);
+            CombatEvents.OnBattleStart.AddListener(OnBattleStart);
         }
 
         public void Attach()
@@ -74,8 +74,8 @@ namespace HealerLike.Render.Stage
         public override void Dispose()
         {
             AscensionGameType.OnRoomSelected.RemoveListener(OnRoomSelected);
-            AscensionGameType.OnRoundStart.RemoveListener(OnRoundStart);
-            AscensionGameType.OnBattleStart.RemoveListener(OnBattleStart);
+            CombatEvents.OnRoundStart.RemoveListener(OnRoundStart);
+            CombatEvents.OnBattleStart.RemoveListener(OnBattleStart);
             base.Dispose();
         }
     }

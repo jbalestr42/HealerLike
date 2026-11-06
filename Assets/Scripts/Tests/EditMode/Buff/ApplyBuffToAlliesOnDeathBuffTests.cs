@@ -49,6 +49,7 @@ public class ApplyBuffToAlliesOnDeathBuffTests
     [TearDown]
     public void TearDown()
     {
+        CombatEvents.Clear();
         if (_holder != null)
         {
             _buff.Remove(_holder.gameObject, _holder.gameObject);
@@ -89,7 +90,7 @@ public class ApplyBuffToAlliesOnDeathBuffTests
 
     void Kill(Entity entity)
     {
-        _entityManager.OnEntityKilled.Invoke(entity);
+        CombatEvents.OnEntityKilled.Invoke(entity);
         foreach (GameObject unit in _entityManager.GetEntities(Entity.EntityType.Computer))
         {
             unit.GetComponent<BuffManager>().ForceUpdate();

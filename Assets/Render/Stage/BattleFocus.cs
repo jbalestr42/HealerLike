@@ -68,8 +68,8 @@ namespace HealerLike.Render.Stage
             }
 
             // A wave starts and the round ends on the signals of the game type
-            AscensionGameType.OnBattleStart.AddListener(Focus);
-            AscensionGameType.OnRoundEnd.AddListener(Overview);
+            CombatEvents.OnBattleStart.AddListener(Focus);
+            CombatEvents.OnRoundEnd.AddListener(Overview);
             SetLabel();
         }
 
@@ -81,8 +81,8 @@ namespace HealerLike.Render.Stage
             {
                 _toggle.onClick.RemoveListener(Toggle);
             }
-            AscensionGameType.OnBattleStart.RemoveListener(Focus);
-            AscensionGameType.OnRoundEnd.RemoveListener(Overview);
+            CombatEvents.OnBattleStart.RemoveListener(Focus);
+            CombatEvents.OnRoundEnd.RemoveListener(Overview);
         }
 
         void OnDestroy()

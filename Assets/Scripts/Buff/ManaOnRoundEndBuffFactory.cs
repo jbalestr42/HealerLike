@@ -26,12 +26,12 @@ public class ManaOnRoundEndBuff : ABuff<ManaOnRoundEndBuffData>, IStackableBuff
 
     public override void Add(GameObject source, GameObject target)
     {
-        AscensionGameType.OnRoundEnd.AddListener(OnRoundEnd);
+        CombatEvents.OnRoundEnd.AddListener(OnRoundEnd);
     }
 
     public override void Remove(GameObject source, GameObject target)
     {
-        AscensionGameType.OnRoundEnd.RemoveListener(OnRoundEnd);
+        CombatEvents.OnRoundEnd.RemoveListener(OnRoundEnd);
     }
 
     #region IStackableBuff

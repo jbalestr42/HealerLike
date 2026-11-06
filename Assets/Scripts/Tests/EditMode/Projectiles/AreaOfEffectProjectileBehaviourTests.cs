@@ -25,7 +25,7 @@ public class AreaOfEffectProjectileBehaviourTests
         _entityManager = _entityManagerGo.AddComponent<EntityManager>();
         TestHelpers.InvokePrivate(_entityManager, "Awake");
         SetEntityManagerInstance(_entityManager);
-        _entityManager.OnProjectileSpawned.AddListener(go => _spawnedArea = go.GetComponent<AreaOfEffect>());
+        CombatEvents.OnProjectileSpawned.AddListener(go => _spawnedArea = go.GetComponent<AreaOfEffect>());
 
         _areaOfEffectPrefab = new GameObject("AreaOfEffect");
         _areaOfEffectPrefab.AddComponent<AreaOfEffect>();
@@ -47,6 +47,7 @@ public class AreaOfEffectProjectileBehaviourTests
     [TearDown]
     public void TearDown()
     {
+        CombatEvents.Clear();
         SetEntityManagerInstance(null);
         Object.DestroyImmediate(_entityManagerGo);
         Object.DestroyImmediate(_areaOfEffectPrefab);
@@ -102,7 +103,7 @@ public class AreaOfEffectProjectileBehaviourTests
     public void OnHit_Twice_SpawnsASingleArea()
     {
         int spawnCount = 0;
-        _entityManager.OnProjectileSpawned.AddListener(go => spawnCount++);
+        CombatEvents.OnProjectileSpawned.AddListener(go => spawnCount++);
 
         Hit();
         Hit();

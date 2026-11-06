@@ -25,6 +25,7 @@ public class EntityManagerTests
     [TearDown]
     public void TearDown()
     {
+        CombatEvents.Clear();
         Object.DestroyImmediate(_go);
         Object.DestroyImmediate(_projectilePrefab);
     }
@@ -63,7 +64,7 @@ public class EntityManagerTests
     public void SpawnProjectile_InvokesOnProjectileSpawned_WithTheSpawnedGameObject()
     {
         GameObject spawnedGo = null;
-        _entityManager.OnProjectileSpawned.AddListener(go => spawnedGo = go);
+        CombatEvents.OnProjectileSpawned.AddListener(go => spawnedGo = go);
 
         GameObject projectileGo = _entityManager.SpawnProjectile(_projectilePrefab, Vector3.zero, Quaternion.identity);
 
@@ -74,7 +75,7 @@ public class EntityManagerTests
     public void SpawnProjectile_InvokesOnProjectileSpawned_BeforeProjectileInit()
     {
         bool hasSourceWhenSpawned = true;
-        _entityManager.OnProjectileSpawned.AddListener(go => hasSourceWhenSpawned = go.GetComponent<Projectile>().source != null);
+        CombatEvents.OnProjectileSpawned.AddListener(go => hasSourceWhenSpawned = go.GetComponent<Projectile>().source != null);
 
         _entityManager.SpawnProjectile(_projectilePrefab, Vector3.zero, Quaternion.identity);
 
@@ -105,7 +106,7 @@ public class EntityManagerTests
             _entityManager.GetEntities(Entity.EntityType.Computer).AddRange(new[] { enemyA, enemyB });
             _entityManager.GetEntities(Entity.EntityType.Player).Add(ally);
             System.Collections.Generic.List<Entity> killed = new System.Collections.Generic.List<Entity>();
-            _entityManager.OnEntityKilled.AddListener(killed.Add);
+            CombatEvents.OnEntityKilled.AddListener(killed.Add);
 
             // Destroy can't run outside the play mode: the entities stay in the scene, but not in the fight
             UnityEngine.TestTools.LogAssert.Expect(LogType.Error, new System.Text.RegularExpressions.Regex("Enemy A: Destroy may not be called from edit mode"));

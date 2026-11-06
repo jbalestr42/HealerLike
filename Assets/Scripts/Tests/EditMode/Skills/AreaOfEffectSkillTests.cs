@@ -34,6 +34,7 @@ public class AreaOfEffectSkillTests
     [TearDown]
     public void TearDown()
     {
+        CombatEvents.Clear();
         SetEntityManagerInstance(null);
         Object.DestroyImmediate(_entityManagerGo);
         Object.DestroyImmediate(_areaOfEffectPrefab);
@@ -53,7 +54,7 @@ public class AreaOfEffectSkillTests
     public void Execute_SpawnsAreaOfEffectThroughEntityManager()
     {
         GameObject spawnedGo = null;
-        _entityManager.OnProjectileSpawned.AddListener(go => spawnedGo = go);
+        CombatEvents.OnProjectileSpawned.AddListener(go => spawnedGo = go);
 
         _skill.Execute(_source);
 
@@ -68,7 +69,7 @@ public class AreaOfEffectSkillTests
     public void Execute_ParentsAreaOfEffectUnderProjectilePool()
     {
         GameObject spawnedGo = null;
-        _entityManager.OnProjectileSpawned.AddListener(go => spawnedGo = go);
+        CombatEvents.OnProjectileSpawned.AddListener(go => spawnedGo = go);
 
         _skill.Execute(_source);
 

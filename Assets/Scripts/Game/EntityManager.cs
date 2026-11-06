@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
 public class EntityManager : Singleton<EntityManager>
 {
     // Tag given to the entities summoned during a battle
-
-    [HideInInspector] public UnityEvent<Entity> OnEntitySpawned = new UnityEvent<Entity>();
-    [HideInInspector] public UnityEvent<Entity> OnEntityKilled = new UnityEvent<Entity>();
-    // An entity summoned during a battle, once it's tagged as a summon
-    [HideInInspector] public UnityEvent<Entity> OnEntitySummoned = new UnityEvent<Entity>();
-    [HideInInspector] public UnityEvent<GameObject> OnProjectileSpawned = new UnityEvent<GameObject>();
 
     [SerializeField]
     GameObject _entityBasePrefab;
@@ -123,7 +116,7 @@ public class EntityManager : Singleton<EntityManager>
     {
         if (entity != null)
         {
-            OnEntityKilled.Invoke(entity.GetComponent<Entity>());
+            CombatEvents.OnEntityKilled.Invoke(entity.GetComponent<Entity>());
             RemoveEntity(entity, entityType);
         }
     }
@@ -141,7 +134,7 @@ public class EntityManager : Singleton<EntityManager>
     public void AddSummon(Entity summon)
     {
         summon.AddTag(DataManager.instance.GetTagWithName(TagNames.Summon));
-        OnEntitySummoned.Invoke(summon);
+        CombatEvents.OnEntitySummoned.Invoke(summon);
     }
 
     // Summons only last for the battle they were summoned in: removed without being killed
@@ -177,7 +170,7 @@ public class EntityManager : Singleton<EntityManager>
     public GameObject SpawnProjectile(GameObject projectilePrefab, Vector3 position, Quaternion rotation)
     {
         GameObject projectileGo = Instantiate(projectilePrefab, position, rotation, _parentProjectile.transform);
-        OnProjectileSpawned.Invoke(projectileGo);
+        CombatEvents.OnProjectileSpawned.Invoke(projectileGo);
         return projectileGo;
     }
 

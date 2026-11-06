@@ -31,17 +31,12 @@ public class ManaOnOverhealBuff : ABuff<ManaOnOverhealBuffData>
         {
             Listen(entity.GetComponent<Entity>());
         }
-        entityManager.OnEntitySpawned.AddListener(Listen);
+        CombatEvents.OnEntitySpawned.AddListener(Listen);
     }
 
     public override void Remove(GameObject source, GameObject target)
     {
-        // Also called while the scene is torn down, where the entity manager may already be gone
-        EntityManager entityManager = EntityManager.existingInstance;
-        if (entityManager != null)
-        {
-            entityManager.OnEntitySpawned.RemoveListener(Listen);
-        }
+        CombatEvents.OnEntitySpawned.RemoveListener(Listen);
         StopListening();
     }
 

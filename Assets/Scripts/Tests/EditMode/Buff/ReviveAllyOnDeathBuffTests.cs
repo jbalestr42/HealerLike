@@ -69,6 +69,7 @@ public class ReviveAllyOnDeathBuffTests
     [TearDown]
     public void TearDown()
     {
+        CombatEvents.Clear();
         if (_owner != null)
         {
             _buff.Remove(_owner.gameObject, _owner.gameObject);
@@ -108,7 +109,7 @@ public class ReviveAllyOnDeathBuffTests
 
     void Kill(Entity entity)
     {
-        _entityManager.OnEntityKilled.Invoke(entity);
+        CombatEvents.OnEntityKilled.Invoke(entity);
         _ownerBuffs.ForceUpdate();
     }
 

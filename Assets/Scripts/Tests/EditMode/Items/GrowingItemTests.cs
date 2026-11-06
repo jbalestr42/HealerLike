@@ -40,7 +40,7 @@ public class GrowingItemTests
     [TearDown]
     public void TearDown()
     {
-        AscensionGameType.OnRoundEnd.RemoveListener(_item.Grow);
+        CombatEvents.OnRoundEnd.RemoveListener(_item.Grow);
         _units.DestroyAll();
         foreach (Object scriptableObject in _scriptableObjects)
         {

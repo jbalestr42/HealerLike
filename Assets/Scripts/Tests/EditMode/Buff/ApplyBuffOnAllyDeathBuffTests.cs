@@ -51,6 +51,7 @@ public class ApplyBuffOnAllyDeathBuffTests
     [TearDown]
     public void TearDown()
     {
+        CombatEvents.Clear();
         SetEntityManagerInstance(null);
         Object.DestroyImmediate(_entityManagerGo);
         foreach (GameObject entity in _entities)
@@ -92,7 +93,7 @@ public class ApplyBuffOnAllyDeathBuffTests
 
     void Kill(GameObject entity)
     {
-        _entityManager.OnEntityKilled.Invoke(entity.GetComponent<Entity>());
+        CombatEvents.OnEntityKilled.Invoke(entity.GetComponent<Entity>());
         _ownerBuffs.ForceUpdate();
     }
 
@@ -162,7 +163,7 @@ public class ApplyBuffOnAllyDeathBuffTests
         _buff.Add(_owner, _owner);
         Object.DestroyImmediate(_owner);
 
-        Assert.DoesNotThrow(() => _entityManager.OnEntityKilled.Invoke(ally.GetComponent<Entity>()));
+        Assert.DoesNotThrow(() => CombatEvents.OnEntityKilled.Invoke(ally.GetComponent<Entity>()));
     }
 }
 

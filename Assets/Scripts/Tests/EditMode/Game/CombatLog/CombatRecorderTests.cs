@@ -41,6 +41,7 @@ public class CombatRecorderTests
     [TearDown]
     public void TearDown()
     {
+        CombatEvents.Clear();
         foreach (GameObject go in _created)
         {
             Object.DestroyImmediate(go);
@@ -296,6 +297,67 @@ public class CombatRecorderTests
         CombatStats stats = recorder.Stop(false);
 
         CollectionAssert.AreEqual(new[] { "Knight" }, stats.deadAllies);
+    }
+
+    [Test]
+    public void EntitySummoned_DuringTheFight_IsWatched()
+    {
+        CombatRecorder recorder = CreateRecorder();
+        ResourceAttribute imp = CreateHealth(50f);
+
+        CombatEvents.OnEntitySummoned.Invoke(CreateEntity(Entity.EntityType.Player, imp, "Imp"));
+        Apply(imp, _enemyGo, -10f);
+        CombatStats stats = recorder.Stop(true);
+
+        CollectionAssert.AreEqual(new[] { "Imp" }, stats.allies);
+        Assert.AreEqual(10f, stats.allyDamageTaken, 0.001f);
+    }
+
+    [Test]
+    public void EntityKilled_DuringTheFight_AnAllyDeath()
+    {
+        CombatRecorder recorder = CreateRecorder();
+
+        CombatEvents.OnEntityKilled.Invoke(CreateEntity(Entity.EntityType.Player, CreateHealth(100f), "Knight"));
+        CombatStats stats = recorder.Stop(false);
+
+        CollectionAssert.AreEqual(new[] { "Knight" }, stats.deadAllies);
+    }
+
+    [Test]
+    public void BattleEnd_StopsTheRecorder_AndGivesTheStats()
+    {
+        CombatRecorder recorder = CreateRecorder();
+        List<CombatStats> finished = new List<CombatStats>();
+        recorder.OnFinished.AddListener(finished.Add);
+        _time = 12f;
+
+        CombatEvents.OnBattleEnd.Invoke(true);
+
+        CollectionAssert.AreEqual(new[] { recorder.stats }, finished);
+        Assert.IsTrue(recorder.stats.won);
+        Assert.AreEqual(12f, recorder.stats.duration, 0.001f);
+    }
+
+    [Test]
+    public void AfterTheEnd_TheFightEventsAreIgnored()
+    {
+        CombatRecorder recorder = CreateRecorder();
+        List<CombatStats> finished = new List<CombatStats>();
+        recorder.OnFinished.AddListener(finished.Add);
+        CombatEvents.OnBattleEnd.Invoke(true);
+        _time = 30f;
+
+        CombatEvents.OnEntitySummoned.Invoke(CreateEntity(Entity.EntityType.Player, CreateHealth(50f), "Imp"));
+        CombatEvents.OnEntityKilled.Invoke(CreateEntity(Entity.EntityType.Player, CreateHealth(100f), "Knight"));
+        CombatEvents.OnBattleEnd.Invoke(false);
+        CombatStats stats = recorder.Stop(false);
+
+        Assert.AreEqual(1, finished.Count);
+        Assert.IsEmpty(stats.allies);
+        Assert.IsEmpty(stats.deadAllies);
+        Assert.IsTrue(stats.won);
+        Assert.AreEqual(0f, stats.duration, 0.001f);
     }
 
     [Test]

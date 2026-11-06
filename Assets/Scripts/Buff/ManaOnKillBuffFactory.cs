@@ -36,17 +36,12 @@ public class ManaOnKillBuff : ABuff<ManaOnKillBuffData>, IStackableBuff
     public override void Add(GameObject source, GameObject target)
     {
         _owner = target.GetComponent<Character>();
-        EntityManager.instance.OnEntityKilled.AddListener(OnEntityKilled);
+        CombatEvents.OnEntityKilled.AddListener(OnEntityKilled);
     }
 
     public override void Remove(GameObject source, GameObject target)
     {
-        // Also called while the scene is torn down, where the entity manager may already be gone
-        EntityManager entityManager = EntityManager.existingInstance;
-        if (entityManager != null)
-        {
-            entityManager.OnEntityKilled.RemoveListener(OnEntityKilled);
-        }
+        CombatEvents.OnEntityKilled.RemoveListener(OnEntityKilled);
     }
 
     #region IStackableBuff

@@ -150,7 +150,7 @@ public class Entity : MonoBehaviour, IAttackable, IAttacker, IBuffable, IMarkabl
         _inventoryHandler.OnItemAdded.AddListener(OnItemAdded);
         _inventoryHandler.OnItemRemoved.AddListener(OnItemRemoved);
 
-        EntityManager.instance.OnEntitySpawned.Invoke(this);
+        CombatEvents.OnEntitySpawned.Invoke(this);
 
         // Disable the unit since we are not in combat
         Enable(false);

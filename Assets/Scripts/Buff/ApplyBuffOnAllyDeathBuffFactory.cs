@@ -24,17 +24,12 @@ public class ApplyBuffOnAllyDeathBuff : ABuff<ApplyBuffOnAllyDeathBuffData>
     public override void Add(GameObject source, GameObject target)
     {
         _owner = target.GetComponent<Entity>();
-        EntityManager.instance.OnEntityKilled.AddListener(OnEntityKilled);
+        CombatEvents.OnEntityKilled.AddListener(OnEntityKilled);
     }
 
     public override void Remove(GameObject source, GameObject target)
     {
-        // Also called while the scene is torn down, where the entity manager may already be gone
-        EntityManager entityManager = EntityManager.existingInstance;
-        if (entityManager != null)
-        {
-            entityManager.OnEntityKilled.RemoveListener(OnEntityKilled);
-        }
+        CombatEvents.OnEntityKilled.RemoveListener(OnEntityKilled);
     }
 
     void OnEntityKilled(Entity dead)
@@ -42,7 +37,7 @@ public class ApplyBuffOnAllyDeathBuff : ABuff<ApplyBuffOnAllyDeathBuffData>
         // Safety net if the owner is gone without Remove() being called: stop listening
         if (_owner == null)
         {
-            EntityManager.instance.OnEntityKilled.RemoveListener(OnEntityKilled);
+            CombatEvents.OnEntityKilled.RemoveListener(OnEntityKilled);
             return;
         }
 

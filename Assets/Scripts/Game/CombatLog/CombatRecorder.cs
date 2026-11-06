@@ -3,15 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-// Listens to the mana of the character and the health of every unit during one fight, and fills a CombatStats
+// Listens to the mana of the character and the health of every unit during one fight, and fills a CombatStats. Follows
+// the fight through CombatEvents: the units summoned are watched, the allies killed counted, and it stops on its own at
+// the end of the battle
 public class CombatRecorder
 {
+    // The stats of the fight, once it is over
+    public readonly UnityEvent<CombatStats> OnFinished = new UnityEvent<CombatStats>();
+
     readonly CombatStats _stats;
     readonly Func<float> _clock;
     readonly ResourceAttribute _mana;
     readonly List<ResourceAttribute> _allies = new List<ResourceAttribute>();
     readonly HashSet<ResourceAttribute> _watched = new HashSet<ResourceAttribute>();
     readonly List<(ResourceAttribute resource, UnityAction<GameObject, ResourceModifier, ConsumerResult> listener)> _listeners = new List<(ResourceAttribute, UnityAction<GameObject, ResourceModifier, ConsumerResult>)>();
+    bool _isStopped;
 
     public CombatStats stats => _stats;
 
@@ -23,6 +29,9 @@ public class CombatRecorder
         _mana = characterMana;
         _stats.Start(_clock(), _mana.Value, _mana.Max);
         Listen(_mana, (_, __, result) => _stats.RecordMana(result.value, result.overflow));
+        CombatEvents.OnEntitySummoned.AddListener(AddUnit);
+        CombatEvents.OnEntityKilled.AddListener(RecordDeath);
+        CombatEvents.OnBattleEnd.AddListener(OnBattleEnd);
     }
 
     // A unit already watched is ignored
@@ -86,9 +95,18 @@ public class CombatRecorder
         _stats.RecordAllyDeath(allyName);
     }
 
-    // Stops listening and returns the stats of the fight
+    // Stops listening and returns the stats of the fight, finished only once
     public CombatStats Stop(bool won)
     {
+        if (_isStopped)
+        {
+            return _stats;
+        }
+
+        _isStopped = true;
+        CombatEvents.OnEntitySummoned.RemoveListener(AddUnit);
+        CombatEvents.OnEntityKilled.RemoveListener(RecordDeath);
+        CombatEvents.OnBattleEnd.RemoveListener(OnBattleEnd);
         foreach (var (resource, listener) in _listeners)
         {
             resource.OnAllConsumerProcessed.RemoveListener(listener);
@@ -98,6 +116,11 @@ public class CombatRecorder
 
         _stats.Finish(_clock(), won, _mana != null ? _mana.Value : 0f, GetAllyHealth());
         return _stats;
+    }
+
+    void OnBattleEnd(bool won)
+    {
+        OnFinished.Invoke(Stop(won));
     }
 
     // A destroyed or dead ally counts for nothing

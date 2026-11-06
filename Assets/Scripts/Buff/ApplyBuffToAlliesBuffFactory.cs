@@ -33,17 +33,12 @@ public class ApplyBuffToAlliesBuff : ABuff<ApplyBuffToAlliesBuffData>
                 Give(entity.GetComponent<Entity>());
             }
         }
-        EntityManager.instance.OnEntitySpawned.AddListener(Give);
+        CombatEvents.OnEntitySpawned.AddListener(Give);
     }
 
     public override void Remove(GameObject source, GameObject target)
     {
-        // Also called while the scene is torn down, where the entity manager may already be gone
-        EntityManager entityManager = EntityManager.existingInstance;
-        if (entityManager != null)
-        {
-            entityManager.OnEntitySpawned.RemoveListener(Give);
-        }
+        CombatEvents.OnEntitySpawned.RemoveListener(Give);
 
         foreach (Entity ally in _allies)
         {
@@ -61,7 +56,7 @@ public class ApplyBuffToAlliesBuff : ABuff<ApplyBuffToAlliesBuffData>
         // Safety net if the owner is gone without Remove() being called: stop listening
         if (_owner == null)
         {
-            EntityManager.instance.OnEntitySpawned.RemoveListener(Give);
+            CombatEvents.OnEntitySpawned.RemoveListener(Give);
             return;
         }
 

@@ -27,7 +27,7 @@ public class GameManager : Singleton<GameManager>
         // The character was picked in the menu: the run starts with the scene
         SetState(GameState.StartGame);
         
-        EntityManager.instance.OnEntityKilled.AddListener(OnEntityKilled);
+        CombatEvents.OnEntityKilled.AddListener(OnEntityKilled);
     }
 
     void Update()

@@ -52,21 +52,11 @@ public class BalanceSimulator : AGameType
     void Start()
     {
         _entities = EntityManager.instance;
-        _entities.OnEntityKilled.AddListener(OnEntityKilled);
-        _entities.OnEntitySummoned.AddListener(OnEntitySummoned);
     }
 
     void OnDestroy()
     {
-        if (_entities != null)
-        {
-            _entities.OnEntityKilled.RemoveListener(OnEntityKilled);
-            _entities.OnEntitySummoned.RemoveListener(OnEntitySummoned);
-        }
-        // The units of this scene are gone with it, their listeners must not be called by the next fight
-        AscensionGameType.OnRoundStart.RemoveAllListeners();
-        AscensionGameType.OnBattleStart.RemoveAllListeners();
-        AscensionGameType.OnRoundEnd.RemoveAllListeners();
+        CombatEvents.Clear();
     }
 
     void Update()
@@ -184,9 +174,9 @@ public class BalanceSimulator : AGameType
         // A slow frame (scene load) must not jump the fight forward by seconds once sped up: one frame never
         // lasts more than at normal speed
         Time.maximumDeltaTime = DefaultMaximumDeltaTime / _plan.timeScale;
-        AscensionGameType.OnRoundStart.Invoke();
+        CombatEvents.OnRoundStart.Invoke();
         EnableAllEntities(true);
-        AscensionGameType.OnBattleStart.Invoke();
+        CombatEvents.OnBattleStart.Invoke();
 
         _recorder = new CombatRecorder(stats, () => Time.time, character.mana);
         ForEachEntity(_recorder.AddUnit);
@@ -263,7 +253,9 @@ public class BalanceSimulator : AGameType
             return;
         }
 
-        CombatStats stats = _recorder.Stop(won);
+        // The recorder stops on the end of the battle
+        CombatEvents.OnBattleEnd.Invoke(won);
+        CombatStats stats = _recorder.stats;
         stats.timedOut = !won && !lost;
         if (_bot != null)
         {
@@ -351,16 +343,6 @@ public class BalanceSimulator : AGameType
     {
         Application.quitting -= OnQuitting;
         FinishEditorProgress(SimulationQueue.count > 0 && !SimulationQueue.isRunning);
-    }
-
-    void OnEntityKilled(Entity entity)
-    {
-        _recorder?.RecordDeath(entity);
-    }
-
-    void OnEntitySummoned(Entity summon)
-    {
-        _recorder?.AddUnit(summon);
     }
 
     void EnableAllEntities(bool isEnabled)

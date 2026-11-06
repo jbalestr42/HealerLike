@@ -22,7 +22,7 @@ namespace HealerLike.Render.Stage
         protected override IEnumerator Run()
         {
             Application.logMessageReceived += OnLog;
-            AscensionGameType.OnRoundEnd.AddListener(OnRoundEnd);
+            CombatEvents.OnRoundEnd.AddListener(OnRoundEnd);
             float previousTimeScale = Time.timeScale;
             try
             {
@@ -67,7 +67,7 @@ namespace HealerLike.Render.Stage
             {
                 Time.timeScale = previousTimeScale;
                 Application.logMessageReceived -= OnLog;
-                AscensionGameType.OnRoundEnd.RemoveListener(OnRoundEnd);
+                CombatEvents.OnRoundEnd.RemoveListener(OnRoundEnd);
             }
             bool isPassed = _roundsDone >= Rounds && _errors == 0 && _attacks > 0 && _heals > 0 && _maxZones > 0;
             Debug.Log($"[StageSmokeRun] {(isPassed ? "PASS" : "FAIL")} rounds {_roundsDone} attacks {_attacks} "

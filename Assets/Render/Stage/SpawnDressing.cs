@@ -14,7 +14,6 @@ namespace HealerLike.Render.Stage
     public class SpawnDressing
     {
         RenderManager _manager;
-        EntityManager _entityManager;
         PlayerBehaviour _player;
         StageRangeDriver _rangeDriver;
         BattleFocus _battleFocus;
@@ -42,31 +41,26 @@ namespace HealerLike.Render.Stage
         {
             Clear();
             _manager = manager;
-            _entityManager = manager.entityManager;
             _player = manager.player;
             _rangeDriver = rangeDriver;
             _battleFocus = battleFocus;
-            _entityManager.OnEntitySpawned.AddListener(OnEntitySpawned);
-            _entityManager.OnEntityKilled.AddListener(OnEntityKilled);
-            _entityManager.OnProjectileSpawned.AddListener(OnProjectileSpawned);
+            CombatEvents.OnEntitySpawned.AddListener(OnEntitySpawned);
+            CombatEvents.OnEntityKilled.AddListener(OnEntityKilled);
+            CombatEvents.OnProjectileSpawned.AddListener(OnProjectileSpawned);
             _player.OnCharacterInit.AddListener(OnCharacterInit);
         }
 
         public void Clear()
         {
-            if (_entityManager != null)
-            {
-                _entityManager.OnEntitySpawned.RemoveListener(OnEntitySpawned);
-                _entityManager.OnEntityKilled.RemoveListener(OnEntityKilled);
-                _entityManager.OnProjectileSpawned.RemoveListener(OnProjectileSpawned);
-            }
+            CombatEvents.OnEntitySpawned.RemoveListener(OnEntitySpawned);
+            CombatEvents.OnEntityKilled.RemoveListener(OnEntityKilled);
+            CombatEvents.OnProjectileSpawned.RemoveListener(OnProjectileSpawned);
 
             if (_player != null)
             {
                 _player.OnCharacterInit.RemoveListener(OnCharacterInit);
             }
 
-            _entityManager = null;
             _player = null;
             _creatures.Clear();
         }

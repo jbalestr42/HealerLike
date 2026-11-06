@@ -12,8 +12,8 @@ public class DamageDisplayer : MonoBehaviour
         _parent = new GameObject("DamageDisplayer");
         _parent.transform.SetParent(transform);
 
-        EntityManager.instance.OnEntitySpawned.AddListener(RegisterEntity);
-        EntityManager.instance.OnEntityKilled.AddListener(UnregisterEntity);
+        CombatEvents.OnEntitySpawned.AddListener(RegisterEntity);
+        CombatEvents.OnEntityKilled.AddListener(UnregisterEntity);
     }
 
     void RegisterEntity(Entity entity)
